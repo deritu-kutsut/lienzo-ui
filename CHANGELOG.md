@@ -2,6 +2,13 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); versiones con [SemVer](https://semver.org/lang/es/).
 
+## [1.2.4] - 2026-11-17
+
+Traducción al inglés de los botones, tooltips y plantillas.
+
+### Corregido
+- Con la interfaz en inglés seguían en español los tooltips de los botones con icono (Deshacer, Rehacer, Duplicar, Eliminar, alineación…), los títulos de sección (Plantillas de interfaz, Mis plantillas, Estilos de texto…), los botones Atrás, Adelante, Al fondo, Al frente, Distribuir, Agrupar y Desagrupar, y los nombres de las plantillas. Ahora se traducen.
+
 ## [1.2.3] - 2026-11-17
 
 Interfaz en inglés completa y límites en el servidor MCP.

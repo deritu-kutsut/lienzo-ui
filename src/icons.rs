@@ -57,7 +57,7 @@ pub fn button(ui: &mut Ui, name: &str, fallback: &str, tip: &str) -> Response {
     }
     let c = if !enabled { crate::theme::MUTED().gamma_multiply(0.5) } else if resp.hovered() { Color32::WHITE } else { crate::theme::TEXT() };
     paint_or(ui, name, r.shrink(4.0), c, fallback);
-    resp.on_hover_text(tip)
+    resp.on_hover_text(crate::i18n::t(tip))
 }
 
 /// Same as [`button`] but drawn as "selected" when `on`.
@@ -71,7 +71,7 @@ pub fn toggle(ui: &mut Ui, on: bool, name: &str, fallback: &str, tip: &str) -> R
     }
     let c = if on || resp.hovered() { Color32::WHITE } else { crate::theme::TEXT() };
     paint_or(ui, name, r.shrink(4.0), c, fallback);
-    resp.on_hover_text(tip)
+    resp.on_hover_text(crate::i18n::t(tip))
 }
 
 /// Button with a leading icon (falls back to text only).

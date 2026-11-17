@@ -435,3 +435,40 @@ No se pudo usar la imagen: {}	Could not use the image: {}
 Jerarquía · {}	Hierarchy · {}
 Algunos valores los controla el Layout Group de «{}».	Some values are controlled by the Layout Group of “{}”.
 Padre: {}	Parent: {}
+Activo / inactivo (GameObject.SetActive)	Active / inactive (GameObject.SetActive)
+Al fondo	To back
+Al frente	To front
+Atrás	Backward
+Adelante	Forward
+Cerrar el inspector	Close the inspector
+Color de la pista	Track colour
+Crea un Contenedor con la selección (Ctrl+G)	Creates a Container with the selection (Ctrl+G)
+Degradados (marcadores de posición)	Gradients (placeholders)
+Deshacer (Ctrl+Z)	Undo (Ctrl+Z)
+Rehacer (Ctrl+Y)	Redo (Ctrl+Y)
+Distribuir horiz.	Distribute horiz.
+Distribuir vert.	Distribute vert.
+Duplicar (Ctrl+D)	Duplicate (Ctrl+D)
+Eliminar con su contenido (Supr)	Delete with its contents (Del)
+Estilos de texto	Text styles
+Izquierda	Left
+Centro	Center
+Derecha	Right
+Arriba	Top
+Medio	Middle
+Abajo	Bottom
+Mis elementos (prefabs reutilizables)	My elements (reusable prefabs)
+Mis plantillas	My templates
+Para botones y HUD	For buttons and HUD
+Plantillas de interfaz	Interface templates
+Segundo color del degradado	Second gradient colour
+Seleccionar el padre (Esc)	Select the parent (Esc)
+Tus imágenes	Your images
+Elegir imagen…	Choose image…
+Cambiar…	Change…
+Menú principal	Main menu
+HUD de juego	Game HUD
+Ventana de diálogo	Dialog window
+Ajustes	Settings
+Inventario	Inventory
+En blanco	Blank

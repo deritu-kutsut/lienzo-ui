@@ -45,7 +45,7 @@ fn swatch_row(ui: &mut egui::Ui, target: &mut Rgba) {
 
 fn section(ui: &mut egui::Ui, title: &str) {
     ui.add_space(8.0);
-    ui.label(RichText::new(title).strong().size(12.5).color(TEXT()));
+    ui.label(RichText::new(crate::i18n::t(title)).strong().size(12.5).color(TEXT()));
     ui.add_space(3.0);
 }
 
@@ -411,7 +411,7 @@ impl EditorApp {
                     continue;
                 }
                 let doc = model::template(i, w, h);
-                let resp = tile(ui, Vec2::new(128.0, 82.0), name, |p, r| render::paint_doc_thumb(p, &doc, r.expand(6.0)));
+                let resp = tile(ui, Vec2::new(128.0, 82.0), &crate::i18n::t(name), |p, r| render::paint_doc_thumb(p, &doc, r.expand(6.0)));
                 if resp.clicked() {
                     chosen = Some(i);
                 }
@@ -1258,25 +1258,25 @@ impl EditorApp {
             });
             if self.sel.len() >= 3 {
                 ui.columns(2, |c| {
-                    if c[0].button("Distribuir horiz.").clicked() {
+                    if c[0].button(crate::i18n::t("Distribuir horiz.")).clicked() {
                         self.distribute(0);
                     }
-                    if c[1].button("Distribuir vert.").clicked() {
+                    if c[1].button(crate::i18n::t("Distribuir vert.")).clicked() {
                         self.distribute(1);
                     }
                 });
             }
             ui.columns(4, |c| {
-                if c[0].button("Atrás").on_hover_text(crate::i18n::t("Un lugar antes entre hermanos (Ctrl+[)")).clicked() {
+                if c[0].button(crate::i18n::t("Atrás")).on_hover_text(crate::i18n::t("Un lugar antes entre hermanos (Ctrl+[)")).clicked() {
                     self.reorder(None, -1);
                 }
-                if c[1].button("Adelante").on_hover_text(crate::i18n::t("Ctrl+]")).clicked() {
+                if c[1].button(crate::i18n::t("Adelante")).on_hover_text(crate::i18n::t("Ctrl+]")).clicked() {
                     self.reorder(None, 1);
                 }
-                if c[2].button("Al fondo").clicked() {
+                if c[2].button(crate::i18n::t("Al fondo")).clicked() {
                     self.reorder(Some(false), 0);
                 }
-                if c[3].button("Al frente").clicked() {
+                if c[3].button(crate::i18n::t("Al frente")).clicked() {
                     self.reorder(Some(true), 0);
                 }
             });
@@ -1450,7 +1450,7 @@ impl EditorApp {
                     if e.kind == Kind::Image {
                         ui.label(crate::i18n::t("Sprite"));
                         ui.horizontal(|ui| {
-                            if ui.button(if e.image.is_empty() { "Elegir imagen…" } else { "Cambiar…" }).clicked() {
+                            if ui.button(crate::i18n::t(if e.image.is_empty() { "Elegir imagen…" } else { "Cambiar…" })).clicked() {
                                 pick_image = true;
                             }
                             if !e.image.is_empty() && ui.small_button(crate::i18n::t("Quitar")).clicked() {

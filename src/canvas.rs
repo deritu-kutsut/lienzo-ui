@@ -1030,10 +1030,10 @@ impl EditorApp {
                     .show(ui, |ui| {
                         ui.horizontal(|ui| {
                             ui.spacing_mut().item_spacing.x = 2.0;
-                            if self.sel.len() > 1 && ui.button("Agrupar").on_hover_text("Crea un Contenedor con la selección (Ctrl+G)").clicked() {
+                            if self.sel.len() > 1 && ui.button(crate::i18n::t("Agrupar")).on_hover_text(crate::i18n::t("Crea un Contenedor con la selección (Ctrl+G)")).clicked() {
                                 self.group_selection();
                             }
-                            if self.selection_grouped() && ui.button("Desagrupar").on_hover_text("Ctrl+Shift+G").clicked() {
+                            if self.selection_grouped() && ui.button(crate::i18n::t("Desagrupar")).on_hover_text("Ctrl+Shift+G").clicked() {
                                 self.ungroup_selection();
                             }
                             if self.sel.len() == 1 && self.doc.parent_of(self.sel[0]).is_some() && crate::icons::button(ui, "parent_up", "^", "Seleccionar el padre (Esc)").clicked() {
