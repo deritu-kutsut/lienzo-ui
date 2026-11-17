@@ -65,6 +65,16 @@ ok("name duplicado rechazado", esError(await llamar("modificar_elemento", { arch
 ok("archivo reservado «CON»", esError(await llamar("crear_diseno", { archivo: "CON", plantilla: 0 })));
 fs.writeFileSync(path.join(DISENOS, "Vacio.editorgui.json"), "{}");
 { const r = await llamar("leer_diseno", { archivo: "Vacio" }); ok("diseño {} da error claro", esError(r) && !texto(r).includes("undefined"), texto(r)); }
+ok("texto enorme rechazado", esError(await llamar("modificar_elemento", { archivo: "Tienda", elemento: "Comprar", cambios: { text: "t".repeat(6000) } })));
+ok("nombre enorme rechazado", esError(await llamar("modificar_elemento", { archivo: "Tienda", elemento: "Comprar", cambios: { name: "n".repeat(500) } })));
+ok("lista enorme rechazada", esError(await llamar("modificar_elemento", { archivo: "Tienda", elemento: "Comprar", cambios: { options: Array(1000).fill("a") } })));
+{
+  // un elemento llamado como el id de otro debe encontrarse por nombre
+  await llamar("agregar_elemento", { archivo: "Tienda", tipo: "Button", nombre: "3", x: 0, y: 0, w: 50, h: 20 });
+  await llamar("modificar_elemento", { archivo: "Tienda", elemento: "3", cambios: { text: "POR-NOMBRE" } });
+  const docT = JSON.parse(fs.readFileSync(path.join(DISENOS, "Tienda.editorgui.json"), "utf8"));
+  ok("el nombre gana al id numérico", docT.elements.find((e) => e.name === "3")?.text === "POR-NOMBRE" && docT.elements.find((e) => e.id === 3)?.text !== "POR-NOMBRE");
+}
 ok("elemento inexistente", esError(await llamar("modificar_elemento", { archivo: "Tienda", elemento: "Nada", cambios: { text: "x" } })));
 ok("nombre duplicado", esError(await llamar("duplicar_elemento", { archivo: "Tienda", elemento: "Cerrar", nuevo_nombre: "Comprar" })));
 ok("crear sobre uno existente", esError(await llamar("crear_diseno", { archivo: "Tienda", plantilla: 0 })));

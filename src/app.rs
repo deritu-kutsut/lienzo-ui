@@ -383,7 +383,7 @@ impl EditorApp {
         }
         self.sel = vec![id];
         let pname = parent.and_then(|p| self.doc.get(p)).map(|p| format!(" dentro de «{}»", p.name)).unwrap_or_default();
-        self.status = format!("Se agregó: {}{}", kind.label(), pname);
+        self.status = crate::i18n::tf("Se agregó: {}{}", &[&kind.label().to_string(), &pname]);
     }
 
     /// Topmost Panel / Contenedor / ScrollView under a page point (drop target).
@@ -406,7 +406,7 @@ impl EditorApp {
         self.sel.retain(|id| self.doc.get(*id).is_some());
         self.sel.clear();
         self.editing = None;
-        self.status = format!("Se eliminaron {} elemento(s) con su contenido (los bloqueados se conservan)", n);
+        self.status = crate::i18n::tf("Se eliminaron {} elemento(s) con su contenido (los bloqueados se conservan)", &[&n.to_string()]);
     }
 
     pub fn duplicate_selection(&mut self, offset: f32) {
@@ -437,13 +437,13 @@ impl EditorApp {
             new_ids.extend(roots);
         }
         self.sel = new_ids;
-        self.status = "Duplicado (con su contenido)".into();
+        self.status = crate::i18n::t("Duplicado (con su contenido)");
     }
 
     pub fn copy(&mut self) {
         self.clipboard = self.doc.collect_subtrees(&self.sel);
         if !self.clipboard.is_empty() {
-            self.status = format!("Copiado(s) {} elemento(s)", self.doc.top_level(&self.sel).len());
+            self.status = crate::i18n::tf("Copiado(s) {} elemento(s)", &[&self.doc.top_level(&self.sel).len().to_string()]);
         }
     }
 
@@ -458,7 +458,7 @@ impl EditorApp {
         let items = self.clipboard.clone();
         let parent = self.insert_parent();
         self.sel = self.doc.insert_items(&items, parent);
-        self.status = "Pegado".into();
+        self.status = crate::i18n::t("Pegado");
     }
 
     /// Wrap the selection in a new "Contenedor" (an empty RectTransform), like grouping in Unity.
@@ -489,7 +489,7 @@ impl EditorApp {
         }
         self.doc.set_sibling_order(Some(gid), &tops);
         self.sel = vec![gid];
-        self.status = "Agrupado en un Contenedor (RectTransform vacío en Unity)".into();
+        self.status = crate::i18n::t("Agrupado en un Contenedor (RectTransform vacío en Unity)");
     }
 
     /// Remove selected "Contenedores", keeping their children where they are.
@@ -517,9 +517,9 @@ impl EditorApp {
         }
         if !freed.is_empty() {
             self.sel = freed;
-            self.status = "Desagrupado".into();
+            self.status = crate::i18n::t("Desagrupado");
         } else {
-            self.status = "Selecciona un Contenedor para desagrupar".into();
+            self.status = crate::i18n::t("Selecciona un Contenedor para desagrupar");
         }
     }
 
@@ -536,7 +536,7 @@ impl EditorApp {
                 self.doc.reparent(id, gp, idx);
             }
         }
-        self.status = "Movido un nivel arriba en la jerarquía".into();
+        self.status = crate::i18n::t("Movido un nivel arriba en la jerarquía");
     }
 
     pub fn toggle_lock(&mut self) {
@@ -545,7 +545,7 @@ impl EditorApp {
         for e in self.doc.elements.iter_mut().filter(|e| sel.contains(&e.id)) {
             e.locked = any_unlocked;
         }
-        self.status = if any_unlocked { "Bloqueado: no se puede mover ni borrar".into() } else { "Desbloqueado".into() };
+        self.status = crate::i18n::t(if any_unlocked { "Bloqueado: no se puede mover ni borrar" } else { "Desbloqueado" });
     }
 
     /// Move the selection among its siblings. `to_front`: Some(true) last (drawn on top), Some(false) first.
@@ -587,9 +587,9 @@ impl EditorApp {
                     pe.collapsed = false;
                 }
             }
-            self.status = "Jerarquía actualizada (la posición en pantalla se mantiene)".into();
+            self.status = crate::i18n::t("Jerarquía actualizada (la posición en pantalla se mantiene)");
         } else {
-            self.status = "No se puede meter un elemento dentro de sí mismo".into();
+            self.status = crate::i18n::t("No se puede meter un elemento dentro de sí mismo");
         }
     }
 
@@ -670,7 +670,7 @@ impl EditorApp {
         self.sel.clear();
         self.editing = None;
         self.fit_pending = true;
-        self.status = format!("Plantilla aplicada: {} (Ctrl+Z para deshacer)", model::TEMPLATES[i]);
+        self.status = crate::i18n::tf("Plantilla aplicada: {} (Ctrl+Z para deshacer)", &[&model::TEMPLATES[i].to_string()]);
     }
 
     /// Change the reference resolution: every element keeps its anchors (like Unity).
@@ -681,7 +681,7 @@ impl EditorApp {
         self.doc.reapply_children(None, old);
         self.doc.apply_layouts();
         self.fit_pending = true;
-        self.status = format!("Resolución de referencia: {} × {} (los elementos siguen sus anclas)", w, h);
+        self.status = crate::i18n::tf("Resolución de referencia: {} × {} (los elementos siguen sus anclas)", &[&w.to_string(), &h.to_string()]);
     }
 
     fn remember_project(&mut self) {
@@ -692,10 +692,10 @@ impl EditorApp {
     pub fn save_project(&mut self) {
         match serde_json::to_string_pretty(&self.doc).map_err(|e| e.to_string()).and_then(|s| std::fs::write(&self.project_path, s).map_err(|e| e.to_string())) {
             Ok(()) => {
-                self.status = format!("Proyecto guardado en {}", self.project_path);
+                self.status = crate::i18n::tf("Proyecto guardado en {}", &[&self.project_path]);
                 self.remember_project();
             }
-            Err(e) => self.status = format!("No se pudo guardar: {}", e),
+            Err(e) => self.status = crate::i18n::tf("No se pudo guardar: {}", &[&e.to_string()]),
         }
     }
 
@@ -710,7 +710,7 @@ impl EditorApp {
                 self.status = format!("{} {}", crate::i18n::t("Proyecto abierto:"), self.project_path);
                 self.remember_project();
             }
-            Err(e) => self.status = format!("No se pudo abrir: {}", e),
+            Err(e) => self.status = crate::i18n::tf("No se pudo abrir: {}", &[&e.to_string()]),
         }
     }
 
@@ -720,9 +720,9 @@ impl EditorApp {
         let ok = results.iter().filter(|r| r.is_ok()).count();
         let errs: Vec<String> = results.into_iter().filter_map(|r| r.err()).collect();
         self.status = if errs.is_empty() {
-            format!("{}: {} agregado(s) a tu biblioteca", what, ok)
+            crate::i18n::tf("{}: {} agregado(s) a tu biblioteca", &[what, &ok.to_string()])
         } else {
-            format!("{}: {} agregado(s), {} con error ({})", what, ok, errs.len(), errs.join("; "))
+            crate::i18n::tf("{}: {} agregado(s), {} con error ({})", &[what, &ok.to_string(), &errs.len().to_string(), &errs.join("; ")])
         };
     }
 
@@ -817,15 +817,15 @@ impl EditorApp {
             items.insert(0, g);
         }
         self.sel = self.doc.insert_items(&items, parent);
-        self.status = "Elemento de tu biblioteca agregado".into();
+        self.status = crate::i18n::t("Elemento de tu biblioteca agregado");
     }
 
     pub fn save_selection_as_element(&mut self, name: &str) {
         let items = self.doc.collect_subtrees(&self.sel);
         let name = if name.trim().is_empty() { items.first().map(|e| e.name.clone()).unwrap_or_else(|| "Elemento".into()) } else { name.trim().to_string() };
         match self.library.save_element(&name, &items) {
-            Ok(_) => self.status = format!("«{}» guardado en Mis elementos", name),
-            Err(e) => self.status = format!("No se pudo guardar el elemento: {}", e),
+            Ok(_) => self.status = crate::i18n::tf("«{}» guardado en Mis elementos", &[&name]),
+            Err(e) => self.status = crate::i18n::tf("No se pudo guardar el elemento: {}", &[&e.to_string()]),
         }
     }
 
@@ -833,8 +833,8 @@ impl EditorApp {
         let name = if name.trim().is_empty() { self.doc.title.clone() } else { name.trim().to_string() };
         let doc = self.doc.clone();
         match self.library.save_template(&name, &doc) {
-            Ok(_) => self.status = format!("Plantilla «{}» guardada (pestaña Plantillas › Mis plantillas)", name),
-            Err(e) => self.status = format!("No se pudo guardar la plantilla: {}", e),
+            Ok(_) => self.status = crate::i18n::tf("Plantilla «{}» guardada (pestaña Plantillas › Mis plantillas)", &[&name]),
+            Err(e) => self.status = crate::i18n::tf("No se pudo guardar la plantilla: {}", &[&e.to_string()]),
         }
     }
 
@@ -846,7 +846,7 @@ impl EditorApp {
         self.sel.clear();
         self.editing = None;
         self.fit_pending = true;
-        self.status = format!("Plantilla aplicada: {} (Ctrl+Z para deshacer)", doc.title);
+        self.status = crate::i18n::tf("Plantilla aplicada: {} (Ctrl+Z para deshacer)", &[&doc.title]);
     }
 
     pub fn save_project_as(&mut self) {
@@ -876,14 +876,14 @@ impl EditorApp {
             self.drag = None;
             self.fit_pending = true;
             self.console.push("▶ Modo prueba: haz clic en los elementos con ⚡ para ejecutar su código.".into());
-            self.status = "Modo prueba activo · Esc para volver a editar".into();
+            self.status = crate::i18n::t("Modo prueba activo · Esc para volver a editar");
         } else if !on && self.preview {
             if let Some(d) = self.preview_backup.take() {
                 self.doc = d;
             }
             self.preview = false;
             self.fit_pending = true;
-            self.status = "De vuelta al modo edición (el diseño quedó como antes de la prueba)".into();
+            self.status = crate::i18n::t("De vuelta al modo edición (el diseño quedó como antes de la prueba)");
         }
     }
 
@@ -920,21 +920,19 @@ impl EditorApp {
                 let root = crate::export::find_unity_root(std::path::Path::new(&dir)).map(|p| p.to_string_lossy().to_string()).unwrap_or(dir.clone());
                 self.settings.unity_project = root.clone();
                 self.settings.save();
-                self.status = format!(
+                self.status = crate::i18n::tf(
                     "Exportado a Unity ({} archivos) en {}\\{} · Unity crea el prefab en Assets/EditorGUI/Prefabs al volver a la ventana",
-                    files.len(),
-                    root,
-                    crate::export::UNITY_ROOT.replace('/', "\\")
+                    &[&files.len().to_string(), &root, &crate::export::UNITY_ROOT.replace('/', "\\")],
                 );
             }
-            Err(e) => self.status = format!("No se pudo exportar: {}", e),
+            Err(e) => self.status = crate::i18n::tf("No se pudo exportar: {}", &[&e.to_string()]),
         }
     }
 
     pub fn save_text_file(&mut self, title: &str, name: &str, ext: &str, text: &str) {
         if let Some(path) = rfd::FileDialog::new().set_title(title).set_file_name(name).add_filter(ext, &[ext]).save_file() {
             match std::fs::write(&path, text) {
-                Ok(()) => self.status = format!("Guardado: {}", path.display()),
+                Ok(()) => self.status = crate::i18n::tf("Guardado: {}", &[&path.display().to_string()]),
                 Err(e) => self.status = format!("No se pudo guardar: {}", e),
             }
         }

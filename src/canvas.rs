@@ -410,7 +410,7 @@ impl EditorApp {
                             self.sel = ids;
                         } else if let Some(id) = d.click_select {
                             self.sel = vec![id];
-                            self.status = "Elemento bloqueado: desbloquéalo para moverlo".into();
+                            self.status = crate::i18n::t("Elemento bloqueado: desbloquéalo para moverlo");
                         }
                     }
                     DragKind::Move => {

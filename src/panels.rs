@@ -760,7 +760,7 @@ impl EditorApp {
 
     // ------------------------------------------------------------- hierarchy
     fn tab_layers(&mut self, ui: &mut egui::Ui) {
-        section(ui, &format!("Jerarquía · {}", self.doc.title));
+        section(ui, &crate::i18n::tf("Jerarquía · {}", &[&self.doc.title]));
         hint(ui, &crate::i18n::t("Igual que en Unity: lo de abajo se dibuja encima. Arrastra filas para reordenar o meter un elemento dentro de otro."));
         ui.add_space(4.0);
         ui.horizontal_wrapped(|ui| {
@@ -1332,7 +1332,7 @@ impl EditorApp {
         component(ui, "rt", &crate::i18n::t("Rect Transform"), true, |ui| {
             if driven {
                 egui::Frame::new().fill(ACCENT_SOFT()).corner_radius(4.0).inner_margin(Margin::same(5)).show(ui, |ui| {
-                    ui.label(RichText::new(format!("Algunos valores los controla el Layout Group de «{}».", parent_name.clone().unwrap_or_default())).small());
+                    ui.label(RichText::new(crate::i18n::tf("Algunos valores los controla el Layout Group de «{}».", &[&parent_name.clone().unwrap_or_default()])).small());
                 });
             }
             ui.horizontal(|ui| {
@@ -1341,7 +1341,7 @@ impl EditorApp {
                     hint(ui, &crate::i18n::t("Clic: anclas"));
                     hint(ui, &crate::i18n::t("Shift: + pivote"));
                     hint(ui, &crate::i18n::t("Alt: + posición"));
-                    ui.label(RichText::new(format!("Padre: {}", parent_name.clone().unwrap_or_else(|| "Canvas".into()))).small().color(MUTED()));
+                    ui.label(RichText::new(crate::i18n::tf("Padre: {}", &[&parent_name.clone().unwrap_or_else(|| "Canvas".into())])).small().color(MUTED()));
                 });
             });
             ui.add_space(4.0);
@@ -1726,9 +1726,9 @@ impl EditorApp {
                         if let Some(el) = self.doc.get_mut(id) {
                             el.image = name;
                         }
-                        self.status = "Imagen cambiada".into();
+                        self.status = crate::i18n::t("Imagen cambiada");
                     }
-                    Err(err) => self.status = format!("No se pudo usar la imagen: {}", err),
+                    Err(err) => self.status = crate::i18n::tf("No se pudo usar la imagen: {}", &[&err.to_string()]),
                 }
             }
         }
@@ -1762,7 +1762,7 @@ impl EditorApp {
                         ui.label(RichText::new(format!("{} {} · {} {}", self.doc.elements.len(), crate::i18n::t("elementos"), self.sel.len(), crate::i18n::t("seleccionados"))).size(11.5).color(MUTED()));
                         ui.separator();
                         ui.with_layout(Layout::left_to_right(Align::Center), |ui| {
-                            ui.add(egui::Label::new(RichText::new(&self.status).size(11.5).color(MUTED())).truncate());
+                            ui.add(egui::Label::new(RichText::new(crate::i18n::t(&self.status)).size(11.5).color(MUTED())).truncate());
                         });
                     });
                 });
@@ -1869,7 +1869,7 @@ impl EditorApp {
             ui.horizontal(|ui| {
                 if ui.add(crate::icons::btn("duplicate", crate::i18n::t("Copiar"))).clicked() {
                     ui.ctx().copy_text(text.clone());
-                    self.status = "Copiado al portapapeles".into();
+                    self.status = crate::i18n::t("Copiado al portapapeles");
                 }
                 if ui.add(crate::icons::btn("save", crate::i18n::t("Guardar archivo…"))).clicked() {
                     self.save_text_file("Guardar archivo", &file, ext, &text);

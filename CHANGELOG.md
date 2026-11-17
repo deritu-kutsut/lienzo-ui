@@ -2,6 +2,15 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); versiones con [SemVer](https://semver.org/lang/es/).
 
+## [1.2.3] - 2026-11-17
+
+Interfaz en inglés completa y límites en el servidor MCP.
+
+### Corregido
+- Con la interfaz en inglés, la barra de estado y varios textos del inspector (jerarquía, Layout Group, «Padre») seguían en español. Ahora se traducen.
+- Servidor MCP: un elemento llamado «3» ya no pierde ante el elemento de id 3 (el nombre exacto tiene prioridad).
+- Servidor MCP: límites de tamaño (nombre 120 caracteres, texto 5000, listas de 200 elementos). Un diseño con 5 MB de texto tardaba 32 s en abrirse.
+
 ## [1.2.2] - 2026-11-17
 
 Robustez ante diseños malformados.

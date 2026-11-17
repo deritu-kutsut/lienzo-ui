@@ -101,8 +101,16 @@ function rutaImagen(v) {
   return v;
 }
 
+/** Límites de tamaño: un diseño con textos o listas enormes dejaría la app minutos sin responder. */
+const LIM = { nombre: 120, texto: 5000, lista: 200, item: 200 };
+function limitar(campo, v, max) {
+  if (typeof v === "string" && v.length > max) throw new Error(`${campo} admite como máximo ${max} caracteres.`);
+  return v;
+}
+
 function buscar(doc, ref) {
-  const e = doc.elements.find((x) => x.name === ref || String(x.id) === String(ref));
+  // Primero el nombre exacto; solo si no hay ninguno se interpreta como id (un elemento llamado «3» no debe perder ante el id 3).
+  const e = doc.elements.find((x) => x.name === ref) ?? doc.elements.find((x) => String(x.id) === String(ref));
   if (!e) throw new Error(`No hay ningún elemento «${ref}». Usa leer_diseno para ver los nombres.`);
   return e;
 }
@@ -222,9 +230,11 @@ const HERRAMIENTAS = [
           if (e.kind !== "Image") throw new Error(`«${e.name}» es ${e.kind}: solo los elementos Image muestran imagen. Usa agregar_elemento con tipo Image (por ejemplo dentro de «${e.name}»).`);
           e[k] = rutaImagen(v);
         }
-        else if (tipo === "strings") { if (!Array.isArray(v) || !v.every((s) => typeof s === "string")) throw new Error(`${k} debe ser una lista de textos`); e[k] = v; }
+        else if (tipo === "strings") { if (!Array.isArray(v) || !v.every((s) => typeof s === "string")) throw new Error(`${k} debe ser una lista de textos`);
+          if (v.length > LIM.lista || v.some((s) => s.length > LIM.item)) throw new Error(`${k} admite como máximo ${LIM.lista} elementos de ${LIM.item} caracteres.`); e[k] = v; }
         else if (typeof v !== tipo || (tipo === "number" && !Number.isFinite(v))) throw new Error(`${k} debe ser ${tipo}`);
         else {
+          if (tipo === "string") limitar(k, v, k === "name" ? LIM.nombre : LIM.texto);
           if (tipo === "number") validarRango(k, v);
           if (k === "name") {
             if (!v.trim()) throw new Error("name no puede estar vacío.");
@@ -254,6 +264,8 @@ const HERRAMIENTAS = [
       const { abs, doc } = leer(archivo);
       if (!TIPOS.includes(tipo)) throw new Error(`tipo no válido. Usa: ${TIPOS.join(", ")}`);
       if (typeof nombre !== "string" || !nombre.trim()) throw new Error("Falta 'nombre'.");
+      limitar("nombre", nombre, LIM.nombre);
+      limitar("texto", texto, LIM.texto);
       if (doc.elements.some((e) => e.name === nombre)) throw new Error(`Ya existe un elemento «${nombre}».`);
       for (const [k, v] of Object.entries({ x, y, w, h })) if (typeof v !== "number" || !Number.isFinite(v)) throw new Error(`${k} debe ser un número`);
       if (w <= 0 || h <= 0) throw new Error("w y h deben ser mayores que 0");
@@ -294,6 +306,8 @@ const HERRAMIENTAS = [
       const { abs, doc } = leer(archivo);
       const base = buscar(doc, elemento);
       if (typeof nuevo_nombre !== "string" || !nuevo_nombre.trim()) throw new Error("Falta 'nuevo_nombre'.");
+      limitar("nuevo_nombre", nuevo_nombre, LIM.nombre);
+      limitar("texto", texto, LIM.texto);
       if (doc.elements.some((x) => x.name === nuevo_nombre)) throw new Error(`Ya existe un elemento «${nuevo_nombre}».`);
       const ids = descendientes(doc, base.id);
       const mapa = new Map();

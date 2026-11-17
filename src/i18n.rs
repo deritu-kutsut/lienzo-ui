@@ -47,6 +47,17 @@ pub fn t(texto: &str) -> String {
     TABLAS[i].get(texto).map(|s| s.to_string()).unwrap_or_else(|| texto.to_string())
 }
 
+/// Traduce una plantilla con huecos `{}` y los rellena en orden (para mensajes con datos).
+pub fn tf(plantilla: &str, args: &[&str]) -> String {
+    let mut out = t(plantilla);
+    for a in args {
+        if let Some(i) = out.find("{}") {
+            out.replace_range(i..i + 2, a);
+        }
+    }
+    out
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -71,5 +82,12 @@ mod tests {
             let (es, en) = l.split_once('\t').unwrap_or_else(|| panic!("línea {} sin TAB: {}", n + 1, l));
             assert!(!es.is_empty() && !en.trim().is_empty(), "línea {} vacía", n + 1);
         }
+    }
+
+    #[test]
+    fn tf_rellena_los_huecos_en_orden() {
+        assert_eq!(tf("a {} b {}", &["1", "2"]), "a 1 b 2");
+        assert_eq!(tf("sin huecos", &["x"]), "sin huecos");
+        assert_eq!(tf("{}", &["{}"]), "{}");
     }
 }
