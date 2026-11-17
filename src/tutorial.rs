@@ -35,8 +35,8 @@ Al terminar este tutorial se abre el editor. Puedes volver aquí cuando quieras 
     },
     Pagina {
         titulo: "La pantalla del editor",
-        texto: "• Arriba: los menús Archivo, Editar, Ver y Lienzo, el botón Probar, el nombre del diseño, Tutorial, Accesibilidad, Guardar, Código… y Exportar a Unity.\n\
-• A la izquierda, la barra con Jerarquía (las capas), Elementos, Plantillas, Texto, Imágenes y Plugins.\n\
+        texto: "• Arriba: los menús Archivo, Editar, Ver y Lienzo, el botón Probar, el nombre del diseño, Accesibilidad, Revisar, Temas, Tutorial, Guardar, Código… y Exportar a Unity.\n\
+• A la izquierda, la barra con Jerarquía (las capas), Elementos, Plantillas, Texto, Imágenes, Plugins y Comunidad.\n\
 • En el centro, el lienzo: la pantalla de tu juego a la resolución de referencia (1920 × 1080 por defecto).\n\
 • A la derecha, el Inspector: las propiedades del elemento seleccionado (posición, anclas, colores, texto…).",
     },
@@ -48,7 +48,7 @@ Si prefieres empezar de cero, elige «En blanco» o Archivo › Nuevo diseño en
     },
     Pagina {
         titulo: "Añadir y editar elementos",
-        texto: "• Arrastra elementos desde Elementos al lienzo: paneles, textos, botones, casillas, sliders, campos de texto, desplegables, listas con scroll e imágenes.\n\
+        texto: "• Arrastra elementos desde Elementos al lienzo: paneles, textos, botones, casillas, sliders, campos de texto, desplegables, listas con scroll e imágenes. En «Componentes listos» hay botones, barras de vida y maná, tarjetas e insignias; en Texto, piezas de HUD como temporizador, monedas o daño.\n\
 • Clic selecciona, arrastrar mueve, las esquinas cambian el tamaño y el tirador superior gira.\n\
 • Doble clic en un texto para escribir en él.\n\
 • Ctrl+Z / Ctrl+Y deshacen y rehacen; Ctrl+D duplica; Supr borra; Ctrl+G agrupa; las flechas mueven 1 px (Shift: 10).\n\
@@ -58,6 +58,7 @@ Si prefieres empezar de cero, elige «En blanco» o Archivo › Nuevo diseño en
         titulo: "Probar y exportar a Unity",
         texto: "• Probar (F5): el diseño se vuelve interactivo y puedes simular otras pantallas (móvil, 4:3, ultrapanorámica) para ver cómo se adapta.\n\
 • Guardar (Ctrl+S): guarda el proyecto .editorgui.json para seguir otro día.\n\
+• Revisar: avisa de letra pequeña, poco contraste, botones pequeños para tocar, elementos fuera de la página e imágenes que faltan.\n\
 • Exportar a Unity (Ctrl+E): la primera vez elige la carpeta de tu proyecto (la que contiene Assets).\n\n\
 En Unity, al volver a la ventana, el diseño aparece como prefab en Assets/EditorGUI/Prefabs. También tienes el menú Tools › Lienzo UI › Importar diseño en la escena.",
     },
@@ -95,10 +96,11 @@ En Unity, <Diseño>View.cs hereda de <Diseño>ViewBase con referencias tipadas a
         titulo: "Línea de comandos y automatización",
         texto: "lienzo-ui --plantillas                         lista las plantillas\n\
 lienzo-ui --plantilla 0 --guardar menu.editorgui.json\n\
+lienzo-ui --abrir menu.editorgui.json --revisar        revisa el diseño (código 1 si hay errores)\n\
 lienzo-ui --abrir menu.editorgui.json --exportar <proyecto Unity>\n\
 lienzo-ui --abrir menu.editorgui.json --screenshot captura.png\n\
 lienzo-ui --probar 1080x2400                    abre en Probar con esa pantalla\n\n\
-Con --exportar y --guardar no se abre ventana: sirve para scripts, CI y el servidor MCP.",
+Con --exportar, --guardar y --revisar no se abre ventana: sirve para scripts, CI y el servidor MCP.",
     },
     Pagina {
         titulo: "Servidor MCP y contribuir",
@@ -143,20 +145,20 @@ When you finish this tutorial the editor opens. Come back any time with the «Tu
     },
     Pagina {
         titulo: "The editor screen",
-        texto: "• Top: the File, Edit, View and Canvas menus, the Test button, the design name, Tutorial, Accessibility, Save, Code… and Export to Unity.\n\
-• Left: the bar with Hierarchy (layers), Elements, Templates, Text, Images and Plugins.\n\
+        texto: "• Top: the File, Edit, View and Canvas menus, the Test button, the design name, Accessibility, Review, Themes, Tutorial, Save, Code… and Export to Unity.\n\
+• Left: the bar with Hierarchy (layers), Elements, Templates, Text, Images, Plugins and Community.\n\
 • Center: the canvas, your game screen at the reference resolution (1920 × 1080 by default).\n\
 • Right: the Inspector, with the properties of the selected element (position, anchors, colors, text…).",
     },
     Pagina {
         titulo: "Start from a template",
-        texto: "Open Templates in the left bar and pick one: Main menu, Game HUD, Dialog window, Settings or Inventory.\n\n\
+        texto: "Open Templates in the left bar and pick one of the 12: main menu, HUD, pause, game over, level select, inventory, character dialogue, leaderboard…\n\n\
 It is the fastest way to see how a complete interface is built. Everything in it can be changed.\n\n\
 To start from scratch, choose «Blank» or File › New blank design.",
     },
     Pagina {
         titulo: "Add and edit elements",
-        texto: "• Drag elements from Elements onto the canvas: panels, texts, buttons, toggles, sliders, input fields, dropdowns, scroll lists and images.\n\
+        texto: "• Drag elements from Elements onto the canvas: panels, texts, buttons, toggles, sliders, input fields, dropdowns, scroll lists and images. «Ready-made components» has buttons, health and mana bars, cards and badges; Text has HUD pieces such as timer, coins or damage.\n\
 • Click selects, drag moves, corners resize and the top handle rotates.\n\
 • Double-click a text to type in it.\n\
 • Ctrl+Z / Ctrl+Y undo and redo; Ctrl+D duplicates; Del deletes; Ctrl+G groups; arrows move 1 px (Shift: 10).\n\
@@ -164,10 +166,11 @@ To start from scratch, choose «Blank» or File › New blank design.",
     },
     Pagina {
         titulo: "Test and export to Unity",
-        texto: "• Test (F5): the design becomes interactive and you can simulate other screens (phone, 4:3, ultrawide).\n\
+        texto: "• Test (F5): the design becomes interactive and you can simulate other screens (phone, 4:3, ultrawide) to see how it adapts.\n\
 • Save (Ctrl+S): saves the .editorgui.json project to keep working later.\n\
+• Review: warns about small text, low contrast, buttons too small to tap, elements outside the page and missing images.\n\
 • Export to Unity (Ctrl+E): the first time, choose your project folder (the one that contains Assets).\n\n\
-Back in Unity, the design appears as a prefab in Assets/EditorGUI/Prefabs. There is also the menu Tools › Lienzo UI › Importar diseño en la escena.",
+Back in Unity, when you return to the window, the design appears as a prefab in Assets/EditorGUI/Prefabs. There is also the menu Tools › Lienzo UI › Importar diseño en la escena (Import design into the scene).",
     },
 ];
 
@@ -203,10 +206,11 @@ In Unity, <Design>View.cs inherits from <Design>ViewBase with typed references t
         titulo: "Command line and automation",
         texto: "lienzo-ui --plantillas                         lists the templates\n\
 lienzo-ui --plantilla 0 --guardar menu.editorgui.json\n\
+lienzo-ui --abrir menu.editorgui.json --revisar        reviews the design (exit code 1 on errors)\n\
 lienzo-ui --abrir menu.editorgui.json --exportar <Unity project>\n\
 lienzo-ui --abrir menu.editorgui.json --screenshot capture.png\n\
 lienzo-ui --probar 1080x2400                    opens in Test mode with that screen\n\n\
-With --exportar and --guardar no window opens: use them for scripts, CI and the MCP server.",
+With --exportar, --guardar and --revisar no window opens: use them for scripts, CI and the MCP server.",
     },
     Pagina {
         titulo: "MCP server and contributing",

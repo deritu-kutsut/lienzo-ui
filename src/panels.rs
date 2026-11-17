@@ -58,7 +58,7 @@ fn component(ui: &mut egui::Ui, id: &str, title: &str, open: bool, add: impl FnO
     ui.add_space(4.0);
     egui::Frame::new().fill(PANEL_DARK()).corner_radius(6.0).inner_margin(Margin::symmetric(8, 4)).show(ui, |ui| {
         ui.set_width(ui.available_width());
-        egui::CollapsingHeader::new(RichText::new(title).strong().size(12.5)).id_salt(id).default_open(open).show(ui, |ui| {
+        egui::CollapsingHeader::new(RichText::new(crate::i18n::t(title)).strong().size(12.5)).id_salt(id).default_open(open).show(ui, |ui| {
             ui.add_space(2.0);
             add(ui);
         });
@@ -1196,7 +1196,7 @@ impl EditorApp {
                         let k = p.kind;
                         let (r, _) = ui.allocate_exact_size(Vec2::splat(16.0), Sense::hover());
                         crate::icons::paint_or(ui, crate::icons::kind_name(k), r, MUTED(), k.icon());
-                        ui.label(RichText::new(k.label()).color(MUTED()));
+                        ui.label(RichText::new(crate::i18n::t(k.label())).color(MUTED()));
                         ui.separator();
                         if k.has_fill() {
                             rgba_edit(ui, &mut p.fill).on_hover_text(crate::i18n::t("Color (Image.color)"));
@@ -1225,12 +1225,12 @@ impl EditorApp {
                             ui.toggle_value(&mut p.bold, RichText::new(crate::i18n::t("B")).strong()).on_hover_text(crate::i18n::t("Negrita"));
                             ui.toggle_value(&mut p.italic, RichText::new(crate::i18n::t("I")).italics()).on_hover_text(crate::i18n::t("Cursiva"));
                             ui.toggle_value(&mut p.underline, RichText::new(crate::i18n::t("U")).underline()).on_hover_text(crate::i18n::t("Subrayado"));
-                            let font_label = if p.font.is_empty() { "Predeterminada".to_string() } else { p.font.clone() };
+                            let font_label = if p.font.is_empty() { crate::i18n::t("Predeterminada") } else { p.font.clone() };
                             egui::ComboBox::from_id_salt("font_pick")
                                 .selected_text(font_label)
                                 .width(120.0)
                                 .show_ui(ui, |ui| {
-                                    ui.selectable_value(&mut p.font, String::new(), "Predeterminada");
+                                    ui.selectable_value(&mut p.font, String::new(), crate::i18n::t("Predeterminada"));
                                     ui.selectable_value(&mut p.font, "Monoespaciada".to_string(), RichText::new(crate::i18n::t("Monoespaciada")).monospace());
                                     for f in render::available_fonts() {
                                         let fam = egui::FontFamily::Name(f.as_str().into());
@@ -1489,9 +1489,9 @@ impl EditorApp {
         ui.horizontal(|ui| {
             let (r, _) = ui.allocate_exact_size(Vec2::splat(18.0), Sense::hover());
             crate::icons::paint_or(ui, crate::icons::kind_name(e.kind), r, ACCENT(), e.kind.icon());
-            egui::ComboBox::from_id_salt("kind").selected_text(e.kind.label()).width(150.0).show_ui(ui, |ui| {
+            egui::ComboBox::from_id_salt("kind").selected_text(crate::i18n::t(e.kind.label())).width(150.0).show_ui(ui, |ui| {
                 for k in model::ALL_KINDS {
-                    ui.selectable_value(&mut e.kind, k, k.label());
+                    ui.selectable_value(&mut e.kind, k, crate::i18n::t(k.label()));
                 }
             });
             ui.label(RichText::new(e.kind.unity_component()).small().color(MUTED()));
@@ -1709,9 +1709,9 @@ impl EditorApp {
                     });
                     ui.end_row();
                     ui.label(crate::i18n::t("Fuente"));
-                    let font_label = if e.font.is_empty() { "Predeterminada".to_string() } else { e.font.clone() };
+                    let font_label = if e.font.is_empty() { crate::i18n::t("Predeterminada") } else { e.font.clone() };
                     egui::ComboBox::from_id_salt("font_pick_insp").selected_text(font_label).width(150.0).show_ui(ui, |ui| {
-                        ui.selectable_value(&mut e.font, String::new(), "Predeterminada");
+                        ui.selectable_value(&mut e.font, String::new(), crate::i18n::t("Predeterminada"));
                         for f in render::available_fonts() {
                             let fam = egui::FontFamily::Name(f.as_str().into());
                             ui.selectable_value(&mut e.font, f.clone(), RichText::new(f).family(fam));
@@ -1774,9 +1774,9 @@ impl EditorApp {
 
         // Layout group
         component(ui, "layout", &crate::i18n::t("Layout Group"), e.layout.mode != LayoutMode::None, |ui| {
-            egui::ComboBox::from_id_salt("lmode").selected_text(e.layout.mode.label()).width(200.0).show_ui(ui, |ui| {
+            egui::ComboBox::from_id_salt("lmode").selected_text(crate::i18n::t(e.layout.mode.label())).width(200.0).show_ui(ui, |ui| {
                 for m in [LayoutMode::None, LayoutMode::Horizontal, LayoutMode::Vertical, LayoutMode::Grid] {
-                    ui.selectable_value(&mut e.layout.mode, m, m.label());
+                    ui.selectable_value(&mut e.layout.mode, m, crate::i18n::t(m.label()));
                 }
             });
             if e.layout.mode == LayoutMode::None {

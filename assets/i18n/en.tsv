@@ -549,3 +549,6 @@ Está completamente fuera de la página: no se verá en el juego	Completely outs
 Se sale en parte de la página	Partly outside the page
 Hay varios elementos llamados así: GameObject.Find y los scripts encontrarán solo el primero	Several elements share this name: GameObject.Find and scripts will only find the first one
 Falta la imagen «{}»: se exportará vacía	Missing image “{}”: it will be exported empty
+Ninguno	None
+TextMeshPro · texto	TextMeshPro · text
+TMP_Dropdown · opciones	TMP_Dropdown · options

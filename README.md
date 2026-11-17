@@ -107,8 +107,8 @@ Moderation lives in a web panel (also usable by AIs with revocable tokens): [doc
 
 | Guide | For |
 |---|---|
-| [Beginner tutorial](docs/TUTORIAL_NOVATOS.md) | First design and first export |
-| [Pro tutorial](docs/TUTORIAL_PROFESIONALES.md) | Export format, anchors, layouts, scripting, command line |
+| [Beginner tutorial](docs/TUTORIAL_BEGINNERS.md) ([español](docs/TUTORIAL_NOVATOS.md)) | First design and first export |
+| [Pro tutorial](docs/TUTORIAL_PROS.md) ([español](docs/TUTORIAL_PROFESIONALES.md)) | Export format, anchors, layouts, scripting, Review design, command line |
 | [Extending Lienzo UI](docs/EXTENDER.md) | Adding elements, templates, exporters, tutorial pages |
 | [Plugins](docs/PLUGINS.md) | Writing commands, exporters and templates |
 | [MCP server](docs/MCP.md) | Connect any AI (your own key or a local model) to Lienzo UI, or script it with an AI API |

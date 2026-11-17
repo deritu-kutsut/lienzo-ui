@@ -1,6 +1,6 @@
 # Tutorial para novatos
 
-Tu primera interfaz con Lienzo UI y tu primera exportación a Unity. No necesitas saber programar.
+Tu primera interfaz con Lienzo UI y tu primera exportación a Unity. No necesitas saber programar. [English version](TUTORIAL_BEGINNERS.md).
 
 ## 1. Instalar y abrir
 
@@ -14,8 +14,8 @@ Tu primera interfaz con Lienzo UI y tu primera exportación a Unity. No necesita
 
 | Zona | Qué hay |
 |---|---|
-| Barra superior | Archivo, Editar, Ver, Lienzo, **Probar**, nombre del diseño, **Tutorial**, **Guardar**, **Código…**, **Exportar a Unity** |
-| Barra izquierda | **Jerarquía** (capas), **Elementos**, **Plantillas**, **Texto**, **Imágenes** |
+| Barra superior | Archivo, Editar, Ver, Lienzo, **Probar**, nombre del diseño, **Accesibilidad**, **Revisar**, **Temas**, **Tutorial**, **Guardar**, **Código…**, **Exportar a Unity** |
+| Barra izquierda | **Jerarquía** (capas), **Elementos**, **Plantillas**, **Texto**, **Imágenes**, **Plugins**, **Comunidad** |
 | Centro | El lienzo: la pantalla de tu juego (1920 × 1080 por defecto) |
 | Derecha | El **Inspector**: propiedades de lo seleccionado |
 
@@ -23,11 +23,12 @@ Tu primera interfaz con Lienzo UI y tu primera exportación a Unity. No necesita
 
 ## 3. Empieza con una plantilla
 
-En **Plantillas** elige Menú principal, HUD de juego, Ventana de diálogo, Ajustes o Inventario. Todo lo que trae se puede cambiar. Para empezar de cero: «En blanco».
+En **Plantillas** elige una de las 12: Menú principal, HUD de juego, Ventana de diálogo, Ajustes, Inventario, Menú de pausa, Fin de partida, Selección de nivel, Pantalla de carga, Diálogo de personaje, Clasificación o Selección de personaje. Todo lo que trae se puede cambiar y Ctrl+Z deshace el cambio. Para empezar de cero: «En blanco».
 
 ## 4. Edita
 
-- Arrastra elementos desde **Elementos** al lienzo.
+- Arrastra elementos desde **Elementos** al lienzo. En **Componentes listos** hay botones, barras de vida y maná, tarjetas, insignias y casillas de inventario.
+- **Texto** trae estilos de título y piezas de HUD: marcador, temporizador, monedas, daño, combo, nivel y subtítulos.
 - Clic selecciona; arrastrar mueve; las esquinas cambian el tamaño; el tirador superior gira.
 - Doble clic en un texto para escribir.
 - En el **Inspector** cambia colores, bordes, sombras, fuentes y anclas.
@@ -45,9 +46,13 @@ En **Plantillas** elige Menú principal, HUD de juego, Ventana de diálogo, Ajus
 
 ## 5. Prueba
 
-Pulsa **Probar** (F5): la interfaz se vuelve interactiva y puedes elegir otras pantallas (móvil, 4:3, ultrapanorámica) para ver cómo se adapta. Esc sale.
+Pulsa **Probar** (F5): la interfaz se vuelve interactiva y puedes elegir otras pantallas (móvil, 4:3, ultrapanorámica) para ver cómo se adapta. Esc sale y el diseño vuelve a como estaba antes de la prueba.
 
-## 6. Exporta a Unity
+## 6. Revisa
+
+Pulsa **Revisar** en la barra superior. Avisa de letra demasiado pequeña, poco contraste, botones demasiado pequeños para tocar, elementos fuera de la página, nombres repetidos e imágenes que faltan. Clic en un aviso selecciona ese elemento para corregirlo.
+
+## 7. Exporta a Unity
 
 1. Pulsa **Exportar a Unity** (Ctrl+E). La primera vez elige la carpeta de tu proyecto (la que contiene `Assets`).
 2. Vuelve a Unity: el diseño aparece como prefab en `Assets/EditorGUI/Prefabs`.
