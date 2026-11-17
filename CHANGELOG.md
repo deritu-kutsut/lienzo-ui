@@ -2,7 +2,9 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); versiones con [SemVer](https://semver.org/lang/es/).
 
-## [Sin publicar]
+## [1.2.2] - 2026-11-17
+
+Robustez ante diseños malformados.
 
 ### Corregido
 - Un diseño con padres en ciclo (o un elemento padre de sí mismo) ya no cuelga la app al seleccionar, borrar o duplicar.
