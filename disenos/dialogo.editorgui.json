@@ -1,0 +1,722 @@
+{
+  "title": "Ventana de diálogo",
+  "width": 1920.0,
+  "height": 1080.0,
+  "background": [
+    40,
+    44,
+    60,
+    255
+  ],
+  "elements": [
+    {
+      "id": 1,
+      "name": "Oscurecer",
+      "kind": "Panel",
+      "x": 0.0,
+      "y": 0.0,
+      "w": 1920.0,
+      "h": 1080.0,
+      "rot": 0.0,
+      "fill": [
+        0,
+        0,
+        0,
+        120
+      ],
+      "fill2": [
+        0,
+        196,
+        204,
+        255
+      ],
+      "stroke": [
+        30,
+        30,
+        40,
+        255
+      ],
+      "stroke_w": 0.0,
+      "radius": 0.0,
+      "opacity": 1.0,
+      "text": "",
+      "font_size": 32.0,
+      "text_color": [
+        20,
+        20,
+        30,
+        255
+      ],
+      "bold": false,
+      "italic": false,
+      "underline": false,
+      "align": 1,
+      "valign": 1,
+      "font": "",
+      "on_click": "",
+      "image": "",
+      "value": 0.5,
+      "visible": true,
+      "locked": false,
+      "parent": null,
+      "anchor_min": [
+        0.0,
+        0.0
+      ],
+      "anchor_max": [
+        1.0,
+        1.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "options": [],
+      "interactable": true,
+      "raycast": true,
+      "mask": false,
+      "shadow": {
+        "on": false,
+        "color": [
+          0,
+          0,
+          0,
+          110
+        ],
+        "offset": [
+          6.0,
+          -6.0
+        ]
+      },
+      "layout": {
+        "mode": "None",
+        "padding": [
+          16.0,
+          16.0,
+          16.0,
+          16.0
+        ],
+        "spacing": [
+          12.0,
+          12.0
+        ],
+        "align": 0,
+        "cell": [
+          100.0,
+          100.0
+        ],
+        "expand_w": false,
+        "expand_h": false
+      },
+      "collapsed": false
+    },
+    {
+      "id": 2,
+      "name": "Ventana",
+      "kind": "Panel",
+      "x": 510.0,
+      "y": 280.0,
+      "w": 900.0,
+      "h": 520.0,
+      "rot": 0.0,
+      "fill": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "fill2": [
+        0,
+        196,
+        204,
+        255
+      ],
+      "stroke": [
+        30,
+        30,
+        40,
+        255
+      ],
+      "stroke_w": 0.0,
+      "radius": 32.0,
+      "opacity": 1.0,
+      "text": "",
+      "font_size": 32.0,
+      "text_color": [
+        20,
+        20,
+        30,
+        255
+      ],
+      "bold": false,
+      "italic": false,
+      "underline": false,
+      "align": 1,
+      "valign": 1,
+      "font": "",
+      "on_click": "",
+      "image": "",
+      "value": 0.5,
+      "visible": true,
+      "locked": false,
+      "parent": null,
+      "anchor_min": [
+        0.5,
+        0.5
+      ],
+      "anchor_max": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "options": [],
+      "interactable": true,
+      "raycast": true,
+      "mask": false,
+      "shadow": {
+        "on": true,
+        "color": [
+          0,
+          0,
+          0,
+          110
+        ],
+        "offset": [
+          0.0,
+          -10.0
+        ]
+      },
+      "layout": {
+        "mode": "None",
+        "padding": [
+          16.0,
+          16.0,
+          16.0,
+          16.0
+        ],
+        "spacing": [
+          12.0,
+          12.0
+        ],
+        "align": 0,
+        "cell": [
+          100.0,
+          100.0
+        ],
+        "expand_w": false,
+        "expand_h": false
+      },
+      "collapsed": false
+    },
+    {
+      "id": 3,
+      "name": "Título ventana",
+      "kind": "Text",
+      "x": 560.0,
+      "y": 325.0,
+      "w": 800.0,
+      "h": 70.0,
+      "rot": 0.0,
+      "fill": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "fill2": [
+        0,
+        196,
+        204,
+        255
+      ],
+      "stroke": [
+        30,
+        30,
+        40,
+        255
+      ],
+      "stroke_w": 0.0,
+      "radius": 0.0,
+      "opacity": 1.0,
+      "text": "¿Guardar la partida?",
+      "font_size": 52.0,
+      "text_color": [
+        20,
+        20,
+        30,
+        255
+      ],
+      "bold": true,
+      "italic": false,
+      "underline": false,
+      "align": 1,
+      "valign": 1,
+      "font": "",
+      "on_click": "",
+      "image": "",
+      "value": 0.5,
+      "visible": true,
+      "locked": false,
+      "parent": 2,
+      "anchor_min": [
+        0.0,
+        1.0
+      ],
+      "anchor_max": [
+        1.0,
+        1.0
+      ],
+      "pivot": [
+        0.5,
+        1.0
+      ],
+      "options": [],
+      "interactable": true,
+      "raycast": false,
+      "mask": false,
+      "shadow": {
+        "on": false,
+        "color": [
+          0,
+          0,
+          0,
+          110
+        ],
+        "offset": [
+          6.0,
+          -6.0
+        ]
+      },
+      "layout": {
+        "mode": "None",
+        "padding": [
+          16.0,
+          16.0,
+          16.0,
+          16.0
+        ],
+        "spacing": [
+          12.0,
+          12.0
+        ],
+        "align": 0,
+        "cell": [
+          100.0,
+          100.0
+        ],
+        "expand_w": false,
+        "expand_h": false
+      },
+      "collapsed": false
+    },
+    {
+      "id": 4,
+      "name": "Mensaje",
+      "kind": "Text",
+      "x": 580.0,
+      "y": 420.0,
+      "w": 760.0,
+      "h": 100.0,
+      "rot": 0.0,
+      "fill": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "fill2": [
+        0,
+        196,
+        204,
+        255
+      ],
+      "stroke": [
+        30,
+        30,
+        40,
+        255
+      ],
+      "stroke_w": 0.0,
+      "radius": 0.0,
+      "opacity": 1.0,
+      "text": "Tu progreso se guardará en la ranura 1. Puedes continuar más tarde.",
+      "font_size": 30.0,
+      "text_color": [
+        90,
+        90,
+        105,
+        255
+      ],
+      "bold": false,
+      "italic": false,
+      "underline": false,
+      "align": 1,
+      "valign": 1,
+      "font": "",
+      "on_click": "",
+      "image": "",
+      "value": 0.5,
+      "visible": true,
+      "locked": false,
+      "parent": 2,
+      "anchor_min": [
+        0.0,
+        0.5
+      ],
+      "anchor_max": [
+        1.0,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "options": [],
+      "interactable": true,
+      "raycast": false,
+      "mask": false,
+      "shadow": {
+        "on": false,
+        "color": [
+          0,
+          0,
+          0,
+          110
+        ],
+        "offset": [
+          6.0,
+          -6.0
+        ]
+      },
+      "layout": {
+        "mode": "None",
+        "padding": [
+          16.0,
+          16.0,
+          16.0,
+          16.0
+        ],
+        "spacing": [
+          12.0,
+          12.0
+        ],
+        "align": 0,
+        "cell": [
+          100.0,
+          100.0
+        ],
+        "expand_w": false,
+        "expand_h": false
+      },
+      "collapsed": false
+    },
+    {
+      "id": 5,
+      "name": "Botones",
+      "kind": "Empty",
+      "x": 550.0,
+      "y": 640.0,
+      "w": 820.0,
+      "h": 120.0,
+      "rot": 0.0,
+      "fill": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "fill2": [
+        0,
+        196,
+        204,
+        255
+      ],
+      "stroke": [
+        30,
+        30,
+        40,
+        255
+      ],
+      "stroke_w": 0.0,
+      "radius": 0.0,
+      "opacity": 1.0,
+      "text": "",
+      "font_size": 32.0,
+      "text_color": [
+        20,
+        20,
+        30,
+        255
+      ],
+      "bold": false,
+      "italic": false,
+      "underline": false,
+      "align": 1,
+      "valign": 1,
+      "font": "",
+      "on_click": "",
+      "image": "",
+      "value": 0.5,
+      "visible": true,
+      "locked": false,
+      "parent": 2,
+      "anchor_min": [
+        0.0,
+        0.0
+      ],
+      "anchor_max": [
+        1.0,
+        0.0
+      ],
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "options": [],
+      "interactable": true,
+      "raycast": false,
+      "mask": false,
+      "shadow": {
+        "on": false,
+        "color": [
+          0,
+          0,
+          0,
+          110
+        ],
+        "offset": [
+          6.0,
+          -6.0
+        ]
+      },
+      "layout": {
+        "mode": "Horizontal",
+        "padding": [
+          10.0,
+          10.0,
+          15.0,
+          15.0
+        ],
+        "spacing": [
+          30.0,
+          0.0
+        ],
+        "align": 0,
+        "cell": [
+          100.0,
+          100.0
+        ],
+        "expand_w": true,
+        "expand_h": true
+      },
+      "collapsed": false
+    },
+    {
+      "id": 6,
+      "name": "Botón cancelar",
+      "kind": "Button",
+      "x": 560.0,
+      "y": 655.0,
+      "w": 385.0,
+      "h": 90.0,
+      "rot": 0.0,
+      "fill": [
+        235,
+        235,
+        242,
+        255
+      ],
+      "fill2": [
+        0,
+        196,
+        204,
+        255
+      ],
+      "stroke": [
+        30,
+        30,
+        40,
+        255
+      ],
+      "stroke_w": 0.0,
+      "radius": 18.0,
+      "opacity": 1.0,
+      "text": "Cancelar",
+      "font_size": 30.0,
+      "text_color": [
+        40,
+        40,
+        50,
+        255
+      ],
+      "bold": true,
+      "italic": false,
+      "underline": false,
+      "align": 1,
+      "valign": 1,
+      "font": "",
+      "on_click": "ocultar(\"Ventana\");\nocultar(\"Oscurecer\");",
+      "image": "",
+      "value": 0.5,
+      "visible": true,
+      "locked": false,
+      "parent": 5,
+      "anchor_min": [
+        0.5,
+        0.5
+      ],
+      "anchor_max": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "options": [],
+      "interactable": true,
+      "raycast": true,
+      "mask": false,
+      "shadow": {
+        "on": false,
+        "color": [
+          0,
+          0,
+          0,
+          110
+        ],
+        "offset": [
+          6.0,
+          -6.0
+        ]
+      },
+      "layout": {
+        "mode": "None",
+        "padding": [
+          16.0,
+          16.0,
+          16.0,
+          16.0
+        ],
+        "spacing": [
+          12.0,
+          12.0
+        ],
+        "align": 0,
+        "cell": [
+          100.0,
+          100.0
+        ],
+        "expand_w": false,
+        "expand_h": false
+      },
+      "collapsed": false
+    },
+    {
+      "id": 7,
+      "name": "Botón aceptar",
+      "kind": "Button",
+      "x": 975.0,
+      "y": 655.0,
+      "w": 385.0,
+      "h": 90.0,
+      "rot": 0.0,
+      "fill": [
+        124,
+        92,
+        255,
+        255
+      ],
+      "fill2": [
+        0,
+        196,
+        204,
+        255
+      ],
+      "stroke": [
+        30,
+        30,
+        40,
+        255
+      ],
+      "stroke_w": 0.0,
+      "radius": 18.0,
+      "opacity": 1.0,
+      "text": "Guardar",
+      "font_size": 30.0,
+      "text_color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "bold": true,
+      "italic": false,
+      "underline": false,
+      "align": 1,
+      "valign": 1,
+      "font": "",
+      "on_click": "texto(\"Mensaje\", \"¡Partida guardada!\");",
+      "image": "",
+      "value": 0.5,
+      "visible": true,
+      "locked": false,
+      "parent": 5,
+      "anchor_min": [
+        0.5,
+        0.5
+      ],
+      "anchor_max": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "options": [],
+      "interactable": true,
+      "raycast": true,
+      "mask": false,
+      "shadow": {
+        "on": false,
+        "color": [
+          0,
+          0,
+          0,
+          110
+        ],
+        "offset": [
+          6.0,
+          -6.0
+        ]
+      },
+      "layout": {
+        "mode": "None",
+        "padding": [
+          16.0,
+          16.0,
+          16.0,
+          16.0
+        ],
+        "spacing": [
+          12.0,
+          12.0
+        ],
+        "align": 0,
+        "cell": [
+          100.0,
+          100.0
+        ],
+        "expand_w": false,
+        "expand_h": false
+      },
+      "collapsed": false
+    }
+  ],
+  "next_id": 8,
+  "canvas_match": 0.5
+}

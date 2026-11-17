@@ -1,0 +1,34 @@
+[package]
+name = "lienzo_ui"
+version = "1.1.1"
+edition = "2024"
+
+[[bin]]
+name = "lienzo-ui"
+path = "src/main.rs"
+
+[dependencies]
+base64 = "0.22"
+eframe = "0.37.0"
+egui_extras = { version = "0.37", default-features = false, features = ["svg"] }
+getrandom = "0.3"
+image = { version = "0.25.10", default-features = false, features = ["png", "jpeg", "bmp", "gif", "webp"] }
+rfd = "0.18.0"
+rhai = { version = "1.27.0", features = ["serde"] }
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.154"
+sha2 = "0.10"
+ureq = "3"
+webbrowser = "1"
+
+[profile.dev]
+opt-level = 1
+
+[profile.dev.package."*"]
+opt-level = 2
+
+[target.'cfg(windows)'.build-dependencies]
+winresource = "0.1"
+
+[target.'cfg(windows)'.dependencies]
+keyring = { version = "3", features = ["windows-native"] }

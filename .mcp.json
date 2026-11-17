@@ -1,0 +1,5 @@
+{
+  "mcpServers": {
+    "lienzo-ui": { "type": "stdio", "command": "node", "args": ["mcp/lienzo-ui-mcp.mjs"] }
+  }
+}

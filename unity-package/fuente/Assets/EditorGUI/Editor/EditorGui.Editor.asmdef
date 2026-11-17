@@ -1,0 +1,27 @@
+{
+  "name": "EditorGui.Editor",
+  "rootNamespace": "EditorGui",
+  "references": [
+    "UnityEngine.UI",
+    "Unity.TextMeshPro"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [
+    "EDITORGUI_UGUI"
+  ],
+  "versionDefines": [
+    {
+      "name": "com.unity.ugui",
+      "expression": "",
+      "define": "EDITORGUI_UGUI"
+    }
+  ],
+  "noEngineReferences": false
+}

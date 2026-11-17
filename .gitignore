@@ -1,0 +1,15 @@
+/target/
+/shots/
+/dist/
+*.log
+/disenos/capturas/
+
+# Secretos de Supabase
+.env
+.env.*
+supabase/.temp/
+supabase/.branches/
+
+# Paquete de la Asset Store: se generan con unity-package/construir.py y unity-package/imagenes_store.py
+/unity-package/trabajo/
+/unity-package/asset-store/*.png

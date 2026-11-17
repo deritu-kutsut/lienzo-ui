@@ -1,0 +1,9 @@
+{
+  "nombre": "Ajustar a cuadrícula",
+  "version": "1.0.0",
+  "autor": "Lienzo UI",
+  "descripcion": "Coloca todos los elementos en una cuadrícula de 8 px (posición y tamaño).",
+  "comandos": [
+    { "nombre": "Ajustar a 8 px", "descripcion": "Redondea x, y, ancho y alto de todos los elementos a múltiplos de 8.", "script": "ajustar.rhai" }
+  ]
+}

@@ -1,0 +1,348 @@
+//! UI Toolkit export: UXML (structure) + USS (style). Anchors become
+//! left/right/top/bottom percentages plus pixel margins, layout groups become flexbox.
+
+use super::{class_name, content_height, export_rt, f, image_asset_path, radius_of, unity_names, xml_attr};
+use crate::model::{Doc, Element, Kind, LayoutMode, Rgba};
+
+fn rgba(c: Rgba, op: f32) -> String {
+    format!("rgba({}, {}, {}, {})", c[0], c[1], c[2], f(c[3] as f32 / 255.0 * op))
+}
+
+fn class_of(e: &Element) -> String {
+    format!("eg-{}", e.id)
+}
+
+fn tag(e: &Element) -> &'static str {
+    match e.kind {
+        Kind::Text => "ui:Label",
+        Kind::Button => "ui:Button",
+        Kind::Toggle => "ui:Toggle",
+        Kind::Slider => "ui:Slider",
+        Kind::InputField => "ui:TextField",
+        Kind::Dropdown => "ui:DropdownField",
+        Kind::ScrollView => "ui:ScrollView",
+        _ => "ui:VisualElement",
+    }
+}
+
+pub fn uxml(doc: &Doc) -> String {
+    let cls = class_name(&doc.title);
+    let names = unity_names(doc);
+    let mut out = String::new();
+    out.push_str("<ui:UXML xmlns:ui=\"UnityEngine.UIElements\" xmlns:uie=\"UnityEditor.UIElements\" editor-extension-mode=\"False\">\n");
+    out.push_str(&format!("    <!-- Generado por Lienzo UI · {} · {}x{} -->\n", xml_attr(&doc.title), doc.width, doc.height));
+    out.push_str(&format!("    <!-- PanelSettings recomendado: Scale Mode = Scale With Screen Size, Reference Resolution = {} x {}, Match = {} -->\n", doc.width, doc.height, f(doc.canvas_match)));
+    out.push_str(&format!("    <Style src=\"{}.uss\" />\n", cls));
+    out.push_str(&format!("    <ui:VisualElement name=\"{}\" class=\"eg-root\" picking-mode=\"Ignore\">\n", xml_attr(&cls)));
+    for id in doc.children(None) {
+        write_el(doc, &names, id, 2, &mut out);
+    }
+    out.push_str("    </ui:VisualElement>\n</ui:UXML>\n");
+    out
+}
+
+fn write_el(doc: &Doc, names: &std::collections::HashMap<u64, String>, id: u64, depth: usize, out: &mut String) {
+    let Some(e) = doc.get(id) else { return };
+    let ind = "    ".repeat(depth);
+    let t = tag(e);
+    let mut attrs = format!("name=\"{}\" class=\"{}\"", xml_attr(names.get(&id).map(|s| s.as_str()).unwrap_or("")), class_of(e));
+    match e.kind {
+        Kind::Text | Kind::Button => attrs.push_str(&format!(" text=\"{}\"", xml_attr(&e.text))),
+        Kind::Toggle => attrs.push_str(&format!(" label=\"{}\" value=\"{}\"", xml_attr(&e.text), e.value > 0.5)),
+        Kind::Slider => attrs.push_str(&format!(" low-value=\"0\" high-value=\"1\" value=\"{}\"", f(e.value))),
+        Kind::InputField => attrs.push_str(&format!(" placeholder-text=\"{}\"", xml_attr(&e.text))),
+        Kind::Dropdown => attrs.push_str(&format!(" choices=\"{}\" index=\"{}\"", xml_attr(&e.options.join(",")), e.value.round().max(0.0) as i64)),
+        Kind::ScrollView => attrs.push_str(" mode=\"Vertical\" horizontal-scroller-visibility=\"Hidden\""),
+        _ => {}
+    }
+    if !e.interactable && e.kind.selectable() {
+        attrs.push_str(" enabled=\"false\"");
+    }
+    if !e.raycast && matches!(e.kind, Kind::Text | Kind::Empty | Kind::Panel | Kind::Image | Kind::Ellipse) {
+        attrs.push_str(" picking-mode=\"Ignore\"");
+    }
+    let kids = doc.children(Some(id));
+    // label inside containers (Panel / Image / circle with text)
+    let inner_label = matches!(e.kind, Kind::Panel | Kind::Image | Kind::Ellipse) && !e.text.is_empty();
+    if kids.is_empty() && !inner_label {
+        out.push_str(&format!("{}<{} {} />\n", ind, t, attrs));
+        return;
+    }
+    out.push_str(&format!("{}<{} {}>\n", ind, t, attrs));
+    if inner_label {
+        out.push_str(&format!("{}    <ui:Label text=\"{}\" class=\"{}-label\" picking-mode=\"Ignore\" />\n", ind, xml_attr(&e.text), class_of(e)));
+    }
+    for k in kids {
+        write_el(doc, names, k, depth + 1, out);
+    }
+    out.push_str(&format!("{}</{}>\n", ind, t));
+}
+
+fn text_align(e: &Element) -> &'static str {
+    let v = if e.kind == Kind::Text { 0 } else { e.valign.min(2) };
+    match (v, e.align.min(2)) {
+        (0, 0) => "upper-left",
+        (0, 1) => "upper-center",
+        (0, _) => "upper-right",
+        (1, 0) => "middle-left",
+        (1, 1) => "middle-center",
+        (1, _) => "middle-right",
+        (_, 0) => "lower-left",
+        (_, 1) => "lower-center",
+        _ => "lower-right",
+    }
+}
+
+fn font_style(e: &Element) -> &'static str {
+    match (e.bold, e.italic) {
+        (true, true) => "bold-and-italic",
+        (true, false) => "bold",
+        (false, true) => "italic",
+        _ => "normal",
+    }
+}
+
+fn justify(v: f32) -> &'static str {
+    if v < 0.25 {
+        "flex-start"
+    } else if v < 0.75 {
+        "center"
+    } else {
+        "flex-end"
+    }
+}
+
+pub fn uss(doc: &Doc) -> String {
+    let mut o = String::new();
+    o.push_str(&format!("/* Generado por Lienzo UI · {} */\n", doc.title.replace("*/", "")));
+    o.push_str(".eg-root {\n    position: absolute;\n    left: 0;\n    top: 0;\n    right: 0;\n    bottom: 0;\n");
+    if doc.background[3] > 0 {
+        o.push_str(&format!("    background-color: {};\n", rgba(doc.background, 1.0)));
+    }
+    o.push_str("}\n\n");
+    for e in &doc.elements {
+        o.push_str(&rule(doc, e));
+    }
+    o
+}
+
+fn rule(doc: &Doc, e: &Element) -> String {
+    let mut s = Vec::<String>::new();
+    let parent_layout = doc.parent_of(e.id).and_then(|p| doc.get(p)).map(|p| p.layout.clone());
+    let in_flow = parent_layout.as_ref().map(|l| l.mode != LayoutMode::None).unwrap_or(false);
+    s.push("margin: 0".into());
+    s.push("padding: 0".into());
+    if in_flow {
+        let l = parent_layout.clone().unwrap_or_default();
+        s.push("position: relative".into());
+        let expand_main = match l.mode {
+            LayoutMode::Horizontal => l.expand_w,
+            LayoutMode::Vertical => l.expand_h,
+            _ => false,
+        };
+        let expand_cross = match l.mode {
+            LayoutMode::Horizontal => l.expand_h,
+            LayoutMode::Vertical => l.expand_w,
+            _ => false,
+        };
+        let (w, h) = match l.mode {
+            LayoutMode::Grid => (l.cell[0], l.cell[1]),
+            _ => (e.w, e.h),
+        };
+        if expand_main {
+            s.push("flex-grow: 1".into());
+            s.push("flex-basis: 0".into());
+        }
+        if !(expand_main && l.mode == LayoutMode::Horizontal) && !(expand_cross && l.mode == LayoutMode::Vertical) {
+            s.push(format!("width: {}px", f(w)));
+        }
+        if !(expand_main && l.mode == LayoutMode::Vertical) && !(expand_cross && l.mode == LayoutMode::Horizontal) {
+            s.push(format!("height: {}px", f(h)));
+        }
+        if expand_cross {
+            s.push("align-self: stretch".into());
+        }
+        // spacing as margins between siblings (first child has none)
+        let first = doc.children(doc.parent_of(e.id)).first().copied() == Some(e.id);
+        match l.mode {
+            LayoutMode::Horizontal if !first => s.push(format!("margin-left: {}px", f(l.spacing[0]))),
+            LayoutMode::Vertical if !first => s.push(format!("margin-top: {}px", f(l.spacing[1]))),
+            LayoutMode::Grid => {
+                // 0.25 px de holgura: con el escalado del panel, el redondeo a píxeles puede dejar el
+                // ancho útil una fracción por debajo de lo justo y la última columna saltaría de línea.
+                s.push(format!("margin-right: {}px", f((l.spacing[0] - 0.25).max(0.0))));
+                s.push(format!("margin-bottom: {}px", f(l.spacing[1])));
+            }
+            _ => {}
+        }
+    } else {
+        let rt = export_rt(doc, e);
+        s.push("position: absolute".into());
+        let mut omin = rt.offset_min();
+        let mut omax = rt.offset_max();
+        // En UI Toolkit un hijo absoluto se coloca dentro del borde del padre; en uGUI el contorno no
+        // ocupa espacio. Se compensa el borde para que tamaños y posiciones coincidan con Unity uGUI.
+        let borde = e
+            .parent
+            .and_then(|p| doc.elements.iter().find(|x| x.id == p))
+            .filter(|p| p.kind.has_fill() && !matches!(p.kind, Kind::Toggle | Kind::Slider))
+            .map(|p| p.stroke_w.max(0.0))
+            .unwrap_or(0.0);
+        omin = [omin[0] - borde, omin[1] - borde];
+        omax = [omax[0] + borde, omax[1] + borde];
+        if rt.stretch_x() {
+            s.push(format!("left: {}%", f(rt.anchor_min[0] * 100.0)));
+            s.push(format!("right: {}%", f((1.0 - rt.anchor_max[0]) * 100.0)));
+            s.push(format!("margin-left: {}px", f(omin[0])));
+            s.push(format!("margin-right: {}px", f(-omax[0])));
+        } else {
+            s.push(format!("left: {}%", f(rt.anchor_min[0] * 100.0)));
+            s.push(format!("margin-left: {}px", f(omin[0])));
+            s.push(format!("width: {}px", f(e.w)));
+        }
+        if rt.stretch_y() {
+            s.push(format!("top: {}%", f((1.0 - rt.anchor_max[1]) * 100.0)));
+            s.push(format!("bottom: {}%", f(rt.anchor_min[1] * 100.0)));
+            s.push(format!("margin-top: {}px", f(-omax[1])));
+            s.push(format!("margin-bottom: {}px", f(omin[1])));
+        } else {
+            s.push(format!("top: {}%", f((1.0 - rt.anchor_min[1]) * 100.0)));
+            s.push(format!("margin-top: {}px", f(-omax[1])));
+            s.push(format!("height: {}px", f(e.h)));
+        }
+        if rt.rotation_z.abs() > 0.01 {
+            s.push(format!("rotate: {}deg", f(-rt.rotation_z)));
+            s.push(format!("transform-origin: {}% {}%", f(rt.pivot[0] * 100.0), f((1.0 - rt.pivot[1]) * 100.0)));
+        }
+    }
+    if !e.visible {
+        s.push("display: none".into());
+    }
+    if e.opacity < 0.999 {
+        s.push(format!("opacity: {}", f(e.opacity)));
+    }
+    // background
+    if e.kind.has_fill() && !matches!(e.kind, Kind::Toggle | Kind::Slider) {
+        if !e.image.is_empty() {
+            s.push(format!("background-image: url(\"project://database/{}\")", image_asset_path(&e.image)));
+            s.push("-unity-background-scale-mode: stretch-to-fill".into());
+            s.push("background-color: rgba(0, 0, 0, 0)".into());
+        } else {
+            // UI Toolkit has no gradients: the first colour is used
+            s.push(format!("background-color: {}", rgba(e.fill, 1.0)));
+        }
+        if e.kind == Kind::Ellipse {
+            s.push("border-radius: 50%".into());
+        } else if radius_of(e) > 0.0 {
+            s.push(format!("border-radius: {}px", f(radius_of(e))));
+        }
+        if e.stroke_w > 0.0 {
+            s.push(format!("border-width: {}px", f(e.stroke_w)));
+            s.push(format!("border-color: {}", rgba(e.stroke, 1.0)));
+        } else {
+            s.push("border-width: 0".into());
+        }
+    } else if e.kind == Kind::Text && e.fill[3] > 0 {
+        s.push(format!("background-color: {}", rgba(e.fill, 1.0)));
+    } else if matches!(e.kind, Kind::Empty | Kind::Text) {
+        s.push("background-color: rgba(0, 0, 0, 0)".into());
+        s.push("border-width: 0".into());
+    }
+    if e.mask && e.kind != Kind::ScrollView {
+        s.push("overflow: hidden".into());
+    }
+    // text
+    if e.kind.has_text() {
+        s.push(format!("font-size: {}px", f(e.font_size)));
+        s.push(format!("color: {}", rgba(e.text_color, 1.0)));
+        s.push(format!("-unity-font-style: {}", font_style(e)));
+        s.push(format!("-unity-text-align: {}", text_align(e)));
+        s.push("white-space: normal".into());
+        if !e.font.is_empty() && e.font != "Monoespaciada" {
+            s.push(format!("-unity-font-definition: url(\"project://database/Assets/EditorGUI/Fonts/{} SDF.asset\")", e.font));
+        }
+        let (pl, pr, pv) = crate::render::text_padding(e);
+        if matches!(e.kind, Kind::Button | Kind::InputField | Kind::Dropdown) {
+            s.push(format!("padding-left: {}px", f(pl)));
+            s.push(format!("padding-right: {}px", f(pr)));
+            s.push(format!("padding-top: {}px", f(pv)));
+            s.push(format!("padding-bottom: {}px", f(pv)));
+        }
+    }
+    // layout group → flexbox
+    if e.layout.mode != LayoutMode::None {
+        let l = &e.layout;
+        s.push(format!("padding-left: {}px", f(l.padding[0])));
+        // En cuadrícula cada celda lleva margin-right = espaciado (también la última de la fila):
+        // se descuenta del relleno derecho para que quepan las mismas columnas que en Unity uGUI.
+        let pr = if l.mode == LayoutMode::Grid { (l.padding[1] - l.spacing[0]).max(0.0) } else { l.padding[1] };
+        s.push(format!("padding-right: {}px", f(pr)));
+        s.push(format!("padding-top: {}px", f(l.padding[2])));
+        s.push(format!("padding-bottom: {}px", f(l.padding[3])));
+        let col = (l.align % 3) as f32 * 0.5;
+        let row = (l.align / 3).min(2) as f32 * 0.5;
+        match l.mode {
+            LayoutMode::Horizontal => {
+                s.push("flex-direction: row".into());
+                s.push(format!("justify-content: {}", justify(col)));
+                s.push(format!("align-items: {}", justify(row)));
+            }
+            LayoutMode::Vertical => {
+                s.push("flex-direction: column".into());
+                s.push(format!("justify-content: {}", justify(row)));
+                s.push(format!("align-items: {}", justify(col)));
+            }
+            _ => {
+                s.push("flex-direction: row".into());
+                s.push("flex-wrap: wrap".into());
+                s.push(format!("justify-content: {}", justify(col)));
+                s.push(format!("align-content: {}", justify(row)));
+            }
+        }
+    }
+    let mut out = format!("/* {} ({}) */\n.{} {{\n", e.name.replace("*/", ""), e.kind.unity_type(), class_of(e));
+    for l in s {
+        out.push_str("    ");
+        out.push_str(&l);
+        out.push_str(";\n");
+    }
+    out.push_str("}\n");
+    if matches!(e.kind, Kind::Panel | Kind::Image | Kind::Ellipse) && !e.text.is_empty() {
+        let (pl, pr, pv) = crate::render::text_padding(e);
+        out.push_str(&format!(
+            ".{}-label {{\n    position: absolute;\n    left: {}px;\n    right: {}px;\n    top: {}px;\n    bottom: {}px;\n    margin: 0;\n    padding: 0;\n}}\n",
+            class_of(e),
+            f(pl),
+            f(pr),
+            f(pv),
+            f(pv)
+        ));
+    }
+    if e.kind == Kind::ScrollView {
+        out.push_str(&format!(".{} .unity-scroll-view__content-container {{\n    min-height: {}px;\n}}\n", class_of(e), f(content_height(doc, e))));
+    }
+    out.push('\n');
+    out
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::model;
+
+    #[test]
+    fn uxml_nests_children_and_uss_uses_anchors() {
+        let d = model::template(2, 1920.0, 1080.0);
+        let x = uxml(&d);
+        assert!(x.contains("<ui:Button name=\"Botón aceptar\""));
+        let win = x.find("name=\"Ventana\"").unwrap();
+        let title = x.find("name=\"Título ventana\"").unwrap();
+        assert!(title > win);
+        let s = uss(&d);
+        // "Oscurecer" stretches over the whole screen
+        let id = d.elements.iter().find(|e| e.name == "Oscurecer").unwrap().id;
+        let r = &s[s.find(&format!(".eg-{} {{", id)).unwrap()..];
+        assert!(r.contains("left: 0%") && r.contains("right: 0%") && r.contains("top: 0%") && r.contains("bottom: 0%"));
+        assert!(s.contains("flex-direction: row"));
+    }
+}

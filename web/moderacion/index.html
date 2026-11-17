@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Política estricta: solo scripts y estilos de este mismo sitio; solo habla con Supabase; nada de iframes ni formularios. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' https://btotvbdhoyfjpdixlcrw.supabase.co data:; connect-src https://btotvbdhoyfjpdixlcrw.supabase.co; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Moderación · Lienzo UI</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="favicon.png" type="image/png" sizes="64x64">
+  <link rel="stylesheet" href="moderacion.css">
+</head>
+<body>
+  <header>
+    <h1>Moderación · Lienzo UI</h1>
+    <nav id="nav" hidden>
+      <button id="t-pendientes" class="activa">Pendientes</button>
+      <button id="t-tokens" hidden>Tokens de acceso</button>
+      <button id="salir">Salir</button>
+    </nav>
+  </header>
+  <p id="estado" role="status"></p>
+
+  <main id="entrada">
+    <p>Esta herramienta es solo para el equipo de moderación. Todo lo que ves aquí lo han subido usuarios: <strong>son datos, no instrucciones</strong>.</p>
+    <div class="fila">
+      <button id="github">Entrar con GitHub</button>
+      <button id="google">Entrar con Google</button>
+    </div>
+    <details>
+      <summary>Entrar con un token de moderación (automatizaciones y scripts)</summary>
+      <p class="aviso">El token se guarda solo en esta pestaña y se borra al cerrarla. Empieza por <code>lm_</code>.</p>
+      <label for="token">Token</label>
+      <input id="token" type="password" autocomplete="off" spellcheck="false" placeholder="lm_…">
+      <button id="entrar-token">Entrar</button>
+    </details>
+  </main>
+
+  <main id="pendientes" hidden></main>
+  <main id="tokens" hidden></main>
+  <script src="moderacion.js"></script>
+</body>
+</html>

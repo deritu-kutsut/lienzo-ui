@@ -1,0 +1,36 @@
+# Configuración para el CLI de Supabase (`supabase start` / `supabase db push` / `supabase functions deploy`).
+project_id = "lienzo-ui"
+
+[auth]
+site_url = "https://deritu.itch.io/lienzo-ui"
+# La app de escritorio recibe el inicio de sesión por una dirección local temporal (loopback), nunca por un servidor intermedio.
+additional_redirect_urls = ["http://127.0.0.1:53682/callback"]
+enable_signup = true
+enable_anonymous_sign_ins = false
+minimum_password_length = 12
+jwt_expiry = 3600
+enable_refresh_token_rotation = true
+
+# Sin contraseñas ni correo/clave: solo proveedores externos. Los identificadores y secretos llegan por variables de entorno (nunca al repo).
+[auth.external.github]
+enabled = true
+client_id = "env(GITHUB_CLIENT_ID)"
+secret = "env(GITHUB_CLIENT_SECRET)"
+
+[auth.external.google]
+enabled = true
+client_id = "env(GOOGLE_CLIENT_ID)"
+secret = "env(GOOGLE_CLIENT_SECRET)"
+
+[auth.email]
+enable_signup = false
+
+[functions.moderar]
+verify_jwt = true
+[functions.borrar-cuenta]
+verify_jwt = true
+[functions.revisar]
+# La función autentica por sí misma: acepta sesiones de personas moderadoras y tokens lm_… (que no son JWT).
+verify_jwt = false
+[functions.perfil]
+verify_jwt = true

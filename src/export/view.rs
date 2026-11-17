@@ -1,0 +1,155 @@
+//! "View" scripts for the uGUI prefab: a generated base class with typed
+//! references to the elements (found by path) and click/value events, plus a
+//! user class (written once, never overwritten) to put the game logic in.
+
+use super::{class_name, cs_str, unity_names, unity_path};
+use crate::model::{Doc, Kind};
+use std::collections::HashSet;
+use std::fmt::Write;
+
+fn field_type(k: Kind) -> Option<&'static str> {
+    Some(match k {
+        Kind::Button => "Button",
+        Kind::Toggle => "Toggle",
+        Kind::Slider => "Slider",
+        Kind::InputField => "TMP_InputField",
+        Kind::Dropdown => "TMP_Dropdown",
+        Kind::ScrollView => "ScrollRect",
+        Kind::Text => "TextMeshProUGUI",
+        Kind::Image | Kind::Ellipse | Kind::Panel => "Image",
+        Kind::Empty => "RectTransform",
+    })
+}
+
+struct Item {
+    field: String,
+    method: String,
+    ty: &'static str,
+    path: String,
+    kind: Kind,
+    name: String,
+    code: String,
+}
+
+fn items(doc: &Doc) -> Vec<Item> {
+    let names = unity_names(doc);
+    let mut used = HashSet::new();
+    let mut out = Vec::new();
+    for e in &doc.elements {
+        let Some(ty) = field_type(e.kind) else { continue };
+        let base = class_name(&e.name);
+        let mut m = base.clone();
+        let mut k = 2;
+        while !used.insert(m.clone()) {
+            m = format!("{}{}", base, k);
+            k += 1;
+        }
+        let field = super::safe_field(&{
+            let mut c = m.chars();
+            match c.next() {
+                Some(f) => f.to_ascii_lowercase().to_string() + c.as_str(),
+                None => "elemento".into(),
+            }
+        });
+        let m = if e.kind == Kind::Button { format!("{}Click", m) } else { format!("{}Changed", m) };
+        out.push(Item { field, method: m, ty, path: unity_path(doc, &names, e.id), kind: e.kind, name: e.name.clone(), code: e.on_click.clone() });
+    }
+    out
+}
+
+pub fn base_script(doc: &Doc) -> String {
+    let cls = class_name(&doc.title);
+    let its = items(doc);
+    let mut fields = String::new();
+    let mut bind = String::new();
+    let mut on = String::new();
+    let mut off = String::new();
+    let mut methods = String::new();
+    for it in &its {
+        let _ = writeln!(fields, "    public {} {}; // {}", it.ty, it.field, it.name.replace('\n', " "));
+        let _ = writeln!(bind, "        {} = Find<{}>({});", it.field, it.ty, cs_str(&it.path));
+        let (ev, sig, arg) = match it.kind {
+            Kind::Button => ("onClick", "()", ""),
+            Kind::Toggle => ("onValueChanged", "(bool isOn)", "bool"),
+            Kind::Slider => ("onValueChanged", "(float value)", "float"),
+            Kind::InputField => ("onEndEdit", "(string text)", "string"),
+            Kind::Dropdown => ("onValueChanged", "(int index)", "int"),
+            _ => continue,
+        };
+        let _ = writeln!(on, "        if ({f}) {f}.{ev}.AddListener(On{m});", f = it.field, ev = ev, m = it.method);
+        let _ = writeln!(off, "        if ({f}) {f}.{ev}.RemoveListener(On{m});", f = it.field, ev = ev, m = it.method);
+        let mut body = String::new();
+        if !it.code.trim().is_empty() {
+            body.push_str("        // Código «al hacer clic» del editor (tradúcelo a C#):\n");
+            for l in it.code.lines() {
+                let _ = writeln!(body, "        // {}", l);
+            }
+        }
+        let _ = arg;
+        let _ = writeln!(methods, "    protected virtual void On{}{}\n    {{\n{}    }}\n", it.method, sig, body);
+    }
+    format!(
+        r#"// Generado por Lienzo UI · «{title}». Se sobrescribe al exportar: escribe tu código en {cls}View.cs.
+using TMPro;
+using UnityEngine;
+using UnityEngine.UI;
+
+/// Referencias a los elementos del prefab «{title}» y sus eventos.
+public abstract class {cls}ViewBase : MonoBehaviour
+{{
+{fields}
+    protected virtual void Awake() => Bind();
+
+    /// Busca los elementos por su ruta dentro del Canvas.
+    [ContextMenu("Enlazar elementos")]
+    public void Bind()
+    {{
+{bind}    }}
+
+    protected virtual void OnEnable()
+    {{
+{on}    }}
+
+    protected virtual void OnDisable()
+    {{
+{off}    }}
+
+{methods}    protected T Find<T>(string path) where T : Component
+    {{
+        var t = transform.Find(path);
+        if (t == null) {{ Debug.LogWarning("[{cls}] No se encontró " + path, this); return null; }}
+        return t.GetComponent<T>();
+    }}
+}}
+"#,
+        title = doc.title.replace('\n', " "),
+        cls = cls,
+        fields = fields,
+        bind = bind,
+        on = on,
+        off = off,
+        methods = methods,
+    )
+}
+
+pub fn user_script(doc: &Doc) -> String {
+    let cls = class_name(&doc.title);
+    let its = items(doc);
+    let example = its
+        .iter()
+        .find(|i| i.kind == Kind::Button)
+        .map(|i| format!("    protected override void On{}()\n    {{\n        Debug.Log(\"Clic en {}\");\n    }}\n", i.method, i.name.replace('"', "'")))
+        .unwrap_or_default();
+    format!(
+        r#"// Tu lógica para «{title}». Lienzo UI crea este archivo una sola vez y no lo vuelve a tocar.
+using UnityEngine;
+
+public class {cls}View : {cls}ViewBase
+{{
+{example}}}
+"#,
+        title = doc.title.replace('\n', " "),
+        cls = cls,
+        example = example,
+    )
+}

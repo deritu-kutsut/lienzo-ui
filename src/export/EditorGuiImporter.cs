@@ -1,0 +1,891 @@
+// Assets/EditorGUI/Editor/EditorGuiImporter.cs
+// Generado por Lienzo UI. Se sobrescribe en cada exportación: no lo edites a mano.
+//
+// Construye la interfaz con uGUI + TextMeshPro a partir de los diseños exportados:
+//  * Cada .json que aparezca o cambie en Assets/EditorGUI/Designs se convierte
+//    automáticamente en un prefab en Assets/EditorGUI/Prefabs.
+//  * Menú Tools > Lienzo UI > Importar diseño en la escena… lo crea en la escena abierta.
+//  * Menú Tools > Lienzo UI > Regenerar todos los prefabs.
+// Requiere los paquetes "Unity UI" (com.unity.ugui) y TextMeshPro (incluido en ugui 2.0).
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using TMPro;
+using UnityEditor;
+using UnityEditor.SceneManagement;
+using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+
+namespace EditorGui
+{
+    public static class EditorGuiImporter
+    {
+        public const string Root = "Assets/EditorGUI";
+        const string Generated = Root + "/Sprites/Generated";
+
+        // ------------------------------------------------------------------ formato del JSON
+        [Serializable] public class RT { public float[] anchorMin, anchorMax, pivot, anchoredPosition, sizeDelta; public float rotationZ; }
+        [Serializable] public class Img { public string color, gradientTo, source; public bool useGradient, preserveAspect; public float radius, alpha; }
+        [Serializable] public class Outl { public string color; public float width; }
+        [Serializable] public class Shad { public bool enabled; public string color; public float[] offset; }
+        [Serializable] public class Txt { public bool hasText, bold, italic, underline; public string value, color, font; public float fontSize; public int alignH, alignV; public float[] padding; }
+        [Serializable] public class Lay { public int mode, childAlignment; public float[] padding, spacing, cellSize; public bool expandWidth, expandHeight; }
+        [Serializable]
+        public class El
+        {
+            public int id, parent;
+            public string name, type, shape, onClick;
+            public bool active, interactable, raycastTarget, mask;
+            public float[] size;
+            public RT rect;
+            public Img image;
+            public Outl outline;
+            public Shad shadow;
+            public Txt text;
+            public Lay layout;
+            public float value, contentHeight;
+            public string[] options;
+        }
+        [Serializable] public class Cv { public string name, className, background; public float[] referenceResolution; public float match; public bool pixelArt; }
+        [Serializable] public class Doc { public string format; public Cv canvas; public El[] elements; }
+
+        // ------------------------------------------------------------------ menús
+        [MenuItem("Tools/Lienzo UI/Importar diseño en la escena…")]
+        static void ImportIntoScene()
+        {
+            var start = Directory.Exists(Root + "/Designs") ? Root + "/Designs" : "";
+            var path = EditorUtility.OpenFilePanel("Diseño exportado por Lienzo UI", start, "json");
+            if (string.IsNullOrEmpty(path)) return;
+            if (!TmpListo()) return;
+            var go = Build(Load(path));
+            Undo.RegisterCreatedObjectUndo(go, "Importar diseño");
+            EnsureEventSystem();
+            Selection.activeGameObject = go;
+        }
+
+        [MenuItem("Tools/Lienzo UI/Regenerar todos los prefabs")]
+        public static void RebuildAll()
+        {
+            if (!Directory.Exists(Root + "/Designs")) { Debug.LogWarning("[Lienzo UI] No hay diseños en " + Root + "/Designs"); return; }
+            foreach (var p in Directory.GetFiles(Root + "/Designs", "*.json")) BuildPrefab(p.Replace('\\', '/'));
+        }
+
+        public static Doc Load(string path) => JsonUtility.FromJson<Doc>(File.ReadAllText(path));
+
+        public static string PrefabPathFor(string jsonPath) => Root + "/Prefabs/" + Path.GetFileNameWithoutExtension(jsonPath) + ".prefab";
+
+        /// TextMeshPro necesita sus «TMP Essential Resources» (fuente y ajustes por defecto). Sin ellos
+        /// los textos quedan sin fuente y fallan al recortarse dentro de una máscara (RectMask2D).
+        /// Si faltan, se abre la ventana oficial de TMP para importarlos y no se construye nada.
+        public static bool TmpListo()
+        {
+            if (AssetDatabase.FindAssets("t:TMP_Settings").Length > 0) return true;
+            if (!avisoTmp)
+            {
+                avisoTmp = true;
+                Debug.LogWarning("[Lienzo UI] Faltan los «TMP Essential Resources». En la ventana TMP Importer pulsa «Import TMP Essentials»: los prefabs se generarán solos después.");
+                EditorApplication.delayCall += TMPro.TMP_PackageResourceImporterWindow.ShowPackageImporterWindow;
+            }
+            return false;
+        }
+        static bool avisoTmp;
+
+        /// Crea (o reemplaza) el prefab de un diseño.
+        public static string BuildPrefab(string jsonPath)
+        {
+            if (!TmpListo()) return null;
+            var doc = Load(jsonPath);
+            Directory.CreateDirectory(Root + "/Prefabs");
+            var prefabPath = PrefabPathFor(jsonPath);
+            var scene = EditorSceneManager.NewPreviewScene();
+            try
+            {
+                var go = Build(doc);
+                SceneManager.MoveGameObjectToScene(go, scene);
+                PrefabUtility.SaveAsPrefabAsset(go, prefabPath);
+                UnityEngine.Object.DestroyImmediate(go);
+            }
+            finally
+            {
+                EditorSceneManager.ClosePreviewScene(scene);
+            }
+            Debug.Log("[Lienzo UI] Prefab actualizado: " + prefabPath);
+            return prefabPath;
+        }
+
+        // ------------------------------------------------------------------ construcción
+        public static GameObject Build(Doc doc)
+        {
+            var cv = doc.canvas ?? new Cv();
+            pixelArt = cv.pixelArt;
+            var canvasGo = new GameObject(string.IsNullOrEmpty(cv.name) ? "Canvas" : cv.name, typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
+            canvasGo.GetComponent<Canvas>().renderMode = RenderMode.ScreenSpaceOverlay;
+            canvasGo.GetComponent<Canvas>().pixelPerfect = cv.pixelArt;
+            var scaler = canvasGo.GetComponent<CanvasScaler>();
+            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            scaler.referenceResolution = V(cv.referenceResolution, new Vector2(1920, 1080));
+            scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
+            scaler.matchWidthOrHeight = cv.match;
+
+            var bg = Col(cv.background, 1f);
+            if (bg.a > 0.001f)
+            {
+                var b = NewUI("Fondo del lienzo", canvasGo.transform);
+                Stretch((RectTransform)b.transform);
+                var im = b.AddComponent<Image>();
+                im.color = bg;
+                im.raycastTarget = false;
+            }
+
+            var els = doc.elements ?? new El[0];
+            var made = new Dictionary<int, GameObject>();
+            var contentOf = new Dictionary<int, Transform>();
+            var inactive = new List<GameObject>();
+            for (int i = 0; i < els.Length; i++)
+            {
+                var e = Fix(els[i]);
+                Transform parent = canvasGo.transform;
+                if (e.parent >= 0 && made.TryGetValue(e.parent, out var pgo))
+                    parent = contentOf.TryGetValue(e.parent, out var content) ? content : pgo.transform;
+                var go = Create(e);
+                go.name = e.name;
+                go.transform.SetParent(parent, false);
+                ApplyRect((RectTransform)go.transform, e.rect);
+                Style(go, e);
+                var holder = go;
+                if (e.type == "ScrollView")
+                {
+                    var content = ScrollContent(go, e);
+                    contentOf[i] = content;
+                    holder = content.gameObject;
+                }
+                AddLayout(holder, e.layout);
+                made[i] = go;
+                if (!e.active) inactive.Add(go);
+            }
+            foreach (var go in inactive) go.SetActive(false);
+            int ui = LayerMask.NameToLayer("UI");
+            if (ui >= 0) SetLayer(canvasGo.transform, ui);
+            AttachView(canvasGo, cv.className);
+            return canvasGo;
+        }
+
+        static El Fix(El e)
+        {
+            e.name = string.IsNullOrEmpty(e.name) ? "Elemento" : e.name;
+            e.type = e.type ?? "Panel";
+            e.rect = e.rect ?? new RT();
+            e.image = e.image ?? new Img();
+            e.outline = e.outline ?? new Outl();
+            e.shadow = e.shadow ?? new Shad();
+            e.text = e.text ?? new Txt();
+            e.layout = e.layout ?? new Lay();
+            e.size = e.size != null && e.size.Length >= 2 ? e.size : new float[] { 100, 100 };
+            return e;
+        }
+
+        static GameObject Create(El e)
+        {
+            switch (e.type)
+            {
+                case "Button": return TMP_DefaultControls.CreateButton(TmpRes());
+                case "Toggle": return DefaultControls.CreateToggle(UiRes());
+                case "Slider": return DefaultControls.CreateSlider(UiRes());
+                case "InputField": return TMP_DefaultControls.CreateInputField(TmpRes());
+                case "Dropdown": return TMP_DefaultControls.CreateDropdown(TmpRes());
+                case "ScrollView": return DefaultControls.CreateScrollView(UiRes());
+                default: return NewUI(e.name, null);
+            }
+        }
+
+        static void Style(GameObject go, El e)
+        {
+            switch (e.type)
+            {
+                case "Empty":
+                    break;
+                case "Text":
+                {
+                    var t = go.AddComponent<TextMeshProUGUI>();
+                    ApplyText(t, e, e.text.value);
+                    t.raycastTarget = e.raycastTarget;
+                    break;
+                }
+                case "Button":
+                {
+                    ApplyImage(go, go.GetComponent<Image>(), e);
+                    var b = go.GetComponent<Button>();
+                    b.interactable = e.interactable;
+                    var label = go.GetComponentInChildren<TextMeshProUGUI>(true);
+                    if (label != null)
+                    {
+                        if (e.text.hasText)
+                        {
+                            ApplyText(label, e, e.text.value);
+                            label.raycastTarget = false;
+                            Pad(label.rectTransform, e.text.padding);
+                            label.gameObject.AddComponent<LayoutElement>().ignoreLayout = true;
+                        }
+                        else UnityEngine.Object.DestroyImmediate(label.gameObject);
+                    }
+                    break;
+                }
+                case "Toggle": StyleToggle(go, e); break;
+                case "Slider": StyleSlider(go, e); break;
+                case "InputField": StyleInput(go, e); break;
+                case "Dropdown": StyleDropdown(go, e); break;
+                case "ScrollView": ApplyImage(go, go.GetComponent<Image>(), e); break;
+                default:
+                {
+                    // Panel, Image, círculo
+                    ApplyImage(go, go.AddComponent<Image>(), e);
+                    AddLabel(go, e);
+                    break;
+                }
+            }
+            if (e.mask && e.type != "ScrollView") go.AddComponent<RectMask2D>();
+        }
+
+        // ------------------------------------------------------------------ controles
+        static void StyleToggle(GameObject go, El e)
+        {
+            var tg = go.GetComponent<Toggle>();
+            tg.isOn = e.value > 0.5f;
+            tg.interactable = e.interactable;
+            float w = e.size[0], h = e.size[1];
+            float s = Mathf.Min(w, h) * 0.8f, pad = h * 0.1f;
+            var box = (RectTransform)go.transform.Find("Background");
+            box.anchorMin = box.anchorMax = new Vector2(0, 0.5f);
+            box.pivot = new Vector2(0.5f, 0.5f);
+            box.anchoredPosition = new Vector2(pad + s / 2f, 0);
+            box.sizeDelta = new Vector2(s, s);
+            var boxImg = box.GetComponent<Image>();
+            boxImg.sprite = RoundedSprite(s * 0.2f, 0);
+            boxImg.type = Image.Type.Sliced;
+            boxImg.color = Color.white;
+            AddRing(box.gameObject, new Color(0.67f, 0.67f, 0.7f, 1f), s * 0.2f, 2f);
+            var check = box.Find("Checkmark").GetComponent<Image>();
+            ((RectTransform)check.transform).SetAsLastSibling();
+            check.sprite = RoundedSprite(s * 0.2f, 0);
+            check.type = Image.Type.Sliced;
+            check.color = Col(e.image.color, e.image.alpha);
+            var tick = NewUI("Tick", check.transform);
+            var trt = (RectTransform)tick.transform;
+            Stretch(trt);
+            trt.offsetMin = new Vector2(s * 0.15f, s * 0.15f);
+            trt.offsetMax = new Vector2(-s * 0.15f, -s * 0.15f);
+            var tickImg = tick.AddComponent<Image>();
+            tickImg.sprite = Builtin("Checkmark.psd");
+            tickImg.preserveAspect = true;
+            tickImg.color = Color.white;
+            tickImg.raycastTarget = false;
+            tg.graphic = check;
+            tg.targetGraphic = boxImg;
+
+            var labelT = go.transform.Find("Label");
+            if (labelT != null)
+            {
+                var legacy = labelT.GetComponent<Text>();
+                if (legacy != null) UnityEngine.Object.DestroyImmediate(legacy);
+                if (e.text.hasText)
+                {
+                    var t = labelT.gameObject.AddComponent<TextMeshProUGUI>();
+                    ApplyText(t, e, e.text.value);
+                    t.raycastTarget = false;
+                    var lrt = (RectTransform)labelT;
+                    lrt.anchorMin = Vector2.zero;
+                    lrt.anchorMax = Vector2.one;
+                    lrt.offsetMin = new Vector2(s + pad + 14f, 0);
+                    lrt.offsetMax = new Vector2(-12f, 0);
+                }
+                else UnityEngine.Object.DestroyImmediate(labelT.gameObject);
+            }
+            var hit = go.AddComponent<Image>();
+            hit.color = new Color(0, 0, 0, 0);
+            hit.raycastTarget = e.raycastTarget;
+        }
+
+        static void StyleSlider(GameObject go, El e)
+        {
+            var sl = go.GetComponent<Slider>();
+            sl.direction = Slider.Direction.LeftToRight;
+            sl.minValue = 0;
+            sl.maxValue = 1;
+            sl.value = e.value;
+            sl.interactable = e.interactable;
+            float h = e.size[1];
+            float th = Mathf.Max(2f, h * 0.32f), k = h * 0.5f;
+            var bg = (RectTransform)go.transform.Find("Background");
+            SetBar(bg, k, th);
+            var bgi = bg.GetComponent<Image>();
+            bgi.sprite = RoundedSprite(th / 2f, 0);
+            bgi.type = Image.Type.Sliced;
+            bgi.color = Col(e.image.gradientTo, e.image.alpha);
+            var area = (RectTransform)go.transform.Find("Fill Area");
+            SetBar(area, k, th);
+            var fill = (RectTransform)area.Find("Fill");
+            fill.sizeDelta = Vector2.zero;
+            var fi = fill.GetComponent<Image>();
+            fi.sprite = RoundedSprite(th / 2f, 0);
+            fi.type = Image.Type.Sliced;
+            fi.color = Col(e.image.color, e.image.alpha);
+            var ha = (RectTransform)go.transform.Find("Handle Slide Area");
+            ha.anchorMin = Vector2.zero;
+            ha.anchorMax = Vector2.one;
+            ha.anchoredPosition = Vector2.zero;
+            ha.sizeDelta = new Vector2(-2f * k, 0);
+            var handle = (RectTransform)ha.Find("Handle");
+            handle.sizeDelta = new Vector2(h * 0.8f, -h * 0.2f);
+            var hi = handle.GetComponent<Image>();
+            hi.sprite = EllipseSprite(0);
+            hi.color = Color.white;
+            AddRing(handle.gameObject, Col(e.image.color, e.image.alpha), -1f, 2f);
+            sl.fillRect = fill;
+            sl.handleRect = handle;
+            sl.targetGraphic = hi;
+        }
+
+        static void SetBar(RectTransform r, float inset, float thickness)
+        {
+            r.anchorMin = new Vector2(0, 0.5f);
+            r.anchorMax = new Vector2(1, 0.5f);
+            r.pivot = new Vector2(0.5f, 0.5f);
+            r.anchoredPosition = Vector2.zero;
+            r.sizeDelta = new Vector2(-2f * inset, thickness);
+        }
+
+        static void StyleInput(GameObject go, El e)
+        {
+            ApplyImage(go, go.GetComponent<Image>(), e);
+            var inp = go.GetComponent<TMP_InputField>();
+            inp.interactable = e.interactable;
+            var area = (RectTransform)go.transform.Find("Text Area");
+            Pad(area, e.text.padding);
+            var ph = inp.placeholder as TextMeshProUGUI;
+            if (ph != null)
+            {
+                ApplyText(ph, e, e.text.value);
+                ph.fontStyle |= FontStyles.Italic;
+            }
+            var tc = inp.textComponent as TextMeshProUGUI;
+            if (tc != null)
+            {
+                ApplyText(tc, e, "");
+                tc.color = new Color(0.1f, 0.1f, 0.13f, 1f);
+            }
+            inp.pointSize = e.text.fontSize;
+            inp.text = "";
+        }
+
+        static void StyleDropdown(GameObject go, El e)
+        {
+            ApplyImage(go, go.GetComponent<Image>(), e);
+            var dd = go.GetComponent<TMP_Dropdown>();
+            dd.interactable = e.interactable;
+            dd.ClearOptions();
+            dd.AddOptions(new List<string>(e.options ?? new string[0]));
+            dd.value = Mathf.Clamp(Mathf.RoundToInt(e.value), 0, Mathf.Max(0, dd.options.Count - 1));
+            float h = e.size[1];
+            var cap = dd.captionText as TextMeshProUGUI;
+            if (cap != null)
+            {
+                ApplyText(cap, e, cap.text);
+                var p = e.text.padding;
+                var r = cap.rectTransform;
+                r.anchorMin = Vector2.zero;
+                r.anchorMax = Vector2.one;
+                r.offsetMin = new Vector2(P(p, 0), P(p, 2));
+                r.offsetMax = new Vector2(-P(p, 1), -P(p, 2));
+            }
+            var arrow = (RectTransform)go.transform.Find("Arrow");
+            if (arrow != null)
+            {
+                arrow.anchorMin = arrow.anchorMax = new Vector2(1, 0.5f);
+                arrow.sizeDelta = new Vector2(h * 0.4f, h * 0.4f);
+                arrow.anchoredPosition = new Vector2(-h * 0.45f, 0);
+                arrow.GetComponent<Image>().color = Col(e.text.color, 1f);
+            }
+            if (dd.itemText != null) dd.itemText.fontSize = e.text.fontSize * 0.9f;
+            var template = dd.template;
+            if (template != null)
+            {
+                int n = Mathf.Max(1, dd.options.Count);
+                template.sizeDelta = new Vector2(template.sizeDelta.x, Mathf.Min(n, 5) * h * 0.8f + 10f);
+                var item = template.Find("Viewport/Content/Item") as RectTransform;
+                if (item != null) item.sizeDelta = new Vector2(item.sizeDelta.x, h * 0.8f);
+                var content = template.Find("Viewport/Content") as RectTransform;
+                if (content != null) content.sizeDelta = new Vector2(content.sizeDelta.x, h * 0.8f + 4f);
+            }
+            dd.RefreshShownValue();
+        }
+
+        static Transform ScrollContent(GameObject go, El e)
+        {
+            var sr = go.GetComponent<ScrollRect>();
+            sr.horizontal = false;
+            sr.vertical = true;
+            sr.movementType = ScrollRect.MovementType.Clamped;
+            var hbar = go.transform.Find("Scrollbar Horizontal");
+            if (hbar != null)
+            {
+                sr.horizontalScrollbar = null;
+                UnityEngine.Object.DestroyImmediate(hbar.gameObject);
+            }
+            sr.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.AutoHideAndExpandViewport;
+            var vbar = go.transform.Find("Scrollbar Vertical") as RectTransform;
+            if (vbar != null)
+            {
+                vbar.sizeDelta = new Vector2(14f, 0);
+                var bi = vbar.GetComponent<Image>();
+                if (bi != null) bi.color = new Color(0, 0, 0, 0.08f);
+                var handle = vbar.Find("Sliding Area/Handle");
+                if (handle != null)
+                {
+                    var hi = handle.GetComponent<Image>();
+                    hi.sprite = RoundedSprite(6, 0);
+                    hi.type = Image.Type.Sliced;
+                    hi.color = new Color(0, 0, 0, 0.3f);
+                }
+            }
+            var vp = (RectTransform)go.transform.Find("Viewport");
+            var mask = vp.GetComponent<Mask>();
+            if (mask != null) UnityEngine.Object.DestroyImmediate(mask);
+            var vpImg = vp.GetComponent<Image>();
+            if (vpImg != null) UnityEngine.Object.DestroyImmediate(vpImg);
+            vp.gameObject.AddComponent<RectMask2D>();
+            vp.anchorMin = Vector2.zero;
+            vp.anchorMax = Vector2.one;
+            vp.offsetMin = Vector2.zero;
+            vp.offsetMax = Vector2.zero;
+            var content = (RectTransform)vp.Find("Content");
+            content.anchorMin = new Vector2(0, 1);
+            content.anchorMax = new Vector2(1, 1);
+            content.pivot = new Vector2(0, 1);
+            content.anchoredPosition = Vector2.zero;
+            content.sizeDelta = new Vector2(0, Mathf.Max(e.contentHeight, e.size[1]));
+            return content;
+        }
+
+        static void AddLayout(GameObject go, Lay lay)
+        {
+            if (lay == null || lay.mode == 0) return;
+            var p = lay.padding ?? new float[4];
+            var ro = new RectOffset(Mathf.RoundToInt(P(p, 0)), Mathf.RoundToInt(P(p, 1)), Mathf.RoundToInt(P(p, 2)), Mathf.RoundToInt(P(p, 3)));
+            var sp = V(lay.spacing, Vector2.zero);
+            if (lay.mode == 3)
+            {
+                var g = go.AddComponent<GridLayoutGroup>();
+                g.padding = ro;
+                g.cellSize = V(lay.cellSize, new Vector2(100, 100));
+                g.spacing = sp;
+                g.childAlignment = (TextAnchor)lay.childAlignment;
+                return;
+            }
+            HorizontalOrVerticalLayoutGroup hv = lay.mode == 1 ? (HorizontalOrVerticalLayoutGroup)go.AddComponent<HorizontalLayoutGroup>() : go.AddComponent<VerticalLayoutGroup>();
+            hv.padding = ro;
+            hv.spacing = lay.mode == 1 ? sp.x : sp.y;
+            hv.childAlignment = (TextAnchor)lay.childAlignment;
+            hv.childControlWidth = lay.expandWidth;
+            hv.childControlHeight = lay.expandHeight;
+            hv.childForceExpandWidth = lay.expandWidth;
+            hv.childForceExpandHeight = lay.expandHeight;
+        }
+
+        // ------------------------------------------------------------------ imagen, texto y efectos
+        static void ApplyImage(GameObject go, Image img, El e)
+        {
+            var im = e.image;
+            img.raycastTarget = e.raycastTarget;
+            img.type = Image.Type.Simple;
+            img.pixelsPerUnitMultiplier = 1f;
+            img.preserveAspect = false;
+            Sprite src = string.IsNullOrEmpty(im.source) ? null : ImportSprite(im.source);
+            if (src != null)
+            {
+                img.sprite = src;
+                img.color = new Color(1, 1, 1, im.alpha);
+                img.preserveAspect = im.preserveAspect;
+            }
+            else if (im.useGradient)
+            {
+                img.sprite = GradientSprite(Col(im.color, 1f), Col(im.gradientTo, 1f));
+                img.color = new Color(1, 1, 1, im.alpha);
+            }
+            else
+            {
+                img.color = Col(im.color, im.alpha);
+                if (e.shape == "ellipse") img.sprite = EllipseSprite(0);
+                else if (im.radius > 0.5f) { img.sprite = RoundedSprite(im.radius, 0); img.type = Image.Type.Sliced; }
+                else img.sprite = null;
+            }
+            if (e.outline.width > 0.01f)
+            {
+                if (e.shape == "ellipse") AddRing(go, Col(e.outline.color, im.alpha), -1f, e.outline.width * 256f / Mathf.Max(1f, Mathf.Min(e.size[0], e.size[1])));
+                else AddRing(go, Col(e.outline.color, im.alpha), im.radius, e.outline.width);
+            }
+            if (e.shadow.enabled)
+            {
+                var s = go.AddComponent<Shadow>();
+                s.effectColor = Col(e.shadow.color, 1f);
+                s.effectDistance = V(e.shadow.offset, new Vector2(6, -6));
+            }
+        }
+
+        /// Borde: hijo estirado con un sprite de anillo (radius &lt; 0 = elipse).
+        static void AddRing(GameObject go, Color color, float radius, float width)
+        {
+            var b = NewUI("Borde", go.transform);
+            var rt = (RectTransform)b.transform;
+            Stretch(rt);
+            rt.SetAsFirstSibling();
+            b.AddComponent<LayoutElement>().ignoreLayout = true;
+            var img = b.AddComponent<Image>();
+            img.raycastTarget = false;
+            img.color = color;
+            if (radius < 0) img.sprite = EllipseSprite(Mathf.Clamp(Mathf.RoundToInt(width), 1, 128));
+            else
+            {
+                img.sprite = RoundedSprite(radius, width);
+                img.type = Image.Type.Sliced;
+            }
+        }
+
+        static void AddLabel(GameObject go, El e)
+        {
+            if (!e.text.hasText) return;
+            var l = NewUI("Texto", go.transform);
+            var rt = (RectTransform)l.transform;
+            Stretch(rt);
+            Pad(rt, e.text.padding);
+            l.AddComponent<LayoutElement>().ignoreLayout = true;
+            var t = l.AddComponent<TextMeshProUGUI>();
+            ApplyText(t, e, e.text.value);
+            t.raycastTarget = false;
+        }
+
+        static readonly TextAlignmentOptions[] Alignments =
+        {
+            TextAlignmentOptions.TopLeft, TextAlignmentOptions.Top, TextAlignmentOptions.TopRight,
+            TextAlignmentOptions.Left, TextAlignmentOptions.Center, TextAlignmentOptions.Right,
+            TextAlignmentOptions.BottomLeft, TextAlignmentOptions.Bottom, TextAlignmentOptions.BottomRight,
+        };
+
+        static void ApplyText(TextMeshProUGUI t, El e, string value)
+        {
+            var x = e.text;
+            var fa = FontAsset(x.font);
+            if (fa != null) t.font = fa;
+            t.text = value ?? "";
+            t.fontSize = x.fontSize;
+            t.color = Col(x.color, e.image != null ? e.image.alpha : 1f);
+            var fs = FontStyles.Normal;
+            if (x.bold) fs |= FontStyles.Bold;
+            if (x.italic) fs |= FontStyles.Italic;
+            if (x.underline) fs |= FontStyles.Underline;
+            t.fontStyle = fs;
+            t.alignment = Alignments[Mathf.Clamp(x.alignV, 0, 2) * 3 + Mathf.Clamp(x.alignH, 0, 2)];
+            t.textWrappingMode = TextWrappingModes.Normal;
+            t.overflowMode = TextOverflowModes.Overflow;
+            // La fuente de TMP (y su negrita sintética) puede ser más ancha que la del editor:
+            // se permite reducir el tamaño hasta la mitad para que el texto quepa en su caja como en el diseño.
+            t.enableAutoSizing = true;
+            t.fontSizeMax = x.fontSize;
+            t.fontSizeMin = Mathf.Max(1f, x.fontSize * 0.5f);
+        }
+
+        static readonly Dictionary<string, TMP_FontAsset> fontCache = new Dictionary<string, TMP_FontAsset>();
+
+        /// Busca o crea un TMP_FontAsset a partir de Assets/EditorGUI/Fonts/&lt;familia&gt;.ttf|otf.
+        static TMP_FontAsset FontAsset(string family)
+        {
+            if (string.IsNullOrEmpty(family) || family == "Monoespaciada") return null;
+            if (fontCache.TryGetValue(family, out var cached) && cached != null) return cached;
+            var assetPath = Root + "/Fonts/" + family + " SDF.asset";
+            var fa = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(assetPath);
+            if (fa == null)
+            {
+                var src = new[] { ".ttf", ".otf" }.Select(x => Root + "/Fonts/" + family + x).FirstOrDefault(File.Exists);
+                if (src != null)
+                {
+                    AssetDatabase.ImportAsset(src, ImportAssetOptions.ForceSynchronousImport);
+                    var font = AssetDatabase.LoadAssetAtPath<Font>(src);
+                    if (font != null)
+                    {
+                        fa = TMP_FontAsset.CreateFontAsset(font);
+                        if (fa != null)
+                        {
+                            fa.name = family + " SDF";
+                            AssetDatabase.CreateAsset(fa, assetPath);
+                            if (fa.atlasTextures != null)
+                                foreach (var tex in fa.atlasTextures)
+                                    if (tex != null) { tex.name = family + " Atlas"; AssetDatabase.AddObjectToAsset(tex, fa); }
+                            if (fa.material != null) { fa.material.name = family + " Material"; AssetDatabase.AddObjectToAsset(fa.material, fa); }
+                            AssetDatabase.SaveAssets();
+                        }
+                    }
+                }
+                else
+                {
+                    var guid = AssetDatabase.FindAssets(family + " t:TMP_FontAsset").FirstOrDefault();
+                    if (guid != null) fa = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(AssetDatabase.GUIDToAssetPath(guid));
+                }
+            }
+            fontCache[family] = fa;
+            return fa;
+        }
+
+        // ------------------------------------------------------------------ sprites generados
+        /// Rectángulo redondeado blanco (9-slice). Con stroke &gt; 0 es solo el borde.
+        public static Sprite RoundedSprite(float radius, float stroke)
+        {
+            int r = Mathf.Clamp(Mathf.CeilToInt(radius), 1, 512);
+            int s = Mathf.Clamp(Mathf.CeilToInt(stroke), 0, 256);
+            int b = Mathf.Max(r, s) + 2;
+            int size = 2 * b + 2;
+            float half = size / 2f;
+            return SaveSprite("rr_" + r + "_" + s, size, size, (x, y) =>
+            {
+                float d = RoundedDistance(x + 0.5f - half, y + 0.5f - half, half, half, r);
+                float a = Mathf.Clamp01(0.5f - d);
+                if (s > 0) a -= Mathf.Clamp01(0.5f - (d + s));
+                return new Color(1, 1, 1, Mathf.Clamp01(a));
+            }, new Vector4(b, b, b, b));
+        }
+
+        static float RoundedDistance(float px, float py, float hw, float hh, float r)
+        {
+            float qx = Mathf.Abs(px) - (hw - r), qy = Mathf.Abs(py) - (hh - r);
+            float ox = Mathf.Max(qx, 0), oy = Mathf.Max(qy, 0);
+            return Mathf.Sqrt(ox * ox + oy * oy) + Mathf.Min(Mathf.Max(qx, qy), 0) - r;
+        }
+
+        /// Círculo (o anillo de `ring` píxeles sobre 256) que se estira a elipse.
+        public static Sprite EllipseSprite(int ring)
+        {
+            const int n = 256;
+            return SaveSprite("ellipse_" + ring, n, n, (x, y) =>
+            {
+                float dx = x + 0.5f - n / 2f, dy = y + 0.5f - n / 2f;
+                float d = Mathf.Sqrt(dx * dx + dy * dy) - n / 2f;
+                float a = Mathf.Clamp01(0.5f - d);
+                if (ring > 0) a -= Mathf.Clamp01(0.5f - (d + ring));
+                return new Color(1, 1, 1, Mathf.Clamp01(a));
+            }, Vector4.zero);
+        }
+
+        /// Degradado diagonal (arriba-izquierda → abajo-derecha), como en el editor.
+        public static Sprite GradientSprite(Color a, Color b)
+        {
+            const int n = 64;
+            var key = "grad_" + ColorUtility.ToHtmlStringRGBA(a) + "_" + ColorUtility.ToHtmlStringRGBA(b);
+            return SaveSprite(key, n, n, (x, y) =>
+            {
+                float u = x / (n - 1f), vDown = 1f - y / (n - 1f);
+                float t = Mathf.Clamp01(((u * 2f - 1f) + (vDown * 2f - 1f)) * 0.25f + 0.5f);
+                return Color.Lerp(a, b, t);
+            }, Vector4.zero);
+        }
+
+        static Sprite SaveSprite(string name, int w, int h, Func<int, int, Color> px, Vector4 border)
+        {
+            Directory.CreateDirectory(Generated);
+            var path = Generated + "/" + name + ".png";
+            if (!File.Exists(path))
+            {
+                var tex = new Texture2D(w, h, TextureFormat.RGBA32, false);
+                var cols = new Color[w * h];
+                for (int y = 0; y < h; y++)
+                    for (int x = 0; x < w; x++)
+                        cols[y * w + x] = px(x, y);
+                tex.SetPixels(cols);
+                tex.Apply();
+                File.WriteAllBytes(path, tex.EncodeToPNG());
+                UnityEngine.Object.DestroyImmediate(tex);
+                AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceSynchronousImport);
+            }
+            ConfigureSprite(path, border);
+            return AssetDatabase.LoadAssetAtPath<Sprite>(path);
+        }
+
+        /// Diseño en modo pixel art: sprites con filtro Point, sin compresión ni mipmaps.
+        static bool pixelArt;
+
+        static void ConfigureSprite(string path, Vector4 border)
+        {
+            var ti = AssetImporter.GetAtPath(path) as TextureImporter;
+            if (ti == null)
+            {
+                AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceSynchronousImport);
+                ti = AssetImporter.GetAtPath(path) as TextureImporter;
+                if (ti == null) return;
+            }
+            if (ti.textureType == TextureImporterType.Sprite && ti.spriteImportMode == SpriteImportMode.Single && ti.spriteBorder == border && !ti.mipmapEnabled && ti.filterMode == (pixelArt ? FilterMode.Point : FilterMode.Bilinear)) return;
+            ti.textureType = TextureImporterType.Sprite;
+            ti.spriteImportMode = SpriteImportMode.Single;
+            ti.spriteBorder = border;
+            ti.spritePixelsPerUnit = 100;
+            ti.mipmapEnabled = false;
+            ti.alphaIsTransparency = true;
+            ti.wrapMode = TextureWrapMode.Clamp;
+            ti.filterMode = pixelArt ? FilterMode.Point : FilterMode.Bilinear;
+            if (pixelArt) ti.textureCompression = TextureImporterCompression.Uncompressed;
+            ti.SaveAndReimport();
+        }
+
+        static Sprite ImportSprite(string source)
+        {
+            var path = source.Replace('\\', '/');
+            if (!path.StartsWith("Assets/"))
+            {
+                if (!File.Exists(path)) { Debug.LogWarning("[Lienzo UI] No existe la imagen " + path); return null; }
+                Directory.CreateDirectory(Root + "/Sprites");
+                var dest = Root + "/Sprites/" + Path.GetFileName(path);
+                File.Copy(path, dest, true);
+                path = dest;
+            }
+            if (!File.Exists(path)) { Debug.LogWarning("[Lienzo UI] No existe la imagen " + path); return null; }
+            ConfigureSprite(path, Vector4.zero);
+            return AssetDatabase.LoadAssetAtPath<Sprite>(path);
+        }
+
+        // ------------------------------------------------------------------ utilidades
+        static Sprite Builtin(string n) => AssetDatabase.GetBuiltinExtraResource<Sprite>("UI/Skin/" + n);
+
+        static TMP_DefaultControls.Resources TmpRes() => new TMP_DefaultControls.Resources
+        {
+            standard = Builtin("UISprite.psd"),
+            background = Builtin("Background.psd"),
+            inputField = Builtin("InputFieldBackground.psd"),
+            knob = Builtin("Knob.psd"),
+            checkmark = Builtin("Checkmark.psd"),
+            dropdown = Builtin("DropdownArrow.psd"),
+            mask = Builtin("UIMask.psd"),
+        };
+
+        static DefaultControls.Resources UiRes() => new DefaultControls.Resources
+        {
+            standard = Builtin("UISprite.psd"),
+            background = Builtin("Background.psd"),
+            inputField = Builtin("InputFieldBackground.psd"),
+            knob = Builtin("Knob.psd"),
+            checkmark = Builtin("Checkmark.psd"),
+            dropdown = Builtin("DropdownArrow.psd"),
+            mask = Builtin("UIMask.psd"),
+        };
+
+        static GameObject NewUI(string name, Transform parent)
+        {
+            var go = new GameObject(name, typeof(RectTransform));
+            if (parent != null) go.transform.SetParent(parent, false);
+            return go;
+        }
+
+        static void Stretch(RectTransform rt)
+        {
+            rt.anchorMin = Vector2.zero;
+            rt.anchorMax = Vector2.one;
+            rt.pivot = new Vector2(0.5f, 0.5f);
+            rt.offsetMin = Vector2.zero;
+            rt.offsetMax = Vector2.zero;
+        }
+
+        /// padding = (izquierda, derecha, vertical)
+        static void Pad(RectTransform rt, float[] p)
+        {
+            rt.anchorMin = Vector2.zero;
+            rt.anchorMax = Vector2.one;
+            rt.offsetMin = new Vector2(P(p, 0), P(p, 2));
+            rt.offsetMax = new Vector2(-P(p, 1), -P(p, 2));
+        }
+
+        static float P(float[] a, int i) => a != null && a.Length > i ? a[i] : 0f;
+
+        static void ApplyRect(RectTransform rt, RT r)
+        {
+            rt.anchorMin = V(r.anchorMin, new Vector2(0.5f, 0.5f));
+            rt.anchorMax = V(r.anchorMax, new Vector2(0.5f, 0.5f));
+            rt.pivot = V(r.pivot, new Vector2(0.5f, 0.5f));
+            rt.anchoredPosition = V(r.anchoredPosition, Vector2.zero);
+            rt.sizeDelta = V(r.sizeDelta, new Vector2(100, 100));
+            rt.localEulerAngles = new Vector3(0, 0, r.rotationZ);
+        }
+
+        static Vector2 V(float[] a, Vector2 fallback) => a != null && a.Length >= 2 ? new Vector2(a[0], a[1]) : fallback;
+
+        static Color Col(string hex, float alpha)
+        {
+            if (string.IsNullOrEmpty(hex) || !ColorUtility.TryParseHtmlString(hex, out var c)) c = Color.white;
+            c.a *= alpha;
+            return c;
+        }
+
+        static void SetLayer(Transform t, int layer)
+        {
+            t.gameObject.layer = layer;
+            foreach (Transform c in t) SetLayer(c, layer);
+        }
+
+        /// Añade el script &lt;Clase&gt;View si existe en el proyecto.
+        static void AttachView(GameObject go, string className)
+        {
+            if (string.IsNullOrEmpty(className)) return;
+            var t = TypeCache.GetTypesDerivedFrom<MonoBehaviour>().FirstOrDefault(x => x.Name == className + "View" && !x.IsAbstract);
+            if (t != null) go.AddComponent(t);
+        }
+
+        static void EnsureEventSystem()
+        {
+            if (UnityEngine.Object.FindAnyObjectByType<EventSystem>() != null) return;
+            var es = new GameObject("EventSystem", typeof(EventSystem));
+            var module = Type.GetType("UnityEngine.InputSystem.UI.InputSystemUIInputModule, Unity.InputSystem");
+            if (module != null) es.AddComponent(module);
+            else es.AddComponent<StandaloneInputModule>();
+            Undo.RegisterCreatedObjectUndo(es, "Crear EventSystem");
+        }
+    }
+
+    /// Regenera el prefab cuando un diseño exportado cambia (o al abrir Unity si quedó desactualizado).
+    class EditorGuiAutoImport : AssetPostprocessor
+    {
+        static void OnPostprocessAllAssets(string[] imported, string[] deleted, string[] moved, string[] movedFrom)
+        {
+            var designs = imported.Where(p => p.StartsWith(EditorGuiImporter.Root + "/Designs/") && p.EndsWith(".json")).ToArray();
+            // Al importar los TMP Essential Resources, se generan los prefabs que estaban pendientes.
+            if (imported.Any(p => p.EndsWith("TMP Settings.asset")))
+            {
+                EditorApplication.delayCall += EditorGuiImporter.RebuildAll;
+                return;
+            }
+            if (designs.Length == 0) return;
+            EditorApplication.delayCall += () =>
+            {
+                foreach (var p in designs) Rebuild(p);
+            };
+        }
+
+        [InitializeOnLoadMethod]
+        static void CatchUp()
+        {
+            EditorApplication.delayCall += () =>
+            {
+                var dir = EditorGuiImporter.Root + "/Designs";
+                if (!Directory.Exists(dir)) return;
+                foreach (var f in Directory.GetFiles(dir, "*.json"))
+                {
+                    var json = f.Replace('\\', '/');
+                    var prefab = EditorGuiImporter.PrefabPathFor(json);
+                    if (!File.Exists(prefab) || File.GetLastWriteTimeUtc(json) > File.GetLastWriteTimeUtc(prefab)) Rebuild(json);
+                }
+            };
+        }
+
+        static void Rebuild(string json)
+        {
+            try { EditorGuiImporter.BuildPrefab(json); }
+            catch (Exception ex) { Debug.LogError("[Lienzo UI] No se pudo construir " + json + ": " + ex); }
+        }
+    }
+}

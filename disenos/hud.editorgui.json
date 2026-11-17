@@ -1,0 +1,1227 @@
+{
+  "title": "HUD de juego",
+  "width": 1920.0,
+  "height": 1080.0,
+  "background": [
+    70,
+    120,
+    90,
+    255
+  ],
+  "elements": [
+    {
+      "id": 1,
+      "name": "Escena (vista previa)",
+      "kind": "Image",
+      "x": 0.0,
+      "y": 0.0,
+      "w": 1920.0,
+      "h": 1080.0,
+      "rot": 0.0,
+      "fill": [
+        120,
+        190,
+        240,
+        255
+      ],
+      "fill2": [
+        70,
+        140,
+        80,
+        255
+      ],
+      "stroke": [
+        30,
+        30,
+        40,
+        255
+      ],
+      "stroke_w": 0.0,
+      "radius": 0.0,
+      "opacity": 1.0,
+      "text": "",
+      "font_size": 32.0,
+      "text_color": [
+        20,
+        20,
+        30,
+        255
+      ],
+      "bold": false,
+      "italic": false,
+      "underline": false,
+      "align": 1,
+      "valign": 1,
+      "font": "",
+      "on_click": "",
+      "image": "",
+      "value": 0.5,
+      "visible": true,
+      "locked": false,
+      "parent": null,
+      "anchor_min": [
+        0.0,
+        0.0
+      ],
+      "anchor_max": [
+        1.0,
+        1.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "options": [],
+      "interactable": true,
+      "raycast": false,
+      "mask": false,
+      "shadow": {
+        "on": false,
+        "color": [
+          0,
+          0,
+          0,
+          110
+        ],
+        "offset": [
+          6.0,
+          -6.0
+        ]
+      },
+      "layout": {
+        "mode": "None",
+        "padding": [
+          16.0,
+          16.0,
+          16.0,
+          16.0
+        ],
+        "spacing": [
+          12.0,
+          12.0
+        ],
+        "align": 0,
+        "cell": [
+          100.0,
+          100.0
+        ],
+        "expand_w": false,
+        "expand_h": false
+      },
+      "collapsed": false
+    },
+    {
+      "id": 2,
+      "name": "Barra superior",
+      "kind": "Empty",
+      "x": 0.0,
+      "y": 0.0,
+      "w": 1920.0,
+      "h": 170.0,
+      "rot": 0.0,
+      "fill": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "fill2": [
+        0,
+        196,
+        204,
+        255
+      ],
+      "stroke": [
+        30,
+        30,
+        40,
+        255
+      ],
+      "stroke_w": 0.0,
+      "radius": 0.0,
+      "opacity": 1.0,
+      "text": "",
+      "font_size": 32.0,
+      "text_color": [
+        20,
+        20,
+        30,
+        255
+      ],
+      "bold": false,
+      "italic": false,
+      "underline": false,
+      "align": 1,
+      "valign": 1,
+      "font": "",
+      "on_click": "",
+      "image": "",
+      "value": 0.5,
+      "visible": true,
+      "locked": false,
+      "parent": null,
+      "anchor_min": [
+        0.0,
+        1.0
+      ],
+      "anchor_max": [
+        1.0,
+        1.0
+      ],
+      "pivot": [
+        0.5,
+        1.0
+      ],
+      "options": [],
+      "interactable": true,
+      "raycast": false,
+      "mask": false,
+      "shadow": {
+        "on": false,
+        "color": [
+          0,
+          0,
+          0,
+          110
+        ],
+        "offset": [
+          6.0,
+          -6.0
+        ]
+      },
+      "layout": {
+        "mode": "None",
+        "padding": [
+          16.0,
+          16.0,
+          16.0,
+          16.0
+        ],
+        "spacing": [
+          12.0,
+          12.0
+        ],
+        "align": 0,
+        "cell": [
+          100.0,
+          100.0
+        ],
+        "expand_w": false,
+        "expand_h": false
+      },
+      "collapsed": false
+    },
+    {
+      "id": 3,
+      "name": "Marco vida",
+      "kind": "Panel",
+      "x": 40.0,
+      "y": 40.0,
+      "w": 520.0,
+      "h": 110.0,
+      "rot": 0.0,
+      "fill": [
+        10,
+        10,
+        20,
+        160
+      ],
+      "fill2": [
+        0,
+        196,
+        204,
+        255
+      ],
+      "stroke": [
+        30,
+        30,
+        40,
+        255
+      ],
+      "stroke_w": 0.0,
+      "radius": 24.0,
+      "opacity": 1.0,
+      "text": "",
+      "font_size": 32.0,
+      "text_color": [
+        20,
+        20,
+        30,
+        255
+      ],
+      "bold": false,
+      "italic": false,
+      "underline": false,
+      "align": 1,
+      "valign": 1,
+      "font": "",
+      "on_click": "",
+      "image": "",
+      "value": 0.5,
+      "visible": true,
+      "locked": false,
+      "parent": 2,
+      "anchor_min": [
+        0.0,
+        1.0
+      ],
+      "anchor_max": [
+        0.0,
+        1.0
+      ],
+      "pivot": [
+        0.0,
+        1.0
+      ],
+      "options": [],
+      "interactable": true,
+      "raycast": true,
+      "mask": false,
+      "shadow": {
+        "on": false,
+        "color": [
+          0,
+          0,
+          0,
+          110
+        ],
+        "offset": [
+          6.0,
+          -6.0
+        ]
+      },
+      "layout": {
+        "mode": "None",
+        "padding": [
+          16.0,
+          16.0,
+          16.0,
+          16.0
+        ],
+        "spacing": [
+          12.0,
+          12.0
+        ],
+        "align": 0,
+        "cell": [
+          100.0,
+          100.0
+        ],
+        "expand_w": false,
+        "expand_h": false
+      },
+      "collapsed": false
+    },
+    {
+      "id": 4,
+      "name": "Etiqueta vida",
+      "kind": "Text",
+      "x": 70.0,
+      "y": 50.0,
+      "w": 300.0,
+      "h": 40.0,
+      "rot": 0.0,
+      "fill": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "fill2": [
+        0,
+        196,
+        204,
+        255
+      ],
+      "stroke": [
+        30,
+        30,
+        40,
+        255
+      ],
+      "stroke_w": 0.0,
+      "radius": 0.0,
+      "opacity": 1.0,
+      "text": "VIDA 72/100",
+      "font_size": 28.0,
+      "text_color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "bold": true,
+      "italic": false,
+      "underline": false,
+      "align": 0,
+      "valign": 1,
+      "font": "",
+      "on_click": "",
+      "image": "",
+      "value": 0.5,
+      "visible": true,
+      "locked": false,
+      "parent": 3,
+      "anchor_min": [
+        0.0,
+        1.0
+      ],
+      "anchor_max": [
+        0.0,
+        1.0
+      ],
+      "pivot": [
+        0.0,
+        1.0
+      ],
+      "options": [],
+      "interactable": true,
+      "raycast": false,
+      "mask": false,
+      "shadow": {
+        "on": false,
+        "color": [
+          0,
+          0,
+          0,
+          110
+        ],
+        "offset": [
+          6.0,
+          -6.0
+        ]
+      },
+      "layout": {
+        "mode": "None",
+        "padding": [
+          16.0,
+          16.0,
+          16.0,
+          16.0
+        ],
+        "spacing": [
+          12.0,
+          12.0
+        ],
+        "align": 0,
+        "cell": [
+          100.0,
+          100.0
+        ],
+        "expand_w": false,
+        "expand_h": false
+      },
+      "collapsed": false
+    },
+    {
+      "id": 5,
+      "name": "Barra de vida",
+      "kind": "Slider",
+      "x": 70.0,
+      "y": 95.0,
+      "w": 460.0,
+      "h": 34.0,
+      "rot": 0.0,
+      "fill": [
+        235,
+        70,
+        90,
+        255
+      ],
+      "fill2": [
+        60,
+        60,
+        70,
+        255
+      ],
+      "stroke": [
+        30,
+        30,
+        40,
+        255
+      ],
+      "stroke_w": 0.0,
+      "radius": 0.0,
+      "opacity": 1.0,
+      "text": "",
+      "font_size": 32.0,
+      "text_color": [
+        20,
+        20,
+        30,
+        255
+      ],
+      "bold": false,
+      "italic": false,
+      "underline": false,
+      "align": 1,
+      "valign": 1,
+      "font": "",
+      "on_click": "",
+      "image": "",
+      "value": 0.72,
+      "visible": true,
+      "locked": false,
+      "parent": 3,
+      "anchor_min": [
+        0.0,
+        0.0
+      ],
+      "anchor_max": [
+        1.0,
+        0.0
+      ],
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "options": [],
+      "interactable": false,
+      "raycast": true,
+      "mask": false,
+      "shadow": {
+        "on": false,
+        "color": [
+          0,
+          0,
+          0,
+          110
+        ],
+        "offset": [
+          6.0,
+          -6.0
+        ]
+      },
+      "layout": {
+        "mode": "None",
+        "padding": [
+          16.0,
+          16.0,
+          16.0,
+          16.0
+        ],
+        "spacing": [
+          12.0,
+          12.0
+        ],
+        "align": 0,
+        "cell": [
+          100.0,
+          100.0
+        ],
+        "expand_w": false,
+        "expand_h": false
+      },
+      "collapsed": false
+    },
+    {
+      "id": 6,
+      "name": "Puntos",
+      "kind": "Text",
+      "x": 1480.0,
+      "y": 50.0,
+      "w": 400.0,
+      "h": 60.0,
+      "rot": 0.0,
+      "fill": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "fill2": [
+        0,
+        196,
+        204,
+        255
+      ],
+      "stroke": [
+        30,
+        30,
+        40,
+        255
+      ],
+      "stroke_w": 0.0,
+      "radius": 0.0,
+      "opacity": 1.0,
+      "text": "12 450",
+      "font_size": 52.0,
+      "text_color": [
+        255,
+        240,
+        150,
+        255
+      ],
+      "bold": true,
+      "italic": false,
+      "underline": false,
+      "align": 2,
+      "valign": 1,
+      "font": "",
+      "on_click": "",
+      "image": "",
+      "value": 0.5,
+      "visible": true,
+      "locked": false,
+      "parent": 2,
+      "anchor_min": [
+        1.0,
+        1.0
+      ],
+      "anchor_max": [
+        1.0,
+        1.0
+      ],
+      "pivot": [
+        1.0,
+        1.0
+      ],
+      "options": [],
+      "interactable": true,
+      "raycast": false,
+      "mask": false,
+      "shadow": {
+        "on": false,
+        "color": [
+          0,
+          0,
+          0,
+          110
+        ],
+        "offset": [
+          6.0,
+          -6.0
+        ]
+      },
+      "layout": {
+        "mode": "None",
+        "padding": [
+          16.0,
+          16.0,
+          16.0,
+          16.0
+        ],
+        "spacing": [
+          12.0,
+          12.0
+        ],
+        "align": 0,
+        "cell": [
+          100.0,
+          100.0
+        ],
+        "expand_w": false,
+        "expand_h": false
+      },
+      "collapsed": false
+    },
+    {
+      "id": 7,
+      "name": "Barra de acciones",
+      "kind": "Panel",
+      "x": 670.0,
+      "y": 910.0,
+      "w": 580.0,
+      "h": 140.0,
+      "rot": 0.0,
+      "fill": [
+        10,
+        10,
+        20,
+        120
+      ],
+      "fill2": [
+        0,
+        196,
+        204,
+        255
+      ],
+      "stroke": [
+        30,
+        30,
+        40,
+        255
+      ],
+      "stroke_w": 0.0,
+      "radius": 20.0,
+      "opacity": 1.0,
+      "text": "",
+      "font_size": 32.0,
+      "text_color": [
+        20,
+        20,
+        30,
+        255
+      ],
+      "bold": false,
+      "italic": false,
+      "underline": false,
+      "align": 1,
+      "valign": 1,
+      "font": "",
+      "on_click": "",
+      "image": "",
+      "value": 0.5,
+      "visible": true,
+      "locked": false,
+      "parent": null,
+      "anchor_min": [
+        0.5,
+        0.0
+      ],
+      "anchor_max": [
+        0.5,
+        0.0
+      ],
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "options": [],
+      "interactable": true,
+      "raycast": true,
+      "mask": false,
+      "shadow": {
+        "on": false,
+        "color": [
+          0,
+          0,
+          0,
+          110
+        ],
+        "offset": [
+          6.0,
+          -6.0
+        ]
+      },
+      "layout": {
+        "mode": "Horizontal",
+        "padding": [
+          16.0,
+          16.0,
+          16.0,
+          16.0
+        ],
+        "spacing": [
+          16.0,
+          0.0
+        ],
+        "align": 4,
+        "cell": [
+          100.0,
+          100.0
+        ],
+        "expand_w": false,
+        "expand_h": false
+      },
+      "collapsed": false
+    },
+    {
+      "id": 8,
+      "name": "Ranura 1",
+      "kind": "Panel",
+      "x": 712.0,
+      "y": 924.0,
+      "w": 112.0,
+      "h": 112.0,
+      "rot": 0.0,
+      "fill": [
+        10,
+        10,
+        20,
+        150
+      ],
+      "fill2": [
+        0,
+        196,
+        204,
+        255
+      ],
+      "stroke": [
+        255,
+        255,
+        255,
+        200
+      ],
+      "stroke_w": 3.0,
+      "radius": 16.0,
+      "opacity": 1.0,
+      "text": "1",
+      "font_size": 22.0,
+      "text_color": [
+        255,
+        255,
+        255,
+        180
+      ],
+      "bold": false,
+      "italic": false,
+      "underline": false,
+      "align": 2,
+      "valign": 2,
+      "font": "",
+      "on_click": "",
+      "image": "",
+      "value": 0.5,
+      "visible": true,
+      "locked": false,
+      "parent": 7,
+      "anchor_min": [
+        0.5,
+        0.5
+      ],
+      "anchor_max": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "options": [],
+      "interactable": true,
+      "raycast": true,
+      "mask": false,
+      "shadow": {
+        "on": false,
+        "color": [
+          0,
+          0,
+          0,
+          110
+        ],
+        "offset": [
+          6.0,
+          -6.0
+        ]
+      },
+      "layout": {
+        "mode": "None",
+        "padding": [
+          16.0,
+          16.0,
+          16.0,
+          16.0
+        ],
+        "spacing": [
+          12.0,
+          12.0
+        ],
+        "align": 0,
+        "cell": [
+          100.0,
+          100.0
+        ],
+        "expand_w": false,
+        "expand_h": false
+      },
+      "collapsed": false
+    },
+    {
+      "id": 9,
+      "name": "Ranura 2",
+      "kind": "Panel",
+      "x": 840.0,
+      "y": 924.0,
+      "w": 112.0,
+      "h": 112.0,
+      "rot": 0.0,
+      "fill": [
+        10,
+        10,
+        20,
+        150
+      ],
+      "fill2": [
+        0,
+        196,
+        204,
+        255
+      ],
+      "stroke": [
+        255,
+        255,
+        255,
+        200
+      ],
+      "stroke_w": 3.0,
+      "radius": 16.0,
+      "opacity": 1.0,
+      "text": "2",
+      "font_size": 22.0,
+      "text_color": [
+        255,
+        255,
+        255,
+        180
+      ],
+      "bold": false,
+      "italic": false,
+      "underline": false,
+      "align": 2,
+      "valign": 2,
+      "font": "",
+      "on_click": "",
+      "image": "",
+      "value": 0.5,
+      "visible": true,
+      "locked": false,
+      "parent": 7,
+      "anchor_min": [
+        0.5,
+        0.5
+      ],
+      "anchor_max": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "options": [],
+      "interactable": true,
+      "raycast": true,
+      "mask": false,
+      "shadow": {
+        "on": false,
+        "color": [
+          0,
+          0,
+          0,
+          110
+        ],
+        "offset": [
+          6.0,
+          -6.0
+        ]
+      },
+      "layout": {
+        "mode": "None",
+        "padding": [
+          16.0,
+          16.0,
+          16.0,
+          16.0
+        ],
+        "spacing": [
+          12.0,
+          12.0
+        ],
+        "align": 0,
+        "cell": [
+          100.0,
+          100.0
+        ],
+        "expand_w": false,
+        "expand_h": false
+      },
+      "collapsed": false
+    },
+    {
+      "id": 10,
+      "name": "Ranura 3",
+      "kind": "Panel",
+      "x": 968.0,
+      "y": 924.0,
+      "w": 112.0,
+      "h": 112.0,
+      "rot": 0.0,
+      "fill": [
+        10,
+        10,
+        20,
+        150
+      ],
+      "fill2": [
+        0,
+        196,
+        204,
+        255
+      ],
+      "stroke": [
+        255,
+        255,
+        255,
+        200
+      ],
+      "stroke_w": 3.0,
+      "radius": 16.0,
+      "opacity": 1.0,
+      "text": "3",
+      "font_size": 22.0,
+      "text_color": [
+        255,
+        255,
+        255,
+        180
+      ],
+      "bold": false,
+      "italic": false,
+      "underline": false,
+      "align": 2,
+      "valign": 2,
+      "font": "",
+      "on_click": "",
+      "image": "",
+      "value": 0.5,
+      "visible": true,
+      "locked": false,
+      "parent": 7,
+      "anchor_min": [
+        0.5,
+        0.5
+      ],
+      "anchor_max": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "options": [],
+      "interactable": true,
+      "raycast": true,
+      "mask": false,
+      "shadow": {
+        "on": false,
+        "color": [
+          0,
+          0,
+          0,
+          110
+        ],
+        "offset": [
+          6.0,
+          -6.0
+        ]
+      },
+      "layout": {
+        "mode": "None",
+        "padding": [
+          16.0,
+          16.0,
+          16.0,
+          16.0
+        ],
+        "spacing": [
+          12.0,
+          12.0
+        ],
+        "align": 0,
+        "cell": [
+          100.0,
+          100.0
+        ],
+        "expand_w": false,
+        "expand_h": false
+      },
+      "collapsed": false
+    },
+    {
+      "id": 11,
+      "name": "Ranura 4",
+      "kind": "Panel",
+      "x": 1096.0,
+      "y": 924.0,
+      "w": 112.0,
+      "h": 112.0,
+      "rot": 0.0,
+      "fill": [
+        10,
+        10,
+        20,
+        150
+      ],
+      "fill2": [
+        0,
+        196,
+        204,
+        255
+      ],
+      "stroke": [
+        255,
+        255,
+        255,
+        200
+      ],
+      "stroke_w": 3.0,
+      "radius": 16.0,
+      "opacity": 1.0,
+      "text": "4",
+      "font_size": 22.0,
+      "text_color": [
+        255,
+        255,
+        255,
+        180
+      ],
+      "bold": false,
+      "italic": false,
+      "underline": false,
+      "align": 2,
+      "valign": 2,
+      "font": "",
+      "on_click": "",
+      "image": "",
+      "value": 0.5,
+      "visible": true,
+      "locked": false,
+      "parent": 7,
+      "anchor_min": [
+        0.5,
+        0.5
+      ],
+      "anchor_max": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "options": [],
+      "interactable": true,
+      "raycast": true,
+      "mask": false,
+      "shadow": {
+        "on": false,
+        "color": [
+          0,
+          0,
+          0,
+          110
+        ],
+        "offset": [
+          6.0,
+          -6.0
+        ]
+      },
+      "layout": {
+        "mode": "None",
+        "padding": [
+          16.0,
+          16.0,
+          16.0,
+          16.0
+        ],
+        "spacing": [
+          12.0,
+          12.0
+        ],
+        "align": 0,
+        "cell": [
+          100.0,
+          100.0
+        ],
+        "expand_w": false,
+        "expand_h": false
+      },
+      "collapsed": false
+    },
+    {
+      "id": 12,
+      "name": "Minimapa",
+      "kind": "Ellipse",
+      "x": 1620.0,
+      "y": 780.0,
+      "w": 260.0,
+      "h": 260.0,
+      "rot": 0.0,
+      "fill": [
+        20,
+        40,
+        30,
+        200
+      ],
+      "fill2": [
+        0,
+        196,
+        204,
+        255
+      ],
+      "stroke": [
+        255,
+        255,
+        255,
+        220
+      ],
+      "stroke_w": 4.0,
+      "radius": 0.0,
+      "opacity": 1.0,
+      "text": "",
+      "font_size": 32.0,
+      "text_color": [
+        20,
+        20,
+        30,
+        255
+      ],
+      "bold": false,
+      "italic": false,
+      "underline": false,
+      "align": 1,
+      "valign": 1,
+      "font": "",
+      "on_click": "",
+      "image": "",
+      "value": 0.5,
+      "visible": true,
+      "locked": false,
+      "parent": null,
+      "anchor_min": [
+        1.0,
+        0.0
+      ],
+      "anchor_max": [
+        1.0,
+        0.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "options": [],
+      "interactable": true,
+      "raycast": true,
+      "mask": true,
+      "shadow": {
+        "on": false,
+        "color": [
+          0,
+          0,
+          0,
+          110
+        ],
+        "offset": [
+          6.0,
+          -6.0
+        ]
+      },
+      "layout": {
+        "mode": "None",
+        "padding": [
+          16.0,
+          16.0,
+          16.0,
+          16.0
+        ],
+        "spacing": [
+          12.0,
+          12.0
+        ],
+        "align": 0,
+        "cell": [
+          100.0,
+          100.0
+        ],
+        "expand_w": false,
+        "expand_h": false
+      },
+      "collapsed": false
+    }
+  ],
+  "next_id": 13,
+  "canvas_match": 0.5
+}

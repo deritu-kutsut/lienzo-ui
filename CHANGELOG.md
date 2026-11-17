@@ -1,0 +1,55 @@
+# Changelog
+
+Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); versiones con [SemVer](https://semver.org/lang/es/).
+
+## [1.1.1] - 2026-11-17
+
+Moderación automática y arranque maximizado.
+
+### Añadido
+- **Moderación automática**: todo lo que se sube (también fotos de perfil y banners) se comprueba solo; lo limpio se publica y lo dudoso queda pendiente para una persona. `reanalizar` vuelve a pasar lo pendiente.
+- La ventana arranca **maximizada**.
+- **Paquete de Unity** gratuito (`LienzoUI-for-Unity`): importador, ventana de acceso y 7 pantallas de ejemplo, enviado a la Asset Store.
+
+## [1.1.0] - 2026-11-17
+
+Comunidad, perfiles de creador y temas.
+
+### Añadido
+- **Comunidad**: pestaña para explorar, instalar, subir y reportar **plugins, imágenes, fuentes, plantillas, elementos y temas**. Se instala con un clic tras verificar la huella SHA-256 y volver a validar el archivo. Explorar no necesita cuenta.
+- **Cuentas con GitHub o Google** (sin contraseñas) y **perfil de creador**: foto, banner, biografía, GitHub y redes (X, YouTube, itch.io, Twitch, Bluesky, Instagram). Editor de perfil al estilo de X; las fotos se recortan y reducen solas y se ven al momento mientras se revisan. Botón de perfil con tu foto en la cabecera.
+- **Seguir creadores** y **corazones** (como la estrella de GitHub), con filtro «Siguiendo». Quién sigue a quién no es público; solo los totales.
+- **Subir contenido** con vista previa opcional (se amplía con un clic) y un icono SVG por tipo. Cada subida pasa por cuarentena, validación de formato (solo formatos de datos), antivirus y moderación de texto; lo dudoso espera revisión humana.
+- **Filtro +18** aplicado en el servidor: solo lo ve quien confirma ser mayor de 18 años.
+- **Temas**: botón **Temas** para cambiar colores, esquinas y fuente de toda la app. Cinco temas incluidos (Lienzo oscuro, Lienzo claro, Medianoche, Atardecer, Bosque), temas propios y compartibles en la comunidad.
+- **Web de moderación** (`web/moderacion`): panel para revisar lo pendiente por categorías, con acceso para personas (cuenta) y para scripts (tokens revocables con alcances y caducidad). La orden `--comunidad-revisar` también aprueba fotos de perfil y gestiona tokens.
+- Iconos SVG propios en lugar de emojis; ejecutable `Lienzo UI.exe`.
+- Servidor en `supabase/` (esquema con RLS, funciones de moderación) y guías `docs/COMUNIDAD.md` y `docs/MODERACION.md`.
+
+### Cambiado
+- Los colores de la interfaz se leen del tema en uso (antes eran constantes).
+
+### Seguridad
+- Sin contraseñas ni correos en la app; sesión guardada en el Administrador de credenciales de Windows; la app no se conecta hasta que abres la pestaña Comunidad.
+
+## [1.0.0] - 2026-11-16
+
+Primera versión pública de **Lienzo UI** (antes «Editor GUI»).
+
+### Añadido
+- **Pixel art**: imágenes sin suavizado y píxeles enteros en el editor; Canvas Pixel Perfect y sprites Point sin compresión en Unity.
+- **Plugins**: comandos, exportadores y plantillas con scripts Rhai aislados; pestaña Plugins y tres plugins de ejemplo.
+- **Accesibilidad**: interfaz en español o inglés, tamaño hasta 200 % (Ctrl+Alt+= / -), alto contraste y movimiento reducido. Tutorial completo en inglés.
+- Nombre, icono SVG y portada.
+- Tutorial integrado para novatos (5 pasos) y profesionales (9 pasos): se abre la primera vez; al terminarlo se abre el editor; botón **Tutorial** y F1 para reabrirlo.
+- Línea de comandos: `--plantillas`, `--plantilla`, `--abrir`, `--guardar`, `--exportar` (sin ventana), `--tutorial`, `--sin-tutorial`.
+- Servidor MCP (`mcp/lienzo-ui-mcp.mjs`) con 12 herramientas, llamadas en cola y `mcp/probar-mcp.mjs` (32 comprobaciones).
+- Documentación: tutoriales, guía para extender, MCP y contribución. Licencia MIT.
+
+### Probado
+- Las 5 plantillas y dos diseños creados por MCP («Tienda del herrero» y «HUD pixel art») exportados a Unity 6000.3 (URP): prefabs uGUI, UI Toolkit e IMGUI sin errores; el modo pixel art deja el Canvas en Pixel Perfect y los sprites en Point.
+
+### Corregido (encontrado al probar en Unity)
+- Sin los TMP Essential Resources los textos quedaban sin fuente y fallaban en RectMask2D: el importador ahora lo detecta, abre TMP Importer y regenera los prefabs.
+- Títulos que se partían en uGUI (fuente de TMP más ancha): los textos se reducen hasta caber.
+- Cuadrícula de UI Toolkit con una columna de menos por el espaciado.

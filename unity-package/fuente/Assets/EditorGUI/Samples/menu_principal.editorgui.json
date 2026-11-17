@@ -1,0 +1,1126 @@
+{
+  "title": "Menú principal",
+  "width": 1920.0,
+  "height": 1080.0,
+  "background": [
+    24,
+    22,
+    48,
+    255
+  ],
+  "elements": [
+    {
+      "id": 1,
+      "name": "Fondo",
+      "kind": "Image",
+      "x": 0.0,
+      "y": 0.0,
+      "w": 1920.0,
+      "h": 1080.0,
+      "rot": 0.0,
+      "fill": [
+        46,
+        32,
+        110,
+        255
+      ],
+      "fill2": [
+        12,
+        120,
+        150,
+        255
+      ],
+      "stroke": [
+        30,
+        30,
+        40,
+        255
+      ],
+      "stroke_w": 0.0,
+      "radius": 0.0,
+      "opacity": 1.0,
+      "text": "",
+      "font_size": 32.0,
+      "text_color": [
+        20,
+        20,
+        30,
+        255
+      ],
+      "bold": false,
+      "italic": false,
+      "underline": false,
+      "align": 1,
+      "valign": 1,
+      "font": "",
+      "on_click": "",
+      "image": "",
+      "value": 0.5,
+      "visible": true,
+      "locked": false,
+      "parent": null,
+      "anchor_min": [
+        0.0,
+        0.0
+      ],
+      "anchor_max": [
+        1.0,
+        1.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "options": [],
+      "interactable": true,
+      "raycast": false,
+      "mask": false,
+      "shadow": {
+        "on": false,
+        "color": [
+          0,
+          0,
+          0,
+          110
+        ],
+        "offset": [
+          6.0,
+          -6.0
+        ]
+      },
+      "layout": {
+        "mode": "None",
+        "padding": [
+          16.0,
+          16.0,
+          16.0,
+          16.0
+        ],
+        "spacing": [
+          12.0,
+          12.0
+        ],
+        "align": 0,
+        "cell": [
+          100.0,
+          100.0
+        ],
+        "expand_w": false,
+        "expand_h": false
+      },
+      "collapsed": false
+    },
+    {
+      "id": 2,
+      "name": "Luna",
+      "kind": "Ellipse",
+      "x": 1382.4,
+      "y": 129.59999,
+      "w": 260.0,
+      "h": 260.0,
+      "rot": 0.0,
+      "fill": [
+        255,
+        214,
+        120,
+        200
+      ],
+      "fill2": [
+        0,
+        196,
+        204,
+        255
+      ],
+      "stroke": [
+        30,
+        30,
+        40,
+        255
+      ],
+      "stroke_w": 0.0,
+      "radius": 0.0,
+      "opacity": 1.0,
+      "text": "",
+      "font_size": 32.0,
+      "text_color": [
+        20,
+        20,
+        30,
+        255
+      ],
+      "bold": false,
+      "italic": false,
+      "underline": false,
+      "align": 1,
+      "valign": 1,
+      "font": "",
+      "on_click": "",
+      "image": "",
+      "value": 0.5,
+      "visible": true,
+      "locked": false,
+      "parent": null,
+      "anchor_min": [
+        1.0,
+        1.0
+      ],
+      "anchor_max": [
+        1.0,
+        1.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "options": [],
+      "interactable": true,
+      "raycast": false,
+      "mask": false,
+      "shadow": {
+        "on": false,
+        "color": [
+          0,
+          0,
+          0,
+          110
+        ],
+        "offset": [
+          6.0,
+          -6.0
+        ]
+      },
+      "layout": {
+        "mode": "None",
+        "padding": [
+          16.0,
+          16.0,
+          16.0,
+          16.0
+        ],
+        "spacing": [
+          12.0,
+          12.0
+        ],
+        "align": 0,
+        "cell": [
+          100.0,
+          100.0
+        ],
+        "expand_w": false,
+        "expand_h": false
+      },
+      "collapsed": false
+    },
+    {
+      "id": 3,
+      "name": "Cabecera",
+      "kind": "Empty",
+      "x": 460.0,
+      "y": 129.59999,
+      "w": 1000.0,
+      "h": 190.0,
+      "rot": 0.0,
+      "fill": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "fill2": [
+        0,
+        196,
+        204,
+        255
+      ],
+      "stroke": [
+        30,
+        30,
+        40,
+        255
+      ],
+      "stroke_w": 0.0,
+      "radius": 0.0,
+      "opacity": 1.0,
+      "text": "",
+      "font_size": 32.0,
+      "text_color": [
+        20,
+        20,
+        30,
+        255
+      ],
+      "bold": false,
+      "italic": false,
+      "underline": false,
+      "align": 1,
+      "valign": 1,
+      "font": "",
+      "on_click": "",
+      "image": "",
+      "value": 0.5,
+      "visible": true,
+      "locked": false,
+      "parent": null,
+      "anchor_min": [
+        0.5,
+        1.0
+      ],
+      "anchor_max": [
+        0.5,
+        1.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "options": [],
+      "interactable": true,
+      "raycast": false,
+      "mask": false,
+      "shadow": {
+        "on": false,
+        "color": [
+          0,
+          0,
+          0,
+          110
+        ],
+        "offset": [
+          6.0,
+          -6.0
+        ]
+      },
+      "layout": {
+        "mode": "None",
+        "padding": [
+          16.0,
+          16.0,
+          16.0,
+          16.0
+        ],
+        "spacing": [
+          12.0,
+          12.0
+        ],
+        "align": 0,
+        "cell": [
+          100.0,
+          100.0
+        ],
+        "expand_w": false,
+        "expand_h": false
+      },
+      "collapsed": false
+    },
+    {
+      "id": 4,
+      "name": "Título",
+      "kind": "Text",
+      "x": 460.0,
+      "y": 129.59999,
+      "w": 1000.0,
+      "h": 120.0,
+      "rot": 0.0,
+      "fill": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "fill2": [
+        0,
+        196,
+        204,
+        255
+      ],
+      "stroke": [
+        30,
+        30,
+        40,
+        255
+      ],
+      "stroke_w": 0.0,
+      "radius": 0.0,
+      "opacity": 1.0,
+      "text": "AVENTURA ESTELAR",
+      "font_size": 96.0,
+      "text_color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "bold": true,
+      "italic": false,
+      "underline": false,
+      "align": 1,
+      "valign": 1,
+      "font": "",
+      "on_click": "",
+      "image": "",
+      "value": 0.5,
+      "visible": true,
+      "locked": false,
+      "parent": 3,
+      "anchor_min": [
+        0.0,
+        1.0
+      ],
+      "anchor_max": [
+        1.0,
+        1.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "options": [],
+      "interactable": true,
+      "raycast": false,
+      "mask": false,
+      "shadow": {
+        "on": false,
+        "color": [
+          0,
+          0,
+          0,
+          110
+        ],
+        "offset": [
+          6.0,
+          -6.0
+        ]
+      },
+      "layout": {
+        "mode": "None",
+        "padding": [
+          16.0,
+          16.0,
+          16.0,
+          16.0
+        ],
+        "spacing": [
+          12.0,
+          12.0
+        ],
+        "align": 0,
+        "cell": [
+          100.0,
+          100.0
+        ],
+        "expand_w": false,
+        "expand_h": false
+      },
+      "collapsed": false
+    },
+    {
+      "id": 5,
+      "name": "Subtítulo",
+      "kind": "Text",
+      "x": 560.0,
+      "y": 264.59998,
+      "w": 800.0,
+      "h": 50.0,
+      "rot": 0.0,
+      "fill": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "fill2": [
+        0,
+        196,
+        204,
+        255
+      ],
+      "stroke": [
+        30,
+        30,
+        40,
+        255
+      ],
+      "stroke_w": 0.0,
+      "radius": 0.0,
+      "opacity": 1.0,
+      "text": "Una demo de interfaz",
+      "font_size": 36.0,
+      "text_color": [
+        190,
+        230,
+        255,
+        255
+      ],
+      "bold": false,
+      "italic": false,
+      "underline": false,
+      "align": 1,
+      "valign": 1,
+      "font": "",
+      "on_click": "",
+      "image": "",
+      "value": 0.5,
+      "visible": true,
+      "locked": false,
+      "parent": 3,
+      "anchor_min": [
+        0.5,
+        0.0
+      ],
+      "anchor_max": [
+        0.5,
+        0.0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "options": [],
+      "interactable": true,
+      "raycast": false,
+      "mask": false,
+      "shadow": {
+        "on": false,
+        "color": [
+          0,
+          0,
+          0,
+          110
+        ],
+        "offset": [
+          6.0,
+          -6.0
+        ]
+      },
+      "layout": {
+        "mode": "None",
+        "padding": [
+          16.0,
+          16.0,
+          16.0,
+          16.0
+        ],
+        "spacing": [
+          12.0,
+          12.0
+        ],
+        "align": 0,
+        "cell": [
+          100.0,
+          100.0
+        ],
+        "expand_w": false,
+        "expand_h": false
+      },
+      "collapsed": false
+    },
+    {
+      "id": 6,
+      "name": "Menú",
+      "kind": "Empty",
+      "x": 740.0,
+      "y": 453.59998,
+      "w": 440.0,
+      "h": 470.0,
+      "rot": 0.0,
+      "fill": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "fill2": [
+        0,
+        196,
+        204,
+        255
+      ],
+      "stroke": [
+        30,
+        30,
+        40,
+        255
+      ],
+      "stroke_w": 0.0,
+      "radius": 0.0,
+      "opacity": 1.0,
+      "text": "",
+      "font_size": 32.0,
+      "text_color": [
+        20,
+        20,
+        30,
+        255
+      ],
+      "bold": false,
+      "italic": false,
+      "underline": false,
+      "align": 1,
+      "valign": 1,
+      "font": "",
+      "on_click": "",
+      "image": "",
+      "value": 0.5,
+      "visible": true,
+      "locked": false,
+      "parent": null,
+      "anchor_min": [
+        0.5,
+        0.5
+      ],
+      "anchor_max": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "options": [],
+      "interactable": true,
+      "raycast": false,
+      "mask": false,
+      "shadow": {
+        "on": false,
+        "color": [
+          0,
+          0,
+          0,
+          110
+        ],
+        "offset": [
+          6.0,
+          -6.0
+        ]
+      },
+      "layout": {
+        "mode": "Vertical",
+        "padding": [
+          20.0,
+          20.0,
+          10.0,
+          10.0
+        ],
+        "spacing": [
+          0.0,
+          22.0
+        ],
+        "align": 1,
+        "cell": [
+          100.0,
+          100.0
+        ],
+        "expand_w": true,
+        "expand_h": false
+      },
+      "collapsed": false
+    },
+    {
+      "id": 7,
+      "name": "Botón Jugar",
+      "kind": "Button",
+      "x": 760.0,
+      "y": 463.59998,
+      "w": 400.0,
+      "h": 88.0,
+      "rot": 0.0,
+      "fill": [
+        255,
+        145,
+        77,
+        255
+      ],
+      "fill2": [
+        0,
+        196,
+        204,
+        255
+      ],
+      "stroke": [
+        30,
+        30,
+        40,
+        255
+      ],
+      "stroke_w": 0.0,
+      "radius": 44.0,
+      "opacity": 1.0,
+      "text": "Jugar",
+      "font_size": 30.0,
+      "text_color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "bold": true,
+      "italic": false,
+      "underline": false,
+      "align": 1,
+      "valign": 1,
+      "font": "",
+      "on_click": "texto(\"Subtítulo\", \"¡Cargando nivel 1...!\");\ncolor(yo, \"#46BE78\");\nmensaje(\"Clic en \" + yo);",
+      "image": "",
+      "value": 0.5,
+      "visible": true,
+      "locked": false,
+      "parent": 6,
+      "anchor_min": [
+        0.5,
+        0.5
+      ],
+      "anchor_max": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "options": [],
+      "interactable": true,
+      "raycast": true,
+      "mask": false,
+      "shadow": {
+        "on": true,
+        "color": [
+          0,
+          0,
+          0,
+          110
+        ],
+        "offset": [
+          6.0,
+          -6.0
+        ]
+      },
+      "layout": {
+        "mode": "None",
+        "padding": [
+          16.0,
+          16.0,
+          16.0,
+          16.0
+        ],
+        "spacing": [
+          12.0,
+          12.0
+        ],
+        "align": 0,
+        "cell": [
+          100.0,
+          100.0
+        ],
+        "expand_w": false,
+        "expand_h": false
+      },
+      "collapsed": false
+    },
+    {
+      "id": 8,
+      "name": "Botón Opciones",
+      "kind": "Button",
+      "x": 760.0,
+      "y": 573.6,
+      "w": 400.0,
+      "h": 88.0,
+      "rot": 0.0,
+      "fill": [
+        124,
+        92,
+        255,
+        255
+      ],
+      "fill2": [
+        0,
+        196,
+        204,
+        255
+      ],
+      "stroke": [
+        30,
+        30,
+        40,
+        255
+      ],
+      "stroke_w": 0.0,
+      "radius": 44.0,
+      "opacity": 1.0,
+      "text": "Opciones",
+      "font_size": 30.0,
+      "text_color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "bold": true,
+      "italic": false,
+      "underline": false,
+      "align": 1,
+      "valign": 1,
+      "font": "",
+      "on_click": "mensaje(\"Abrir menú: Opciones\");",
+      "image": "",
+      "value": 0.5,
+      "visible": true,
+      "locked": false,
+      "parent": 6,
+      "anchor_min": [
+        0.5,
+        0.5
+      ],
+      "anchor_max": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "options": [],
+      "interactable": true,
+      "raycast": true,
+      "mask": false,
+      "shadow": {
+        "on": false,
+        "color": [
+          0,
+          0,
+          0,
+          110
+        ],
+        "offset": [
+          6.0,
+          -6.0
+        ]
+      },
+      "layout": {
+        "mode": "None",
+        "padding": [
+          16.0,
+          16.0,
+          16.0,
+          16.0
+        ],
+        "spacing": [
+          12.0,
+          12.0
+        ],
+        "align": 0,
+        "cell": [
+          100.0,
+          100.0
+        ],
+        "expand_w": false,
+        "expand_h": false
+      },
+      "collapsed": false
+    },
+    {
+      "id": 9,
+      "name": "Botón Créditos",
+      "kind": "Button",
+      "x": 760.0,
+      "y": 683.6,
+      "w": 400.0,
+      "h": 88.0,
+      "rot": 0.0,
+      "fill": [
+        124,
+        92,
+        255,
+        255
+      ],
+      "fill2": [
+        0,
+        196,
+        204,
+        255
+      ],
+      "stroke": [
+        30,
+        30,
+        40,
+        255
+      ],
+      "stroke_w": 0.0,
+      "radius": 44.0,
+      "opacity": 1.0,
+      "text": "Créditos",
+      "font_size": 30.0,
+      "text_color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "bold": true,
+      "italic": false,
+      "underline": false,
+      "align": 1,
+      "valign": 1,
+      "font": "",
+      "on_click": "mensaje(\"Abrir menú: Créditos\");",
+      "image": "",
+      "value": 0.5,
+      "visible": true,
+      "locked": false,
+      "parent": 6,
+      "anchor_min": [
+        0.5,
+        0.5
+      ],
+      "anchor_max": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "options": [],
+      "interactable": true,
+      "raycast": true,
+      "mask": false,
+      "shadow": {
+        "on": false,
+        "color": [
+          0,
+          0,
+          0,
+          110
+        ],
+        "offset": [
+          6.0,
+          -6.0
+        ]
+      },
+      "layout": {
+        "mode": "None",
+        "padding": [
+          16.0,
+          16.0,
+          16.0,
+          16.0
+        ],
+        "spacing": [
+          12.0,
+          12.0
+        ],
+        "align": 0,
+        "cell": [
+          100.0,
+          100.0
+        ],
+        "expand_w": false,
+        "expand_h": false
+      },
+      "collapsed": false
+    },
+    {
+      "id": 10,
+      "name": "Botón Salir",
+      "kind": "Button",
+      "x": 760.0,
+      "y": 793.6,
+      "w": 400.0,
+      "h": 88.0,
+      "rot": 0.0,
+      "fill": [
+        124,
+        92,
+        255,
+        255
+      ],
+      "fill2": [
+        0,
+        196,
+        204,
+        255
+      ],
+      "stroke": [
+        30,
+        30,
+        40,
+        255
+      ],
+      "stroke_w": 0.0,
+      "radius": 44.0,
+      "opacity": 1.0,
+      "text": "Salir",
+      "font_size": 30.0,
+      "text_color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "bold": true,
+      "italic": false,
+      "underline": false,
+      "align": 1,
+      "valign": 1,
+      "font": "",
+      "on_click": "alternar(\"Luna\");\nmensaje(\"La luna cambió de visibilidad\");",
+      "image": "",
+      "value": 0.5,
+      "visible": true,
+      "locked": false,
+      "parent": 6,
+      "anchor_min": [
+        0.5,
+        0.5
+      ],
+      "anchor_max": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "options": [],
+      "interactable": true,
+      "raycast": true,
+      "mask": false,
+      "shadow": {
+        "on": false,
+        "color": [
+          0,
+          0,
+          0,
+          110
+        ],
+        "offset": [
+          6.0,
+          -6.0
+        ]
+      },
+      "layout": {
+        "mode": "None",
+        "padding": [
+          16.0,
+          16.0,
+          16.0,
+          16.0
+        ],
+        "spacing": [
+          12.0,
+          12.0
+        ],
+        "align": 0,
+        "cell": [
+          100.0,
+          100.0
+        ],
+        "expand_w": false,
+        "expand_h": false
+      },
+      "collapsed": false
+    },
+    {
+      "id": 11,
+      "name": "Versión",
+      "kind": "Text",
+      "x": 1660.0,
+      "y": 1010.0,
+      "w": 220.0,
+      "h": 40.0,
+      "rot": 0.0,
+      "fill": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "fill2": [
+        0,
+        196,
+        204,
+        255
+      ],
+      "stroke": [
+        30,
+        30,
+        40,
+        255
+      ],
+      "stroke_w": 0.0,
+      "radius": 0.0,
+      "opacity": 1.0,
+      "text": "v1.0",
+      "font_size": 24.0,
+      "text_color": [
+        200,
+        200,
+        230,
+        200
+      ],
+      "bold": false,
+      "italic": false,
+      "underline": false,
+      "align": 2,
+      "valign": 1,
+      "font": "",
+      "on_click": "",
+      "image": "",
+      "value": 0.5,
+      "visible": true,
+      "locked": false,
+      "parent": null,
+      "anchor_min": [
+        1.0,
+        0.0
+      ],
+      "anchor_max": [
+        1.0,
+        0.0
+      ],
+      "pivot": [
+        1.0,
+        0.0
+      ],
+      "options": [],
+      "interactable": true,
+      "raycast": false,
+      "mask": false,
+      "shadow": {
+        "on": false,
+        "color": [
+          0,
+          0,
+          0,
+          110
+        ],
+        "offset": [
+          6.0,
+          -6.0
+        ]
+      },
+      "layout": {
+        "mode": "None",
+        "padding": [
+          16.0,
+          16.0,
+          16.0,
+          16.0
+        ],
+        "spacing": [
+          12.0,
+          12.0
+        ],
+        "align": 0,
+        "cell": [
+          100.0,
+          100.0
+        ],
+        "expand_w": false,
+        "expand_h": false
+      },
+      "collapsed": false
+    }
+  ],
+  "next_id": 12,
+  "canvas_match": 0.5
+}
