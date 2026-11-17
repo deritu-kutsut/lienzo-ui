@@ -6,6 +6,8 @@
 
 [Download for Windows](../../releases/latest) · [itch.io](https://deritu.itch.io/lienzo-ui) · [Español ↓](#español)
 
+🎬 [Trailer in English](https://youtu.be/7G-g5H3nHtg) · [Tráiler en español](https://youtu.be/xb7x16KGKBY)
+
 <p align="center">
 <img src="docs/imagenes/editor.png" width="49%"> <img src="docs/imagenes/tutorial.png" width="49%"><br>
 <img src="docs/imagenes/unity.png" width="98%">
@@ -108,6 +110,8 @@ Moderation lives in a web panel (also usable by AIs with revocable tokens): [doc
 ## Español
 
 **Lienzo UI es un editor visual de interfaces de juego que exporta a Unity.** Diseña menús, HUD, ventanas, ajustes e inventarios como en una herramienta de diseño, pruébalos en cualquier pantalla y expórtalos a Unity como prefab uGUI + TextMeshPro, UI Toolkit (UXML + USS) e IMGUI con un clic. Gratis y de código abierto (MIT).
+
+🎬 [Tráiler en español](https://youtu.be/xb7x16KGKBY) · [Trailer in English](https://youtu.be/7G-g5H3nHtg)
 
 - **Probarlo:** descarga `LienzoUI-windows.zip` de las [releases](../../releases/latest) y abre `lienzo-ui.exe`. La primera vez se abre el tutorial; al terminarlo se abre el editor (botón **Tutorial** o F1 para volver).
 - **Pixel art, plugins y accesibilidad:** modo pixel art, plugins con scripts Rhai ([guía](docs/PLUGINS.md)) e interfaz en español o inglés con tamaño hasta 200 %, alto contraste y movimiento reducido.
