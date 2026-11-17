@@ -57,6 +57,14 @@ ok("campo no editable (id)", esError(await llamar("modificar_elemento", { archiv
 ok("campo __proto__", esError(await llamar("modificar_elemento", { archivo: "Tienda", elemento: "Comprar", cambios: JSON.parse('{"__proto__": {"x": 1}}') })));
 ok("tipo incorrecto (x texto)", esError(await llamar("modificar_elemento", { archivo: "Tienda", elemento: "Comprar", cambios: { x: "10" } })));
 ok("color no válido", esError(await llamar("modificar_elemento", { archivo: "Tienda", elemento: "Comprar", cambios: { fill: "rojo" } })));
+ok("w ≤ 0 rechazado", esError(await llamar("modificar_elemento", { archivo: "Tienda", elemento: "Comprar", cambios: { w: -50 } })));
+ok("opacity > 1 rechazada", esError(await llamar("modificar_elemento", { archivo: "Tienda", elemento: "Comprar", cambios: { opacity: 5 } })));
+ok("font_size ≤ 0 rechazado", esError(await llamar("modificar_elemento", { archivo: "Tienda", elemento: "Comprar", cambios: { font_size: 0 } })));
+ok("name vacío rechazado", esError(await llamar("modificar_elemento", { archivo: "Tienda", elemento: "Comprar", cambios: { name: "  " } })));
+ok("name duplicado rechazado", esError(await llamar("modificar_elemento", { archivo: "Tienda", elemento: "Comprar", cambios: { name: "Cerrar" } })));
+ok("archivo reservado «CON»", esError(await llamar("crear_diseno", { archivo: "CON", plantilla: 0 })));
+fs.writeFileSync(path.join(DISENOS, "Vacio.editorgui.json"), "{}");
+{ const r = await llamar("leer_diseno", { archivo: "Vacio" }); ok("diseño {} da error claro", esError(r) && !texto(r).includes("undefined"), texto(r)); }
 ok("elemento inexistente", esError(await llamar("modificar_elemento", { archivo: "Tienda", elemento: "Nada", cambios: { text: "x" } })));
 ok("nombre duplicado", esError(await llamar("duplicar_elemento", { archivo: "Tienda", elemento: "Cerrar", nuevo_nombre: "Comprar" })));
 ok("crear sobre uno existente", esError(await llamar("crear_diseno", { archivo: "Tienda", plantilla: 0 })));

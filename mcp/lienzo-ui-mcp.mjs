@@ -60,6 +60,7 @@ function rutaDiseno(nombre) {
   if (typeof nombre !== "string" || !/^[\p{L}\p{N} _.-]{1,80}$/u.test(nombre) || nombre.includes(".."))
     throw new Error("'archivo' debe ser un nombre simple (letras, números, espacios, _ . -), sin carpetas.");
   const archivo = nombre.endsWith(EXT) ? nombre : nombre + EXT;
+  if (/^(con|prn|aux|nul|com\d|lpt\d)(\.|$)/i.test(archivo) || /[. ]$/.test(nombre)) throw new Error("'archivo' usa un nombre reservado de Windows o termina en punto o espacio.");
   const abs = path.resolve(DISENOS, archivo);
   if (path.dirname(abs) !== DISENOS) throw new Error("Ruta fuera de la carpeta de diseños.");
   return abs;
@@ -68,7 +69,17 @@ function rutaDiseno(nombre) {
 function leer(nombre) {
   const abs = rutaDiseno(nombre);
   if (!fs.existsSync(abs)) throw new Error(`No existe el diseño ${path.basename(abs)}. Usa listar_disenos.`);
-  return { abs, doc: JSON.parse(fs.readFileSync(abs, "utf8")) };
+  let doc;
+  try { doc = JSON.parse(fs.readFileSync(abs, "utf8")); } catch (err) { throw new Error(`${path.basename(abs)} no es un JSON válido (${err.message}).`); }
+  if (!doc || typeof doc !== "object" || !Array.isArray(doc.elements)) throw new Error(`${path.basename(abs)} no parece un diseño de Lienzo UI (falta la lista 'elements').`);
+  return { abs, doc };
+}
+
+/** Rangos válidos de campos numéricos: [mín, máx, exclusivoMín]. */
+const RANGOS = { w: [0, 100000, true], h: [0, 100000, true], font_size: [0, 1000, true], opacity: [0, 1], stroke_w: [0, 1000], radius: [0, 100000], x: [-1e6, 1e6], y: [-1e6, 1e6] };
+function validarRango(k, v) {
+  const r = RANGOS[k];
+  if (r && (v < r[0] || v > r[1] || (r[2] && v === r[0]))) throw new Error(`${k} fuera de rango (${r[2] ? ">" : "≥"} ${r[0]} y ≤ ${r[1]}).`);
 }
 
 function guardar(abs, doc) {
@@ -213,7 +224,14 @@ const HERRAMIENTAS = [
         }
         else if (tipo === "strings") { if (!Array.isArray(v) || !v.every((s) => typeof s === "string")) throw new Error(`${k} debe ser una lista de textos`); e[k] = v; }
         else if (typeof v !== tipo || (tipo === "number" && !Number.isFinite(v))) throw new Error(`${k} debe ser ${tipo}`);
-        else e[k] = v;
+        else {
+          if (tipo === "number") validarRango(k, v);
+          if (k === "name") {
+            if (!v.trim()) throw new Error("name no puede estar vacío.");
+            if (doc.elements.some((x) => x !== e && x.name === v)) throw new Error(`Ya existe un elemento «${v}».`);
+          }
+          e[k] = v;
+        }
         hechos.push(k);
       }
       guardar(abs, doc);
