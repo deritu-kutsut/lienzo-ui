@@ -2,7 +2,9 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); versiones con [SemVer](https://semver.org/lang/es/).
 
-## [Sin publicar]
+## [1.2.0] - 2026-11-17
+
+Actualizaciones desde la app.
 
 ### Añadido
 - **Actualizaciones desde la app**: al abrir, Lienzo UI consulta la última release de GitHub (solo `github.com`, sin enviar datos) y, si hay una versión nueva, aparece el botón **Actualizar a X.Y.Z** en la cabecera. Funciona igual si descargaste la app de GitHub o de itch.io. Descarga el zip, comprueba su huella SHA-256, reemplaza el `.exe` (el anterior queda como `.viejo` hasta el siguiente arranque) y ofrece reiniciar. Si algo no se puede verificar, abre la página de descarga. Se puede desactivar la búsqueda al abrir, omitir una versión o buscar a mano desde **Archivo → Buscar actualizaciones…**.
