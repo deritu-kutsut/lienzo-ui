@@ -114,6 +114,7 @@ pub struct EditorApp {
     pub comunidad: crate::comunidad::Comunidad,
     pub accesibilidad_abierta: bool,
     pub temas_abierto: bool,
+    pub actualizador: crate::actualizador::Actualizador,
     pub captura_larga: bool,
     pub tema_nombre: String,
 }
@@ -203,6 +204,7 @@ impl EditorApp {
             comunidad: crate::comunidad::Comunidad::new(),
             accesibilidad_abierta: false,
             temas_abierto: false,
+            actualizador: crate::actualizador::Actualizador::new(),
             captura_larga: false,
             tema_nombre: String::new(),
         }

@@ -272,6 +272,9 @@ pub struct Settings {
     pub escala_ui: f32,
     pub alto_contraste: bool,
     pub reducir_movimiento: bool,
+    /// Actualizaciones: no comprobar al abrir, y versión que el usuario decidió omitir.
+    pub no_buscar_actualizaciones: bool,
+    pub version_omitida: String,
     /// Tema de la interfaz (None = el predeterminado).
     pub tema: Option<crate::theme::Tema>,
     /// Sesión automática (capturas, pruebas): no se escribe nada en disco.

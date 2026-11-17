@@ -364,3 +364,36 @@ y	and
 Opcional: vista previa (PNG hasta 1920×1080). El icono del contenido lo pone la app según su tipo.	Optional: preview (PNG up to 1920×1080). The app sets the content icon from its type.
 Enviando y analizando… (puede tardar hasta un minuto)	Sending and analysing… (can take up to a minute)
 Subiendo y analizando la imagen… (puede tardar hasta un minuto)	Uploading and analysing the image… (can take up to a minute)
+Actualizaciones	Updates
+Versión instalada:	Installed version:
+Buscar actualizaciones	Check for updates
+Buscar actualizaciones…	Check for updates…
+Buscando actualizaciones…	Checking for updates…
+Tienes la última versión.	You have the latest version.
+Volver a buscar	Check again
+Hay una versión nueva:	A new version is available:
+Hay una versión nueva de Lienzo UI	A new version of Lienzo UI is available
+Actualizar a	Update to
+Actualizar ahora	Update now
+Descarga manual	Manual download
+Abrir página de descarga	Open download page
+Omitir esta versión	Skip this version
+Esta versión hay que descargarla a mano (no se puede verificar desde la app).	This version must be downloaded manually (it can't be verified from the app).
+Descargando e instalando la versión	Downloading and installing version
+No cierres la app mientras tanto.	Don't close the app in the meantime.
+Versión instalada correctamente:	Version installed successfully:
+Guarda tu diseño: al reiniciar se cierra la ventana actual.	Save your design: restarting closes the current window.
+Reiniciar ahora	Restart now
+Reiniciar para actualizar	Restart to update
+Reintentar	Retry
+Buscar actualizaciones al abrir	Check for updates on startup
+Solo se consulta github.com; no se envía ningún dato tuyo.	Only github.com is queried; none of your data is sent.
+No se pudo conectar con GitHub.	Could not connect to GitHub.
+Respuesta de GitHub no válida.	Invalid response from GitHub.
+La descarga no coincide con la huella publicada; no se instala.	The download doesn't match the published checksum; not installing.
+No hay permiso para escribir junto a la app. Descarga la versión nueva a mano.	No permission to write next to the app. Download the new version manually.
+No se pudo reemplazar la app (¿carpeta protegida?). Descarga la versión nueva a mano.	Could not replace the app (protected folder?). Download the new version manually.
+No se pudo instalar la versión nueva; se conserva la actual.	Could not install the new version; keeping the current one.
+La instalación automática solo existe en Windows. Descarga la versión nueva a mano.	Automatic install only exists on Windows. Download the new version manually.
+Esta release no se puede verificar; descárgala a mano.	This release can't be verified; download it manually.
+No se pudo descargar la actualización.	Could not download the update.

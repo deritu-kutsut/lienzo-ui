@@ -20,6 +20,7 @@ mod comunidad;
 mod comunidad_validar;
 mod tutorial;
 mod temas;
+mod actualizador;
 
 use eframe::egui;
 use std::sync::{
@@ -62,6 +63,7 @@ impl eframe::App for app::EditorApp {
         self.tutorial_window(&ctx);
         self.accesibilidad_window(&ctx);
         self.temas_window(&ctx);
+        self.actualizador_window(&ctx);
         self.commit(&ctx);
 
         if let Some(shot) = &self.screenshot {
@@ -252,6 +254,17 @@ fn main() -> eframe::Result<()> {
             }
             // Opciones de accesibilidad solo para esta sesión (se aplican sobre una copia y no se guardan):
             // --idioma en, --escala 1.5, --alto-contraste
+            app.actualizador_inicio();
+            // --demo-actualizacion [--abrir-actualizacion]: simula una versión nueva (capturas); no consulta GitHub.
+            if args.iter().any(|a| a == "--demo-actualizacion") {
+                app.actualizador.estado = actualizador::Estado::Disponible(actualizador::Novedad {
+                    version: "1.2.0".into(),
+                    notas: "Actualizaciones desde la app: aparece un botón en la cabecera cuando hay una versión nueva.".into(),
+                    url_zip: "demo".into(),
+                    sha256: "demo".into(),
+                });
+                app.actualizador.abierta = args.iter().any(|a| a == "--abrir-actualizacion");
+            }
             let mut sesion = app.settings.clone();
             if let Some(i) = arg_after(&args, "--idioma") {
                 sesion.idioma = i.clone();

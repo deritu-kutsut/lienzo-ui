@@ -119,6 +119,12 @@ impl EditorApp {
                             ui.close();
                         }
                         ui.separator();
+                        if ui.button(crate::i18n::t("Buscar actualizaciones…")).clicked() {
+                            ui.close();
+                            self.actualizador.abierta = true;
+                            self.actualizador_buscar();
+                        }
+                        ui.separator();
                         if ui.button(crate::i18n::t("Subir imágenes…")).clicked() {
                             ui.close();
                             self.upload_images();
@@ -286,6 +292,7 @@ impl EditorApp {
                     ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
                         self.comunidad_boton_perfil(ui);
                         ui.add_space(4.0);
+                        self.actualizador_boton(ui);
                         let export = crate::icons::btn_tint("export", RichText::new(crate::i18n::t("Exportar a Unity")).strong().color(Color32::WHITE), Color32::WHITE).fill(ACCENT()).corner_radius(6.0);
                         let tip = if self.settings.unity_project.is_empty() { "Elige la carpeta de tu proyecto de Unity (Ctrl+E)".to_string() } else { format!("Exporta a {} (Ctrl+E)", self.settings.unity_project) };
                         if ui.add(export).on_hover_text(tip).clicked() {
