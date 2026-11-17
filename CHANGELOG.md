@@ -2,6 +2,14 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); versiones con [SemVer](https://semver.org/lang/es/).
 
+## [Sin publicar]
+
+### Corregido
+- Un diseño con padres en ciclo (o un elemento padre de sí mismo) ya no cuelga la app al seleccionar, borrar o duplicar.
+- Exportar un diseño con ancho o alto negativos o no numéricos ya no cierra la app.
+- Los ids repetidos y un `next_id` demasiado bajo se corrigen al abrir el archivo; las coordenadas no numéricas pasan a 0.
+- Los títulos muy largos se acortan a 64 caracteres en los nombres de archivo y de clase exportados.
+
 ## [1.2.1] - 2026-11-17
 
 Corrección del actualizador.

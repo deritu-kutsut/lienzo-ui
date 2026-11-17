@@ -62,7 +62,8 @@ pub fn class_name(s: &str) -> String {
     if out.chars().next().map(|c| c.is_ascii_digit()).unwrap_or(false) {
         out = format!("Ui{}", out);
     }
-    out
+    // Sirve de nombre de archivo y de clase: un título larguísimo no debe pasar del límite de rutas de Windows.
+    out.chars().take(64).collect()
 }
 
 /// camelCase C# identifier.
@@ -194,7 +195,9 @@ pub fn export_rt(doc: &Doc, e: &Element) -> RectTransform {
 
 /// Corner radius usable for an element (never more than half its short side).
 pub fn radius_of(e: &Element) -> f32 {
-    e.radius.clamp(0.0, e.w.min(e.h) / 2.0)
+    let max = e.w.min(e.h) / 2.0;
+    // Con ancho o alto negativos o no numéricos (archivos ajenos) `clamp` entraría en pánico.
+    if max.is_finite() && max > 0.0 && e.radius.is_finite() { e.radius.clamp(0.0, max) } else { 0.0 }
 }
 
 /// File name an image gets inside Assets/EditorGUI/Sprites.
@@ -333,5 +336,30 @@ mod dump {
             let d = crate::model::template(i, 1920.0, 1080.0);
             super::write_unity_package(&d, &dir).unwrap();
         }
+    }
+}
+
+#[cfg(test)]
+mod robustez_tests {
+    use super::*;
+
+    #[test]
+    fn radio_con_tamanos_raros_no_entra_en_panico() {
+        let mut e = Element::new(1, crate::model::Kind::Panel);
+        e.radius = 10.0;
+        for (w, h) in [(-5.0, 10.0), (10.0, -5.0), (f32::NAN, 4.0), (0.0, 0.0), (f32::INFINITY, f32::INFINITY)] {
+            e.w = w;
+            e.h = h;
+            assert!(radius_of(&e) >= 0.0);
+        }
+        e.w = 20.0;
+        e.h = 8.0;
+        assert_eq!(radius_of(&e), 4.0);
+    }
+
+    #[test]
+    fn nombre_de_clase_largo_se_acorta() {
+        assert!(class_name(&"x".repeat(500)).chars().count() <= 64);
+        assert_eq!(class_name("Menú principal"), "MenuPrincipal");
     }
 }

@@ -686,6 +686,10 @@ impl Doc {
         let mut out = Vec::new();
         let mut stack: Vec<u64> = self.children(Some(id)).into_iter().rev().collect();
         while let Some(c) = stack.pop() {
+            // Un archivo con padres en ciclo no debe colgar la app: cada elemento se visita una sola vez.
+            if c == id || out.contains(&c) {
+                continue;
+            }
             out.push(c);
             for k in self.children(Some(c)).into_iter().rev() {
                 stack.push(k);
@@ -928,8 +932,52 @@ impl Doc {
         v
     }
 
+    /// Arregla lo que un archivo editado a mano o ajeno puede traer roto: ids repetidos, `next_id` por debajo de
+    /// algún id, padres en ciclo (o de sí mismos) y coordenadas no numéricas.
+    pub fn sanitize(&mut self) {
+        let mut vistos = std::collections::HashSet::new();
+        let mut max_id = 0u64;
+        for e in &self.elements {
+            max_id = max_id.max(e.id);
+        }
+        self.next_id = self.next_id.max(max_id + 1);
+        for i in 0..self.elements.len() {
+            let id = self.elements[i].id;
+            if id == 0 || !vistos.insert(id) {
+                let nuevo = self.next_id;
+                self.next_id += 1;
+                self.elements[i].id = nuevo;
+                vistos.insert(nuevo);
+            }
+        }
+        for e in self.elements.iter_mut() {
+            for v in [&mut e.x, &mut e.y, &mut e.w, &mut e.h] {
+                if !v.is_finite() {
+                    *v = 0.0;
+                }
+            }
+        }
+        for i in 0..self.elements.len() {
+            let mut cur = self.elements[i].parent;
+            let mut pasos = 0usize;
+            let mut roto = false;
+            while let Some(p) = cur {
+                if p == self.elements[i].id || pasos > self.elements.len() {
+                    roto = true;
+                    break;
+                }
+                cur = self.get(p).and_then(|e| e.parent);
+                pasos += 1;
+            }
+            if roto {
+                self.elements[i].parent = None;
+            }
+        }
+    }
+
     /// Convert old flat groups into Empty parent elements.
     pub fn migrate_groups(&mut self) {
+        self.sanitize();
         let mut groups: Vec<u64> = Vec::new();
         for e in &self.elements {
             if let Some(g) = e.group {
@@ -1547,5 +1595,63 @@ mod tests {
         let roots = d.insert_items(&copy, None);
         assert_eq!(roots.len(), 1);
         assert_eq!(d.descendants(roots[0]).len(), 2);
+    }
+}
+
+#[cfg(test)]
+mod sanitize_tests {
+    use super::*;
+
+    fn doc_con(n: usize) -> (Doc, Vec<u64>) {
+        let mut d = Doc::empty(100.0, 100.0);
+        let ids = (0..n).map(|_| d.add(Element::new(0, Kind::Panel))).collect();
+        (d, ids)
+    }
+
+    #[test]
+    fn padres_en_ciclo_o_propios_no_cuelgan() {
+        let (mut d, ids) = doc_con(3);
+        d.get_mut(ids[0]).unwrap().parent = Some(ids[1]);
+        d.get_mut(ids[1]).unwrap().parent = Some(ids[0]);
+        d.get_mut(ids[2]).unwrap().parent = Some(ids[2]);
+        d.migrate_groups();
+        assert!(d.elements.iter().all(|e| e.parent != Some(e.id)));
+        for e in &d.elements {
+            let _ = d.descendants(e.id);
+            let _ = d.ancestors(e.id);
+        }
+    }
+
+    #[test]
+    fn descendants_con_ciclo_termina_aunque_no_se_sanee() {
+        let (mut d, ids) = doc_con(2);
+        d.get_mut(ids[0]).unwrap().parent = Some(ids[1]);
+        d.get_mut(ids[1]).unwrap().parent = Some(ids[0]);
+        assert!(d.descendants(ids[0]).len() <= 2);
+    }
+
+    #[test]
+    fn ids_repetidos_y_next_id_bajo() {
+        let (mut d, ids) = doc_con(3);
+        d.get_mut(ids[2]).unwrap().id = ids[1];
+        d.next_id = 1;
+        d.migrate_groups();
+        let mut v: Vec<u64> = d.elements.iter().map(|e| e.id).collect();
+        v.sort();
+        v.dedup();
+        assert_eq!(v.len(), 3);
+        assert!(d.next_id > *v.last().unwrap());
+        let nuevo = d.add(Element::new(0, Kind::Panel));
+        assert_eq!(d.elements.iter().filter(|e| e.id == nuevo).count(), 1);
+    }
+
+    #[test]
+    fn coordenadas_no_numericas_se_corrigen() {
+        let (mut d, ids) = doc_con(1);
+        d.get_mut(ids[0]).unwrap().x = f32::NAN;
+        d.get_mut(ids[0]).unwrap().w = f32::INFINITY;
+        d.migrate_groups();
+        let e = d.get(ids[0]).unwrap();
+        assert!(e.x.is_finite() && e.w.is_finite());
     }
 }
