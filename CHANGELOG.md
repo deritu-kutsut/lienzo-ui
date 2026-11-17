@@ -2,6 +2,14 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); versiones con [SemVer](https://semver.org/lang/es/).
 
+## [1.2.1] - 2026-11-17
+
+Corrección del actualizador.
+
+### Corregido
+- Tras actualizar, **Reiniciar ahora** relanzaba la versión anterior: ahora abre la nueva.
+- Las notas de la versión se muestran como texto plano en la ventana de actualización.
+
 ## [1.2.0] - 2026-11-17
 
 Actualizaciones desde la app.

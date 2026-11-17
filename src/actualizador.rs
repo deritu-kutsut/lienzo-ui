@@ -37,13 +37,14 @@ pub enum Estado {
     AlDia,
     Disponible(Novedad),
     Descargando(Novedad),
-    Instalada(String),
+    /// Versión instalada y ruta del ejecutable NUEVO (tras renombrar, `current_exe()` apunta al .viejo).
+    Instalada(String, std::path::PathBuf),
     Error(String),
 }
 
 pub enum Mensaje {
     Resultado(Result<Option<Novedad>, String>),
-    Instalada(Result<String, String>),
+    Instalada(Result<(String, std::path::PathBuf), String>),
 }
 
 pub struct Actualizador {
@@ -77,6 +78,23 @@ pub fn es_mas_nueva(candidata: &str, actual: &str) -> bool {
 
 // ------------------------------------------------------------------- release
 
+/// Notas de la release en texto plano: sin imágenes ni marcas de Markdown, máx. 4000 caracteres.
+pub fn limpiar_notas(md: &str) -> String {
+    let mut out = String::new();
+    for l in md.lines() {
+        let t = l.trim();
+        if t.starts_with("![") {
+            continue;
+        }
+        let t = t.trim_start_matches('#').trim_start_matches('>').trim();
+        let t = t.strip_prefix("- ").map(|r| format!("• {}", r)).unwrap_or_else(|| t.to_string());
+        let t = t.replace("**", "").replace('`', "");
+        out.push_str(&t);
+        out.push('\n');
+    }
+    out.trim().chars().take(4000).collect()
+}
+
 /// Interpreta la respuesta de `releases/latest`. `None` = ya estás al día.
 pub fn parsear_release(json: &str, actual: &str) -> Result<Option<Novedad>, String> {
     let v: serde_json::Value = serde_json::from_str(json).map_err(|_| "Respuesta de GitHub no válida.".to_string())?;
@@ -104,7 +122,7 @@ pub fn parsear_release(json: &str, actual: &str) -> Result<Option<Novedad>, Stri
             }
         }
     }
-    let notas: String = v["body"].as_str().unwrap_or("").chars().take(4000).collect();
+    let notas = limpiar_notas(v["body"].as_str().unwrap_or(""));
     Ok(Some(Novedad { version, notas, url_zip, sha256 }))
 }
 
@@ -176,7 +194,7 @@ pub fn reemplazar_exe(exe: &std::path::Path, nuevo: &[u8]) -> Result<(), String>
     Ok(())
 }
 
-fn descargar_e_instalar(n: &Novedad) -> Result<String, String> {
+fn descargar_e_instalar(n: &Novedad) -> Result<(String, std::path::PathBuf), String> {
     if !cfg!(windows) {
         return Err("La instalación automática solo existe en Windows. Descarga la versión nueva a mano.".into());
     }
@@ -192,7 +210,7 @@ fn descargar_e_instalar(n: &Novedad) -> Result<String, String> {
     verificar_sha256(&zip, &n.sha256)?;
     let bytes = extraer_exe(&zip, &n.version)?;
     reemplazar_exe(&exe, &bytes)?;
-    Ok(n.version.clone())
+    Ok((n.version.clone(), exe))
 }
 
 /// Borra el .exe viejo que dejó la actualización anterior.
@@ -203,11 +221,9 @@ pub fn limpiar_residuos() {
     }
 }
 
-fn reiniciar(ctx: &egui::Context) {
-    if let Ok(exe) = std::env::current_exe() {
-        if std::process::Command::new(exe).spawn().is_ok() {
-            ctx.send_viewport_cmd(egui::ViewportCommand::Close);
-        }
+fn reiniciar(ctx: &egui::Context, exe: &std::path::Path) {
+    if std::process::Command::new(exe).spawn().is_ok() {
+        ctx.send_viewport_cmd(egui::ViewportCommand::Close);
     }
 }
 
@@ -255,7 +271,7 @@ impl EditorApp {
     /// Botón de la cabecera: solo aparece cuando hay una versión nueva.
     pub fn actualizador_boton(&mut self, ui: &mut egui::Ui) {
         let etiqueta = match &self.actualizador.estado {
-            Estado::Instalada(_) => Some((t("Reiniciar para actualizar"), OK())),
+            Estado::Instalada(..) => Some((t("Reiniciar para actualizar"), OK())),
             _ => self.actualizacion_para_boton().map(|n| (format!("{} {}", t("Actualizar a"), n.version), ACCENT())),
         };
         if let Some((texto, color)) = etiqueta {
@@ -274,8 +290,8 @@ impl EditorApp {
                 Mensaje::Resultado(Ok(Some(n))) => self.actualizador.estado = Estado::Disponible(n),
                 Mensaje::Resultado(Ok(None)) => self.actualizador.estado = Estado::AlDia,
                 Mensaje::Resultado(Err(e)) => self.actualizador.estado = Estado::Error(e),
-                Mensaje::Instalada(Ok(v)) => {
-                    self.actualizador.estado = Estado::Instalada(v);
+                Mensaje::Instalada(Ok((v, exe))) => {
+                    self.actualizador.estado = Estado::Instalada(v, exe);
                     self.actualizador.abierta = true;
                 }
                 Mensaje::Instalada(Err(e)) => self.actualizador.estado = Estado::Error(e),
@@ -291,7 +307,7 @@ impl EditorApp {
         let mut instalar: Option<Novedad> = None;
         let mut buscar_otra = false;
         let mut omitir: Option<String> = None;
-        let mut reinicio = false;
+        let mut reinicio: Option<std::path::PathBuf> = None;
         let mut cambio = false;
         egui::Window::new(t("Actualizaciones")).open(&mut abierta).collapsible(false).resizable(false).default_width(440.0).show(ctx, |ui| {
             ui.label(format!("{} {}", t("Versión instalada:"), VERSION_ACTUAL));
@@ -347,11 +363,11 @@ impl EditorApp {
                     });
                     ui.label(RichText::new(t("No cierres la app mientras tanto.")).small().color(MUTED()));
                 }
-                Estado::Instalada(v) => {
+                Estado::Instalada(v, exe) => {
                     ui.label(RichText::new(format!("{} {}", t("Versión instalada correctamente:"), v)).strong().color(OK()));
                     ui.label(RichText::new(t("Guarda tu diseño: al reiniciar se cierra la ventana actual.")).small().color(MUTED()));
                     if ui.add(egui::Button::new(RichText::new(t("Reiniciar ahora")).strong().color(Color32::WHITE)).fill(OK())).clicked() {
-                        reinicio = true;
+                        reinicio = Some(exe.clone());
                     }
                 }
                 Estado::Error(e) => {
@@ -390,8 +406,8 @@ impl EditorApp {
             self.actualizador.estado = Estado::Nada;
             self.actualizador_buscar();
         }
-        if reinicio {
-            reiniciar(ctx);
+        if let Some(exe) = reinicio {
+            reiniciar(ctx, &exe);
         }
         self.actualizador.abierta = abierta;
     }
@@ -417,6 +433,21 @@ mod tests {
         let mut v = b"MZ".to_vec();
         v.resize(8192, 7);
         v
+    }
+
+    #[test]
+    fn limpia_las_notas() {
+        let n = limpiar_notas("![x](https://a/b.png)
+
+## Español
+**Hola** `app`
+- punto
+> aviso");
+        assert_eq!(n, "Español
+Hola app
+• punto
+aviso");
+        assert!(limpiar_notas(&"a".repeat(9000)).chars().count() <= 4000);
     }
 
     #[test]
