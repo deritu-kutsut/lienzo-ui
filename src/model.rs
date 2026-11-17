@@ -370,7 +370,7 @@ impl Element {
                 e.h = 360.0;
             }
             Kind::Ellipse => {
-                e.fill = [255, 145, 77, 255];
+                e.fill = [225, 95, 30, 255];
                 e.w = 200.0;
                 e.h = 200.0;
             }
@@ -720,6 +720,35 @@ impl Doc {
 
     pub fn is_descendant(&self, id: u64, of: u64) -> bool {
         self.ancestors(id).contains(&of)
+    }
+
+    /// Lo mismo que `shown` para todos los elementos a la vez (O(n) en vez de O(n²); para dibujar cada frame).
+    pub fn shown_all(&self) -> std::collections::HashSet<u64> {
+        use std::collections::HashMap;
+        let by_id: HashMap<u64, &Element> = self.elements.iter().map(|e| (e.id, e)).collect();
+        let mut memo: HashMap<u64, bool> = HashMap::with_capacity(self.elements.len());
+        for e in &self.elements {
+            // Sube hasta un antepasado ya resuelto (o la raíz) y resuelve la cadena hacia abajo.
+            let mut chain = Vec::new();
+            let mut cur = Some(e.id);
+            let mut base = true;
+            while let Some(id) = cur {
+                if let Some(&v) = memo.get(&id) {
+                    base = v;
+                    break;
+                }
+                if chain.contains(&id) || chain.len() > self.elements.len() {
+                    break; // ciclo en un archivo malformado
+                }
+                chain.push(id);
+                cur = by_id.get(&id).and_then(|x| x.parent).filter(|p| by_id.contains_key(p));
+            }
+            for id in chain.into_iter().rev() {
+                base = base && by_id.get(&id).map(|x| x.visible).unwrap_or(false);
+                memo.insert(id, base);
+            }
+        }
+        memo.into_iter().filter(|(_, v)| *v).map(|(k, _)| k).collect()
     }
 
     /// Visible and every ancestor visible.
@@ -1129,10 +1158,30 @@ pub fn hex(c: Rgba) -> String {
 // Templates (starting layouts for game UIs)
 // ---------------------------------------------------------------------------
 
-pub const TEMPLATES: &[&str] = &["Menú principal", "HUD de juego", "Ventana de diálogo", "Ajustes", "Inventario", "En blanco"];
+/// Los números son estables (la línea de comandos y el MCP los usan): las nuevas se añaden al final.
+pub const TEMPLATES: &[&str] = &[
+    "Menú principal",
+    "HUD de juego",
+    "Ventana de diálogo",
+    "Ajustes",
+    "Inventario",
+    "En blanco",
+    "Menú de pausa",
+    "Fin de partida",
+    "Selección de nivel",
+    "Pantalla de carga",
+    "Diálogo de personaje",
+    "Clasificación",
+    "Selección de personaje",
+];
 
 pub fn blank_template() -> usize {
-    TEMPLATES.len() - 1
+    5
+}
+
+/// Orden en que se muestran: «En blanco» al final.
+pub fn template_order() -> impl Iterator<Item = usize> {
+    (0..TEMPLATES.len()).filter(|&i| i != blank_template()).chain(std::iter::once(blank_template()))
 }
 
 fn put(doc: &mut Doc, parent: Option<u64>, kind: Kind, name: &str, rect: [f32; 4], f: impl FnOnce(&mut Element)) -> u64 {
@@ -1152,7 +1201,36 @@ fn anchor(e: &mut Element, min: [f32; 2], max: [f32; 2]) {
     e.anchor_max = max;
 }
 
+/// Las plantillas están pensadas para 1920×1080: en páginas más pequeñas se construyen a una
+/// escala que quepa (misma proporción de página) y luego se reducen de forma uniforme.
 pub fn template(index: usize, width: f32, height: f32) -> Doc {
+    let (width, height) = (width.max(1.0), height.max(1.0));
+    let k = (1920.0 / width).max(1080.0 / height).max(1.0);
+    let mut d = template_at(index, width * k, height * k);
+    if k > 1.0 {
+        let f = 1.0 / k;
+        d.width = width;
+        d.height = height;
+        for e in &mut d.elements {
+            e.x *= f;
+            e.y *= f;
+            e.w *= f;
+            e.h *= f;
+            e.radius *= f;
+            e.stroke_w *= f;
+            e.font_size = (e.font_size * f).max(8.0);
+            e.shadow.offset = [e.shadow.offset[0] * f, e.shadow.offset[1] * f];
+            let l = &mut e.layout;
+            l.padding = l.padding.map(|v| v * f);
+            l.spacing = l.spacing.map(|v| v * f);
+            l.cell = l.cell.map(|v| v * f);
+        }
+        d.apply_layouts();
+    }
+    d
+}
+
+fn template_at(index: usize, width: f32, height: f32) -> Doc {
     let mut d = Doc::empty(width, height);
     let (w, h) = (width, height);
     match index {
@@ -1196,7 +1274,7 @@ pub fn template(index: usize, width: f32, height: f32) -> Doc {
             for (i, l) in labels.iter().enumerate() {
                 put(&mut d, Some(menu), Kind::Button, &format!("Botón {}", l), [0.0, 0.0, 400.0, 88.0], |e| {
                     e.text = l.to_string();
-                    e.fill = if i == 0 { [255, 145, 77, 255] } else { [124, 92, 255, 255] };
+                    e.fill = if i == 0 { [225, 95, 30, 255] } else { [124, 92, 255, 255] };
                     e.radius = 44.0;
                     if i == 0 {
                         e.shadow.on = true;
@@ -1443,6 +1521,356 @@ pub fn template(index: usize, width: f32, height: f32) -> Doc {
                 });
             }
         }
+        6 => {
+            d.title = "Menú de pausa".into();
+            d.background = [70, 120, 90, 255];
+            put(&mut d, None, Kind::Image, "Juego (vista previa)", [0.0, 0.0, w, h], |e| {
+                e.fill = [120, 190, 240, 255];
+                e.fill2 = [70, 140, 80, 255];
+                e.radius = 0.0;
+                e.raycast = false;
+                anchor(e, [0.0, 0.0], [1.0, 1.0]);
+            });
+            put(&mut d, None, Kind::Panel, "Oscurecer", [0.0, 0.0, w, h], |e| {
+                e.fill = [8, 8, 16, 170];
+                e.radius = 0.0;
+                anchor(e, [0.0, 0.0], [1.0, 1.0]);
+            });
+            let win = put(&mut d, None, Kind::Panel, "Pausa", [w / 2.0 - 280.0, h / 2.0 - 330.0, 560.0, 660.0], |e| {
+                e.fill = [30, 32, 48, 240];
+                e.stroke = [124, 92, 255, 255];
+                e.stroke_w = 3.0;
+                e.radius = 30.0;
+                e.shadow.on = true;
+                e.layout.mode = LayoutMode::Vertical;
+                e.layout.spacing = [0.0, 20.0];
+                e.layout.padding = [50.0, 50.0, 50.0, 50.0];
+                e.layout.align = 1;
+                e.layout.expand_w = true;
+            });
+            put(&mut d, Some(win), Kind::Text, "Título", [0.0, 0.0, 460.0, 100.0], |e| {
+                e.text = "PAUSA".into();
+                e.font_size = 72.0;
+                e.bold = true;
+                e.text_color = [255, 255, 255, 255];
+            });
+            let opts = ["Continuar", "Reiniciar nivel", "Opciones", "Salir al menú"];
+            for (i, l) in opts.iter().enumerate() {
+                put(&mut d, Some(win), Kind::Button, &format!("Botón {}", l), [0.0, 0.0, 460.0, 84.0], |e| {
+                    e.text = l.to_string();
+                    e.radius = 42.0;
+                    e.fill = if i == 0 { [35, 140, 85, 255] } else if i == 3 { [235, 70, 90, 255] } else { [124, 92, 255, 255] };
+                    e.on_click = match i {
+                        0 => "ocultar(\"Pausa\");\nocultar(\"Oscurecer\");".into(),
+                        _ => format!("mensaje(\"{}\");", l),
+                    };
+                });
+            }
+        }
+        7 => {
+            d.title = "Fin de partida".into();
+            d.background = [20, 10, 18, 255];
+            put(&mut d, None, Kind::Image, "Fondo", [0.0, 0.0, w, h], |e| {
+                e.fill = [90, 20, 40, 255];
+                e.fill2 = [15, 8, 20, 255];
+                e.radius = 0.0;
+                e.raycast = false;
+                anchor(e, [0.0, 0.0], [1.0, 1.0]);
+            });
+            put(&mut d, None, Kind::Text, "Título", [w / 2.0 - 600.0, h * 0.14, 1200.0, 150.0], |e| {
+                e.text = "FIN DE LA PARTIDA".into();
+                e.font_size = 120.0;
+                e.bold = true;
+                e.text_color = [255, 90, 110, 255];
+                e.shadow.on = true;
+                anchor(e, [0.5, 1.0], [0.5, 1.0]);
+            });
+            let card = put(&mut d, None, Kind::Panel, "Resultados", [w / 2.0 - 360.0, h * 0.36, 720.0, 330.0], |e| {
+                e.fill = [255, 255, 255, 24];
+                e.stroke = [255, 255, 255, 60];
+                e.stroke_w = 2.0;
+                e.radius = 24.0;
+                e.layout.mode = LayoutMode::Vertical;
+                e.layout.spacing = [0.0, 12.0];
+                e.layout.padding = [40.0, 40.0, 36.0, 36.0];
+                e.layout.align = 1;
+                e.layout.expand_w = true;
+            });
+            for (n, v, c) in [("Puntuación", "12 450", [255, 240, 150, 255]), ("Mejor marca", "18 900", [190, 230, 255, 255]), ("Tiempo", "04:32", [255, 255, 255, 255])] {
+                put(&mut d, Some(card), Kind::Text, n, [0.0, 0.0, 640.0, 70.0], |e| {
+                    e.text = format!("{}: {}", n, v);
+                    e.font_size = 44.0;
+                    e.bold = n == "Puntuación";
+                    e.text_color = c;
+                });
+            }
+            let row = put(&mut d, None, Kind::Empty, "Botones", [w / 2.0 - 420.0, h * 0.72, 840.0, 110.0], |e| {
+                anchor(e, [0.5, 0.0], [0.5, 0.0]);
+                e.layout.mode = LayoutMode::Horizontal;
+                e.layout.spacing = [30.0, 0.0];
+                e.layout.align = 4;
+                e.layout.expand_w = true;
+                e.layout.expand_h = true;
+            });
+            put(&mut d, Some(row), Kind::Button, "Botón reintentar", [0.0, 0.0, 400.0, 100.0], |e| {
+                e.text = "Reintentar".into();
+                e.fill = [225, 95, 30, 255];
+                e.radius = 50.0;
+                e.shadow.on = true;
+                e.on_click = "texto(\"Título\", \"¡OTRA VEZ!\");".into();
+            });
+            put(&mut d, Some(row), Kind::Button, "Botón menú", [0.0, 0.0, 400.0, 100.0], |e| {
+                e.text = "Menú principal".into();
+                e.fill = [60, 60, 80, 255];
+                e.radius = 50.0;
+                e.on_click = "mensaje(\"Volver al menú\");".into();
+            });
+        }
+        8 => {
+            d.title = "Selección de nivel".into();
+            d.background = [18, 24, 44, 255];
+            put(&mut d, None, Kind::Text, "Título", [80.0, 50.0, 900.0, 100.0], |e| {
+                e.text = "Elige un nivel".into();
+                e.font_size = 72.0;
+                e.bold = true;
+                e.align = 0;
+                e.text_color = [255, 255, 255, 255];
+                anchor(e, [0.0, 1.0], [0.0, 1.0]);
+                e.pivot = [0.0, 1.0];
+            });
+            put(&mut d, None, Kind::Text, "Estrellas", [w - 480.0, 70.0, 400.0, 60.0], |e| {
+                e.text = "Estrellas: 14 / 36".into();
+                e.font_size = 44.0;
+                e.bold = true;
+                e.align = 2;
+                e.text_color = [255, 214, 90, 255];
+                anchor(e, [1.0, 1.0], [1.0, 1.0]);
+                e.pivot = [1.0, 1.0];
+            });
+            let grid = put(&mut d, None, Kind::Empty, "Niveles", [w / 2.0 - 640.0, 200.0, 1280.0, h - 380.0], |e| {
+                anchor(e, [0.5, 0.0], [0.5, 1.0]);
+                e.layout.mode = LayoutMode::Grid;
+                e.layout.cell = [200.0, 200.0];
+                e.layout.spacing = [40.0, 40.0];
+                e.layout.padding = [20.0, 20.0, 20.0, 20.0];
+                e.layout.align = 1;
+            });
+            for i in 0..12 {
+                let open = i < 5;
+                put(&mut d, Some(grid), Kind::Button, &format!("Nivel {}", i + 1), [0.0, 0.0, 200.0, 200.0], |e| {
+                    e.text = if open { format!("{}", i + 1) } else { "-".to_string() };
+                    e.font_size = 64.0;
+                    e.bold = true;
+                    e.radius = 28.0;
+                    e.fill = if i == 4 { [225, 95, 30, 255] } else if open { [124, 92, 255, 255] } else { [50, 56, 80, 255] };
+                    e.text_color = if open { [255, 255, 255, 255] } else { [120, 126, 150, 255] };
+                    e.interactable = open;
+                    if open {
+                        e.on_click = format!("mensaje(\"Cargar nivel {}\");", i + 1);
+                    }
+                });
+            }
+            put(&mut d, None, Kind::Button, "Botón volver", [80.0, h - 140.0, 260.0, 80.0], |e| {
+                e.text = "Volver".into();
+                e.fill = [60, 60, 80, 255];
+                anchor(e, [0.0, 0.0], [0.0, 0.0]);
+                e.pivot = [0.0, 0.0];
+            });
+        }
+        9 => {
+            d.title = "Pantalla de carga".into();
+            d.background = [10, 12, 20, 255];
+            put(&mut d, None, Kind::Image, "Fondo", [0.0, 0.0, w, h], |e| {
+                e.fill = [46, 32, 110, 255];
+                e.fill2 = [10, 12, 20, 255];
+                e.radius = 0.0;
+                e.raycast = false;
+                anchor(e, [0.0, 0.0], [1.0, 1.0]);
+            });
+            put(&mut d, None, Kind::Text, "Nombre del nivel", [w / 2.0 - 600.0, h * 0.3, 1200.0, 110.0], |e| {
+                e.text = "Las Cuevas de Cristal".into();
+                e.font_size = 84.0;
+                e.bold = true;
+                e.text_color = [255, 255, 255, 255];
+            });
+            put(&mut d, None, Kind::Text, "Consejo", [w / 2.0 - 650.0, h * 0.3 + 130.0, 1300.0, 60.0], |e| {
+                e.text = "Consejo: mantén pulsado el salto para llegar más alto.".into();
+                e.font_size = 32.0;
+                e.italic = true;
+                e.text_color = [190, 200, 230, 255];
+            });
+            put(&mut d, None, Kind::Slider, "Barra de carga", [w / 2.0 - 600.0, h - 220.0, 1200.0, 30.0], |e| {
+                e.fill = [0, 196, 204, 255];
+                e.fill2 = [40, 44, 64, 255];
+                e.value = 0.64;
+                e.interactable = false;
+                anchor(e, [0.5, 0.0], [0.5, 0.0]);
+            });
+            put(&mut d, None, Kind::Text, "Porcentaje", [w / 2.0 - 600.0, h - 170.0, 1200.0, 50.0], |e| {
+                e.text = "Cargando... 64 %".into();
+                e.font_size = 30.0;
+                e.align = 2;
+                e.text_color = [200, 210, 240, 255];
+                anchor(e, [0.5, 0.0], [0.5, 0.0]);
+            });
+            put(&mut d, None, Kind::Ellipse, "Indicador", [w - 150.0, h - 150.0, 80.0, 80.0], |e| {
+                e.fill = [0, 0, 0, 0];
+                e.stroke = [0, 196, 204, 255];
+                e.stroke_w = 8.0;
+                e.raycast = false;
+                anchor(e, [1.0, 0.0], [1.0, 0.0]);
+            });
+        }
+        10 => {
+            d.title = "Diálogo de personaje".into();
+            d.background = [70, 120, 90, 255];
+            put(&mut d, None, Kind::Image, "Juego (vista previa)", [0.0, 0.0, w, h], |e| {
+                e.fill = [255, 200, 150, 255];
+                e.fill2 = [120, 80, 130, 255];
+                e.radius = 0.0;
+                e.raycast = false;
+                anchor(e, [0.0, 0.0], [1.0, 1.0]);
+            });
+            let caja = put(&mut d, None, Kind::Panel, "Caja de diálogo", [60.0, h - 360.0, w - 120.0, 300.0], |e| {
+                e.fill = [16, 16, 28, 230];
+                e.stroke = [255, 255, 255, 200];
+                e.stroke_w = 3.0;
+                e.radius = 24.0;
+                anchor(e, [0.0, 0.0], [1.0, 0.0]);
+                e.pivot = [0.5, 0.0];
+            });
+            put(&mut d, Some(caja), Kind::Panel, "Retrato", [100.0, h - 330.0, 240.0, 240.0], |e| {
+                e.fill = [124, 92, 255, 255];
+                e.fill2 = [0, 196, 204, 255];
+                e.radius = 120.0;
+                e.stroke = [255, 255, 255, 255];
+                e.stroke_w = 4.0;
+                anchor(e, [0.0, 0.5], [0.0, 0.5]);
+            });
+            put(&mut d, Some(caja), Kind::Text, "Nombre", [380.0, h - 335.0, 600.0, 60.0], |e| {
+                e.text = "Anciana del bosque".into();
+                e.font_size = 40.0;
+                e.bold = true;
+                e.align = 0;
+                e.text_color = [255, 214, 120, 255];
+                anchor(e, [0.0, 1.0], [0.0, 1.0]);
+                e.pivot = [0.0, 1.0];
+            });
+            put(&mut d, Some(caja), Kind::Text, "Línea", [380.0, h - 265.0, w - 560.0, 130.0], |e| {
+                e.text = "Viajero, el puente del norte cayó anoche. Si buscas el templo, tendrás que cruzar por las cuevas.".into();
+                e.font_size = 34.0;
+                e.align = 0;
+                e.valign = 0;
+                e.text_color = [240, 240, 250, 255];
+                anchor(e, [0.0, 0.0], [1.0, 1.0]);
+            });
+            put(&mut d, Some(caja), Kind::Button, "Botón continuar", [w - 340.0, h - 140.0, 230.0, 72.0], |e| {
+                e.text = "Continuar".into();
+                e.font_size = 28.0;
+                e.radius = 30.0;
+                anchor(e, [1.0, 0.0], [1.0, 0.0]);
+                e.on_click = "texto(\"Línea\", \"Ten cuidado con los murciélagos. Y no olvides tu antorcha.\");".into();
+            });
+        }
+        11 => {
+            d.title = "Clasificación".into();
+            d.background = [20, 22, 34, 255];
+            put(&mut d, None, Kind::Text, "Título", [w / 2.0 - 500.0, 60.0, 1000.0, 100.0], |e| {
+                e.text = "Clasificación".into();
+                e.font_size = 76.0;
+                e.bold = true;
+                e.text_color = [255, 255, 255, 255];
+                anchor(e, [0.5, 1.0], [0.5, 1.0]);
+                e.pivot = [0.5, 1.0];
+            });
+            let list = put(&mut d, None, Kind::ScrollView, "Lista", [w / 2.0 - 500.0, 200.0, 1000.0, h - 330.0], |e| {
+                e.fill = [32, 35, 52, 255];
+                e.stroke_w = 0.0;
+                e.radius = 20.0;
+                anchor(e, [0.5, 0.0], [0.5, 1.0]);
+                e.layout.mode = LayoutMode::Vertical;
+                e.layout.spacing = [0.0, 12.0];
+                e.layout.padding = [24.0, 24.0, 24.0, 24.0];
+                e.layout.align = 1;
+                e.layout.expand_w = true;
+            });
+            let rows = [("Nébula", 98210), ("Kairo", 91440), ("Tú", 87300), ("Mirla", 80150), ("Sombra", 76020), ("Pixel", 70990)];
+            for (i, (n, p)) in rows.iter().enumerate() {
+                let medal = [[255, 200, 60, 255], [200, 205, 215, 255], [205, 127, 50, 255]];
+                put(&mut d, Some(list), Kind::Panel, &format!("Fila {}", i + 1), [0.0, 0.0, 950.0, 84.0], |e| {
+                    e.fill = if *n == "Tú" { [124, 92, 255, 255] } else { [44, 48, 70, 255] };
+                    e.radius = 14.0;
+                    e.text = format!("{}.  {:<12}  {} pts", i + 1, n, p);
+                    e.font_size = 34.0;
+                    e.bold = i < 3 || *n == "Tú";
+                    e.text_color = if *n == "Tú" { [255, 255, 255, 255] } else if i < 3 { medal[i] } else { [235, 235, 245, 255] };
+                    e.align = 0;
+                });
+            }
+            put(&mut d, None, Kind::Button, "Botón volver", [80.0, h - 120.0, 260.0, 80.0], |e| {
+                e.text = "Volver".into();
+                e.fill = [60, 60, 80, 255];
+                anchor(e, [0.0, 0.0], [0.0, 0.0]);
+                e.pivot = [0.0, 0.0];
+            });
+        }
+        12 => {
+            d.title = "Selección de personaje".into();
+            d.background = [16, 18, 30, 255];
+            put(&mut d, None, Kind::Text, "Título", [w / 2.0 - 600.0, 50.0, 1200.0, 100.0], |e| {
+                e.text = "Elige tu personaje".into();
+                e.font_size = 72.0;
+                e.bold = true;
+                e.text_color = [255, 255, 255, 255];
+                anchor(e, [0.5, 1.0], [0.5, 1.0]);
+                e.pivot = [0.5, 1.0];
+            });
+            let row = put(&mut d, None, Kind::Empty, "Personajes", [w / 2.0 - 820.0, 190.0, 1640.0, 620.0], |e| {
+                anchor(e, [0.5, 0.5], [0.5, 0.5]);
+                e.layout.mode = LayoutMode::Horizontal;
+                e.layout.spacing = [40.0, 0.0];
+                e.layout.align = 4;
+            });
+            let chars = [("Guerrera", [235, 70, 90, 255], "Fuerza alta"), ("Mago", [124, 92, 255, 255], "Magia alta"), ("Arquero", [70, 190, 120, 255], "Precisión alta"), ("Pícara", [225, 95, 30, 255], "Sigilo alto")];
+            for (i, (n, c, stat)) in chars.iter().enumerate() {
+                let card = put(&mut d, Some(row), Kind::Panel, &format!("Tarjeta {}", n), [0.0, 0.0, 370.0, 600.0], |e| {
+                    e.fill = [36, 40, 60, 255];
+                    e.radius = 26.0;
+                    e.stroke = if i == 1 { [255, 214, 90, 255] } else { [70, 76, 104, 255] };
+                    e.stroke_w = if i == 1 { 6.0 } else { 2.0 };
+                    e.shadow.on = i == 1;
+                    e.layout.mode = LayoutMode::Vertical;
+                    e.layout.spacing = [0.0, 16.0];
+                    e.layout.padding = [24.0, 24.0, 24.0, 24.0];
+                    e.layout.align = 1;
+                    e.layout.expand_w = true;
+                });
+                put(&mut d, Some(card), Kind::Panel, &format!("Retrato {}", n), [0.0, 0.0, 320.0, 360.0], |e| {
+                    e.fill = *c;
+                    e.fill2 = [20, 20, 30, 255];
+                    e.radius = 18.0;
+                });
+                put(&mut d, Some(card), Kind::Text, &format!("Nombre {}", n), [0.0, 0.0, 320.0, 60.0], |e| {
+                    e.text = n.to_string();
+                    e.font_size = 44.0;
+                    e.bold = true;
+                    e.text_color = [255, 255, 255, 255];
+                });
+                put(&mut d, Some(card), Kind::Text, &format!("Atributo {}", n), [0.0, 0.0, 320.0, 44.0], |e| {
+                    e.text = stat.to_string();
+                    e.font_size = 30.0;
+                    e.text_color = [200, 206, 230, 255];
+                });
+            }
+            put(&mut d, None, Kind::Button, "Botón confirmar", [w / 2.0 - 220.0, h - 190.0, 440.0, 100.0], |e| {
+                e.text = "Confirmar".into();
+                e.fill = [225, 95, 30, 255];
+                e.radius = 50.0;
+                e.shadow.on = true;
+                anchor(e, [0.5, 0.0], [0.5, 0.0]);
+                e.on_click = "mensaje(\"Personaje elegido: Mago\");".into();
+            });
+        }
         _ => {}
     }
     d.normalize();
@@ -1653,5 +2081,44 @@ mod sanitize_tests {
         d.migrate_groups();
         let e = d.get(ids[0]).unwrap();
         assert!(e.x.is_finite() && e.w.is_finite());
+    }
+}
+
+#[cfg(test)]
+mod template_tests {
+    use super::*;
+
+    #[test]
+    fn every_template_is_sane_at_several_resolutions() {
+        assert_eq!(template_order().count(), TEMPLATES.len());
+        let mut d = template(1, 1920.0, 1080.0);
+        d.elements[2].visible = false;
+        let all = d.shown_all();
+        for e in &d.elements {
+            assert_eq!(all.contains(&e.id), d.shown(e.id), "{}", e.name);
+        }
+        assert_eq!(template_order().last(), Some(blank_template()));
+        assert_eq!(TEMPLATES[blank_template()], "En blanco");
+        for &(w, h) in &[(1920.0, 1080.0), (1280.0, 720.0), (2560.0, 1440.0), (1080.0, 1920.0), (800.0, 600.0)] {
+            for i in 0..TEMPLATES.len() {
+                let d = template(i, w, h);
+                if i == blank_template() {
+                    assert!(d.elements.is_empty());
+                    continue;
+                }
+                assert!(!d.elements.is_empty(), "{} vacía", TEMPLATES[i]);
+                assert_eq!(d.title, TEMPLATES[i], "el título coincide con el nombre");
+                let mut ids = std::collections::HashSet::new();
+                for e in &d.elements {
+                    assert!(ids.insert(e.id), "{}: id repetido", TEMPLATES[i]);
+                    assert!(e.w > 0.0 && e.h > 0.0 && e.w.is_finite() && e.h.is_finite(), "{}: {} sin tamaño", TEMPLATES[i], e.name);
+                    if let Some(p) = e.parent {
+                        assert!(d.get(p).is_some(), "{}: padre perdido", TEMPLATES[i]);
+                    }
+                    // Nada se sale de la página (margen por sombras/bordes).
+                    assert!(e.x >= -1.0 && e.y >= -1.0 && e.x + e.w <= w + 1.0 && e.y + e.h <= h + 1.0, "{} @{}x{}: «{}» fuera de la página {:?}", TEMPLATES[i], w, h, e.name, [e.x, e.y, e.w, e.h]);
+                }
+            }
+        }
     }
 }

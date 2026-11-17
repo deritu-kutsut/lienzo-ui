@@ -107,12 +107,15 @@ pub struct EditorApp {
     pub save_open: bool,
     pub template_name: String,
     pub element_name: String,
+    /// Miniaturas de las plantillas incluidas para el tamaño de página actual (se generan una vez).
+    pub template_thumbs: Option<((f32, f32), Vec<model::Doc>)>,
     /// Hierarchy drag & drop.
     pub tree_drag: Option<u64>,
     pub tutorial: Option<crate::tutorial::Tutorial>,
     pub plugins: Vec<crate::plugins::Plugin>,
     pub comunidad: crate::comunidad::Comunidad,
     pub accesibilidad_abierta: bool,
+    pub revision_abierta: bool,
     pub temas_abierto: bool,
     pub actualizador: crate::actualizador::Actualizador,
     pub captura_larga: bool,
@@ -198,11 +201,13 @@ impl EditorApp {
             save_open: false,
             template_name: String::new(),
             element_name: String::new(),
+            template_thumbs: None,
             tree_drag: None,
             tutorial: None,
             plugins: crate::plugins::cargar_todos(),
             comunidad: crate::comunidad::Comunidad::new(),
             accesibilidad_abierta: false,
+            revision_abierta: false,
             temas_abierto: false,
             actualizador: crate::actualizador::Actualizador::new(),
             captura_larga: false,
@@ -623,7 +628,8 @@ impl EditorApp {
     }
 
     pub fn distribute(&mut self, axis: usize) {
-        let mut items: Vec<Element> = self.sel_top().iter().filter_map(|i| self.doc.get(*i).cloned()).collect();
+        // Los bloqueados no se mueven (igual que con las flechas).
+        let mut items: Vec<Element> = self.sel_top().iter().filter_map(|i| self.doc.get(*i).cloned()).filter(|e| !e.locked).collect();
         if items.len() < 3 {
             return;
         }
@@ -664,6 +670,7 @@ impl EditorApp {
     }
 
     pub fn load_template(&mut self, i: usize) {
+        self.set_preview(false);
         let mut d = model::template(i, self.doc.width, self.doc.height);
         lock_backgrounds(&mut d);
         self.doc = d;
@@ -690,7 +697,7 @@ impl EditorApp {
     }
 
     pub fn save_project(&mut self) {
-        match serde_json::to_string_pretty(&self.doc).map_err(|e| e.to_string()).and_then(|s| std::fs::write(&self.project_path, s).map_err(|e| e.to_string())) {
+        match serde_json::to_string_pretty(self.doc_real()).map_err(|e| e.to_string()).and_then(|s| std::fs::write(&self.project_path, s).map_err(|e| e.to_string())) {
             Ok(()) => {
                 self.status = crate::i18n::tf("Proyecto guardado en {}", &[&self.project_path]);
                 self.remember_project();
@@ -702,6 +709,7 @@ impl EditorApp {
     pub fn open_project(&mut self) {
         match std::fs::read_to_string(&self.project_path).map_err(|e| e.to_string()).and_then(|s| serde_json::from_str::<Doc>(&s).map_err(|e| e.to_string())) {
             Ok(mut d) => {
+                self.set_preview(false);
                 crate::library::set_carpeta_diseno(std::path::Path::new(&self.project_path));
                 d.migrate_groups();
                 self.doc = d;
@@ -831,7 +839,7 @@ impl EditorApp {
 
     pub fn save_as_template(&mut self, name: &str) {
         let name = if name.trim().is_empty() { self.doc.title.clone() } else { name.trim().to_string() };
-        let doc = self.doc.clone();
+        let doc = self.doc_real().clone();
         match self.library.save_template(&name, &doc) {
             Ok(_) => self.status = crate::i18n::tf("Plantilla «{}» guardada (pestaña Plantillas › Mis plantillas)", &[&name]),
             Err(e) => self.status = crate::i18n::tf("No se pudo guardar la plantilla: {}", &[&e.to_string()]),
@@ -839,6 +847,7 @@ impl EditorApp {
     }
 
     pub fn load_user_template(&mut self, doc: &Doc) {
+        self.set_preview(false);
         let mut d = doc.clone();
         d.migrate_groups();
         lock_backgrounds(&mut d);
@@ -865,6 +874,11 @@ impl EditorApp {
     }
 
     // ------------------------------------------------------------- test mode / code
+
+    /// El diseño que se guarda o exporta: en modo prueba, el de antes de la prueba (los clics no cuentan).
+    pub fn doc_real(&self) -> &Doc {
+        self.preview_backup.as_ref().filter(|_| self.preview).unwrap_or(&self.doc)
+    }
 
     /// Enter or leave test mode. Changes made by click code are undone on exit.
     pub fn set_preview(&mut self, on: bool) {
@@ -915,7 +929,7 @@ impl EditorApp {
                 None => return,
             }
         }
-        match crate::export::write_unity_package(&self.doc, std::path::Path::new(&dir)) {
+        match crate::export::write_unity_package(self.doc_real(), std::path::Path::new(&dir)) {
             Ok(files) => {
                 let root = crate::export::find_unity_root(std::path::Path::new(&dir)).map(|p| p.to_string_lossy().to_string()).unwrap_or(dir.clone());
                 self.settings.unity_project = root.clone();

@@ -240,6 +240,16 @@ pub fn write_unity_package(doc: &Doc, project: &Path) -> Result<Vec<String>, Str
     let root = find_unity_root(project).ok_or("esa carpeta no parece un proyecto de Unity (no tiene carpeta Assets)")?;
     let base = root.join(UNITY_ROOT);
     let cls = class_name(&doc.title);
+    // Las imágenes se leen antes de escribir nada: si falta una, el proyecto de Unity no queda a medias.
+    let mut pictures = Vec::new();
+    let mut done = HashSet::new();
+    for e in &doc.elements {
+        if !e.image.is_empty() && done.insert(e.image.clone()) {
+            let src = crate::library::resolve_image(&e.image);
+            let b = std::fs::read(&src).map_err(|err| format!("no se pudo leer la imagen {}: {}", src.display(), err))?;
+            pictures.push((image_asset_path(&e.image), b));
+        }
+    }
     let mut written = Vec::new();
     let mut put = |rel: String, bytes: &[u8]| -> Result<(), String> {
         let p = root.join(&rel);
@@ -251,16 +261,8 @@ pub fn write_unity_package(doc: &Doc, project: &Path) -> Result<Vec<String>, Str
         Ok(())
     };
     put(format!("{}/Editor/EditorGuiImporter.cs", UNITY_ROOT), IMPORTER_CS.as_bytes())?;
-    // pictures
-    let mut done = HashSet::new();
-    for e in &doc.elements {
-        if !e.image.is_empty() && done.insert(e.image.clone()) {
-            let src = crate::library::resolve_image(&e.image);
-            match std::fs::read(&src) {
-                Ok(b) => put(image_asset_path(&e.image), &b)?,
-                Err(err) => return Err(format!("no se pudo leer la imagen {}: {}", src.display(), err)),
-            }
-        }
+    for (rel, b) in &pictures {
+        put(rel.clone(), b)?;
     }
     // fonts (Unity turns them into TextMeshPro font assets)
     for name in used_fonts(doc) {

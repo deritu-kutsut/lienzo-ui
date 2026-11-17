@@ -25,10 +25,13 @@ let fallos = 0, total = 0;
 const ok = (nombre, cond, det = "") => { total++; if (cond) console.log(`  ok  ${nombre}`); else { fallos++; console.log(`  ✗   ${nombre} ${det}`); } };
 
 ok("initialize", (await pedir("initialize", { protocolVersion: "2025-06-18", capabilities: {}, clientInfo: { name: "p", version: "0" } })).result?.serverInfo?.name === "lienzo-ui");
-ok("tools/list: 12 herramientas", (await pedir("tools/list", {})).result?.tools?.length === 12);
+ok("tools/list: 13 herramientas", (await pedir("tools/list", {})).result?.tools?.length === 13);
 ok("listar_plantillas incluye Inventario", texto(await llamar("listar_plantillas", {})).includes("Inventario"));
 
 console.log("Flujo completo:");
+ok("listar_plantillas incluye las nuevas", texto(await llamar("listar_plantillas", {})).includes("Selección de personaje"));
+ok("crear_diseno desde Menú de pausa", !esError(await llamar("crear_diseno", { archivo: "Pausa", plantilla: 6 })));
+ok("revisar_diseno sin errores en la plantilla", !texto(await llamar("revisar_diseno", { archivo: "Pausa" })).includes("[ERROR]"));
 ok("crear_diseno desde Inventario", !esError(await llamar("crear_diseno", { archivo: "Tienda", plantilla: 4, titulo: "Tienda del herrero" })));
 const resumen = texto(await llamar("leer_diseno", { archivo: "Tienda" }));
 ok("leer_diseno muestra el título", resumen.includes("Tienda del herrero"), resumen.slice(0, 80));

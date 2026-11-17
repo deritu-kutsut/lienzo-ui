@@ -13,7 +13,8 @@
 |---|---|
 | `info_lienzo` | Resumen, carpeta de diseños y flujo recomendado. Llamarla primero. |
 | `listar_plantillas` | Plantillas incluidas. |
-| `crear_diseno` | Diseño nuevo desde una plantilla (5 = en blanco), con título opcional. |
+| `crear_diseno` | Diseño nuevo desde una plantilla (0-12; 5 = en blanco), con título opcional. |
+| `revisar_diseno` | Revisa legibilidad, contraste, tamaño táctil, elementos fuera de la página, nombres repetidos e imágenes que faltan. |
 | `listar_disenos` | Diseños guardados. |
 | `leer_diseno` | Elementos: id, nombre, tipo, posición, tamaño, texto, padre. |
 | `modificar_elemento` | Cambia texto, posición, tamaño, colores, fuente, visibilidad, valor, opciones… |

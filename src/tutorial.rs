@@ -42,7 +42,7 @@ Al terminar este tutorial se abre el editor. Puedes volver aquí cuando quieras 
     },
     Pagina {
         titulo: "Empieza con una plantilla",
-        texto: "Abre Plantillas en la barra izquierda y elige una: Menú principal, HUD de juego, Ventana de diálogo, Ajustes o Inventario.\n\n\
+        texto: "Abre Plantillas en la barra izquierda y elige una de las 12: menú principal, HUD, pausa, fin de partida, selección de nivel, inventario, diálogo de personaje, clasificación…\n\n\
 Es la forma más rápida de ver cómo se construye una interfaz completa. Todo lo que trae se puede cambiar.\n\n\
 Si prefieres empezar de cero, elige «En blanco» o Archivo › Nuevo diseño en blanco.",
     },

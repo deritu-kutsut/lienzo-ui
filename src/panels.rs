@@ -21,7 +21,7 @@ const SWATCHES: &[Rgba] = &[
     [20, 20, 30, 255],
     [124, 92, 255, 255],
     [0, 196, 204, 255],
-    [255, 145, 77, 255],
+    [225, 95, 30, 255],
     [235, 70, 90, 255],
     [255, 214, 80, 255],
     [70, 190, 120, 255],
@@ -74,7 +74,7 @@ fn tile(ui: &mut egui::Ui, size: Vec2, label: &str, paint: impl FnOnce(&egui::Pa
         ui.painter().rect_stroke(img, 7.0, Stroke::new(1.5, ACCENT()), StrokeKind::Inside);
     }
     paint(&ui.painter().with_clip_rect(img.shrink(2.0)), img.shrink(10.0));
-    ui.painter().text(Pos2::new(img.center().x, img.bottom() + 9.0), egui::Align2::CENTER_CENTER, label, FontId::proportional(11.0), MUTED());
+    ui.painter().text(Pos2::new(img.center().x, img.bottom() + 9.0), egui::Align2::CENTER_CENTER, crate::i18n::t(label), FontId::proportional(11.0), MUTED());
     resp.on_hover_cursor(egui::CursorIcon::Grab)
 }
 
@@ -310,6 +310,9 @@ impl EditorApp {
                         if ui.button(crate::i18n::t("Temas")).on_hover_text(crate::i18n::t("Colores, esquinas y fuente de la app; temas de la comunidad")).clicked() {
                             self.temas_abierto = true;
                         }
+                        if ui.add(crate::icons::btn("check", crate::i18n::t("Revisar"))).on_hover_text(crate::i18n::t("Revisa legibilidad, contraste, tamaño táctil e imágenes que faltan antes de exportar")).clicked() {
+                            self.revision_abierta = true;
+                        }
                         if ui.button(crate::i18n::t("Accesibilidad")).on_hover_text(crate::i18n::t("Idioma, tamaño de la interfaz, alto contraste y movimiento reducido")).clicked() {
                             self.accesibilidad_abierta = true;
                         }
@@ -387,7 +390,8 @@ impl EditorApp {
     }
 
     fn matches(&self, label: &str) -> bool {
-        self.search.trim().is_empty() || label.to_lowercase().contains(&self.search.trim().to_lowercase())
+        let q = self.search.trim().to_lowercase();
+        q.is_empty() || label.to_lowercase().contains(&q) || crate::i18n::t(label).to_lowercase().contains(&q)
     }
 
     fn place_or_drag(&mut self, resp: &egui::Response, proto: Element) {
@@ -404,19 +408,26 @@ impl EditorApp {
         ui.add_space(6.0);
         let (w, h) = (self.doc.width, self.doc.height);
         let mut chosen = None;
+        if self.template_thumbs.as_ref().is_none_or(|(size, _)| *size != (w, h)) {
+            self.template_thumbs = Some(((w, h), (0..model::TEMPLATES.len()).map(|i| model::template(i, w, h)).collect()));
+        }
+        let thumbs = self.template_thumbs.take();
         ui.horizontal_wrapped(|ui| {
             ui.spacing_mut().item_spacing = Vec2::new(8.0, 8.0);
-            for (i, name) in model::TEMPLATES.iter().enumerate() {
-                if !self.matches(name) {
+            for i in model::template_order() {
+                let name = model::TEMPLATES[i];
+                let shown = crate::i18n::t(name);
+                if !self.matches(name) && !self.matches(&shown) {
                     continue;
                 }
-                let doc = model::template(i, w, h);
-                let resp = tile(ui, Vec2::new(128.0, 82.0), &crate::i18n::t(name), |p, r| render::paint_doc_thumb(p, &doc, r.expand(6.0)));
+                let Some(doc) = thumbs.as_ref().and_then(|(_, v)| v.get(i)) else { continue };
+                let resp = tile(ui, Vec2::new(128.0, 82.0), &shown, |p, r| render::paint_doc_thumb(p, doc, r.expand(6.0)));
                 if resp.clicked() {
                     chosen = Some(i);
                 }
             }
         });
+        self.template_thumbs = thumbs;
         if let Some(i) = chosen {
             self.load_template(i);
         }
@@ -436,7 +447,8 @@ impl EditorApp {
         }
         let mut load = None;
         let mut remove = None;
-        let templates = self.library.templates.clone();
+        // Se toma prestada la lista (sin clonarla cada frame) y se devuelve al final.
+        let templates = std::mem::take(&mut self.library.templates);
         ui.horizontal_wrapped(|ui| {
             ui.spacing_mut().item_spacing = Vec2::new(8.0, 8.0);
             for t in &templates {
@@ -461,6 +473,9 @@ impl EditorApp {
         });
         if let Some(d) = load {
             self.load_user_template(&d);
+        }
+        if self.library.templates.is_empty() {
+            self.library.templates = templates;
         }
         if let Some(p) = remove {
             self.library.remove(&p);
@@ -487,7 +502,8 @@ impl EditorApp {
         if self.library.elements.is_empty() {
             hint(ui, &crate::i18n::t("Sube imágenes o guarda una selección para tenerla aquí."));
         }
-        let items = self.library.elements.clone();
+        // Se toma prestada la lista (sin clonarla cada frame) y se devuelve al final.
+        let items = std::mem::take(&mut self.library.elements);
         let mut remove = None;
         ui.horizontal_wrapped(|ui| {
             ui.spacing_mut().item_spacing = Vec2::new(8.0, 8.0);
@@ -519,6 +535,9 @@ impl EditorApp {
                 });
             }
         });
+        if self.library.elements.is_empty() {
+            self.library.elements = items;
+        }
         if let Some(p) = remove {
             self.library.remove(&p);
         }
@@ -585,7 +604,90 @@ impl EditorApp {
             grid.layout.align = 1;
             vec![("Contenedor", c), ("Fila (Horizontal)", row), ("Columna (Vertical)", col), ("Rejilla (Grid)", grid)]
         };
-        for (title, items) in [("Controles de UI (uGUI)", controls), ("Contenedores y Layout Groups", containers), ("Formas", shapes)] {
+        let presets: Vec<(&str, Element)> = {
+            let mut pill = Element::new(0, Kind::Button);
+            pill.name = "Botón píldora".into();
+            pill.text = "Jugar".into();
+            pill.fill = [225, 95, 30, 255];
+            pill.radius = 44.0;
+            pill.w = 360.0;
+            pill.h = 88.0;
+            pill.shadow.on = true;
+            let mut ghost = Element::new(0, Kind::Button);
+            ghost.name = "Botón contorno".into();
+            ghost.text = "Opciones".into();
+            ghost.fill = [0, 0, 0, 0];
+            ghost.stroke = [124, 92, 255, 255];
+            ghost.stroke_w = 4.0;
+            ghost.text_color = [124, 92, 255, 255];
+            ghost.radius = 44.0;
+            ghost.w = 360.0;
+            ghost.h = 88.0;
+            let mut close = Element::new(0, Kind::Button);
+            close.name = "Botón cerrar".into();
+            close.text = "X".into();
+            close.fill = [235, 70, 90, 255];
+            close.radius = 35.0;
+            close.w = 70.0;
+            close.h = 70.0;
+            let mut hp = Element::new(0, Kind::Slider);
+            hp.name = "Barra de vida".into();
+            hp.fill = [235, 70, 90, 255];
+            hp.fill2 = [60, 60, 70, 255];
+            hp.value = 0.72;
+            hp.interactable = false;
+            hp.w = 460.0;
+            hp.h = 34.0;
+            let mut mana = hp.clone();
+            mana.name = "Barra de maná".into();
+            mana.fill = [70, 130, 255, 255];
+            mana.value = 0.45;
+            let mut card = Element::new(0, Kind::Panel);
+            card.name = "Tarjeta".into();
+            card.fill = [255, 255, 255, 255];
+            card.radius = 24.0;
+            card.shadow.on = true;
+            card.shadow.color = [0, 0, 0, 50];
+            card.w = 420.0;
+            card.h = 300.0;
+            let mut glass = Element::new(0, Kind::Panel);
+            glass.name = "Panel translúcido".into();
+            glass.fill = [10, 10, 20, 150];
+            glass.stroke = [255, 255, 255, 60];
+            glass.stroke_w = 2.0;
+            glass.radius = 20.0;
+            glass.w = 520.0;
+            glass.h = 320.0;
+            let mut badge = Element::new(0, Kind::Ellipse);
+            badge.name = "Insignia".into();
+            badge.fill = [235, 70, 90, 255];
+            badge.text = "3".into();
+            badge.font_size = 30.0;
+            badge.bold = true;
+            badge.text_color = [255, 255, 255, 255];
+            badge.w = 56.0;
+            badge.h = 56.0;
+            let mut slot = Element::new(0, Kind::Panel);
+            slot.name = "Casilla".into();
+            slot.fill = [60, 64, 84, 255];
+            slot.stroke = [110, 116, 150, 255];
+            slot.stroke_w = 2.0;
+            slot.radius = 14.0;
+            slot.w = 140.0;
+            slot.h = 140.0;
+            vec![
+                ("Botón píldora", pill),
+                ("Botón contorno", ghost),
+                ("Botón cerrar", close),
+                ("Barra de vida", hp),
+                ("Barra de maná", mana),
+                ("Tarjeta", card),
+                ("Panel translúcido", glass),
+                ("Insignia", badge),
+                ("Casilla", slot),
+            ]
+        };
+        for (title, items) in [("Controles de UI (uGUI)", controls), ("Componentes listos", presets), ("Contenedores y Layout Groups", containers), ("Formas", shapes)] {
             section(ui, title);
             ui.horizontal_wrapped(|ui| {
                 ui.spacing_mut().item_spacing = Vec2::new(8.0, 8.0);
@@ -643,9 +745,10 @@ impl EditorApp {
             let (r, resp) = ui.allocate_exact_size(Vec2::new(ui.available_width(), shown + 22.0), Sense::click_and_drag());
             ui.painter().rect_filled(r, 7.0, if resp.hovered() { HOVER() } else { FIELD() });
             let pos = Pos2::new(r.left() + 12.0, r.center().y);
-            ui.painter().text(pos, egui::Align2::LEFT_CENTER, label, FontId::proportional(shown), TEXT());
+            let shown_label = crate::i18n::t(label);
+            ui.painter().text(pos, egui::Align2::LEFT_CENTER, &shown_label, FontId::proportional(shown), TEXT());
             if bold {
-                ui.painter().text(pos + Vec2::new(0.7, 0.0), egui::Align2::LEFT_CENTER, label, FontId::proportional(shown), TEXT());
+                ui.painter().text(pos + Vec2::new(0.7, 0.0), egui::Align2::LEFT_CENTER, &shown_label, FontId::proportional(shown), TEXT());
             }
             let mut e = Element::new(0, Kind::Text);
             e.text = label.replace("Agregar un ", "").replace("Agregar ", "");
@@ -674,7 +777,63 @@ impl EditorApp {
             tag.radius = 40.0;
             tag.w = 200.0;
             tag.h = 64.0;
-            for (label, proto) in [("Marcador", score), ("Etiqueta", tag)] {
+            let mut timer = Element::new(0, Kind::Text);
+            timer.name = "Temporizador".into();
+            timer.text = "02:45".into();
+            timer.font_size = 64.0;
+            timer.bold = true;
+            timer.text_color = [255, 255, 255, 255];
+            timer.w = 240.0;
+            timer.h = 84.0;
+            let mut coins = Element::new(0, Kind::Text);
+            coins.name = "Monedas".into();
+            coins.text = "x 1 250".into();
+            coins.font_size = 44.0;
+            coins.bold = true;
+            coins.align = 0;
+            coins.text_color = [255, 214, 90, 255];
+            coins.w = 260.0;
+            coins.h = 60.0;
+            let mut dmg = Element::new(0, Kind::Text);
+            dmg.name = "Daño".into();
+            dmg.text = "-128".into();
+            dmg.font_size = 56.0;
+            dmg.bold = true;
+            dmg.italic = true;
+            dmg.text_color = [255, 80, 80, 255];
+            dmg.w = 200.0;
+            dmg.h = 72.0;
+            let mut combo = Element::new(0, Kind::Text);
+            combo.name = "Combo".into();
+            combo.text = "COMBO x12!".into();
+            combo.font_size = 58.0;
+            combo.bold = true;
+            combo.rot = -8.0;
+            combo.text_color = [0, 220, 230, 255];
+            combo.w = 420.0;
+            combo.h = 80.0;
+            let mut lvl = Element::new(0, Kind::Button);
+            lvl.name = "Nivel".into();
+            lvl.text = "NV. 12".into();
+            lvl.font_size = 28.0;
+            lvl.bold = true;
+            lvl.fill = [124, 92, 255, 255];
+            lvl.radius = 12.0;
+            lvl.w = 140.0;
+            lvl.h = 52.0;
+            let mut sub = Element::new(0, Kind::Panel);
+            sub.name = "Subtítulo de diálogo".into();
+            sub.text = "¡Cuidado, viene por la izquierda!".into();
+            sub.font_size = 32.0;
+            sub.fill = [0, 0, 0, 170];
+            sub.text_color = [255, 255, 255, 255];
+            sub.radius = 10.0;
+            sub.w = 820.0;
+            sub.h = 70.0;
+            for (label, proto) in [("Marcador", score), ("Etiqueta", tag), ("Temporizador", timer), ("Monedas", coins), ("Daño", dmg), ("Combo", combo), ("Nivel", lvl), ("Subtítulo de diálogo", sub)] {
+                if !self.matches(label) {
+                    continue;
+                }
                 let resp = tile(ui, Vec2::new(124.0, 60.0), label, |p, r| {
                     p.rect_filled(r.expand(8.0), 6.0, Color32::from_rgb(28, 28, 38));
                     render::paint_element_thumb(p, &proto, r);
@@ -694,7 +853,8 @@ impl EditorApp {
         if self.library.images.is_empty() {
             hint(ui, &crate::i18n::t("Las imágenes que subas aparecerán aquí y se guardan para tus próximos diseños."));
         }
-        let images = self.library.images.clone();
+        // Se toma prestada la lista (sin clonarla cada frame) y se devuelve al final.
+        let images = std::mem::take(&mut self.library.images);
         let mut remove = None;
         ui.horizontal_wrapped(|ui| {
             ui.spacing_mut().item_spacing = Vec2::new(8.0, 8.0);
@@ -720,13 +880,16 @@ impl EditorApp {
                 });
             }
         });
+        if self.library.images.is_empty() {
+            self.library.images = images;
+        }
         if let Some(p) = remove {
             self.library.remove(&p);
         }
         section(ui, "Degradados (marcadores de posición)");
         hint(ui, &crate::i18n::t("En uGUI se exportan como un Sprite de degradado generado."));
         ui.add_space(4.0);
-        let pairs: [(Rgba, Rgba, &str); 8] = [
+        let pairs: [(Rgba, Rgba, &str); 16] = [
             ([255, 126, 179, 255], [255, 117, 140, 255], "Atardecer"),
             ([46, 32, 110, 255], [12, 120, 150, 255], "Noche"),
             ([120, 190, 240, 255], [70, 140, 80, 255], "Paisaje"),
@@ -735,6 +898,14 @@ impl EditorApp {
             ([240, 240, 245, 255], [180, 185, 200, 255], "Niebla"),
             ([30, 30, 40, 255], [90, 90, 110, 255], "Pizarra"),
             ([140, 230, 160, 255], [30, 130, 90, 255], "Bosque"),
+            ([130, 220, 255, 255], [20, 60, 140, 255], "Océano"),
+            ([255, 240, 200, 255], [230, 170, 90, 255], "Desierto"),
+            ([255, 90, 200, 255], [40, 10, 90, 255], "Neón"),
+            ([230, 245, 255, 255], [150, 190, 230, 255], "Hielo"),
+            ([140, 30, 30, 255], [20, 5, 10, 255], "Volcán"),
+            ([255, 220, 240, 255], [200, 170, 255, 255], "Caramelo"),
+            ([90, 70, 50, 255], [40, 30, 20, 255], "Madera"),
+            ([10, 10, 14, 255], [10, 10, 14, 0], "Viñeta"),
         ];
         ui.horizontal_wrapped(|ui| {
             ui.spacing_mut().item_spacing = Vec2::new(8.0, 8.0);

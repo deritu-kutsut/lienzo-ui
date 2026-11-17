@@ -135,7 +135,7 @@ const HERRAMIENTAS = [
     run: () => [
       `Lienzo UI v${VERSION} (servidor MCP). Editor visual de interfaces de juego que exporta a Unity.`,
       `Carpeta de diseños: ${DISENOS}`,
-      "Flujo: listar_plantillas → crear_diseno → leer_diseno → modificar/duplicar/eliminar elementos → captura → exportar_unity.",
+      "Flujo: listar_plantillas → crear_diseno → leer_diseno → modificar/duplicar/eliminar elementos → revisar_diseno → captura → exportar_unity.",
       "Coordenadas en píxeles de la resolución de referencia (normalmente 1920×1080), origen arriba a la izquierda.",
       "Tipos de elemento: Panel, Ellipse, Image, Text, Button, Toggle, Slider, InputField, Dropdown, ScrollView, Empty.",
       "En Unity: el diseño aparece como prefab en Assets/EditorGUI/Prefabs (uGUI + TextMeshPro), además de UXML/USS (UI Toolkit) y un script OnGUI (IMGUI).",
@@ -190,6 +190,17 @@ const HERRAMIENTAS = [
       if (pixel_art) for (const e of doc.elements) { e.x = Math.round(e.x); e.y = Math.round(e.y); e.w = Math.max(1, Math.round(e.w)); e.h = Math.max(1, Math.round(e.h)); }
       guardar(abs, doc);
       return hechos.length ? `Ajustado: ${hechos.join(", ")}.` : "Sin cambios.";
+    },
+  },
+  {
+    name: "revisar_diseno",
+    description: "Revisa un diseño antes de exportarlo: letra demasiado pequeña, poco contraste (WCAG), controles demasiado pequeños para tocar, elementos fuera de la página, nombres repetidos e imágenes que faltan. Devuelve una línea por problema ([ERROR] o [AVISO]).",
+    inputSchema: { type: "object", properties: { archivo: { type: "string" } }, required: ["archivo"] },
+    run: async ({ archivo }) => {
+      const { abs } = leer(archivo);
+      const r = await ejecutar(["--abrir", abs, "--revisar"]);
+      if (r.codigo === 2 || (!r.out && r.err)) throw new Error(r.err || "No se pudo revisar el diseño.");
+      return r.out.trim();
     },
   },
   {

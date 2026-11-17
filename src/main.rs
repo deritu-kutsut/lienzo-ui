@@ -21,6 +21,7 @@ mod comunidad_validar;
 mod tutorial;
 mod temas;
 mod actualizador;
+mod revision;
 
 use eframe::egui;
 use std::sync::{
@@ -62,6 +63,7 @@ impl eframe::App for app::EditorApp {
         self.comunidad_ventanas(&ctx);
         self.tutorial_window(&ctx);
         self.accesibilidad_window(&ctx);
+        self.revision_window(&ctx);
         self.temas_window(&ctx);
         self.actualizador_window(&ctx);
         self.commit(&ctx);
@@ -118,6 +120,7 @@ fn doc_from_args(args: &[String]) -> Result<Option<model::Doc>, String> {
 
 /// Modo sin ventana (automatización, MCP, CI). Devuelve Some(código de salida) si se usó.
 ///   --plantillas                 lista las plantillas
+///   --revisar                    revisa el diseño (--abrir o --plantilla): legibilidad, contraste, tamaño táctil
 ///   --guardar <archivo>          guarda el diseño (--abrir o --plantilla) como proyecto y termina
 ///   --exportar <proyecto Unity>  exporta el diseño a Unity y termina
 ///   --comunidad-subir <tipo> <archivo> --titulo "…"  sube contenido a la comunidad con tu sesión guardada
@@ -144,6 +147,23 @@ fn headless(args: &[String]) -> Option<i32> {
     }
     if args.iter().any(|a| a == "--comunidad-reintentar") {
         return Some(comunidad::reintentar_cli());
+    }
+    if args.iter().any(|a| a == "--revisar") {
+        return Some(match doc_from_args(args) {
+            Ok(Some(d)) => {
+                let (texto, errores) = revision::informe(&d);
+                println!("{}", texto);
+                if errores { 1 } else { 0 }
+            }
+            Ok(None) => {
+                eprintln!("Indica el diseño con --abrir <archivo> o --plantilla <n>");
+                2
+            }
+            Err(e) => {
+                eprintln!("No se pudo cargar el diseño: {}", e);
+                1
+            }
+        });
     }
     let exportar = arg_after(args, "--exportar");
     let guardar = arg_after(args, "--guardar");
@@ -248,6 +268,8 @@ fn main() -> eframe::Result<()> {
                     _ => app::Tab::Layers,
                 };
             }
+            // --abrir-revision: abre la ventana «Revisar diseño» (capturas).
+            app.revision_abierta = args.iter().any(|a| a == "--abrir-revision");
             // Las capturas automáticas no guardan ajustes.
             if app.screenshot.is_some() {
                 app.settings.solo_lectura = true;

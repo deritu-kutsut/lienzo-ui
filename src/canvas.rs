@@ -82,8 +82,9 @@ fn clip_rect(doc: &Doc, e: &Element, v: &View, page: Rect) -> Rect {
 
 /// Paint every visible element of `doc` (hierarchy order, masks applied).
 fn paint_doc(painter: &egui::Painter, doc: &Doc, v: &View, page: Rect, hide_text_of: Option<u64>) {
+    let shown = doc.shown_all();
     for e in &doc.elements {
-        if !doc.shown(e.id) {
+        if !shown.contains(&e.id) {
             continue;
         }
         let clip = clip_rect(doc, e, v, page);

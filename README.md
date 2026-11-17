@@ -18,7 +18,9 @@
 - **Design-tool editing:** drag elements onto the canvas, resize and rotate with handles, smart guides, multi-selection, groups, layers, undo/redo, copy/paste.
 - **Real Unity concepts:** RectTransform anchors and pivots, Canvas Scaler (reference resolution and match), Horizontal/Vertical/Grid layout groups, ScrollView, masks.
 - **11 element types:** panel, ellipse, image, text, button, toggle, slider, input field, dropdown, scroll view and empty.
-- **Templates:** main menu, game HUD, dialog window, settings, inventory, or start blank. Save your own templates and elements.
+- **13 templates:** main menu, game HUD, dialog window, settings, inventory, pause menu, game over, level select, loading screen, character dialogue, leaderboard, character select, or start blank. Save your own templates and elements.
+- **Ready-made components and HUD text:** pill/outline/close buttons, health and mana bars, cards, badges, slots, timer, coins, damage numbers, combo and subtitles.
+- **Review design:** one click checks text size, contrast (WCAG), touch-target size, off-page elements, duplicate names and missing images before you export.
 - **Test mode (F5):** click through your UI, run small click scripts (Rhai) and preview other screens (phones, 4:3, ultrawide).
 - **One-click export to Unity:** a uGUI prefab rebuilt automatically when the design changes, plus UXML/USS, an IMGUI script and typed *View* scripts for your game logic (your code is never overwritten).
 - **Pixel art mode:** nearest-neighbor images and whole-pixel positions in the editor; Canvas *Pixel Perfect* and Point-filtered, uncompressed sprites in Unity.
@@ -27,8 +29,19 @@
 - **In-app tutorial** for beginners and professionals: it opens on first launch, then the editor opens; reopen it with the **Tutorial** button or F1.
 - **Community:** browse, install and share plugins, images, fonts, templates, elements and themes, with creator profiles, follow and hearts, moderation and 18+ filter ([how it works](#community)).
 - **Themes:** change the colours, corners and font of the whole app.
-- **Command line** for automation: `--plantillas`, `--plantilla N`, `--abrir`, `--guardar`, `--exportar`, `--screenshot`, `--probar`.
+- **Command line** for automation: `--plantillas`, `--plantilla N`, `--abrir`, `--guardar`, `--exportar`, `--revisar`, `--screenshot`, `--probar`.
 - **MCP server for any AI** (`mcp/`): Claude, Cursor, VS Code or any MCP client can create and edit designs, export them to Unity and take screenshots.
+
+## New in 1.3
+
+<p align="center"><img src="docs/imagenes/plantillas-1.3.png" width="49%"> <img src="docs/imagenes/revisar-1.3.png" width="49%"></p>
+
+- **7 new templates** (Pause menu, Game over, Level select, Loading screen, Character dialogue, Leaderboard, Character select). Open the **Templates** tab and click one; Ctrl+Z undoes it. They scale to fit any reference resolution, including portrait.
+- **Review design:** click **Review** in the header. Each warning names the element; click it to select it and fix it. From the command line: `lienzo-ui --abrir my.editorgui.json --revisar` (exit code 1 if there are errors, handy in CI). From an AI: MCP tool `revisar_diseno`.
+- **Elements › Ready-made components** and **Text › For buttons and HUD:** click to add at the centre, or drag onto a panel to make it a child.
+- **Images:** 8 more gradient placeholders (exported to uGUI as generated sprites).
+
+Full list in the [changelog](CHANGELOG.md).
 
 ## Quick start
 
@@ -114,6 +127,7 @@ Moderation lives in a web panel (also usable by AIs with revocable tokens): [doc
 🎬 [Tráiler en español](https://youtu.be/xb7x16KGKBY) · [Trailer in English](https://youtu.be/7G-g5H3nHtg)
 
 - **Probarlo:** descarga `LienzoUI-windows.zip` de las [releases](../../releases/latest) y abre `lienzo-ui.exe`. La primera vez se abre el tutorial; al terminarlo se abre el editor (botón **Tutorial** o F1 para volver).
+- **Novedades de la 1.3:** 7 plantillas nuevas (pausa, fin de partida, selección de nivel, carga, diálogo de personaje, clasificación y selección de personaje), **componentes listos** en Elementos, **estilos de HUD** en Texto y 8 degradados más. El botón **Revisar** de la cabecera avisa de letra pequeña, poco contraste, botones pequeños para tocar, elementos fuera de la página, nombres repetidos e imágenes que faltan; clic en un aviso para seleccionar el elemento. También con `--revisar` (sale con código 1 si hay errores) y con la herramienta MCP `revisar_diseno`.
 - **Pixel art, plugins y accesibilidad:** modo pixel art, plugins con scripts Rhai ([guía](docs/PLUGINS.md)) e interfaz en español o inglés con tamaño hasta 200 %, alto contraste y movimiento reducido.
 - **Aprender:** [tutorial para novatos](docs/TUTORIAL_NOVATOS.md), [tutorial para profesionales](docs/TUTORIAL_PROFESIONALES.md), [cómo añadir cosas](docs/EXTENDER.md) y [servidor MCP para IA](docs/MCP.md).
 ### Comunidad

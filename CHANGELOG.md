@@ -2,6 +2,30 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); versiones con [SemVer](https://semver.org/lang/es/).
 
+## [1.3.0] - 2026-11-18
+
+Siete plantillas nuevas, componentes y estilos listos, la herramienta **Revisar diseño** y correcciones.
+
+### Añadido
+- **7 plantillas nuevas:** Menú de pausa, Fin de partida, Selección de nivel, Pantalla de carga, Diálogo de personaje, Clasificación y Selección de personaje (13 en total). «En blanco» sigue siendo la 5 y se muestra al final.
+- **Revisar diseño** (botón **Revisar** en la cabecera, `--revisar` en la línea de comandos y `revisar_diseno` en el MCP): avisa de letra demasiado pequeña, poco contraste (WCAG), controles demasiado pequeños para tocar, elementos fuera de la página, nombres repetidos que confunden a `GameObject.Find` e imágenes que faltan. Clic en un problema selecciona el elemento.
+- **Elementos › Componentes listos:** botón píldora, botón contorno, botón cerrar, barras de vida y maná, tarjeta, panel translúcido, insignia y casilla.
+- **Texto › Para botones y HUD:** temporizador, monedas, daño, combo, nivel y subtítulo de diálogo.
+- **Imágenes:** 8 degradados más (Océano, Desierto, Neón, Hielo, Volcán, Caramelo, Madera, Viñeta).
+
+### Corregido
+- Las plantillas aplicadas a páginas más pequeñas que 1920×1080 (720p, 800×600, vertical) se salían de la página: ahora se escalan para caber.
+- Guardar, guardar como plantilla o exportar en modo prueba guardaba los cambios hechos por los clics de prueba.
+- Abrir un proyecto o una plantilla en modo prueba y después salir de él devolvía el diseño anterior.
+- **Distribuir** movía elementos bloqueados.
+- Si faltaba una imagen, la exportación dejaba el proyecto de Unity a medias: ahora se comprueba antes de escribir nada.
+- Con la interfaz en inglés seguían en español los nombres de los elementos, formas, estilos de texto, degradados y tipos de control. La búsqueda encuentra también por el nombre traducido.
+- Más contraste en los botones naranjas y verdes de las plantillas.
+
+### Rendimiento
+- Las miniaturas de las plantillas se generan una vez (antes, cada frame) y las listas de la biblioteca ya no se copian cada frame.
+- La visibilidad de los elementos al dibujar el lienzo se calcula en una pasada (antes, cuadrática).
+
 ## [1.2.4] - 2026-11-17
 
 Traducción al inglés de los botones, tooltips y plantillas.
