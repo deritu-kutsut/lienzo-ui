@@ -15,6 +15,9 @@ pub fn aplicar(ctx: &egui::Context, s: &crate::library::Settings) {
     ctx.set_zoom_factor(escala);
     let tema = s.tema.clone().filter(|t| t.validar().is_ok()).unwrap_or_default();
     crate::theme::usar(&tema);
+    if !crate::render::fuente_idioma(ctx, i18n::codigo()) {
+        eprintln!("No se encontró una fuente del sistema para el idioma «{}»", i18n::codigo());
+    }
     crate::render::fuente_interfaz(ctx, &tema.fuente);
     crate::theme::apply(ctx, s.alto_contraste);
     ctx.all_styles_mut(|st| st.animation_time = if s.reducir_movimiento { 0.0 } else { 1.0 / 12.0 });
@@ -40,6 +43,12 @@ impl EditorApp {
                     }
                 });
                 ui.end_row();
+                let rutas = crate::render::fuentes_de_idioma(i18n::codigo());
+                if !rutas.is_empty() && !rutas.iter().any(|p| std::path::Path::new(p).exists()) {
+                    ui.label("");
+                    ui.label(RichText::new(t("No se encontró en el sistema una fuente con estos caracteres: el texto puede verse como cuadros.")).small().color(egui::Color32::from_rgb(230, 170, 60)));
+                    ui.end_row();
+                }
 
                 ui.label(t("Tamaño de la interfaz"));
                 ui.horizontal_wrapped(|ui| {

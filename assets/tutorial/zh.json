@@ -1,0 +1,62 @@
+{
+  "novato": [
+    {
+      "titulo": "欢迎使用 Lienzo UI",
+      "texto": "Lienzo UI 是一个可视化编辑器，用来设计游戏界面（菜单、HUD、窗口、背包），就像使用设计工具一样，然后一键带到 Unity。\n\n导出后你会得到同样的界面：基于 uGUI + TextMeshPro 的版本、UI Toolkit（UXML + USS）版本和 IMGUI 版本。\n\n本教程结束后会打开编辑器。之后随时可以点顶部的「教程」按钮或按 F1 回到这里。"
+    },
+    {
+      "titulo": "编辑器界面",
+      "texto": "• 顶部：文件、编辑、视图和 Canvas 菜单，「测试」按钮，设计名称，无障碍、检查、主题、教程、保存、代码… 以及「导出到 Unity」。\n• 左侧：层级（图层）、元素、模板、文字、图片、插件和社区这些标签页。\n• 中间：画布，也就是你的游戏画面，按参考分辨率显示（默认为 1920 × 1080）。\n• 右侧：Inspector，显示所选元素的属性（位置、锚点、颜色、文字…）。"
+    },
+    {
+      "titulo": "从模板开始",
+      "texto": "打开左侧的「模板」，从中选一个（共 12 个）：主菜单、HUD、暂停、游戏结束、选择关卡、背包、角色对话、排行榜…\n\n这是了解一个完整界面如何搭建的最快方式。模板里的所有内容都可以修改。\n\n如果你想从零开始，请选择「空白」或「文件 › 新建空白设计」。"
+    },
+    {
+      "titulo": "添加和编辑元素",
+      "texto": "• 把元素从「元素」拖到画布上：面板、文字、按钮、复选框、滑块、文本输入框、下拉框、滚动列表和图片。「现成组件」里有按钮、生命条和法力条、卡片和徽章；「文字」里有计时器、金币、伤害等 HUD 部件。\n• 单击选中，拖动移动，拖角改变大小，上方的控制柄可以旋转。\n• 双击文字即可直接输入内容。\n• Ctrl+Z / Ctrl+Y 撤销和重做；Ctrl+D 复制；Delete 删除；Ctrl+G 编组；方向键移动 1 px（Shift：10）。\n• 在 Inspector 中可以修改颜色、边框、阴影、字体和锚点（元素如何适应其他屏幕）。"
+    },
+    {
+      "titulo": "测试并导出到 Unity",
+      "texto": "• 测试（F5）：设计变为可交互，你还可以模拟其他屏幕（手机、4:3、超宽屏）看看它如何适配。\n• 保存（Ctrl+S）：保存 .editorgui.json 项目，方便以后继续编辑。\n• 检查：会提醒字体过小、对比度不足、按钮太小不好点击、元素超出页面以及缺少图片的问题。\n• 导出到 Unity（Ctrl+E）：第一次导出时，选择你的项目文件夹（包含 Assets 的那个）。\n\n回到 Unity 窗口时，设计会以 prefab 的形式出现在 Assets/EditorGUI/Prefabs 中。也可以使用菜单 Tools › Lienzo UI › Importar diseño en la escena。"
+    }
+  ],
+  "profesional": [
+    {
+      "titulo": "导出会生成什么",
+      "texto": "所有内容都会写到项目的 Assets/EditorGUI 里：\n\n• Designs/<设计>.json：设计本身；每次它发生变化，导入器都会重建 prefab。\n• Editor/EditorGuiImporter.cs：用 uGUI + TextMeshPro 构建 prefab。\n• Prefabs/<设计>.prefab：可以直接拖到场景中。\n• UI Toolkit/<设计>.uxml 和 .uss：用于 UIDocument 的版本。\n• Scripts/<设计>OnGUI.cs：IMGUI 版本。\n• Scripts/<设计>ViewBase.cs（会自动重新生成）和 <设计>View.cs（属于你的文件：只创建一次，永远不会被覆盖）。"
+    },
+    {
+      "titulo": "锚点与缩放",
+      "texto": "画布的工作方式与 Canvas 加 Canvas Scaler（Scale With Screen Size 模式）相同：在不选中任何元素时，可以在 Inspector 中调整参考分辨率、宽高匹配和背景。\n\n每个元素都有锚点、轴心和偏移，就像 RectTransform 一样。改变参考分辨率时，元素会跟随各自的锚点，与 Unity 中一致。\n\n导出前，用「测试」（F5）在多种屏幕下检查一下。"
+    },
+    {
+      "titulo": "布局、分组和列表",
+      "texto": "容器可以把子元素按水平、垂直或网格排列（类似 Horizontal/Vertical/Grid Layout Group），并可设置间距和内边距。\n\n滚动列表（ScrollView）会自动计算自己的内容。\n\n用编组（Ctrl+G）可以整体移动多个部分，用「层级」重新排列图层：列表中的顺序就是 Unity 中的绘制顺序。"
+    },
+    {
+      "titulo": "逻辑：点击脚本和视图",
+      "texto": "在「测试」中，每个元素都可以在点击时运行一小段 Rhai 脚本：mostrar(\"Nombre\")、ocultar、alternar、texto、color、mover… 适合在没有 Unity 的情况下快速搭建流程原型。\n\n在 Unity 中，<设计>View.cs 继承 <设计>ViewBase，带有对每个按钮、滑块或输入框的类型化引用，以及点击和数值事件。把游戏逻辑写在这里：重新导出不会影响它。"
+    },
+    {
+      "titulo": "命令行与自动化",
+      "texto": "lienzo-ui --plantillas                         列出所有模板\nlienzo-ui --plantilla 0 --guardar menu.editorgui.json\nlienzo-ui --abrir menu.editorgui.json --revisar        检查设计（有错误时返回代码 1）\nlienzo-ui --abrir menu.editorgui.json --exportar <Unity 项目>\nlienzo-ui --abrir menu.editorgui.json --screenshot captura.png\nlienzo-ui --probar 1080x2400                    以该屏幕尺寸在「测试」中打开\n\n使用 --exportar、--guardar 和 --revisar 时不会打开窗口：适合脚本、CI 和 MCP 服务器。"
+    },
+    {
+      "titulo": "MCP 服务器与参与贡献",
+      "texto": "mcp/ 文件夹里有一个无依赖的 MCP 服务器（Node 18+）：任何兼容的 AI（Claude、Cursor、VS Code…）都可以列出模板、创建和编辑设计、导出到 Unity 并截图。\n\nLienzo UI 是开源软件（MIT）。代码使用 Rust 和 egui：src/model.rs（数据）、src/canvas.rs（画布）、src/panels.rs（面板）、src/export/（Unity）。\n\n阅读 docs/EXTENDER.md 了解如何添加元素、模板或导出器，阅读 CONTRIBUTING.md 了解如何提交修改。"
+    },
+    {
+      "titulo": "像素艺术",
+      "texto": "在不选中任何元素时，在画布的 Inspector 中勾选「像素艺术」：\n\n• 图片不使用平滑绘制（最近邻）。\n• 松开鼠标时，位置和尺寸会对齐到整数像素。\n• 在 Unity 中：Canvas 设为「Pixel Perfect」，sprite 使用 Point 过滤，不压缩也不生成 mipmap。\n\n建议：使用 sprite 尺寸的整数倍（16 px → 32、48、64…），这样每个像素看起来都一样。"
+    },
+    {
+      "titulo": "插件",
+      "texto": "左侧的「插件」标签页会列出已安装的插件。一个插件就是一个含有 plugin.json 的文件夹，它可以添加：\n\n• 命令：接收设计并返回修改后设计的 Rhai 脚本（可以用 Ctrl+Z 撤销）。\n• 导出器：生成新文件的脚本（例如包含所有文字内容的 CSV）。\n• 模板：可直接使用的设计。\n\n脚本在隔离环境中运行，无法访问文件或网络。「打开文件夹」会打开你的插件文件夹；使用指南见 docs/PLUGINS.md。"
+    },
+    {
+      "titulo": "无障碍与语言",
+      "texto": "顶部的「无障碍」按钮可以：\n\n• 切换界面语言（西班牙语、英语、葡萄牙语、法语、德语、意大利语、俄语或简体中文）。\n• 把界面放大到 200 %（也可以用 Ctrl+Alt+= 和 Ctrl+Alt+-）。\n• 开启高对比度：白色文字和明显的边框。\n• 减少动态效果：关闭动画。\n\n语言都是 assets/i18n/<代码>.tsv 文件：想添加一种语言，只需翻译 en.tsv。"
+    }
+  ]
+}

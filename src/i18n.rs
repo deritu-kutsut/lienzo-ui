@@ -16,6 +16,9 @@ pub const IDIOMAS: &[(&str, &str, &str)] = &[
     ("de", "Deutsch", include_str!("../assets/i18n/de.tsv")),
     ("it", "Italiano", include_str!("../assets/i18n/it.tsv")),
     ("ru", "Русский", include_str!("../assets/i18n/ru.tsv")),
+    ("zh", "简体中文", include_str!("../assets/i18n/zh.tsv")),
+    ("ja", "日本語", include_str!("../assets/i18n/ja.tsv")),
+    ("ko", "한국어", include_str!("../assets/i18n/ko.tsv")),
 ];
 
 static ACTUAL: AtomicUsize = AtomicUsize::new(0);

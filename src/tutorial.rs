@@ -127,7 +127,7 @@ Los scripts corren aislados, sin acceso a archivos ni red. «Abrir carpeta» lle
     Pagina {
         titulo: "Accesibilidad e idiomas",
         texto: "El botón «Accesibilidad» de la barra superior permite:\n\n\
-• Cambiar el idioma de la interfaz (español, inglés, portugués, francés, alemán, italiano o ruso).\n\
+• Cambiar el idioma de la interfaz (español, inglés, portugués, francés, alemán, italiano, ruso, chino, japonés o coreano).\n\
 • Agrandar la interfaz hasta el 200 % (también con Ctrl+Alt+= y Ctrl+Alt+-).\n\
 • Activar alto contraste: texto blanco y bordes marcados.\n\
 • Reducir el movimiento: sin animaciones.\n\n\
@@ -237,7 +237,7 @@ Scripts run sandboxed, without file or network access. «Open folder» takes you
     Pagina {
         titulo: "Accessibility and languages",
         texto: "The «Accessibility» button in the top bar lets you:\n\n\
-• Change the interface language (English, Spanish, Portuguese, French, German, Italian or Russian).\n\
+• Change the interface language (English, Spanish, Portuguese, French, German, Italian, Russian, Chinese, Japanese or Korean).\n\
 • Enlarge the interface up to 200 % (also Ctrl+Alt+= and Ctrl+Alt+-).\n\
 • Turn on high contrast: white text and strong borders.\n\
 • Reduce motion: no animations.\n\n\
@@ -252,6 +252,9 @@ const TUTORIALES: &[(&str, &str)] = &[
     ("de", include_str!("../assets/tutorial/de.json")),
     ("it", include_str!("../assets/tutorial/it.json")),
     ("ru", include_str!("../assets/tutorial/ru.json")),
+    ("zh", include_str!("../assets/tutorial/zh.json")),
+    ("ja", include_str!("../assets/tutorial/ja.json")),
+    ("ko", include_str!("../assets/tutorial/ko.json")),
 ];
 
 #[derive(serde::Deserialize)]

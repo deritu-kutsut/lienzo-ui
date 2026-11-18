@@ -25,7 +25,7 @@
 - **One-click export to Unity:** a uGUI prefab rebuilt automatically when the design changes, plus UXML/USS, an IMGUI script and typed *View* scripts for your game logic (your code is never overwritten).
 - **Pixel art mode:** nearest-neighbor images and whole-pixel positions in the editor; Canvas *Pixel Perfect* and Point-filtered, uncompressed sprites in Unity.
 - **Plugins:** add commands, exporters and templates with sandboxed Rhai scripts, no recompiling ([guide](docs/PLUGINS.md)).
-- **Accessibility:** interface in English, Spanish, Portuguese, French, German, Italian or Russian, UI scale up to 200 %, high contrast and reduced motion.
+- **Accessibility:** interface in English, Spanish, Portuguese, French, German, Italian, Russian, Chinese, Japanese or Korean, UI scale up to 200 %, high contrast and reduced motion.
 - **In-app tutorial** for beginners and professionals: it opens on first launch, then the editor opens; reopen it with the **Tutorial** button or F1.
 - **Community:** browse, install and share plugins, images, fonts, templates, elements and themes, with creator profiles, follow and hearts, moderation and 18+ filter ([how it works](#community)).
 - **Themes:** change the colours, corners and font of the whole app.
@@ -109,8 +109,8 @@ Moderation lives in a web panel (also usable by AIs with revocable tokens): [doc
 
 | Guide | For |
 |---|---|
-| [Beginner tutorial](docs/TUTORIAL_BEGINNERS.md) ([es](docs/TUTORIAL_NOVATOS.md) · [pt](docs/TUTORIAL_BEGINNERS.pt.md) · [fr](docs/TUTORIAL_BEGINNERS.fr.md) · [de](docs/TUTORIAL_BEGINNERS.de.md) · [it](docs/TUTORIAL_BEGINNERS.it.md) · [ru](docs/TUTORIAL_BEGINNERS.ru.md)) | First design and first export |
-| [Pro tutorial](docs/TUTORIAL_PROS.md) ([es](docs/TUTORIAL_PROFESIONALES.md) · [pt](docs/TUTORIAL_PROS.pt.md) · [fr](docs/TUTORIAL_PROS.fr.md) · [de](docs/TUTORIAL_PROS.de.md) · [it](docs/TUTORIAL_PROS.it.md) · [ru](docs/TUTORIAL_PROS.ru.md)) | Export format, anchors, layouts, scripting, Review design, command line |
+| [Beginner tutorial](docs/TUTORIAL_BEGINNERS.md) ([es](docs/TUTORIAL_NOVATOS.md) · [pt](docs/TUTORIAL_BEGINNERS.pt.md) · [fr](docs/TUTORIAL_BEGINNERS.fr.md) · [de](docs/TUTORIAL_BEGINNERS.de.md) · [it](docs/TUTORIAL_BEGINNERS.it.md) · [ru](docs/TUTORIAL_BEGINNERS.ru.md) · [zh](docs/TUTORIAL_BEGINNERS.zh.md) · [ja](docs/TUTORIAL_BEGINNERS.ja.md) · [ko](docs/TUTORIAL_BEGINNERS.ko.md)) | First design and first export |
+| [Pro tutorial](docs/TUTORIAL_PROS.md) ([es](docs/TUTORIAL_PROFESIONALES.md) · [pt](docs/TUTORIAL_PROS.pt.md) · [fr](docs/TUTORIAL_PROS.fr.md) · [de](docs/TUTORIAL_PROS.de.md) · [it](docs/TUTORIAL_PROS.it.md) · [ru](docs/TUTORIAL_PROS.ru.md) · [zh](docs/TUTORIAL_PROS.zh.md) · [ja](docs/TUTORIAL_PROS.ja.md) · [ko](docs/TUTORIAL_PROS.ko.md)) | Export format, anchors, layouts, scripting, Review design, command line |
 | [Extending Lienzo UI](docs/EXTENDER.md) | Adding elements, templates, exporters, tutorial pages |
 | [Plugins](docs/PLUGINS.md) | Writing commands, exporters and templates |
 | [MCP server](docs/MCP.md) | Connect any AI (your own key or a local model) to Lienzo UI, or script it with an AI API |
@@ -131,7 +131,7 @@ Moderation lives in a web panel (also usable by AIs with revocable tokens): [doc
 - **Probarlo:** descarga `LienzoUI-windows.zip` de las [releases](../../releases/latest) y abre `lienzo-ui.exe`. La primera vez se abre el tutorial; al terminarlo se abre el editor (botón **Tutorial** o F1 para volver).
 - **Novedades de la 1.3.1:** interfaz y tutorial en español, inglés, portugués, francés, alemán, italiano y ruso (**Accesibilidad › Idioma**).
 - **Novedades de la 1.3:** 7 plantillas nuevas (pausa, fin de partida, selección de nivel, carga, diálogo de personaje, clasificación y selección de personaje), **componentes listos** en Elementos, **estilos de HUD** en Texto y 8 degradados más. El botón **Revisar** de la cabecera avisa de letra pequeña, poco contraste, botones pequeños para tocar, elementos fuera de la página, nombres repetidos e imágenes que faltan; clic en un aviso para seleccionar el elemento. También con `--revisar` (sale con código 1 si hay errores) y con la herramienta MCP `revisar_diseno`.
-- **Pixel art, plugins y accesibilidad:** modo pixel art, plugins con scripts Rhai ([guía](docs/PLUGINS.md)) e interfaz en español, inglés, portugués, francés, alemán, italiano o ruso, con tamaño hasta 200 %, alto contraste y movimiento reducido.
+- **Pixel art, plugins y accesibilidad:** modo pixel art, plugins con scripts Rhai ([guía](docs/PLUGINS.md)) e interfaz en español, inglés, portugués, francés, alemán, italiano, ruso, chino, japonés o coreano, con tamaño hasta 200 %, alto contraste y movimiento reducido.
 - **Aprender:** [tutorial para novatos](docs/TUTORIAL_NOVATOS.md), [tutorial para profesionales](docs/TUTORIAL_PROFESIONALES.md), [cómo añadir cosas](docs/EXTENDER.md) y [servidor MCP para IA](docs/MCP.md).
 ### Comunidad
 

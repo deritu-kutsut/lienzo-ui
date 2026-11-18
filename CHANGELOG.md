@@ -5,6 +5,7 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); v
 ## [Sin publicar]
 
 ### Añadido
+- **Chino simplificado, japonés y coreano** en la interfaz, el tutorial integrado y los tutoriales de `docs/` (10 idiomas en total). La app usa las fuentes que ya trae el sistema (Microsoft YaHei, Yu Gothic, Malgun Gothic; en macOS y Linux, PingFang, Hiragino, Apple SD Gothic Neo o Noto Sans CJK) y solo las carga al elegir uno de estos idiomas; si no encuentra ninguna, Accesibilidad lo avisa.
 - Tutoriales escritos de `docs/` (novatos y profesionales) en portugués, francés, alemán, italiano y ruso, con una línea para cambiar de idioma en cada uno.
 
 ## [1.3.1] - 2026-11-18

@@ -121,6 +121,10 @@ struct FontState {
     available: Vec<String>,
     pending: Vec<String>,
     paths: std::collections::HashMap<String, std::path::PathBuf>,
+    /// Fuente de respaldo del idioma de la interfaz (chino, japonés, coreano), al final de las listas.
+    respaldo: Option<String>,
+    /// Fuente de la interfaz elegida en el tema ("" = la predeterminada).
+    interfaz: String,
 }
 
 /// File of a font family known to the editor (system or library), for exporting to Unity.
@@ -178,7 +182,7 @@ pub fn load_system_fonts(ctx: &egui::Context) {
     }
     ctx.set_fonts(defs.clone());
     if let Ok(mut g) = FONTS.lock() {
-        *g = Some(FontState { defs, available: found, pending: Vec::new(), paths });
+        *g = Some(FontState { defs, available: found, pending: Vec::new(), paths, respaldo: None, interfaz: String::new() });
     }
 }
 
@@ -186,16 +190,70 @@ pub fn load_system_fonts(ctx: &egui::Context) {
 pub fn fuente_interfaz(ctx: &egui::Context, nombre: &str) {
     if let Ok(mut g) = FONTS.lock() {
         if let Some(s) = g.as_mut() {
-            let mut lista = egui::FontDefinitions::default().families.get(&egui::FontFamily::Proportional).cloned().unwrap_or_default();
-            if !nombre.is_empty() && s.defs.font_data.contains_key(nombre) {
-                lista.insert(0, nombre.to_string());
-            }
-            if s.defs.families.get(&egui::FontFamily::Proportional) != Some(&lista) {
-                s.defs.families.insert(egui::FontFamily::Proportional, lista);
-                ctx.set_fonts(s.defs.clone());
-            }
+            s.interfaz = nombre.to_string();
+            aplicar_familias(ctx, s);
         }
     }
+}
+
+/// Rehace las familias Proportional y Monospace: fuente del tema delante, respaldo del idioma al final.
+fn aplicar_familias(ctx: &egui::Context, s: &mut FontState) {
+    let base = egui::FontDefinitions::default();
+    let mut cambio = false;
+    for fam in [egui::FontFamily::Proportional, egui::FontFamily::Monospace] {
+        let mut lista = base.families.get(&fam).cloned().unwrap_or_default();
+        if fam == egui::FontFamily::Proportional && !s.interfaz.is_empty() && s.defs.font_data.contains_key(&s.interfaz) {
+            lista.insert(0, s.interfaz.clone());
+        }
+        if let Some(r) = &s.respaldo {
+            lista.push(r.clone());
+        }
+        if s.defs.families.get(&fam) != Some(&lista) {
+            s.defs.families.insert(fam, lista);
+            cambio = true;
+        }
+    }
+    if cambio {
+        ctx.set_fonts(s.defs.clone());
+    }
+}
+
+/// Fuentes del sistema con los caracteres de cada idioma que no cubren las de egui (se busca la primera que exista).
+pub fn fuentes_de_idioma(codigo: &str) -> &'static [&'static str] {
+    const NOTO: &str = "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc";
+    const NOTO2: &str = "/usr/share/fonts/noto-cjk/NotoSansCJK-Regular.ttc";
+    match codigo {
+        "zh" => &["C:/Windows/Fonts/msyh.ttc", "C:/Windows/Fonts/simsun.ttc", "/System/Library/Fonts/PingFang.ttc", "/System/Library/Fonts/STHeiti Light.ttc", NOTO, NOTO2],
+        "ja" => &["C:/Windows/Fonts/YuGothM.ttc", "C:/Windows/Fonts/meiryo.ttc", "C:/Windows/Fonts/msgothic.ttc", "/System/Library/Fonts/ヒラギノ角ゴシック W3.ttc", "/System/Library/Fonts/Hiragino Sans GB.ttc", NOTO, NOTO2],
+        "ko" => &["C:/Windows/Fonts/malgun.ttf", "/System/Library/Fonts/AppleSDGothicNeo.ttc", NOTO, NOTO2],
+        _ => &[],
+    }
+}
+
+/// Carga (una vez) la fuente de respaldo del idioma de la interfaz. Devuelve false si el idioma la necesita
+/// y no hay ninguna en el sistema (los textos se verían como cuadros).
+pub fn fuente_idioma(ctx: &egui::Context, codigo: &str) -> bool {
+    let rutas = fuentes_de_idioma(codigo);
+    let Ok(mut g) = FONTS.lock() else { return true };
+    let Some(s) = g.as_mut() else { return true };
+    let clave = format!("idioma-{}", codigo);
+    let mut ok = true;
+    s.respaldo = if rutas.is_empty() {
+        None
+    } else if s.defs.font_data.contains_key(&clave) {
+        Some(clave)
+    } else if let Some((ruta, bytes)) = rutas.iter().find_map(|p| std::fs::read(p).ok().map(|b| (*p, b))) {
+        // Yu Gothic y Meiryo dibujan los glifos más arriba que la fuente latina de egui: se bajan un poco.
+        let bajar = if ruta.contains("YuGoth") || ruta.contains("meiryo") { 0.2 } else { 0.0 };
+        let tweak = egui::FontTweak { y_offset_factor: bajar, ..Default::default() };
+        s.defs.font_data.insert(clave.clone(), Arc::new(egui::FontData::from_owned(bytes).tweak(tweak)));
+        Some(clave)
+    } else {
+        ok = false;
+        None
+    };
+    aplicar_familias(ctx, s);
+    ok
 }
 
 /// Add a font at run time. It becomes selectable from the next frame
