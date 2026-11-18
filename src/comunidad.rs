@@ -1,13 +1,13 @@
-//! Comunidad de Lienzo UI: explorar, instalar, subir y reportar plugins, imágenes, fuentes, plantillas y elementos
-//! sin salir de la app. El servidor es Supabase (ver supabase/ y docs/COMUNIDAD.md).
+//! Lienzo UI community: browse, install, upload and report plugins, images, fonts, templates and elements
+//! without leaving the app. The server is Supabase (see supabase/ and docs/COMUNIDAD.md).
 //!
-//! Privacidad y seguridad del lado de la app:
-//!   * No hay ninguna conexión hasta que abres la pestaña Comunidad.
-//!   * Solo se usa la clave PÚBLICA del proyecto; con RLS no abre nada que no esté permitido. Jamás va la `service_role`.
-//!   * El acceso es por GitHub o Google (OAuth con PKCE y un puerto local temporal); la app nunca ve contraseñas.
-//!   * La sesión (token de renovación) se guarda en el Administrador de credenciales de Windows, no en un archivo.
-//!   * Todo lo que se descarga se verifica (tamaño + SHA-256 + las mismas reglas que el servidor) antes de instalarse.
-//!   * El contenido +18 está oculto por defecto y solo se muestra si lo activas con tu cuenta.
+//! Privacy and security on the app side:
+//!   * No connection is made until you open the Community tab.
+//!   * Only the project's PUBLIC key is used; with RLS it opens nothing that isn't allowed. The `service_role` key never goes in.
+//!   * Sign-in is through GitHub or Google (OAuth with PKCE and a temporary local port); the app never sees passwords.
+//!   * The session (refresh token) is stored in the Windows Credential Manager, not in a file.
+//!   * Everything downloaded is verified (size + SHA-256 + the same rules as the server) before being installed.
+//!   * +18 content is hidden by default and only shown if you enable it with your account.
 
 use crate::app::EditorApp;
 use crate::comunidad_validar::{self as val, Paquete};
@@ -24,13 +24,13 @@ use std::sync::mpsc::{channel, Receiver, Sender};
 use std::sync::Arc;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
-/// Dirección del proyecto de Supabase y su clave PÚBLICA (diseñada para ir en la app).
+/// Supabase project address and its PUBLIC key (designed to ship in the app).
 pub const URL: &str = "https://btotvbdhoyfjpdixlcrw.supabase.co";
 pub const CLAVE_PUBLICA: &str = "sb_publishable_UNvWtzs_M8N_N6fLrZ9VCQ_E6hkxXrL";
 const PUERTO_LOCAL: u16 = 53682;
 const SERVICIO_CREDENCIALES: &str = "LienzoUI";
 
-// ───────────────────────────── datos ─────────────────────────────
+// ───────────────────────────── data ─────────────────────────────
 
 #[derive(Clone, Debug, Default)]
 pub struct Sesion {
@@ -68,7 +68,7 @@ pub struct Item {
     pub corazones: i64,
 }
 
-/// Perfil público de un creador (lo que la persona decide mostrar; sin correo ni preferencias).
+/// Public profile of a creator (what the person chooses to show; no email or preferences).
 #[derive(Clone, Debug, Default, Deserialize)]
 #[serde(default)]
 pub struct PerfilPublico {
@@ -85,7 +85,7 @@ pub struct PerfilPublico {
     pub corazones_recibidos: i64,
 }
 
-/// Redes admitidas en el perfil: (clave, nombre visible, dominios permitidos). Igual que en el servidor.
+/// Networks supported in the profile: (key, display name, allowed domains). Same as on the server.
 const REDES: &[(&str, &str, &[&str])] = &[
     ("x", "X", &["x.com", "twitter.com"]),
     ("youtube", "YouTube", &["youtube.com", "www.youtube.com"]),
@@ -95,7 +95,7 @@ const REDES: &[(&str, &str, &[&str])] = &[
     ("instagram", "Instagram", &["instagram.com", "www.instagram.com"]),
 ];
 
-/// Solo https, sin usuario ni puerto y de un dominio permitido (evita enlaces de phishing o malware).
+/// https only, no user or port, and from an allowed domain (prevents phishing or malware links).
 fn enlace_valido(red: &str, url: &str) -> bool {
     let Some((_, _, dominios)) = REDES.iter().find(|(k, _, _)| *k == red) else { return false };
     if url.len() > 200 || !url.chars().all(|c| c.is_ascii_graphic()) {
@@ -141,7 +141,7 @@ enum Mensaje {
     Imagen { ruta: String, bytes: Option<Vec<u8>> },
     PerfilVer(Result<(PerfilPublico, Vec<Item>), String>),
     MiPerfil(Option<PerfilPublico>),
-    /// Mis corazones (ids de contenido) y mis creadores seguidos (ids de cuenta).
+    /// My hearts (content ids) and the creators I follow (account ids).
     Mios { corazones: Vec<String>, seguidos: Vec<String> },
 }
 
@@ -174,28 +174,28 @@ pub struct Comunidad {
     subir: SubirForm,
     borrar_confirmado: bool,
     reportar: Option<String>,
-    /// Hay un inicio de sesión esperando al navegador; el valor sirve para cancelarlo.
+    /// A sign-in is waiting on the browser; the value is used to cancel it.
     login: Option<Arc<AtomicBool>>,
-    /// Imágenes de la comunidad ya cargadas (None = cargando o no disponible).
+    /// Community images already loaded (None = loading or unavailable).
     texturas: std::collections::HashMap<String, Option<egui::TextureHandle>>,
-    /// Perfil de creador abierto y su contenido.
+    /// Open creator profile and its content.
     viendo: Option<(PerfilPublico, Vec<Item>)>,
     mi_perfil: Option<PerfilPublico>,
     form_perfil: FormPerfil,
     mis_corazones: std::collections::HashSet<String>,
     mis_seguidos: std::collections::HashSet<String>,
     solo_siguiendo: bool,
-    /// Vista previa abierta a pantalla grande (ruta pública de la imagen).
+    /// Preview open at full size (public path of the image).
     ampliada: Option<String>,
     perfil_abierto: bool,
-    /// Abrir el formulario «Compartir» la próxima vez que se dibuje (al llegar desde la ventana Temas).
+    /// Open the "Share" form the next time it is drawn (when arriving from the Themes window).
     abrir_subida: bool,
-    /// Foto y banner recién elegidos (se ven al momento, antes de que el servidor los publique).
+    /// Newly chosen photo and banner (shown immediately, before the server publishes them).
     previas: std::collections::HashMap<&'static str, egui::TextureHandle>,
 }
 
 impl Comunidad {
-    /// Nombre público de la cuenta con sesión, si hay.
+    /// Public name of the signed-in account, if any.
     pub fn perfil_nombre(&self) -> Option<String> {
         self.sesion.as_ref()?;
         self.perfil.as_ref().map(|p| p.nombre_publico.clone())
@@ -245,13 +245,13 @@ impl Comunidad {
     }
 }
 
-// ───────────────────────────── utilidades ─────────────────────────────
+// ───────────────────────────── utilities ─────────────────────────────
 
 fn ahora() -> u64 {
     SystemTime::now().duration_since(UNIX_EPOCH).map(|d| d.as_secs()).unwrap_or(0)
 }
 
-/// Fecha y hora UTC en formato ISO 8601 (para `acepto_terminos_en`).
+/// UTC date and time in ISO 8601 format (for `acepto_terminos_en`).
 fn iso(t: u64) -> String {
     let (dias, resto) = ((t / 86400) as i64, t % 86400);
     let z = dias + 719468;
@@ -288,7 +288,7 @@ fn codificar(s: &str) -> String {
     s.bytes().map(|c| if c.is_ascii_alphanumeric() || b"-._~".contains(&c) { (c as char).to_string() } else { format!("%{:02X}", c) }).collect()
 }
 
-/// Nombre de archivo seguro para subir (solo letras, números, punto, guion y guion bajo).
+/// Safe file name for uploading (only letters, digits, dot, hyphen and underscore).
 fn nombre_seguro(n: &str) -> String {
     let s: String = n.chars().map(|c| if c.is_ascii_alphanumeric() || c == '.' || c == '-' || c == '_' { c } else { '_' }).collect();
     let s = s.trim_start_matches('.').to_string();
@@ -299,7 +299,7 @@ fn es_uuid(s: &str) -> bool {
     s.len() == 36 && s.chars().all(|c| c.is_ascii_hexdigit() || c == '-')
 }
 
-// ───────────────────────────── red ─────────────────────────────
+// ───────────────────────────── network ─────────────────────────────
 
 fn agente() -> ureq::Agent {
     ureq::Agent::config_builder().timeout_global(Some(Duration::from_secs(170))).http_status_as_error(false).user_agent("LienzoUI-Comunidad/1.0").build().into()
@@ -326,7 +326,7 @@ impl Resp {
     }
 }
 
-/// Mensajes de error entendibles; nunca se devuelve el cuerpo crudo del servidor.
+/// Understandable error messages; the raw server body is never returned.
 fn mensaje_error(estado: u16, cuerpo: &str) -> String {
     let v: serde_json::Value = serde_json::from_str(cuerpo).unwrap_or_default();
     let msg = ["message", "msg", "error_description", "error"].iter().find_map(|k| v.get(k).and_then(|m| m.as_str())).unwrap_or("");
@@ -374,7 +374,7 @@ fn json_post(ruta: &str, sesion: Option<&Sesion>, v: &serde_json::Value, extra: 
     pedir("POST", ruta, sesion, None, Some(v.to_string().as_bytes()), extra, 1 << 20)
 }
 
-// ───────────────────────────── sesión ─────────────────────────────
+// ───────────────────────────── session ─────────────────────────────
 
 fn sesion_desde(v: &serde_json::Value) -> Result<Sesion, String> {
     let s = |k: &str| v.get(k).and_then(|x| x.as_str()).map(|x| x.to_string());
@@ -423,7 +423,7 @@ fn renovar(s: &Sesion) -> Result<Sesion, String> {
     sesion_desde(&v)
 }
 
-/// Devuelve una sesión vigente; si renovó el token avisa a la interfaz.
+/// Returns a valid session; if the token was renewed it notifies the UI.
 fn vigente(s: &Sesion, tx: &Sender<Mensaje>) -> Result<Sesion, String> {
     if s.expira > ahora() + 60 {
         return Ok(s.clone());
@@ -440,8 +440,8 @@ fn pagina_retorno(ok: bool) -> String {
     format!("HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=utf-8\r\nContent-Length: {}\r\nCache-Control: no-store\r\nReferrer-Policy: no-referrer\r\nX-Content-Type-Options: nosniff\r\nConnection: close\r\n\r\n{}", cuerpo.len(), cuerpo)
 }
 
-/// Inicio de sesión con GitHub o Google: OAuth con PKCE. El navegador vuelve a un puerto local temporal (127.0.0.1)
-/// y la app canjea el código; ningún servidor intermedio ve la sesión.
+/// Sign-in with GitHub or Google: OAuth with PKCE. The browser returns to a temporary local port (127.0.0.1)
+/// and the app exchanges the code; no intermediary server sees the session.
 fn flujo_oauth(proveedor: &str, cancelar: &AtomicBool) -> Result<Sesion, String> {
     if !["github", "google"].contains(&proveedor) {
         return Err("Proveedor no admitido.".into());
@@ -473,7 +473,7 @@ fn flujo_oauth(proveedor: &str, cancelar: &AtomicBool) -> Result<Sesion, String>
                 let ruta = linea.strip_prefix("GET ").and_then(|r| r.split(' ').next()).unwrap_or("");
                 let Some(consulta) = ruta.strip_prefix("/callback?") else {
                     let _ = c.write_all(b"HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\nConnection: close\r\n\r\n");
-                    continue; // favicon u otras peticiones: se ignoran
+                    continue; // favicon or other requests: ignored
                 };
                 let param = |k: &str| consulta.split('&').find_map(|p| p.strip_prefix(&format!("{}=", k))).map(|v| v.to_string());
                 if param("error").is_some() || param("error_description").is_some() {
@@ -499,7 +499,7 @@ fn flujo_oauth(proveedor: &str, cancelar: &AtomicBool) -> Result<Sesion, String>
     sesion_desde(&r.json::<serde_json::Value>()?)
 }
 
-// ───────────────────────────── consultas ─────────────────────────────
+// ───────────────────────────── queries ─────────────────────────────
 
 fn limpiar_busqueda(q: &str) -> String {
     q.chars().filter(|c| c.is_alphanumeric() || *c == ' ' || *c == '-' || *c == '_').take(40).collect::<String>().trim().to_string()
@@ -508,7 +508,7 @@ fn limpiar_busqueda(q: &str) -> String {
 fn listar(sesion: Option<&Sesion>, filtro: Option<&str>, busqueda: &str, con_18: bool, solo_de: Option<&[String]>) -> Result<Vec<Item>, String> {
     if let Some(ids) = solo_de {
         if ids.is_empty() {
-            return Ok(Vec::new()); // no sigues a nadie: no hay nada que pedir
+            return Ok(Vec::new()); // you follow no one: nothing to request
         }
     }
     let mut q = String::from("/rest/v1/items?select=id,tipo,titulo,descripcion,etiquetas,es_18,ruta_publica,sha256,bytes,descargas,version,autor,autor_nombre,icono_publico,vista_publica,corazones&estado=eq.aprobado&order=creado_en.desc&limit=60");
@@ -549,7 +549,7 @@ fn cargar_mi_perfil(s: &Sesion) -> Option<PerfilPublico> {
     r.json::<Vec<PerfilPublico>>().ok()?.into_iter().next()
 }
 
-/// Recorta una foto al formato del perfil (avatar 1:1, banner 3:1), la reduce y la convierte en PNG dentro de los límites.
+/// Crops a photo to the profile format (avatar 1:1, banner 3:1), shrinks it and converts it to PNG within the limits.
 fn preparar_imagen_perfil(clase: &str, bytes: &[u8]) -> Result<Vec<u8>, String> {
     if bytes.len() > 25 * 1024 * 1024 {
         return Err("La imagen pesa demasiado (máximo 25 MB).".into());
@@ -583,11 +583,11 @@ fn preparar_imagen_perfil(clase: &str, bytes: &[u8]) -> Result<Vec<u8>, String> 
     Err("No se pudo reducir la imagen al tamaño permitido.".into())
 }
 
-/// Sube una imagen PNG del perfil (avatar o banner) a la cuarentena y pide al servidor que la modere.
+/// Uploads a profile PNG image (avatar or banner) to quarantine and asks the server to moderate it.
 fn subir_imagen_perfil(s: &Sesion, clase: &str, bytes: &[u8]) -> Result<String, String> {
     val::validar_png(clase, bytes)?;
     let ruta = format!("{}/perfil/{}.png", s.uid, clase);
-    let _ = pedir("DELETE", &format!("/storage/v1/object/cuarentena/{}", ruta), Some(s), None, None, &[], 1 << 16); // reemplaza la anterior
+    let _ = pedir("DELETE", &format!("/storage/v1/object/cuarentena/{}", ruta), Some(s), None, None, &[], 1 << 16); // replaces the previous one
     pedir("POST", &format!("/storage/v1/object/cuarentena/{}", ruta), Some(s), Some("image/png"), Some(bytes), &[("x-upsert", "false")], 1 << 16)?.ok()?;
     let r = json_post("/functions/v1/perfil", Some(s), &serde_json::json!({ "accion": "imagen", "clase": clase }), &[])?;
     let v: serde_json::Value = r.json().unwrap_or_default();
@@ -600,7 +600,7 @@ fn subir_imagen_perfil(s: &Sesion, clase: &str, bytes: &[u8]) -> Result<String, 
     })
 }
 
-/// Mis corazones y mis seguidos (solo lo que es mío: por RLS nadie más lo ve).
+/// My hearts and my follows (only what is mine: under RLS nobody else sees it).
 fn cargar_mios(s: &Sesion) -> Option<(Vec<String>, Vec<String>)> {
     let col = |ruta: &str, campo: &str| -> Option<Vec<String>> {
         let v: Vec<serde_json::Value> = pedir("GET", ruta, Some(s), None, None, &[], 1 << 20).ok()?.ok().ok()?.json().ok()?;
@@ -632,7 +632,7 @@ fn descargar(item: &Item, sesion: Option<&Sesion>) -> Result<Vec<u8>, String> {
     let nombre = ruta.rsplit('/').next().unwrap_or("");
     val::validar(&item.tipo, nombre, &bytes).map_err(|e| format!("No pasó la validación local: {}", e))?;
     if let Some(s) = sesion {
-        let _ = json_post("/rest/v1/rpc/registrar_descarga", Some(s), &serde_json::json!({ "p_item": item.id }), &[]); // solo cuenta con sesión
+        let _ = json_post("/rest/v1/rpc/registrar_descarga", Some(s), &serde_json::json!({ "p_item": item.id }), &[]); // only counts when signed in
     }
     Ok(bytes)
 }
@@ -669,7 +669,7 @@ fn subir_contenido(s: &Sesion, tipo: &str, titulo: &str, descripcion: &str, etiq
         }
     }
     if let Err(e) = subida {
-        let _ = pedir("DELETE", &format!("/rest/v1/items?id=eq.{}", id), Some(&s), None, None, &[], 1 << 16); // no dejar una ficha sin archivo
+        let _ = pedir("DELETE", &format!("/rest/v1/items?id=eq.{}", id), Some(&s), None, None, &[], 1 << 16); // don't leave a listing without a file
         return Err(e);
     }
     let r = json_post("/functions/v1/moderar", Some(&s), &serde_json::json!({ "item": id }), &[])?.ok()?;
@@ -682,7 +682,7 @@ fn subir_contenido(s: &Sesion, tipo: &str, titulo: &str, descripcion: &str, etiq
     })
 }
 
-// ───────────────────────────── instalación (hilo de la interfaz) ─────────────────────────────
+// ───────────────────────────── installation (UI thread) ─────────────────────────────
 
 fn escribir_temporal(nombre: &str, bytes: &[u8]) -> Result<PathBuf, String> {
     let dir = std::env::temp_dir().join("lienzo-ui-comunidad");
@@ -698,7 +698,7 @@ fn instalar_plugin(bytes: &[u8]) -> Result<String, String> {
     let carpeta = crate::plugins::carpeta_usuario().join(format!("comunidad-{}", nombre_seguro(nombre).to_lowercase()));
     std::fs::create_dir_all(&carpeta).map_err(|e| e.to_string())?;
     for (ruta, contenido) in &p.archivos {
-        let destino = carpeta.join(ruta); // validado: sin «..», sin rutas absolutas, solo .rhai/.json
+        let destino = carpeta.join(ruta); // validated: no "..", no absolute paths, only .rhai/.json
         if let Some(padre) = destino.parent() {
             std::fs::create_dir_all(padre).map_err(|e| e.to_string())?;
         }
@@ -710,7 +710,7 @@ fn instalar_plugin(bytes: &[u8]) -> Result<String, String> {
     Ok(nombre.to_string())
 }
 
-/// Convierte una carpeta de plugin en el paquete que se sube.
+/// Turns a plugin folder into the package that gets uploaded.
 fn empaquetar_plugin(carpeta: &std::path::Path) -> Result<Vec<u8>, String> {
     let manifiesto: serde_json::Value = serde_json::from_str(&std::fs::read_to_string(carpeta.join("plugin.json")).map_err(|_| "La carpeta no tiene plugin.json.")?).map_err(|_| "plugin.json no es válido.")?;
     let mut archivos = std::collections::BTreeMap::new();
@@ -735,7 +735,7 @@ fn empaquetar_plugin(carpeta: &std::path::Path) -> Result<Vec<u8>, String> {
     serde_json::to_vec(&Paquete { manifiesto, archivos }).map_err(|e| e.to_string())
 }
 
-// ───────────────────────────── interfaz ─────────────────────────────
+// ───────────────────────────── UI ─────────────────────────────
 
 const NOMBRES_TIPO: &[(&str, &str)] = &[("plugin", "Plugins"), ("imagen", "Imágenes"), ("fuente", "Fuentes"), ("plantilla", "Plantillas"), ("elemento", "Elementos"), ("tema", "Temas")];
 const MOTIVOS: &[(&str, &str)] = &[("malware", "Malware o virus"), ("contenido_18", "Contenido +18 sin marcar"), ("odio_o_acoso", "Odio o acoso"), ("derechos_de_autor", "Derechos de autor"), ("otro", "Otro")];
@@ -773,7 +773,7 @@ impl EditorApp {
         });
     }
 
-    /// Procesa lo que terminaron los hilos. Se llama en cada fotograma.
+    /// Processes what the threads have finished. Called every frame.
     pub fn comunidad_poll(&mut self, ctx: &egui::Context) {
         while let Ok(m) = self.comunidad.rx.try_recv() {
             let is_sesion = matches!(m, Mensaje::Sesion(_));
@@ -856,7 +856,7 @@ impl EditorApp {
                         let img = image::load_from_memory_with_format(&b, image::ImageFormat::Png).ok()?.to_rgba8();
                         let (w, h) = img.dimensions();
                         let ci = egui::ColorImage::from_rgba_unmultiplied([w as usize, h as usize], img.as_raw());
-                        // las imágenes pequeñas (pixel art) se ven nítidas
+                        // small images (pixel art) are shown sharp
                         let opciones = if w <= 128 && h <= 128 { egui::TextureOptions::NEAREST } else { egui::TextureOptions::LINEAR };
                         Some(ctx.load_texture(format!("comunidad/{}", ruta), ci, opciones))
                     });
@@ -890,7 +890,7 @@ impl EditorApp {
                     if let (Some(n), Some(pr)) = (p.as_ref().map(|x| x.nombre_publico.clone()), self.comunidad.perfil.as_mut()) {
                         pr.nombre_publico = n;
                     }
-                    // la imagen en revisión pudo cambiar: se vuelve a pedir
+                    // the image under review may have changed: request it again
                     self.comunidad.texturas.retain(|k, _| !k.starts_with("cuarentena:"));
                     self.comunidad.mi_perfil = p;
                 }
@@ -919,7 +919,7 @@ impl EditorApp {
 
     fn com_instalar(&mut self, ctx: &egui::Context, item: &Item, bytes: &[u8]) -> Result<String, String> {
         let nombre = item.ruta_publica.as_deref().and_then(|r| r.rsplit('/').next()).unwrap_or("archivo");
-        val::validar(&item.tipo, nombre, bytes)?; // segunda comprobación justo antes de tocar el disco
+        val::validar(&item.tipo, nombre, bytes)?; // second check right before touching the disk
         let msg = match item.tipo.as_str() {
             "plugin" => {
                 let n = instalar_plugin(bytes)?;
@@ -968,7 +968,7 @@ impl EditorApp {
         let ctx = ui.ctx().clone();
         self.comunidad_poll(&ctx);
         if !self.comunidad.iniciado {
-            // Primera vez que se abre la pestaña: aquí empieza (y no antes) cualquier conexión.
+            // First time the tab is opened: any connection starts here (and not before).
             self.comunidad.iniciado = true;
             if let Some((r, u)) = leer_credencial() {
                 self.com_lanzar(&ctx, move |tx| {
@@ -1040,7 +1040,7 @@ impl EditorApp {
                     ui.label(RichText::new(t("Cargando tu perfil…")).small().color(MUTED()));
                     return;
                 }
-                // Primera vez: elegir nombre público y aceptar las reglas.
+                // First time: choose a public name and accept the rules.
                 ui.label(RichText::new(t("Elige tu nombre público")).strong());
                 ui.label(RichText::new(t("Es lo único que verá la comunidad. 3-32 caracteres: letras, números, punto, guion y guion bajo.")).small().color(MUTED()));
                 ui.add(egui::TextEdit::singleline(&mut self.comunidad.nombre_nuevo).hint_text("nombre_publico").desired_width(f32::INFINITY));
@@ -1292,7 +1292,7 @@ mod tests {
 
     #[test]
     fn desafio_pkce_conocido() {
-        // RFC 7636, apéndice B
+        // RFC 7636, appendix B
         let d = b64url(&Sha256::digest(b"dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk"));
         assert_eq!(d, "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM");
     }
@@ -1313,10 +1313,10 @@ mod tests {
     }
 }
 
-/// Subida desde la línea de comandos, con la sesión guardada por la app (Administrador de credenciales).
+/// Upload from the command line, using the session saved by the app (Credential Manager).
 ///   lienzo-ui --comunidad-subir <tipo> <archivo|carpeta-del-plugin> --titulo "…" [--descripcion "…"] [--etiquetas a,b] [--18]
-/// Usa exactamente el mismo código que el botón «Enviar a revisión». Cierra la app antes de usarla: el token de
-/// sesión se renueva y la app abierta con el token anterior perdería la sesión.
+/// Uses exactly the same code as the "Submit for review" button. Close the app before using it: the session
+/// token is renewed and the app, left open with the old token, would lose the session.
 pub fn subir_cli(args: &[String]) -> i32 {
     let tipo = args.first().map(|s| s.as_str()).unwrap_or("");
     let ruta = PathBuf::from(args.get(1).map(|s| s.as_str()).unwrap_or(""));
@@ -1339,7 +1339,7 @@ pub fn subir_cli(args: &[String]) -> i32 {
             return 1;
         }
     };
-    guardar_credencial(Some(&s)); // el token rota: se guarda el nuevo para la próxima vez
+    guardar_credencial(Some(&s)); // the token rotates: the new one is saved for next time
     if cargar_perfil(&s).is_none() {
         eprintln!("Esta cuenta aún no tiene perfil: créalo en la app (pestaña Comunidad).");
         return 1;
@@ -1378,7 +1378,7 @@ pub fn subir_cli(args: &[String]) -> i32 {
     }
 }
 
-/// Reintenta la moderación de tus fichas que quedaron «pendientes» sin decisión (por ejemplo, si el servidor falló).
+/// Retries moderation of your listings left "pending" with no decision (for example, if the server failed).
 ///   lienzo-ui --comunidad-reintentar
 pub fn reintentar_cli() -> i32 {
     let Some((renovacion, uid)) = leer_credencial() else {
@@ -1422,11 +1422,11 @@ pub fn reintentar_cli() -> i32 {
 fn sesion_guardada() -> Result<Sesion, String> {
     let (renovacion, uid) = leer_credencial().ok_or("No hay sesión guardada: abre la app, pestaña Comunidad, e inicia sesión.")?;
     let s = renovar(&Sesion { renovacion, uid, ..Default::default() }).map_err(|e| format!("No se pudo renovar la sesión: {}", e))?;
-    guardar_credencial(Some(&s)); // el token rota: se guarda el nuevo
+    guardar_credencial(Some(&s)); // the token rotates: the new one is saved
     Ok(s)
 }
 
-/// Identificador de tu cuenta (para configurarla como moderadora en el servidor).
+/// Your account identifier (to configure it as a moderator on the server).
 ///   lienzo-ui --comunidad-yo
 pub fn yo_cli() -> i32 {
     match sesion_guardada() {
@@ -1441,13 +1441,13 @@ pub fn yo_cli() -> i32 {
     }
 }
 
-/// Revisión humana (solo cuentas listadas en el secreto MODERADORES del servidor):
+/// Human review (only accounts listed in the server's MODERADORES secret):
 ///   lienzo-ui --comunidad-revisar listar
 ///   lienzo-ui --comunidad-revisar aprobar <id> [--18]      · rechazar <id> "motivo"
 ///   lienzo-ui --comunidad-revisar aprobar-perfil <id-de-cuenta> avatar|banner  · rechazar-perfil <id-de-cuenta> avatar|banner
-///   lienzo-ui --comunidad-revisar token-crear "nombre" leer,rechazar [dias]    (credencial para scripts; se muestra una vez)
+///   lienzo-ui --comunidad-revisar token-crear "nombre" leer,rechazar [dias]    (credential for scripts; shown once)
 ///   lienzo-ui --comunidad-revisar tokens                                       · token-revocar <id>
-/// Lo mismo se puede hacer en la web de moderación (web/moderacion).
+/// The same can be done in the moderation web page (web/moderacion).
 pub fn revisar_cli(args: &[String]) -> i32 {
     let accion = args.first().map(|s| s.as_str()).unwrap_or("");
     let a1 = args.get(1).map(|s| s.as_str()).unwrap_or("");
@@ -1516,9 +1516,9 @@ pub fn revisar_cli(args: &[String]) -> i32 {
     0
 }
 
-// ───────────────────────────── tarjetas, imágenes y perfiles de creador ─────────────────────────────
+// ───────────────────────────── cards, images and creator profiles ─────────────────────────────
 
-/// Campo con etiqueta al estilo de X: un recuadro con la etiqueta pequeña arriba y el texto debajo.
+/// X-style labeled field: a box with the small label on top and the text below.
 fn campo_x(ui: &mut egui::Ui, etiqueta: &str, texto: &mut String, filas: usize, pista: &str) {
     egui::Frame::new().stroke(egui::Stroke::new(1.0, crate::theme::LINE())).corner_radius(5.0).inner_margin(egui::Margin::symmetric(10, 6)).show(ui, |ui| {
         ui.set_width(ui.available_width());
@@ -1530,14 +1530,14 @@ fn campo_x(ui: &mut egui::Ui, etiqueta: &str, texto: &mut String, filas: usize, 
 }
 
 fn abrir_enlace(url: &str) {
-    // Última comprobación antes de abrir el navegador: solo https.
+    // Last check before opening the browser: https only.
     if url.starts_with("https://") && url.chars().all(|c| c.is_ascii_graphic()) {
         let _ = webbrowser::open(url);
     }
 }
 
 impl EditorApp {
-    /// Imagen pública de la comunidad (icono, vista previa, avatar o banner). Se descarga en segundo plano la primera vez.
+    /// Public community image (icon, preview, avatar or banner). Downloaded in the background the first time.
     fn com_textura(&mut self, ctx: &egui::Context, ruta: &str) -> Option<egui::TextureHandle> {
         if let Some(t) = self.comunidad.texturas.get(ruta) {
             return t.clone();
@@ -1559,7 +1559,7 @@ impl EditorApp {
         None
     }
 
-    /// Ajusta el total de corazones de un contenido en lo que se está mostrando (sin esperar al servidor).
+    /// Adjusts a content item's heart total in what is being displayed (without waiting for the server).
     fn ajustar_corazones(&mut self, id: &str, delta: i64) {
         let aplicar = |v: &mut Vec<Item>| {
             for i in v.iter_mut().filter(|i| i.id == id) {
@@ -1594,14 +1594,14 @@ impl EditorApp {
                     pedir("DELETE", &format!("/rest/v1/corazones?persona=eq.{}&item=eq.{}", s.uid, item), Some(&s), None, None, &[], 1 << 16)?.ok().map(|_| s)
                 } else {
                     let r = json_post("/rest/v1/corazones", Some(&s), &serde_json::json!({ "persona": s.uid, "item": item }), &[("Prefer", "return=minimal")])?;
-                    if r.estado == 409 { Ok(s) } else { r.ok().map(|_| s) } // ya lo tenía: está bien
+                    if r.estado == 409 { Ok(s) } else { r.ok().map(|_| s) } // already had it: fine
                 }
             });
             match r {
                 Ok(_) => {}
                 Err(e) => {
                     let _ = tx.send(Mensaje::Estado(e));
-                    // el servidor manda: se vuelve a leer lo mío para deshacer el cambio optimista
+                    // the server decides: re-read my data to undo the optimistic change
                     if let Ok(s) = vigente(&s, &tx) {
                         if let Some((corazones, seguidos)) = cargar_mios(&s) {
                             let _ = tx.send(Mensaje::Mios { corazones, seguidos });
@@ -1651,9 +1651,9 @@ impl EditorApp {
         });
     }
 
-    /// Ventanas flotantes de la comunidad: la vista previa ampliada y el perfil de creador. Se llama en cada fotograma.
+    /// Floating community windows: the enlarged preview and the creator profile. Called every frame.
     pub fn comunidad_ventanas(&mut self, ctx: &egui::Context) {
-        // Vista previa a pantalla grande: clic fuera, Esc o el botón la cierran.
+        // Full-size preview: clicking outside, Esc or the button closes it.
         if let Some(ruta) = self.comunidad.ampliada.clone() {
             let tex = self.com_textura(ctx, &ruta);
             let pantalla = ctx.content_rect().size();
@@ -1681,7 +1681,7 @@ impl EditorApp {
                 self.comunidad.ampliada = None;
             }
         }
-        // Mi perfil de creador (editable).
+        // My creator profile (editable).
         if self.comunidad.perfil_abierto {
             egui::Window::new("mi_perfil_creador").title_bar(false).collapsible(false).resizable(false).default_width(520.0).anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO).show(ctx, |ui| {
                 ui.set_width(520.0);
@@ -1691,7 +1691,7 @@ impl EditorApp {
         }
     }
 
-    /// Botón de la cabecera: tu foto de perfil (o la imagen por defecto). Abre tu perfil; sin sesión, abre la pestaña Comunidad.
+    /// Header button: your profile photo (or the default image). Opens your profile; when signed out, opens the Community tab.
     pub fn comunidad_boton_perfil(&mut self, ui: &mut egui::Ui) {
         let ctx = ui.ctx().clone();
         let propia = match self.comunidad.mi_perfil.clone() {
@@ -1719,15 +1719,15 @@ impl EditorApp {
         }
     }
 
-    /// SOLO para capturas de la documentación: finge una cuenta con sesión (sin red ni credenciales reales) y carga el
-    /// catálogo público de verdad. Ninguna acción de esta sesión falsa llega a ningún servidor con datos de nadie.
+    /// ONLY for documentation screenshots: fakes a signed-in account (no network or real credentials) and loads the
+    /// real public catalog. No action in this fake session reaches any server with anyone's data.
     pub fn comunidad_demo(&mut self, ctx: &egui::Context, abrir_perfil: bool, abrir_subida: bool) {
         let uid = "00000000-0000-4000-8000-000000000000".to_string();
         self.comunidad.iniciado = true;
         self.tab = crate::app::Tab::Comunidad;
         self.drawer_open = true;
         if !abrir_subida {
-            self.com_cargar_lista(ctx); // sin sesión todavía: catálogo anónimo real
+            self.com_cargar_lista(ctx); // no session yet: real anonymous catalog
         }
         self.comunidad.sesion = Some(Sesion { acceso: "demo".into(), renovacion: "demo".into(), uid: uid.clone(), expira: u64::MAX / 2 });
         self.comunidad.perfil = Some(Perfil { nombre_publico: "TuNombre".into(), mostrar_18: false });
@@ -1743,7 +1743,7 @@ impl EditorApp {
         f.cargado = true;
         self.comunidad.perfil_abierto = abrir_perfil;
         if abrir_subida {
-            // formulario de «Compartir» ya abierto y con un ejemplo, sin catálogo debajo
+            // "Share" form already open with an example, no catalog underneath
             self.comunidad.abrir_subida = true;
             self.comunidad.subir.tipo = 4;
             self.comunidad.subir.titulo = "Mi menú de botones".into();
@@ -1753,7 +1753,7 @@ impl EditorApp {
         }
     }
 
-    /// Abre la pestaña Comunidad filtrada por un tipo (p. ej. «tema» desde la ventana Temas).
+    /// Opens the Community tab filtered by a type (e.g. "tema" from the Themes window).
     pub fn comunidad_ir_a(&mut self, ctx: &egui::Context, tipo: &'static str) {
         self.tab = crate::app::Tab::Comunidad;
         self.drawer_open = true;
@@ -1765,7 +1765,7 @@ impl EditorApp {
         }
     }
 
-    /// Deja listo el formulario «Compartir» con un archivo (p. ej. el tema actual desde la ventana Temas).
+    /// Prepares the "Share" form with a file (e.g. the current theme from the Themes window).
     pub fn comunidad_preparar_subida(&mut self, ctx: &egui::Context, tipo: &'static str, archivo: PathBuf, titulo: &str) {
         self.comunidad_ir_a(ctx, tipo);
         if let Some(i) = NOMBRES_TIPO.iter().position(|(k, _)| *k == tipo) {
@@ -1789,7 +1789,7 @@ impl EditorApp {
         egui::Frame::new().fill(crate::theme::PANEL_DARK()).corner_radius(6.0).inner_margin(8.0).show(ui, |ui| {
             ui.set_width(ui.available_width());
             ui.horizontal(|ui| {
-                // Icono del tipo de contenido, dibujado en SVG (las imágenes subidas solo se usan como vista previa).
+                // Content type icon, drawn as SVG (uploaded images are only used as previews).
                 let nombre_icono = match it.tipo.as_str() {
                     "plugin" => "tab_plugins",
                     "imagen" => "tab_images",
@@ -1953,7 +1953,7 @@ impl EditorApp {
         }
     }
 
-    /// Editor de «Mi perfil de creador», al estilo de X: banner con foto superpuesta, campos con etiqueta y «Guardar» arriba.
+    /// "My creator profile" editor, X-style: banner with overlaid photo, labeled fields and "Save" at the top.
     fn com_editar_perfil(&mut self, ui: &mut egui::Ui, ctx: &egui::Context) {
         let Some(s) = self.comunidad.sesion.clone() else { return };
         let mi = self.comunidad.mi_perfil.clone().unwrap_or_default();
@@ -1962,7 +1962,7 @@ impl EditorApp {
                 self.comunidad.form_perfil.nombre = p.nombre_publico.clone();
             }
         }
-        // ── Barra superior: cerrar · título · Guardar ──
+        // ── Top bar: close · title · Save ──
         let mut guardar = false;
         ui.horizontal(|ui| {
             if ui.add(crate::icons::btn("close", "").frame(false)).on_hover_text(t("Cerrar")).clicked() {
@@ -1983,7 +1983,7 @@ impl EditorApp {
         ui.add_space(4.0);
 
         egui::ScrollArea::vertical().max_height(ctx.content_rect().height() * 0.72).show(ui, |ui| {
-            // ── Banner con sus botones ──
+            // ── Banner with its buttons ──
             let ancho = ui.available_width();
             let (rb, _) = ui.allocate_exact_size(egui::vec2(ancho, (ancho / 3.0).round()), egui::Sense::hover());
             let banner = self.com_imagen_propia(ctx, "banner", &mi);
@@ -1996,7 +1996,7 @@ impl EditorApp {
                 }
             }
             let hay_banner = banner.is_some();
-            let mut accion: Option<(&'static str, bool)> = None; // (clase, true = elegir / false = quitar)
+            let mut accion: Option<(&'static str, bool)> = None; // (class, true = choose / false = remove)
             let redondo = |icono: &str| crate::icons::redondo(icono, 44.0, egui::Color32::WHITE);
             let c = rb.center();
             let r1 = egui::Rect::from_center_size(c - egui::vec2(if hay_banner { 28.0 } else { 0.0 }, 0.0), egui::vec2(44.0, 44.0));
@@ -2009,7 +2009,7 @@ impl EditorApp {
                     accion = Some(("banner", false));
                 }
             }
-            // ── Foto de perfil superpuesta ──
+            // ── Overlaid profile photo ──
             let ra = egui::Rect::from_center_size(egui::pos2(rb.left() + 70.0, rb.bottom()), egui::Vec2::splat(108.0));
             ui.painter().circle_filled(ra.center(), 58.0, crate::theme::PANEL());
             match self.com_imagen_propia(ctx, "avatar", &mi) {
@@ -2024,7 +2024,7 @@ impl EditorApp {
             if hay_avatar && ui.small_button(t("Quitar la foto de perfil")).clicked() {
                 accion = Some(("avatar", false));
             }
-            // ── Aviso de revisión (como el de X) ──
+            // ── Review notice (like X's) ──
             let pendientes: Vec<String> = [("avatar", mi.avatar_pendiente, t("la foto de perfil")), ("banner", mi.banner_pendiente, t("el banner"))]
                 .into_iter()
                 .filter(|(_, p, _)| *p)
@@ -2038,7 +2038,7 @@ impl EditorApp {
                 });
             }
             ui.add_space(10.0);
-            // ── Campos ──
+            // ── Fields ──
             let f = &mut self.comunidad.form_perfil;
             if f.enlaces.len() != REDES.len() {
                 f.enlaces.resize(REDES.len(), String::new());
@@ -2069,7 +2069,7 @@ impl EditorApp {
                 ui.label(RichText::new(e).small().color(WARN()));
             }
             ui.add_space(6.0);
-            // ── Fila «Ver mi perfil público ›» ──
+            // ── "View my public profile ›" row ──
             let fila = ui.add(crate::icons::btn("user", RichText::new(t("Ver mi perfil público")).size(15.0)).frame(false));
             if fila.clicked() {
                 self.comunidad.perfil_abierto = false;
@@ -2079,7 +2079,7 @@ impl EditorApp {
             }
             ui.label(RichText::new(t("Tu perfil es público cuando tienes al menos un contenido aprobado. Las imágenes y la descripción se moderan.")).small().color(MUTED()));
 
-            // ── Acciones ──
+            // ── Actions ──
             match accion {
                 Some((clase, true)) => self.com_elegir_imagen_perfil(ctx, clase),
                 Some((clase, false)) => {
@@ -2127,7 +2127,7 @@ impl EditorApp {
         });
     }
 
-    /// Imagen de mi perfil tal como la veo yo: la que acabo de elegir, la que está en revisión (mi cuarentena) o la publicada.
+    /// My profile image as I see it: the one I just chose, the one under review (my quarantine) or the published one.
     fn com_imagen_propia(&mut self, ctx: &egui::Context, clase: &'static str, mi: &PerfilPublico) -> Option<egui::TextureHandle> {
         if let Some(t) = self.comunidad.previas.get(clase) {
             return Some(t.clone());
@@ -2140,7 +2140,7 @@ impl EditorApp {
         publica.and_then(|r| self.com_textura(ctx, &r))
     }
 
-    /// Mi imagen de perfil en revisión: solo la puede leer su dueño (la cuarentena es privada).
+    /// My profile image under review: only its owner can read it (quarantine is private).
     fn com_textura_cuarentena(&mut self, ctx: &egui::Context, clase: &'static str) -> Option<egui::TextureHandle> {
         let clave = format!("cuarentena:{}", clase);
         if let Some(t) = self.comunidad.texturas.get(&clave) {
@@ -2161,8 +2161,8 @@ impl EditorApp {
         None
     }
 
-    /// Elige una foto o un banner (PNG, JPEG, WebP, GIF o BMP de cualquier tamaño): la app la recorta y la reduce,
-    /// la muestra al momento y la sube a revisión.
+    /// Picks a photo or banner (PNG, JPEG, WebP, GIF or BMP of any size): the app crops and shrinks it,
+    /// shows it immediately and uploads it for review.
     fn com_elegir_imagen_perfil(&mut self, ctx: &egui::Context, clase: &'static str) {
         let Some(f) = rfd::FileDialog::new().add_filter(t("Imágenes"), &["png", "jpg", "jpeg", "webp", "gif", "bmp"]).pick_file() else { return };
         let preparada = std::fs::read(&f).map_err(|e| e.to_string()).and_then(|b| preparar_imagen_perfil(clase, &b));
@@ -2225,7 +2225,7 @@ mod tests_perfil {
     }
 }
 
-/// Da o quita un corazón a un contenido, o sigue / deja de seguir a un creador, con la sesión guardada.
+/// Gives or removes a heart on a content item, or follows / unfollows a creator, using the saved session.
 ///   lienzo-ui --comunidad-corazon <id-del-contenido>
 ///   lienzo-ui --comunidad-seguir <id-del-creador>
 pub fn social_cli(que: &str, id: &str) -> i32 {

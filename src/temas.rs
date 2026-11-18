@@ -1,4 +1,4 @@
-//! Ventana «Temas»: elegir, personalizar, guardar y compartir la apariencia de la app (colores, esquinas y fuente).
+//! «Temas» window: choose, customize, save and share the app's appearance (colors, corners and font).
 
 use crate::app::EditorApp;
 use crate::i18n::t;
@@ -6,12 +6,12 @@ use crate::theme::{self, Tema, ACCENT, MUTED};
 use eframe::egui::{self, Color32, RichText, Vec2};
 use std::path::PathBuf;
 
-/// Carpeta de los temas guardados e instalados desde la comunidad.
+/// Folder of saved themes and themes installed from the community.
 pub fn carpeta() -> PathBuf {
     crate::library::root_dir().join("temas")
 }
 
-/// Temas guardados por la persona (los que no pasan la validación se ignoran).
+/// Themes saved by the user (those that fail validation are ignored).
 pub fn guardados() -> Vec<(PathBuf, Tema)> {
     let Ok(rd) = std::fs::read_dir(carpeta()) else { return Vec::new() };
     let mut v: Vec<(PathBuf, Tema)> = rd
@@ -33,7 +33,7 @@ fn nombre_archivo(nombre: &str) -> String {
     if s.is_empty() { "tema".into() } else { s }
 }
 
-/// Guarda un tema en la biblioteca. Devuelve la ruta.
+/// Saves a theme in the library. Returns the path.
 pub fn guardar(t: &Tema) -> Result<PathBuf, String> {
     t.validar()?;
     let dir = carpeta();
@@ -43,7 +43,7 @@ pub fn guardar(t: &Tema) -> Result<PathBuf, String> {
     Ok(f)
 }
 
-/// Franja de colores para reconocer un tema de un vistazo.
+/// Color strip to recognize a theme at a glance.
 fn muestra(ui: &mut egui::Ui, t: &Tema) {
     let (r, _) = ui.allocate_exact_size(Vec2::new(70.0, 18.0), egui::Sense::hover());
     let colores = [t.color("fondo"), t.color("panel"), t.color("campo"), t.color("acento"), t.color("texto")];
@@ -56,7 +56,7 @@ fn muestra(ui: &mut egui::Ui, t: &Tema) {
 }
 
 impl EditorApp {
-    /// Pone un tema en uso, lo guarda en los ajustes y lo aplica a toda la interfaz.
+    /// Sets a theme in use, saves it in the settings and applies it to the whole interface.
     pub fn usar_tema(&mut self, ctx: &egui::Context, t: Tema) {
         self.settings.tema = Some(t);
         self.settings.save();
@@ -75,7 +75,7 @@ impl EditorApp {
             egui::ScrollArea::vertical().max_height(ctx.content_rect().height() * 0.8).show(ui, |ui| {
                 ui.label(RichText::new(t("Cambia los colores, las esquinas y la fuente de toda la app. Se guarda al momento.")).small().color(MUTED()));
                 ui.add_space(4.0);
-                // ── Elegir ──
+                // ── Choose ──
                 let mut lista: Vec<(Option<PathBuf>, Tema)> = theme::predeterminados().into_iter().map(|t| (None, t)).collect();
                 lista.extend(guardados().into_iter().map(|(p, t)| (Some(p), t)));
                 for (ruta, tema) in &lista {
@@ -102,7 +102,7 @@ impl EditorApp {
                     }
                 });
                 ui.separator();
-                // ── Personalizar ──
+                // ── Customize ──
                 ui.label(RichText::new(t("Personalizar")).strong());
                 let mut t2 = actual.clone();
                 egui::Grid::new("tema_colores").num_columns(4).spacing([10.0, 6.0]).show(ui, |ui| {
@@ -146,7 +146,7 @@ impl EditorApp {
                     nuevo = Some(t2.clone());
                 }
                 ui.separator();
-                // ── Guardar y compartir ──
+                // ── Save and share ──
                 ui.horizontal(|ui| {
                     ui.label(t("Nombre"));
                     if self.tema_nombre.is_empty() {

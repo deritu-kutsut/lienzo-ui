@@ -1,5 +1,5 @@
-//! Accesibilidad: idioma, tamaño de la interfaz, alto contraste y movimiento reducido.
-//! Se guarda en los ajustes del usuario y se aplica al arrancar y al cambiar cualquier opción.
+//! Accessibility: language, interface size, high contrast and reduced motion.
+//! Saved in the user's settings and applied on startup and whenever any option changes.
 
 use crate::app::EditorApp;
 use crate::i18n::{self, t};
@@ -8,7 +8,7 @@ use eframe::egui::{self, RichText};
 
 pub const ESCALAS: &[(f32, &str)] = &[(0.85, "85 %"), (1.0, "100 %"), (1.25, "125 %"), (1.5, "150 %"), (1.75, "175 %"), (2.0, "200 %")];
 
-/// Aplica las opciones al contexto de egui.
+/// Applies the options to the egui context.
 pub fn aplicar(ctx: &egui::Context, s: &crate::library::Settings) {
     i18n::set(if s.idioma.is_empty() { "es" } else { &s.idioma });
     let escala = if s.escala_ui <= 0.0 { 1.0 } else { s.escala_ui.clamp(0.75, 2.5) };
@@ -81,7 +81,7 @@ impl EditorApp {
         self.accesibilidad_abierta = abierta;
     }
 
-    /// Ctrl+Alt+= / Ctrl+Alt+- : tamaño de la interfaz.
+    /// Ctrl+Alt+= / Ctrl+Alt+- : interface size.
     pub fn atajos_accesibilidad(&mut self, ctx: &egui::Context) {
         let m = egui::Modifiers::COMMAND | egui::Modifiers::ALT;
         let (mas, menos) = ctx.input_mut(|i| (i.consume_key(m, egui::Key::Equals) || i.consume_key(m, egui::Key::Plus), i.consume_key(m, egui::Key::Minus)));

@@ -121,9 +121,9 @@ struct FontState {
     available: Vec<String>,
     pending: Vec<String>,
     paths: std::collections::HashMap<String, std::path::PathBuf>,
-    /// Fuente de respaldo del idioma de la interfaz (chino, japonés, coreano), al final de las listas.
+    /// Fallback font for the interface language (Chinese, Japanese, Korean), at the end of the lists.
     respaldo: Option<String>,
-    /// Fuente de la interfaz elegida en el tema ("" = la predeterminada).
+    /// Interface font chosen in the theme ("" = the default one).
     interfaz: String,
 }
 
@@ -186,7 +186,7 @@ pub fn load_system_fonts(ctx: &egui::Context) {
     }
 }
 
-/// Fuente de la interfaz de la app (temas): `nombre` delante de las predeterminadas; "" o una que no está = la predeterminada.
+/// The app's interface font (themes): `nombre` goes in front of the defaults; "" or one that is missing = the default.
 pub fn fuente_interfaz(ctx: &egui::Context, nombre: &str) {
     if let Ok(mut g) = FONTS.lock() {
         if let Some(s) = g.as_mut() {
@@ -196,7 +196,7 @@ pub fn fuente_interfaz(ctx: &egui::Context, nombre: &str) {
     }
 }
 
-/// Rehace las familias Proportional y Monospace: fuente del tema delante, respaldo del idioma al final.
+/// Rebuilds the Proportional and Monospace families: theme font in front, language fallback at the end.
 fn aplicar_familias(ctx: &egui::Context, s: &mut FontState) {
     let base = egui::FontDefinitions::default();
     let mut cambio = false;
@@ -218,7 +218,7 @@ fn aplicar_familias(ctx: &egui::Context, s: &mut FontState) {
     }
 }
 
-/// Fuentes del sistema con los caracteres de cada idioma que no cubren las de egui (se busca la primera que exista).
+/// System fonts with the characters of each language that egui's fonts do not cover (the first one that exists is used).
 pub fn fuentes_de_idioma(codigo: &str) -> &'static [&'static str] {
     const NOTO: &str = "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc";
     const NOTO2: &str = "/usr/share/fonts/noto-cjk/NotoSansCJK-Regular.ttc";
@@ -230,8 +230,8 @@ pub fn fuentes_de_idioma(codigo: &str) -> &'static [&'static str] {
     }
 }
 
-/// Carga (una vez) la fuente de respaldo del idioma de la interfaz. Devuelve false si el idioma la necesita
-/// y no hay ninguna en el sistema (los textos se verían como cuadros).
+/// Loads (once) the fallback font for the interface language. Returns false if the language needs it
+/// and the system has none (the text would show as boxes).
 pub fn fuente_idioma(ctx: &egui::Context, codigo: &str) -> bool {
     let rutas = fuentes_de_idioma(codigo);
     let Ok(mut g) = FONTS.lock() else { return true };
@@ -243,7 +243,7 @@ pub fn fuente_idioma(ctx: &egui::Context, codigo: &str) -> bool {
     } else if s.defs.font_data.contains_key(&clave) {
         Some(clave)
     } else if let Some((ruta, bytes)) = rutas.iter().find_map(|p| std::fs::read(p).ok().map(|b| (*p, b))) {
-        // Yu Gothic y Meiryo dibujan los glifos más arriba que la fuente latina de egui: se bajan un poco.
+        // Yu Gothic and Meiryo draw glyphs higher than egui's Latin font: they are lowered a bit.
         let bajar = if ruta.contains("YuGoth") || ruta.contains("meiryo") { 0.2 } else { 0.0 };
         let tweak = egui::FontTweak { y_offset_factor: bajar, ..Default::default() };
         s.defs.font_data.insert(clave.clone(), Arc::new(egui::FontData::from_owned(bytes).tweak(tweak)));
@@ -294,7 +294,7 @@ pub fn font_family(name: &str) -> egui::FontFamily {
 
 // ---------------------------------------------------------------- pictures
 
-/// Modo pixel art del diseño actual (filtro de las imágenes en el lienzo).
+/// Pixel art mode of the current design (image filter on the canvas).
 pub static PIXEL_ART: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
 
 static TEXTURES: std::sync::Mutex<Option<std::collections::HashMap<String, Option<egui::TextureHandle>>>> = std::sync::Mutex::new(None);

@@ -1,5 +1,5 @@
-//! «Revisar diseño»: comprobaciones rápidas de legibilidad y usabilidad antes de exportar a Unity.
-//! Todo es puro (sin interfaz) para usarlo desde la ventana, la línea de comandos (`--revisar`) y el MCP.
+//! «Revisar diseño» (design review): quick readability and usability checks before exporting to Unity.
+//! Everything is pure (no UI) so it can be used from the window, the command line (`--revisar`) and the MCP.
 
 use crate::model::{Doc, Element, Kind, Rgba};
 
@@ -14,14 +14,14 @@ pub struct Problema {
     pub nivel: Nivel,
     pub id: u64,
     pub elemento: String,
-    /// Texto en español (se traduce al mostrarlo con `i18n::tf`).
+    /// Text in Spanish (translated when displayed with `i18n::tf`).
     pub plantilla: &'static str,
     pub datos: Vec<String>,
 }
 
-/// Tamaño mínimo de letra legible a 1080 p de alto (se escala con la resolución de referencia).
+/// Minimum legible font size at 1080 p height (scaled with the reference resolution).
 const LETRA_MIN: f32 = 18.0;
-/// Lado mínimo de un control pulsable a 1080 p (≈ 9 mm en un móvil de 6").
+/// Minimum side of a tappable control at 1080 p (≈ 9 mm on a 6" phone).
 const TOQUE_MIN: f32 = 64.0;
 
 fn luminancia(c: Rgba) -> f32 {
@@ -32,7 +32,7 @@ fn luminancia(c: Rgba) -> f32 {
     0.2126 * f(c[0]) + 0.7152 * f(c[1]) + 0.0722 * f(c[2])
 }
 
-/// Relación de contraste WCAG (1 a 21).
+/// WCAG contrast ratio (1 to 21).
 pub fn contraste(a: Rgba, b: Rgba) -> f32 {
     let (la, lb) = (luminancia(a), luminancia(b));
     (la.max(lb) + 0.05) / (la.min(lb) + 0.05)
@@ -45,7 +45,7 @@ fn mezcla(arriba: Rgba, abajo: Rgba) -> Rgba {
 }
 
 fn relleno(e: &Element) -> Rgba {
-    // Las imágenes sin archivo son degradados: se usa el color medio.
+    // Images without a file are gradients: the mid color is used.
     if e.kind == Kind::Image && e.image.is_empty() {
         let m = |i: usize| ((e.fill[i] as u16 + e.fill2[i] as u16) / 2) as u8;
         return [m(0), m(1), m(2), m(3)];
@@ -73,7 +73,7 @@ fn tiene_fondo_propio(e: &Element) -> bool {
     matches!(e.kind, Kind::Button | Kind::InputField | Kind::Dropdown | Kind::Panel | Kind::Ellipse) && e.fill[3] > 0
 }
 
-/// Color sobre el que se ve el texto de `idx`: su propio relleno si lo tiene, o lo que hay debajo.
+/// Color the text of `idx` is seen against: its own fill if it has one, or whatever is underneath.
 fn fondo_de(doc: &Doc, idx: usize) -> Rgba {
     let e = &doc.elements[idx];
     let (cx, cy) = (e.x + e.w / 2.0, e.y + e.h / 2.0);
@@ -97,7 +97,7 @@ fn es_pulsable(e: &Element) -> bool {
     e.interactable && matches!(e.kind, Kind::Button | Kind::Toggle | Kind::InputField | Kind::Dropdown)
 }
 
-/// Revisa el diseño y devuelve los problemas, errores primero.
+/// Reviews the design and returns the problems, errors first.
 pub fn revisar(doc: &Doc) -> Vec<Problema> {
     let escala = (doc.height.min(doc.width) / 1080.0).max(0.1);
     let mut out = Vec::new();
@@ -116,11 +116,11 @@ pub fn revisar(doc: &Doc) -> Vec<Problema> {
             if e.font_size < min {
                 p(Nivel::Aviso, "Letra de {} px: en pantallas pequeñas será difícil de leer (mínimo recomendado {} px)", vec![format!("{:.0}", e.font_size), format!("{:.0}", min)]);
             }
-            // WCAG no exige contraste a los controles desactivados.
+            // WCAG does not require contrast for disabled controls.
             let desactivado = !e.interactable && matches!(e.kind, Kind::Button | Kind::Toggle);
             let fondo = fondo_de(doc, idx);
             let c = contraste(mezcla(e.text_color, fondo), fondo);
-            // «Texto grande» de WCAG: 18 pt (24 px) o 14 pt en negrita (≈18,7 px), a la escala de referencia.
+            // WCAG "large text": 18 pt (24 px) or 14 pt bold (≈18.7 px), at the reference scale.
             let grande = e.font_size >= 24.0 * escala || (e.bold && e.font_size >= 18.7 * escala);
             let min_c = if grande { 3.0 } else { 4.5 };
             if c < min_c && !desactivado {
@@ -151,13 +151,13 @@ pub fn revisar(doc: &Doc) -> Vec<Problema> {
     out
 }
 
-/// Texto de un problema en el idioma actual.
+/// Text of a problem in the current language.
 pub fn describir(p: &Problema) -> String {
     let args: Vec<&str> = p.datos.iter().map(|s| s.as_str()).collect();
     crate::i18n::tf(p.plantilla, &args)
 }
 
-/// `--revisar`: imprime los problemas; código 1 si hay errores.
+/// `--revisar`: prints the problems; exit code 1 if there are errors.
 pub fn informe(doc: &Doc) -> (String, bool) {
     let ps = revisar(doc);
     if ps.is_empty() {
@@ -238,7 +238,7 @@ mod tests {
 }
 
 impl crate::app::EditorApp {
-    /// Ventana «Revisar diseño»: lista de problemas; clic selecciona el elemento.
+    /// «Revisar diseño» window: list of problems; clicking selects the element.
     pub fn revision_window(&mut self, ctx: &eframe::egui::Context) {
         use crate::i18n::t;
         use eframe::egui::{self, Color32, RichText};

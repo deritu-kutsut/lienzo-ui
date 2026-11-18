@@ -1,19 +1,19 @@
-//! Temas de la interfaz: colores, esquinas y fuente de la app. Todo lo que pinta la interfaz toma sus colores de aquí.
+//! Interface themes: colors, corners and font of the app. Everything the interface draws takes its colors from here.
 //!
-//! Los colores se leen con funciones (`MUTED()`, `ACCENT()`…) porque cambian en vivo al elegir otro tema. Un tema es un
-//! JSON pequeño (`Tema`) que se guarda en los ajustes, en la biblioteca (`temas/`) y se comparte en la comunidad.
+//! Colors are read through functions (`MUTED()`, `ACCENT()`…) because they change live when another theme is chosen. A theme is a
+//! small JSON (`Tema`) saved in the settings, in the library (`temas/`) and shared in the community.
 #![allow(non_snake_case)]
 
 use eframe::egui::{self, Color32, CornerRadius, Stroke};
 use std::sync::atomic::{AtomicU32, Ordering};
 
-/// Un tema: colores en `#RRGGBB`, radio de las esquinas y fuente de la interfaz ("" = la predeterminada).
+/// A theme: colors as `#RRGGBB`, corner radius and interface font ("" = the default one).
 #[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
 #[serde(default, deny_unknown_fields)]
 pub struct Tema {
     pub nombre: String,
     pub autor: String,
-    /// Base clara (texto oscuro sobre fondos claros) u oscura.
+    /// Light base (dark text on light backgrounds) or dark.
     pub claro: bool,
     pub fondo: String,
     pub panel: String,
@@ -39,7 +39,7 @@ impl Default for Tema {
     }
 }
 
-/// Los colores editables, en orden: (campo del JSON, nombre visible).
+/// The editable colors, in order: (JSON field, display name).
 pub const COLORES: &[(&str, &str)] = &[
     ("fondo", "Fondo"),
     ("panel", "Paneles"),
@@ -83,7 +83,7 @@ impl Tema {
         t.color_mut(campo).and_then(|c| parse_hex(c)).unwrap_or(Color32::MAGENTA)
     }
 
-    /// Comprueba un tema llegado de fuera (archivo o comunidad): colores `#RRGGBB`, nombre y fuente razonables.
+    /// Checks a theme that came from outside (file or community): `#RRGGBB` colors, reasonable name and font.
     pub fn validar(&self) -> Result<(), String> {
         let n = self.nombre.trim().chars().count();
         if !(1..=60).contains(&n) {
@@ -146,7 +146,7 @@ fn tema(nombre: &str, claro: bool, c: [&str; 14], esquinas: f32) -> Tema {
     }
 }
 
-/// Temas que trae la app.
+/// Themes bundled with the app.
 pub fn predeterminados() -> Vec<Tema> {
     vec![
         tema("Lienzo oscuro", false, ["#1D1E23", "#26272E", "#202127", "#30323B", "#3A3D49", "#393C47", "#16171B", "#DEE0E7", "#9296A5", "#4D8EFF", "#273D68", "#40BA70", "#FFB840", "#FF3EB5"], 5.0),
@@ -157,7 +157,7 @@ pub fn predeterminados() -> Vec<Tema> {
     ]
 }
 
-// ───────── tema en uso (colores leídos miles de veces por fotograma: atómicos, sin bloqueos) ─────────
+// ───────── theme in use (colors read thousands of times per frame: atomic, lock-free) ─────────
 
 const N: usize = 14;
 static ACTUAL: [AtomicU32; N] = [const { AtomicU32::new(0) }; N];
@@ -173,7 +173,7 @@ fn leer(i: usize) -> Color32 {
     Color32::from_rgb(r, g, b)
 }
 
-/// Pone un tema en uso (los colores cambian al momento; llama luego a `apply` para los estilos de egui).
+/// Sets a theme in use (colors change immediately; then call `apply` for the egui styles).
 pub fn usar(t: &Tema) {
     for (i, (campo, _)) in COLORES.iter().enumerate() {
         let c = t.color(campo);
@@ -231,7 +231,7 @@ pub fn GUIDE() -> Color32 {
     leer(13)
 }
 
-/// Aplica el tema en uso. Con `alto_contraste`: texto blanco, bordes marcados y selección más visible.
+/// Applies the theme in use. With `alto_contraste`: white text, strong borders and a more visible selection.
 pub fn apply(ctx: &egui::Context, alto_contraste: bool) {
     let claro = es_claro() && !alto_contraste;
     let r = ESQUINAS.load(Ordering::Relaxed).min(16) as u8;

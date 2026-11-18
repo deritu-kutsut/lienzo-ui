@@ -1,10 +1,10 @@
-//! Actualizaciones desde la propia app.
+//! In-app updates.
 //!
-//! GitHub Releases es la única fuente: el zip de itch.io apunta al mismo archivo, así que quien se
-//! descargó la app de GitHub o de itch.io se actualiza igual. La app pregunta por la última release,
-//! descarga el zip, comprueba su SHA-256 (el que publica GitHub) y reemplaza su propio .exe.
-//! Si algo no se puede verificar (otro sistema, sin permiso de escritura, sin huella), ofrece abrir
-//! la página de descarga en vez de instalar nada.
+//! GitHub Releases is the only source: the itch.io zip points to the same file, so whoever
+//! downloaded the app from GitHub or itch.io updates the same way. The app asks for the latest release,
+//! downloads the zip, checks its SHA-256 (the one GitHub publishes) and replaces its own .exe.
+//! If anything cannot be verified (another OS, no write permission, no hash), it offers to open
+//! the download page instead of installing anything.
 
 use crate::app::EditorApp;
 use crate::i18n::t;
@@ -27,7 +27,7 @@ pub struct Novedad {
     pub version: String,
     pub notas: String,
     pub url_zip: String,
-    /// SHA-256 en hexadecimal; vacío si GitHub no lo da (entonces no se instala solo).
+    /// SHA-256 in hex; empty if GitHub does not provide it (then it is not installed automatically).
     pub sha256: String,
 }
 
@@ -37,7 +37,7 @@ pub enum Estado {
     AlDia,
     Disponible(Novedad),
     Descargando(Novedad),
-    /// Versión instalada y ruta del ejecutable NUEVO (tras renombrar, `current_exe()` apunta al .viejo).
+    /// Installed version and path of the NEW executable (after renaming, `current_exe()` points to the .viejo).
     Instalada(String, std::path::PathBuf),
     Error(String),
 }
@@ -59,9 +59,9 @@ impl Actualizador {
     }
 }
 
-// ----------------------------------------------------------------- versiones
+// ----------------------------------------------------------------- versions
 
-/// «v1.2.3» o «1.2.3»; las versiones con sufijo (1.2.3-beta) no se ofrecen.
+/// "v1.2.3" or "1.2.3"; versions with a suffix (1.2.3-beta) are not offered.
 pub fn parsear_version(s: &str) -> Option<(u32, u32, u32)> {
     let s = s.trim().trim_start_matches('v');
     let mut it = s.split('.');
@@ -78,7 +78,7 @@ pub fn es_mas_nueva(candidata: &str, actual: &str) -> bool {
 
 // ------------------------------------------------------------------- release
 
-/// Notas de la release en texto plano: sin imágenes ni marcas de Markdown, máx. 4000 caracteres.
+/// Release notes as plain text: no images or Markdown marks, max. 4000 characters.
 pub fn limpiar_notas(md: &str) -> String {
     let mut out = String::new();
     for l in md.lines() {
@@ -95,7 +95,7 @@ pub fn limpiar_notas(md: &str) -> String {
     out.trim().chars().take(4000).collect()
 }
 
-/// Interpreta la respuesta de `releases/latest`. `None` = ya estás al día.
+/// Parses the `releases/latest` response. `None` = you are already up to date.
 pub fn parsear_release(json: &str, actual: &str) -> Result<Option<Novedad>, String> {
     let v: serde_json::Value = serde_json::from_str(json).map_err(|_| "Respuesta de GitHub no válida.".to_string())?;
     if v["draft"].as_bool() == Some(true) || v["prerelease"].as_bool() == Some(true) {
@@ -130,7 +130,7 @@ fn agente(segundos: u64) -> ureq::Agent {
     ureq::Agent::config_builder().timeout_global(Some(Duration::from_secs(segundos))).user_agent(format!("LienzoUI-Actualizador/{}", VERSION_ACTUAL)).build().into()
 }
 
-/// Una sola petición GET a GitHub; no se envía ningún dato del usuario.
+/// A single GET request to GitHub; no user data is sent.
 fn buscar() -> Result<Option<Novedad>, String> {
     let mut r = agente(15).get(API).header("Accept", "application/vnd.github+json").call().map_err(|_| "No se pudo conectar con GitHub.".to_string())?;
     if r.status().as_u16() == 404 {
@@ -143,7 +143,7 @@ fn buscar() -> Result<Option<Novedad>, String> {
     parsear_release(&cuerpo, VERSION_ACTUAL)
 }
 
-// ------------------------------------------------------------------ instalar
+// ------------------------------------------------------------------ install
 
 pub fn verificar_sha256(bytes: &[u8], esperado: &str) -> Result<(), String> {
     let h = Sha256::digest(bytes);
@@ -151,11 +151,11 @@ pub fn verificar_sha256(bytes: &[u8], esperado: &str) -> Result<(), String> {
     if !esperado.is_empty() && hex.eq_ignore_ascii_case(esperado) { Ok(()) } else { Err("La descarga no coincide con la huella publicada; no se instala.".into()) }
 }
 
-/// Saca del zip solo el ejecutable (`LienzoUI-<v>/lienzo-ui.exe`); ningún otro nombre se escribe en disco.
+/// Extracts only the executable from the zip (`LienzoUI-<v>/lienzo-ui.exe`); no other name is written to disk.
 pub fn extraer_exe(zip: &[u8], version: &str) -> Result<Vec<u8>, String> {
     let mut a = zip::ZipArchive::new(std::io::Cursor::new(zip)).map_err(|_| "El zip descargado no es válido.".to_string())?;
     let nombre = format!("LienzoUI-{}/lienzo-ui.exe", version);
-    // Compress-Archive de Windows PowerShell antiguo guarda las rutas con «\»: se comparan normalizadas.
+    // Compress-Archive in old Windows PowerShell stores paths with "\": they are compared normalized.
     let idx = (0..a.len()).find(|&i| a.by_index_raw(i).is_ok_and(|f| f.name().is_ok_and(|n| n.replace('\\', "/") == nombre))).ok_or("El zip no contiene lienzo-ui.exe.")?;
     let mut f = a.by_index(idx).map_err(|_| "El zip no se pudo leer.".to_string())?;
     if f.size() > MAX_EXE {
@@ -175,8 +175,8 @@ fn ruta_con_extension(exe: &std::path::Path, ext: &str) -> std::path::PathBuf {
     s.into()
 }
 
-/// Cambia el ejecutable en uso por el nuevo. En Windows un .exe en marcha no se puede borrar pero sí
-/// renombrar: el viejo queda como «.viejo» (se borra al arrancar) y, si algo falla, se deshace.
+/// Swaps the running executable for the new one. On Windows a running .exe cannot be deleted but can
+/// be renamed: the old one stays as ".viejo" (deleted on startup) and, if anything fails, it is rolled back.
 pub fn reemplazar_exe(exe: &std::path::Path, nuevo: &[u8]) -> Result<(), String> {
     let tmp = ruta_con_extension(exe, ".nuevo");
     let viejo = ruta_con_extension(exe, ".viejo");
@@ -213,7 +213,7 @@ fn descargar_e_instalar(n: &Novedad) -> Result<(String, std::path::PathBuf), Str
     Ok((n.version.clone(), exe))
 }
 
-/// Borra el .exe viejo que dejó la actualización anterior.
+/// Deletes the old .exe left by the previous update.
 pub fn limpiar_residuos() {
     if let Ok(exe) = std::env::current_exe() {
         let _ = std::fs::remove_file(ruta_con_extension(&exe, ".viejo"));
@@ -230,7 +230,7 @@ fn reiniciar(ctx: &egui::Context, exe: &std::path::Path) {
 // ----------------------------------------------------------------------- UI
 
 impl EditorApp {
-    /// Lanza la comprobación en segundo plano (no hace nada si ya hay una en curso).
+    /// Starts the check in the background (does nothing if one is already running).
     pub fn actualizador_buscar(&mut self) {
         if matches!(self.actualizador.estado, Estado::Buscando | Estado::Descargando(_)) {
             return;
@@ -243,7 +243,7 @@ impl EditorApp {
         });
     }
 
-    /// Comprobación automática al arrancar (se puede desactivar en la ventana de actualizaciones).
+    /// Automatic check on startup (can be disabled in the updates window).
     pub fn actualizador_inicio(&mut self) {
         limpiar_residuos();
         if !self.settings.solo_lectura && !self.settings.no_buscar_actualizaciones && self.screenshot.is_none() {
@@ -260,7 +260,7 @@ impl EditorApp {
         });
     }
 
-    /// Versión nueva que se debe anunciar en la cabecera (None si no hay o se omitió).
+    /// New version to announce in the header (None if there is none or it was skipped).
     pub fn actualizacion_para_boton(&self) -> Option<&Novedad> {
         match &self.actualizador.estado {
             Estado::Disponible(n) if n.version != self.settings.version_omitida => Some(n),
@@ -268,7 +268,7 @@ impl EditorApp {
         }
     }
 
-    /// Botón de la cabecera: solo aparece cuando hay una versión nueva.
+    /// Header button: only shown when there is a new version.
     pub fn actualizador_boton(&mut self, ui: &mut egui::Ui) {
         let etiqueta = match &self.actualizador.estado {
             Estado::Instalada(..) => Some((t("Reiniciar para actualizar"), OK())),
@@ -283,7 +283,7 @@ impl EditorApp {
     }
 
     pub fn actualizador_window(&mut self, ctx: &egui::Context) {
-        // Mensajes del hilo de fondo.
+        // Messages from the background thread.
         let mensajes: Vec<Mensaje> = self.actualizador.rx.as_ref().map(|rx| rx.try_iter().collect()).unwrap_or_default();
         for m in mensajes {
             match m {
@@ -517,12 +517,12 @@ aviso");
         assert_eq!(std::fs::read(&exe).unwrap().len(), 8192);
         assert_eq!(std::fs::read(ruta_con_extension(&exe, ".viejo")).unwrap(), b"version vieja");
         assert!(!ruta_con_extension(&exe, ".nuevo").exists());
-        // una segunda actualización sobrescribe el .viejo sin fallar
+        // a second update overwrites the .viejo without failing
         reemplazar_exe(&exe, &exe_falso()).unwrap();
         let _ = std::fs::remove_dir_all(&dir);
     }
 
-    /// Con red: baja la release real de GitHub, comprueba su huella y saca el .exe (`cargo test -- --ignored`).
+    /// Needs network: downloads the real GitHub release, checks its hash and extracts the .exe (`cargo test -- --ignored`).
     #[test]
     #[ignore]
     fn con_la_release_real_de_github() {

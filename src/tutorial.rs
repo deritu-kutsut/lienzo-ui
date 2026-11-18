@@ -1,7 +1,7 @@
-//! Tutorial integrado en dos pistas (novatos y profesionales).
-//! Se abre solo la primera vez que se inicia Lienzo UI; al terminarlo o saltarlo queda el editor.
-//! El botón «Tutorial» de la barra superior o F1 lo vuelven a abrir.
-//! Para añadir una página basta con añadir un elemento a `NOVATO` o `PROFESIONAL`.
+//! Built-in tutorial with two tracks (beginners and professionals).
+//! It opens by itself the first time Lienzo UI starts; when finished or skipped, the editor remains.
+//! The "Tutorial" button in the top bar or F1 reopens it.
+//! To add a page, just add an element to `NOVATO` or `PROFESIONAL`.
 
 use crate::app::EditorApp;
 use crate::theme::{ACCENT, LINE, MUTED, PANEL, TEXT};
@@ -18,7 +18,7 @@ pub struct Pagina {
     pub texto: &'static str,
 }
 
-/// Estado del tutorial abierto.
+/// State of the open tutorial.
 #[derive(Clone, Copy, Debug)]
 pub struct Tutorial {
     pub pista: Pista,
@@ -245,7 +245,7 @@ Languages are assets/i18n/<code>.tsv files: to add one, translate en.tsv.",
     },
 ];
 
-/// Tutoriales de los demás idiomas: `assets/tutorial/<código>.json` con las mismas páginas que `NOVATO` y `PROFESIONAL`.
+/// Tutorials for the other languages: `assets/tutorial/<code>.json` with the same pages as `NOVATO` and `PROFESIONAL`.
 const TUTORIALES: &[(&str, &str)] = &[
     ("pt", include_str!("../assets/tutorial/pt.json")),
     ("fr", include_str!("../assets/tutorial/fr.json")),
@@ -271,7 +271,7 @@ struct TutorialJson {
 
 type Pistas = (&'static [Pagina], &'static [Pagina]);
 
-/// Se leen una sola vez; un archivo mal formado o incompleto se ignora (se usa el inglés).
+/// Read only once; a malformed or incomplete file is ignored (English is used).
 static OTROS: std::sync::LazyLock<std::collections::HashMap<&'static str, Pistas>> = std::sync::LazyLock::new(|| {
     let leak = |v: Vec<PaginaJson>| -> &'static [Pagina] {
         Box::leak(v.into_iter().map(|p| Pagina { titulo: Box::leak(p.titulo.into_boxed_str()), texto: Box::leak(p.texto.into_boxed_str()) }).collect::<Vec<_>>().into_boxed_slice())
@@ -301,7 +301,7 @@ impl EditorApp {
         self.tutorial = Some(Tutorial { pista, pagina: 0 });
     }
 
-    /// Cierra el tutorial (queda el editor) y lo recuerda para no abrirlo solo la próxima vez.
+    /// Closes the tutorial (the editor remains) and remembers it so it does not open by itself next time.
     pub fn cerrar_tutorial(&mut self) {
         self.tutorial = None;
         if !self.settings.tutorial_visto {
@@ -310,7 +310,7 @@ impl EditorApp {
         }
     }
 
-    /// Página siguiente; en la última, cierra el tutorial y deja el editor.
+    /// Next page; on the last one, closes the tutorial and leaves the editor.
     pub fn avanzar_tutorial(&mut self) {
         if let Some(t) = &mut self.tutorial {
             if t.pagina + 1 < paginas(t.pista).len() {
@@ -327,7 +327,7 @@ impl EditorApp {
         let pagina = t.pagina.min(lista.len() - 1);
         let ultima = pagina + 1 == lista.len();
 
-        // Teclado: flechas pasan páginas, Intro avanza, Esc cierra.
+        // Keyboard: arrows turn pages, Enter advances, Esc closes.
         let (izq, der, intro, esc) = ctx.input_mut(|i| {
             (
                 i.consume_key(egui::Modifiers::NONE, egui::Key::ArrowLeft),
@@ -337,7 +337,7 @@ impl EditorApp {
             )
         });
 
-        let mut accion: Option<u8> = None; // 0 anterior, 1 siguiente, 2 cerrar, 3 novato, 4 pro
+        let mut accion: Option<u8> = None; // 0 previous, 1 next, 2 close, 3 beginner, 4 pro
         #[allow(deprecated)]
         let id = egui::Id::new("tutorial");
         let marco = egui::Frame::new().fill(PANEL()).corner_radius(12.0).inner_margin(22.0).stroke(egui::Stroke::new(1.0, LINE()));
@@ -437,7 +437,7 @@ mod tests {
             }
             assert!(OTROS.contains_key(codigo), "{} no se cargó", codigo);
         }
-        // Todos los idiomas de la interfaz tienen tutorial propio (español e inglés están en el código).
+        // Every interface language has its own tutorial (Spanish and English are in the code).
         for (codigo, _, _) in crate::i18n::IDIOMAS {
             assert!(matches!(*codigo, "es" | "en") || TUTORIALES.iter().any(|(c, _)| c == codigo), "{} sin tutorial", codigo);
         }

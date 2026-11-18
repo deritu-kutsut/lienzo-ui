@@ -1,12 +1,12 @@
--- Corrige el aviso crítico «Security Definer View» (public.autores_publicos) del asesor de Supabase.
--- En lugar de una vista que salta las reglas de acceso, el nombre público del autor se copia a cada ficha
--- (items.autor_nombre) con un trigger. Así la tabla de perfiles sigue siendo privada y no hay nada que exponer.
+-- Fixes the critical «Security Definer View» warning (public.autores_publicos) from the Supabase advisor.
+-- Instead of a view that bypasses the access rules, the author's public name is copied to each item
+-- (items.autor_nombre) with a trigger. This way the profiles table stays private and there is nothing to expose.
 
 drop view if exists public.autores_publicos;
 
 alter table public.items add column if not exists autor_nombre text not null default '';
 
--- Al subir, el nombre lo pone el servidor (la persona no puede inventar otro autor).
+-- On upload, the server sets the name (the person cannot invent another author).
 create or replace function public.poner_autor_nombre() returns trigger language plpgsql security definer set search_path = public as $$
 begin
   select coalesce(nombre_publico, '') into new.autor_nombre from public.perfiles where id = new.autor;
@@ -15,7 +15,7 @@ end $$;
 revoke all on function public.poner_autor_nombre() from public, anon, authenticated;
 create trigger items_autor_nombre before insert on public.items for each row execute function public.poner_autor_nombre();
 
--- Si la persona cambia su nombre público, se actualizan sus fichas.
+-- If the person changes their public name, their items are updated.
 create or replace function public.propagar_autor_nombre() returns trigger language plpgsql security definer set search_path = public as $$
 begin
   update public.items set autor_nombre = new.nombre_publico where autor = new.id;

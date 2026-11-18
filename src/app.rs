@@ -37,7 +37,7 @@ pub struct Drag {
     /// element to select on release when the press did not turn into a drag
     pub click_select: Option<u64>,
     pub start_pan: Vec2,
-    /// Alt+arrastrar: duplicar la selección cuando el arrastre empiece de verdad.
+    /// Alt+drag: duplicate the selection once the drag really starts.
     pub duplicate: bool,
 }
 
@@ -109,7 +109,7 @@ pub struct EditorApp {
     pub save_open: bool,
     pub template_name: String,
     pub element_name: String,
-    /// Miniaturas de las plantillas incluidas para el tamaño de página actual (se generan una vez).
+    /// Thumbnails of the built-in templates for the current page size (generated once).
     pub template_thumbs: Option<((f32, f32), Vec<model::Doc>)>,
     /// Hierarchy drag & drop.
     pub tree_drag: Option<u64>,
@@ -227,7 +227,7 @@ impl EditorApp {
     }
 
     pub fn undo(&mut self) {
-        // Cambios hechos mientras un campo tenía el foco aún no son un paso: se guardan antes de deshacer.
+        // Changes made while a field had focus are not a step yet: they are saved before undoing.
         if !self.preview && self.doc != self.committed {
             let prev = std::mem::replace(&mut self.committed, self.doc.clone());
             self.undo.push(prev);
@@ -484,7 +484,7 @@ impl EditorApp {
 
     /// Wrap the selection in a new "Contenedor" (an empty RectTransform), like grouping in Unity.
     pub fn group_selection(&mut self) {
-        // Un bloqueado dentro de un Contenedor nuevo (desbloqueado) se podría mover o borrar con él.
+        // A locked element inside a new (unlocked) Contenedor could be moved or deleted along with it.
         let tops: Vec<u64> = self.sel_top().into_iter().filter(|i| !self.doc.get(*i).map(|e| e.locked).unwrap_or(true)).collect();
         if tops.is_empty() {
             return;
@@ -574,7 +574,7 @@ impl EditorApp {
     /// Move the selection among its siblings. `to_front`: Some(true) last (drawn on top), Some(false) first.
     pub fn reorder(&mut self, to_front: Option<bool>, step: i32) {
         let mut tops = self.sel_top();
-        // Hacia delante (o al fondo, insertando en 0) se recorre al revés: así dos hermanos seguidos no se anulan.
+        // Moving forward (or to the back, inserting at 0) is traversed in reverse: so two adjacent siblings do not cancel out.
         if step > 0 || to_front == Some(false) {
             tops.reverse();
         }
@@ -651,7 +651,7 @@ impl EditorApp {
     }
 
     pub fn distribute(&mut self, axis: usize) {
-        // Los bloqueados no se mueven (igual que con las flechas).
+        // Locked elements do not move (same as with the arrow keys).
         let mut items: Vec<Element> = self.sel_top().iter().filter_map(|i| self.doc.get(*i).cloned()).filter(|e| !e.locked).collect();
         if items.len() < 3 {
             return;
@@ -850,7 +850,7 @@ impl EditorApp {
             items.insert(0, g);
         }
         self.sel = self.doc.insert_items(&items, parent);
-        // Lo que llega de la biblioteca o de la comunidad puede traer valores absurdos (letra de 1e9 px, NaN…).
+        // What arrives from the library or the community may carry absurd values (1e9 px letter, NaN…).
         self.doc.sanitize();
         self.status = crate::i18n::t("Elemento de tu biblioteca agregado");
     }
@@ -902,7 +902,7 @@ impl EditorApp {
 
     // ------------------------------------------------------------- test mode / code
 
-    /// El diseño que se guarda o exporta: en modo prueba, el de antes de la prueba (los clics no cuentan).
+    /// The design that is saved or exported: in test mode, the one from before the test (clicks do not count).
     pub fn doc_real(&self) -> &Doc {
         self.preview_backup.as_ref().filter(|_| self.preview).unwrap_or(&self.doc)
     }
@@ -983,7 +983,7 @@ impl EditorApp {
 
     pub fn keyboard(&mut self, ctx: &egui::Context) {
         if self.tutorial.is_some() {
-            return; // el tutorial maneja sus propias teclas
+            return; // the tutorial handles its own keys
         }
         if ctx.input_mut(|i| i.consume_key(Modifiers::NONE, Key::F1)) {
             self.abrir_tutorial(crate::tutorial::Pista::Novato);

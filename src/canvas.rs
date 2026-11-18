@@ -353,7 +353,7 @@ impl EditorApp {
                             }
                         }
                     }
-                    // El segundo clic del doble clic no debe devolver la selección al Contenedor al soltar.
+                    // The second click of a double click must not return the selection to the Contenedor on release.
                     if double_handled {
                         d.click_select = None;
                     }
@@ -373,7 +373,7 @@ impl EditorApp {
             d.cur_page = pg;
             if m.distance(d.start_screen) > 3.0 {
                 d.moved = true;
-                // Alt+arrastrar: la copia se crea al empezar a mover (un Alt+clic suelto no deja copias encima).
+                // Alt+drag: the copy is created when the move starts (a lone Alt+click leaves no copies on top).
                 if d.duplicate {
                     d.duplicate = false;
                     self.duplicate_selection(0.0);
@@ -618,7 +618,7 @@ impl EditorApp {
         let p1 = v.to_page(Pos2::new(top.right(), 0.0))[0];
         let mut x = (p0 / minor).floor() * minor;
         let mut n = 0;
-        // Con desplazamientos enormes `x + minor == x` en f32: el tope evita un bucle sin fin.
+        // With huge offsets `x + minor == x` in f32: the cap avoids an endless loop.
         while x <= p1 && n < 2000 {
             n += 1;
             let sx = v.to_screen(x, 0.0).x;

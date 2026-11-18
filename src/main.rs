@@ -1,5 +1,5 @@
-//! Lienzo UI: editor visual de interfaces de juego (lienzo, tiradores, guías
-//! inteligentes, capas) que exporta a Unity (uGUI + TextMeshPro, UI Toolkit e IMGUI).
+//! Lienzo UI: visual editor for game interfaces (canvas, handles, smart
+//! guides, layers) that exports to Unity (uGUI + TextMeshPro, UI Toolkit and IMGUI).
 
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
@@ -36,7 +36,7 @@ pub struct Shot {
 }
 
 const SHOT_FRAME: u64 = 120;
-/// Con `--espera-capturas` la captura espera más fotogramas (p. ej. a que baje el catálogo de la comunidad).
+/// With `--espera-capturas` the screenshot waits more frames (e.g. for the community catalog to download).
 const SHOT_FRAME_LARGA: u64 = 420;
 
 impl eframe::App for app::EditorApp {
@@ -100,7 +100,7 @@ fn arg_after<'a>(args: &'a [String], flag: &str) -> Option<&'a String> {
     args.iter().position(|a| a == flag).and_then(|i| args.get(i + 1))
 }
 
-/// Diseño indicado en la línea de comandos: `--abrir <archivo>` o `--plantilla <n>`.
+/// Design given on the command line: `--abrir <file>` or `--plantilla <n>`.
 fn doc_from_args(args: &[String]) -> Result<Option<model::Doc>, String> {
     if let Some(file) = arg_after(args, "--abrir") {
         library::set_carpeta_diseno(std::path::Path::new(file));
@@ -118,12 +118,12 @@ fn doc_from_args(args: &[String]) -> Result<Option<model::Doc>, String> {
     Ok(None)
 }
 
-/// Modo sin ventana (automatización, MCP, CI). Devuelve Some(código de salida) si se usó.
-///   --plantillas                 lista las plantillas
-///   --revisar                    revisa el diseño (--abrir o --plantilla): legibilidad, contraste, tamaño táctil
-///   --guardar <archivo>          guarda el diseño (--abrir o --plantilla) como proyecto y termina
-///   --exportar <proyecto Unity>  exporta el diseño a Unity y termina
-///   --comunidad-subir <tipo> <archivo> --titulo "…"  sube contenido a la comunidad con tu sesión guardada
+/// Windowless mode (automation, MCP, CI). Returns Some(exit code) if it was used.
+///   --plantillas                 lists the templates
+///   --revisar                    reviews the design (--abrir or --plantilla): legibility, contrast, touch size
+///   --guardar <file>             saves the design (--abrir or --plantilla) as a project and exits
+///   --exportar <Unity project>   exports the design to Unity and exits
+///   --comunidad-subir <type> <file> --titulo "…"  uploads content to the community with your saved session
 fn headless(args: &[String]) -> Option<i32> {
     if args.iter().any(|a| a == "--plantillas") {
         for (i, t) in model::TEMPLATES.iter().enumerate() {
@@ -214,7 +214,7 @@ fn main() -> eframe::Result<()> {
         .with_title("Lienzo UI · diseña interfaces para Unity")
         .with_inner_size([1500.0, 900.0])
         .with_min_inner_size([960.0, 600.0]);
-    // La ventana arranca maximizada (salvo en capturas automáticas, que necesitan un tamaño fijo).
+    // The window starts maximized (except in automatic screenshots, which need a fixed size).
     if shot_path.is_none() {
         viewport = viewport.with_maximized(true);
     }
@@ -268,16 +268,16 @@ fn main() -> eframe::Result<()> {
                     _ => app::Tab::Layers,
                 };
             }
-            // --abrir-revision: abre la ventana «Revisar diseño» (capturas).
+            // --abrir-revision: opens the "Revisar diseño" window (screenshots).
             app.revision_abierta = args.iter().any(|a| a == "--abrir-revision");
-            // Las capturas automáticas no guardan ajustes.
+            // Automatic screenshots do not save settings.
             if app.screenshot.is_some() {
                 app.settings.solo_lectura = true;
             }
-            // Opciones de accesibilidad solo para esta sesión (se aplican sobre una copia y no se guardan):
+            // Accessibility options for this session only (applied to a copy and not saved):
             // --idioma en, --escala 1.5, --alto-contraste
             app.actualizador_inicio();
-            // --demo-actualizacion [--abrir-actualizacion]: simula una versión nueva (capturas); no consulta GitHub.
+            // --demo-actualizacion [--abrir-actualizacion]: simulates a new version (screenshots); does not query GitHub.
             if args.iter().any(|a| a == "--demo-actualizacion") {
                 app.actualizador.estado = actualizador::Estado::Disponible(actualizador::Novedad {
                     version: "1.2.0".into(),
@@ -297,15 +297,15 @@ fn main() -> eframe::Result<()> {
             if args.iter().any(|a| a == "--alto-contraste") {
                 sesion.alto_contraste = true;
             }
-            // --tema "Lienzo claro": un tema de la app solo para esta sesión (capturas, pruebas)
+            // --tema "Lienzo claro": an app theme for this session only (screenshots, tests)
             if let Some(n) = arg_after(&args, "--tema") {
                 if let Some(t) = theme::predeterminados().into_iter().find(|t| t.nombre == *n) {
-                    app.settings.tema = Some(t.clone()); // solo en memoria: en esta sesión no se guardan ajustes
+                    app.settings.tema = Some(t.clone()); // in memory only: settings are not saved in this session
                     sesion.tema = Some(t);
                 }
             }
             accesibilidad::aplicar(&cc.egui_ctx, &sesion);
-            // Solo para la documentación (capturas del README): una sesión FALSA y sin red, más el catálogo real y anónimo.
+            // Documentation only (README screenshots): a FAKE, offline session, plus the real anonymous catalog.
             //   --demo-comunidad [--abrir-perfil] [--abrir-temas] [--espera-capturas]
             if args.iter().any(|a| a == "--demo-comunidad") {
                 app.comunidad_demo(&cc.egui_ctx, args.iter().any(|a| a == "--abrir-perfil"), args.iter().any(|a| a == "--abrir-subida"));
@@ -322,7 +322,7 @@ fn main() -> eframe::Result<()> {
                     app.preview_screen = Some([wh[0], wh[1]]);
                 }
             }
-            // El tutorial se abre solo la primera vez (nunca en capturas automáticas, salvo --tutorial).
+            // The tutorial opens by itself the first time (never in automatic screenshots, except --tutorial).
             let forzar = args.iter().any(|a| a == "--tutorial");
             let sin = args.iter().any(|a| a == "--sin-tutorial");
             if forzar || (!sin && app.screenshot.is_none() && !app.settings.tutorial_visto) {

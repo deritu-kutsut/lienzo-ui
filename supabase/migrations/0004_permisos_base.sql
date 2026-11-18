@@ -1,19 +1,19 @@
--- El proyecto se creó con «exponer tablas automáticamente» desactivado: ninguna tabla tenía permisos base y la API
--- respondía 42501 aunque las políticas RLS estuvieran bien. Aquí se dan SOLO los permisos mínimos; las políticas RLS
--- siguen decidiendo qué filas se ven o se tocan.
+-- The project was created with «expose tables automatically» turned off: no table had base permissions and the API
+-- returned 42501 even though the RLS policies were fine. Only the minimum permissions are granted here; the RLS policies
+-- still decide which rows are seen or touched.
 
--- Catálogo: cualquiera lo lee (RLS: solo lo aprobado y lo propio).
+-- Catalog: anyone can read it (RLS: only approved and own items).
 grant select on public.items to anon, authenticated;
-grant insert on public.items to authenticated;      -- RLS: solo como «pendiente» y a nombre propio
-grant delete on public.items to authenticated;      -- RLS: solo lo propio
--- (update de titulo, descripcion y etiquetas ya se concedió en 0001)
+grant insert on public.items to authenticated;      -- RLS: only as «pendiente» and under one's own name
+grant delete on public.items to authenticated;      -- RLS: own items only
+-- (update of titulo, descripcion and etiquetas was already granted in 0001)
 
--- Perfiles: solo con sesión y, por RLS, solo el propio.
+-- Profiles: signed-in only and, by RLS, only one's own.
 grant select, insert on public.perfiles to authenticated;
--- (update de nombre_publico, mostrar_18 y acepto_terminos_en ya se concedió en 0001)
+-- (update of nombre_publico, mostrar_18 and acepto_terminos_en was already granted in 0001)
 
--- Reportes: se puede crear; nadie los lee desde la API.
+-- Reports: can be created; nobody reads them through the API.
 grant insert on public.reportes to authenticated;
 
--- moderacion_log: sin permisos para anon ni authenticated (solo el servidor).
+-- moderacion_log: no permissions for anon or authenticated (server only).
 revoke all on public.moderacion_log from anon, authenticated;

@@ -168,8 +168,8 @@ fn rule(doc: &Doc, e: &Element) -> String {
             LayoutMode::Horizontal if !first => s.push(format!("margin-left: {}px", f(l.spacing[0]))),
             LayoutMode::Vertical if !first => s.push(format!("margin-top: {}px", f(l.spacing[1]))),
             LayoutMode::Grid => {
-                // 0.25 px de holgura: con el escalado del panel, el redondeo a píxeles puede dejar el
-                // ancho útil una fracción por debajo de lo justo y la última columna saltaría de línea.
+                // 0.25 px of slack: with panel scaling, pixel rounding can leave the
+                // usable width a fraction below what is needed and the last column would wrap to the next line.
                 s.push(format!("margin-right: {}px", f((l.spacing[0] - 0.25).max(0.0))));
                 s.push(format!("margin-bottom: {}px", f(l.spacing[1])));
             }
@@ -180,8 +180,8 @@ fn rule(doc: &Doc, e: &Element) -> String {
         s.push("position: absolute".into());
         let mut omin = rt.offset_min();
         let mut omax = rt.offset_max();
-        // En UI Toolkit un hijo absoluto se coloca dentro del borde del padre; en uGUI el contorno no
-        // ocupa espacio. Se compensa el borde para que tamaños y posiciones coincidan con Unity uGUI.
+        // In UI Toolkit an absolute child is placed inside the parent's border; in uGUI the outline does not
+        // take up space. The border is compensated so sizes and positions match Unity uGUI.
         let borde = e
             .parent
             .and_then(|p| doc.elements.iter().find(|x| x.id == p))
@@ -273,8 +273,8 @@ fn rule(doc: &Doc, e: &Element) -> String {
     if e.layout.mode != LayoutMode::None {
         let l = &e.layout;
         s.push(format!("padding-left: {}px", f(l.padding[0])));
-        // En cuadrícula cada celda lleva margin-right = espaciado (también la última de la fila):
-        // se descuenta del relleno derecho para que quepan las mismas columnas que en Unity uGUI.
+        // In a grid each cell has margin-right = spacing (including the last one in the row):
+        // it is subtracted from the right padding so the same columns fit as in Unity uGUI.
         let pr = if l.mode == LayoutMode::Grid { (l.padding[1] - l.spacing[0]).max(0.0) } else { l.padding[1] };
         s.push(format!("padding-right: {}px", f(pr)));
         s.push(format!("padding-top: {}px", f(l.padding[2])));

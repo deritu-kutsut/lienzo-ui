@@ -1,18 +1,18 @@
-//! Plugins (complementos) de Lienzo UI.
+//! Lienzo UI plugins (add-ons).
 //!
-//! Un plugin es una carpeta con un `plugin.json` dentro de alguna carpeta de plugins:
-//!   * `plugins/` junto al ejecutable,
-//!   * `plugins/` en la carpeta de trabajo (útil al desarrollar desde el repositorio),
-//!   * `%APPDATA%/EditorGUI/plugins` (o su equivalente en macOS/Linux).
+//! A plugin is a folder with a `plugin.json` inside one of the plugin folders:
+//!   * `plugins/` next to the executable,
+//!   * `plugins/` in the working folder (handy when developing from the repository),
+//!   * `%APPDATA%/EditorGUI/plugins` (or its equivalent on macOS/Linux).
 //!
-//! Puede aportar:
-//!   * comandos: scripts Rhai con `fn ejecutar(diseno) { ...; diseno }` que reciben el diseño como
-//!     mapa y devuelven el diseño modificado (se puede deshacer con Ctrl+Z);
-//!   * exportadores: `fn exportar(diseno) { ... }` que devuelven el texto de un archivo nuevo;
-//!   * plantillas: diseños `.editorgui.json` que aparecen en la pestaña Plugins.
+//! It can provide:
+//!   * commands: Rhai scripts with `fn ejecutar(diseno) { ...; diseno }` that receive the design as a
+//!     map and return the modified design (can be undone with Ctrl+Z);
+//!   * exporters: `fn exportar(diseno) { ... }` that return the text of a new file;
+//!   * templates: `.editorgui.json` designs that appear in the Plugins tab.
 //!
-//! Los scripts corren aislados: sin acceso a archivos, red ni procesos, y con límites de operaciones.
-//! Formato completo y ejemplos: docs/PLUGINS.md y la carpeta plugins/ del repositorio.
+//! Scripts run sandboxed: no access to files, network or processes, and with operation limits.
+//! Full format and examples: docs/PLUGINS.md and the repository's plugins/ folder.
 
 use crate::app::EditorApp;
 use crate::i18n::t;
@@ -62,7 +62,7 @@ pub struct Plugin {
     pub error: Option<String>,
 }
 
-/// Carpetas donde se buscan plugins (sin repetir).
+/// Folders where plugins are searched for (no duplicates).
 pub fn carpetas() -> Vec<PathBuf> {
     let mut v = Vec::new();
     if let Some(exe) = std::env::current_exe().ok().and_then(|p| p.parent().map(Path::to_path_buf)) {
@@ -84,15 +84,15 @@ pub fn carpetas() -> Vec<PathBuf> {
     unicas
 }
 
-/// Carpeta de plugins del usuario (se crea al abrirla desde la app).
+/// The user's plugins folder (created when opened from the app).
 pub fn carpeta_usuario() -> PathBuf {
     crate::library::root_dir().parent().map(|d| d.join("plugins")).unwrap_or_else(|| PathBuf::from("plugins"))
 }
 
-/// Ruta de un archivo del plugin, sin salir de su carpeta.
+/// Path of a plugin file, without leaving its folder.
 fn dentro(carpeta: &Path, rel: &str) -> Result<PathBuf, String> {
     let rel_path = Path::new(rel);
-    // Solo nombres normales: en Windows «\carpeta» o «C:x» no son absolutas pero `join` las saca de la carpeta.
+    // Only normal names: on Windows "\carpeta" or "C:x" are not absolute but `join` takes them out of the folder.
     let normal = rel_path.components().all(|c| matches!(c, std::path::Component::Normal(_) | std::path::Component::CurDir));
     if rel.is_empty() || rel_path.is_absolute() || rel_path.has_root() || !normal {
         return Err(format!("ruta no permitida en el plugin: {}", rel));
@@ -164,7 +164,7 @@ pub fn cargar_todos() -> Vec<Plugin> {
     v
 }
 
-/// Motor Rhai aislado y con límites, más una salida de mensajes (`log("…")`).
+/// Sandboxed Rhai engine with limits, plus a message output (`log("…")`).
 fn motor() -> (rhai::Engine, std::rc::Rc<std::cell::RefCell<Vec<String>>>) {
     let mut e = rhai::Engine::new();
     e.set_max_operations(20_000_000);
@@ -192,17 +192,17 @@ fn llamar(carpeta: &Path, script: &str, funcion: &str, doc: &Doc) -> Result<(rha
     Ok((r, msgs))
 }
 
-/// Ejecuta un comando: devuelve el diseño nuevo y los mensajes del script.
+/// Runs a command: returns the new design and the script's messages.
 pub fn ejecutar_comando(carpeta: &Path, c: &Accion, doc: &Doc) -> Result<(Doc, Vec<String>), String> {
     let (r, msgs) = llamar(carpeta, &c.script, "ejecutar", doc)?;
-    // Rhai trabaja con f64 y el modelo con f32: se pasa por JSON, que convierte los números.
+    // Rhai works with f64 and the model with f32: it goes through JSON, which converts the numbers.
     let json: serde_json::Value = rhai::serde::from_dynamic(&r).map_err(|e| format!("{}: el diseño devuelto no es válido ({})", c.script, e))?;
     let mut nuevo: Doc = serde_json::from_value(json).map_err(|e| format!("{}: el diseño devuelto no es válido ({})", c.script, e))?;
     nuevo.migrate_groups();
     Ok((nuevo, msgs))
 }
 
-/// Ejecuta un exportador: devuelve el texto del archivo.
+/// Runs an exporter: returns the file's text.
 pub fn ejecutar_exportador(carpeta: &Path, x: &Exportador, doc: &Doc) -> Result<String, String> {
     let (r, _) = llamar(carpeta, &x.script, "exportar", doc)?;
     r.into_string().map_err(|tipo| format!("{}: exportar() debe devolver texto, devolvió {}", x.script, tipo))
@@ -230,7 +230,7 @@ impl EditorApp {
             ui.label(RichText::new(t("No hay plugins instalados. Copia una carpeta con plugin.json en la carpeta de plugins y pulsa Recargar.")).color(MUTED()));
             return;
         }
-        let mut accion: Option<(usize, u8, usize)> = None; // (plugin, tipo 0 comando / 1 exportador / 2 plantilla, índice)
+        let mut accion: Option<(usize, u8, usize)> = None; // (plugin, kind 0 command / 1 exporter / 2 template, index)
         for (i, p) in self.plugins.iter().enumerate() {
             egui::Frame::new().fill(crate::theme::PANEL_DARK()).corner_radius(6.0).inner_margin(8.0).show(ui, |ui| {
                 ui.set_width(ui.available_width());
@@ -287,7 +287,7 @@ impl EditorApp {
                     let f = &p.plantillas[j];
                     match std::fs::read_to_string(f).map_err(|e| e.to_string()).and_then(|s| serde_json::from_str::<Doc>(&s).map_err(|e| e.to_string())) {
                         Ok(d) => {
-                            // Igual que una plantilla propia: sale del modo prueba y bloquea los fondos.
+                            // Same as a custom template: leaves test mode and locks the backgrounds.
                             self.load_user_template(&d);
                             self.status = format!("{} {}", t("Plantilla del plugin aplicada (Ctrl+Z para deshacer):"), f.display());
                         }

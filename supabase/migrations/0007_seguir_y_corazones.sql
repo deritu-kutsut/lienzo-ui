@@ -1,7 +1,7 @@
--- Seguir a creadores y dar corazones (la «estrella» de la comunidad) a los contenidos.
--- Privacidad: quién sigue a quién y quién dio un corazón NO es público; solo se publican los totales.
+-- Follow creators and give hearts (the community's «star») to items.
+-- Privacy: who follows whom and who gave a heart is NOT public; only the totals are published.
 
--- ───────── Tablas ─────────
+-- ───────── Tables ─────────
 create table if not exists public.corazones (
   persona uuid not null references public.perfiles (id) on delete cascade,
   item uuid not null references public.items (id) on delete cascade,
@@ -18,12 +18,12 @@ create table if not exists public.seguidores (
 create index if not exists corazones_item_idx on public.corazones (item);
 create index if not exists seguidores_seguido_idx on public.seguidores (seguido);
 
--- ───────── Totales públicos ─────────
+-- ───────── Public totals ─────────
 alter table public.items add column if not exists corazones integer not null default 0 check (corazones >= 0);
 alter table public.perfiles_publicos
   add column if not exists seguidores integer not null default 0 check (seguidores >= 0),
   add column if not exists corazones_recibidos integer not null default 0 check (corazones_recibidos >= 0);
--- Los totales solo los mueve el servidor (triggers): la persona nunca puede escribirlos.
+-- Only the server (triggers) moves the totals: the person can never write them.
 grant select (id, nombre_publico, bio, github, enlaces, avatar_publico, banner_publico, seguidores, corazones_recibidos) on public.perfiles_publicos to anon;
 
 create or replace function public.contar_corazon() returns trigger language plpgsql security definer set search_path = public as $$
@@ -47,7 +47,7 @@ create trigger corazones_contar after insert or delete on public.corazones for e
 drop trigger if exists seguidores_contar on public.seguidores;
 create trigger seguidores_contar after insert or delete on public.seguidores for each row execute function public.contar_seguidor();
 
--- ───────── Límites contra abuso ─────────
+-- ───────── Abuse limits ─────────
 create or replace function public.limitar_corazones() returns trigger language plpgsql security definer set search_path = public as $$
 begin
   if (select count(*) from public.corazones where persona = new.persona and creado_en > now() - interval '1 day') >= 200 then
@@ -69,11 +69,11 @@ create trigger corazones_limitar before insert on public.corazones for each row 
 drop trigger if exists seguidores_limitar on public.seguidores;
 create trigger seguidores_limitar before insert on public.seguidores for each row execute function public.limitar_seguidores();
 
--- ───────── Seguridad por filas ─────────
+-- ───────── Row-level security ─────────
 alter table public.corazones enable row level security;
 alter table public.seguidores enable row level security;
 
--- Cada persona ve y mueve solo lo suyo.
+-- Each person sees and changes only their own.
 create policy corazones_leer_propios on public.corazones for select to authenticated using (persona = (select auth.uid()));
 create policy corazones_dar on public.corazones for insert to authenticated
   with check (persona = (select auth.uid()) and exists (select 1 from public.items i where i.id = item and i.estado = 'aprobado'));

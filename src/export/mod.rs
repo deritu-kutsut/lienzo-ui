@@ -62,9 +62,9 @@ pub fn class_name(s: &str) -> String {
     if out.chars().next().map(|c| c.is_ascii_digit()).unwrap_or(false) {
         out = format!("Ui{}", out);
     }
-    // Sirve de nombre de archivo y de clase: un título larguísimo no debe pasar del límite de rutas de Windows.
+    // Used as file and class name: a very long title must not exceed the Windows path limit.
     let out: String = out.chars().take(64).collect();
-    // CON, PRN, AUX, NUL, COM1… y LPT1… no pueden ser nombres de archivo en Windows.
+    // CON, PRN, AUX, NUL, COM1… and LPT1… cannot be file names on Windows.
     let up = out.to_ascii_uppercase();
     let reservado = ["CON", "PRN", "AUX", "NUL"].contains(&up.as_str())
         || ((up.starts_with("COM") || up.starts_with("LPT")) && up.len() == 4 && up.as_bytes()[3].is_ascii_digit());
@@ -201,7 +201,7 @@ pub fn export_rt(doc: &Doc, e: &Element) -> RectTransform {
 /// Corner radius usable for an element (never more than half its short side).
 pub fn radius_of(e: &Element) -> f32 {
     let max = e.w.min(e.h) / 2.0;
-    // Con ancho o alto negativos o no numéricos (archivos ajenos) `clamp` entraría en pánico.
+    // With negative or non-numeric width/height (foreign files) `clamp` would panic.
     if max.is_finite() && max > 0.0 && e.radius.is_finite() { e.radius.clamp(0.0, max) } else { 0.0 }
 }
 
@@ -245,7 +245,7 @@ pub fn write_unity_package(doc: &Doc, project: &Path) -> Result<Vec<String>, Str
     let root = find_unity_root(project).ok_or("esa carpeta no parece un proyecto de Unity (no tiene carpeta Assets)")?;
     let base = root.join(UNITY_ROOT);
     let cls = class_name(&doc.title);
-    // Las imágenes se leen antes de escribir nada: si falta una, el proyecto de Unity no queda a medias.
+    // Images are read before writing anything: if one is missing, the Unity project is not left half-written.
     let mut pictures = Vec::new();
     let mut done = HashSet::new();
     for e in &doc.elements {

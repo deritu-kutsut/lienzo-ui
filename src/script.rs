@@ -13,13 +13,13 @@ pub const HELP: &str = "Funciones (los nombres son los de la lista de capas; «y
   valor(\"Nombre\", 0.5)   leer_valor(\"Nombre\")   transparencia(\"Nombre\", 0.5)
   mensaje(\"texto\")  — también sirven let, if, for, while, +, etc.";
 
-/// Número de un argumento del script; NaN o infinito cuentan como 0 (no deben llegar a las coordenadas).
+/// Number from a script argument; NaN or infinity count as 0 (they must not reach the coordinates).
 fn num(d: &Dynamic) -> f32 {
     let v = d.as_float().map(|f| f as f32).or_else(|_| d.as_int().map(|i| i as f32)).unwrap_or(0.0);
     if v.is_finite() { v.clamp(-1.0e6, 1.0e6) } else { 0.0 }
 }
 
-/// Cambia el marco de un elemento por su nombre; los hijos lo siguen según sus anclas (como al moverlo en el editor).
+/// Changes an element's frame by its name; children follow according to their anchors (as when moving it in the editor).
 fn with_frame(doc: &Shared, log: &Log, name: &str, f: impl FnOnce(&mut crate::model::Frame)) {
     let mut d = doc.borrow_mut();
     match d.elements.iter().find(|e| e.name == name).map(|e| (e.id, e.frame())) {
@@ -95,7 +95,7 @@ pub fn run(doc: &mut Doc, id: u64, code: &str, log: &mut Vec<String>) {
             0.0
         }
     });
-    // Slider y barras: 0 a 1. Desplegable: número de la opción (0, 1, 2…).
+    // Slider and bars: 0 to 1. Dropdown: option number (0, 1, 2…).
     reg!("valor", |d, l, n: &str, v: Dynamic| with_el(&d, &l, n, |e| {
         e.value = if e.kind == crate::model::Kind::Dropdown {
             num(&v).round().clamp(0.0, e.options.len().saturating_sub(1) as f32)
@@ -108,7 +108,7 @@ pub fn run(doc: &mut Doc, id: u64, code: &str, log: &mut Vec<String>) {
         f.cx += num(&dx);
         f.cy += num(&dy);
     }));
-    // posicion: esquina superior izquierda, como x/y en el inspector.
+    // posicion: top-left corner, like x/y in the inspector.
     reg!("posicion", |d, l, n: &str, x: Dynamic, y: Dynamic| with_frame(&d, &l, n, |f| {
         f.cx = num(&x) + f.w / 2.0;
         f.cy = num(&y) + f.h / 2.0;

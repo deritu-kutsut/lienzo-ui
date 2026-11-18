@@ -1,2 +1,2 @@
--- Los temas de la interfaz (colores, esquinas y fuente) también se comparten en la comunidad.
+-- UI themes (colors, corners and font) are also shared in the community.
 alter type public.tipo_item add value if not exists 'tema';

@@ -1,13 +1,13 @@
-//! Idiomas de la interfaz. El español es el idioma base del código; cada idioma extra es un
-//! archivo `assets/i18n/<código>.tsv` con líneas «texto en español<TAB>traducción».
-//! Los textos sin traducción se muestran en español. Para añadir un idioma: copia en.tsv,
-//! tradúcelo y añade su entrada a `IDIOMAS` (ver docs/EXTENDER.md).
+//! Interface languages. Spanish is the code's base language; each extra language is a
+//! file `assets/i18n/<code>.tsv` with lines «Spanish text<TAB>translation».
+//! Untranslated texts are shown in Spanish. To add a language: copy en.tsv,
+//! translate it and add its entry to `IDIOMAS` (see docs/EXTENDER.md).
 
 use std::collections::HashMap;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::LazyLock;
 
-/// (código, nombre visible, contenido del .tsv)
+/// (code, display name, contents of the .tsv)
 pub const IDIOMAS: &[(&str, &str, &str)] = &[
     ("es", "Español", ""),
     ("en", "English", include_str!("../assets/i18n/en.tsv")),
@@ -36,7 +36,7 @@ static TABLAS: LazyLock<Vec<HashMap<&'static str, &'static str>>> = LazyLock::ne
         .collect()
 });
 
-/// Cambia el idioma por su código («es», «en»…). Un código desconocido deja el español.
+/// Switches the language by its code («es», «en»…). An unknown code leaves Spanish.
 pub fn set(codigo: &str) {
     ACTUAL.store(IDIOMAS.iter().position(|(c, _, _)| *c == codigo).unwrap_or(0), Ordering::Relaxed);
 }
@@ -45,7 +45,7 @@ pub fn codigo() -> &'static str {
     IDIOMAS[ACTUAL.load(Ordering::Relaxed)].0
 }
 
-/// Traduce un texto de la interfaz al idioma actual (o lo deja igual si no hay traducción).
+/// Translates an interface text to the current language (or leaves it as is if there is no translation).
 pub fn t(texto: &str) -> String {
     let i = ACTUAL.load(Ordering::Relaxed);
     if i == 0 {
@@ -54,7 +54,7 @@ pub fn t(texto: &str) -> String {
     TABLAS[i].get(texto).map(|s| s.to_string()).unwrap_or_else(|| texto.to_string())
 }
 
-/// Traduce una plantilla con huecos `{}` y los rellena en orden (para mensajes con datos).
+/// Translates a template with `{}` placeholders and fills them in order (for messages with data).
 pub fn tf(plantilla: &str, args: &[&str]) -> String {
     let mut out = t(plantilla);
     for a in args {
@@ -100,7 +100,7 @@ mod tests {
                 assert_eq!(es.matches("{}").count(), tr.matches("{}").count(), "{}: huecos {{}} distintos en «{}»", codigo, es);
                 assert_eq!(es.matches("\\n").count(), tr.matches("\\n").count(), "{}: saltos \\n distintos en «{}»", codigo, es);
             }
-            // Cada idioma traduce al menos el 95 % de lo que traduce el inglés.
+            // Each language translates at least 95 % of what English translates.
             assert!(vistas.len() * 100 >= base.len() * 95, "{}: solo {} de {} textos", codigo, vistas.len(), base.len());
         }
     }

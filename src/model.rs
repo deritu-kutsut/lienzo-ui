@@ -606,8 +606,8 @@ pub struct Doc {
     /// CanvasScaler "Match" (0 = width, 1 = height).
     #[serde(default = "half")]
     pub canvas_match: f32,
-    /// Modo pixel art: imágenes sin suavizado, posiciones en píxeles enteros y
-    /// en Unity Canvas «Pixel Perfect» + sprites con filtro Point sin compresión.
+    /// Pixel art mode: unsmoothed images, integer pixel positions and,
+    /// in Unity, Canvas "Pixel Perfect" + sprites with Point filter and no compression.
     #[serde(default)]
     pub pixel_art: bool,
 }
@@ -686,7 +686,7 @@ impl Doc {
         let mut out = Vec::new();
         let mut stack: Vec<u64> = self.children(Some(id)).into_iter().rev().collect();
         while let Some(c) = stack.pop() {
-            // Un archivo con padres en ciclo no debe colgar la app: cada elemento se visita una sola vez.
+            // A file with cyclic parents must not hang the app: each element is visited only once.
             if c == id || out.contains(&c) {
                 continue;
             }
@@ -722,13 +722,13 @@ impl Doc {
         self.ancestors(id).contains(&of)
     }
 
-    /// Lo mismo que `shown` para todos los elementos a la vez (O(n) en vez de O(n²); para dibujar cada frame).
+    /// Same as `shown` for all elements at once (O(n) instead of O(n²); for drawing every frame).
     pub fn shown_all(&self) -> std::collections::HashSet<u64> {
         use std::collections::HashMap;
         let by_id: HashMap<u64, &Element> = self.elements.iter().map(|e| (e.id, e)).collect();
         let mut memo: HashMap<u64, bool> = HashMap::with_capacity(self.elements.len());
         for e in &self.elements {
-            // Sube hasta un antepasado ya resuelto (o la raíz) y resuelve la cadena hacia abajo.
+            // Walk up to an already resolved ancestor (or the root) and resolve the chain downward.
             let mut chain = Vec::new();
             let mut cur = Some(e.id);
             let mut base = true;
@@ -738,7 +738,7 @@ impl Doc {
                     break;
                 }
                 if chain.contains(&id) || chain.len() > self.elements.len() {
-                    break; // ciclo en un archivo malformado
+                    break; // cycle in a malformed file
                 }
                 chain.push(id);
                 cur = by_id.get(&id).and_then(|x| x.parent).filter(|p| by_id.contains_key(p));
@@ -961,8 +961,8 @@ impl Doc {
         v
     }
 
-    /// Arregla lo que un archivo editado a mano o ajeno puede traer roto: ids repetidos, `next_id` por debajo de
-    /// algún id, padres en ciclo (o de sí mismos) y coordenadas no numéricas.
+    /// Fixes what a hand-edited or foreign file may bring broken: duplicate ids, `next_id` below
+    /// some id, cyclic parents (or self-parents) and non-numeric coordinates.
     pub fn sanitize(&mut self) {
         let mut vistos = std::collections::HashSet::new();
         let mut max_id = 0u64;
@@ -996,9 +996,9 @@ impl Doc {
             e.stroke_w = e.stroke_w.clamp(0.0, 1000.0);
             e.radius = e.radius.clamp(0.0, 10_000.0);
             e.opacity = if e.opacity.is_finite() { e.opacity.clamp(0.0, 1.0) } else { 1.0 };
-            // Una letra de 1e9 px haría que egui intentara dibujar un glifo gigante.
+            // A 1e9 px letter would make egui try to draw a giant glyph.
             e.font_size = if e.font_size.is_finite() { e.font_size.clamp(1.0, 1000.0) } else { 32.0 };
-            // Caracteres de control (NUL…) rompen el UXML y los scripts exportados.
+            // Control characters (NUL…) break the UXML and the exported scripts.
             limpiar(&mut e.name, false);
             limpiar(&mut e.text, true);
             limpiar(&mut e.font, false);
@@ -1022,7 +1022,7 @@ impl Doc {
                 *v = if v.is_finite() { v.clamp(1.0, 10_000.0) } else { 100.0 };
             }
         }
-        // Página: sin tamaño o enorme deja el lienzo en NaN o sin escala.
+        // Page: with no size, or a huge one, the canvas ends up NaN or unscaled.
         if !self.width.is_finite() || self.width < 1.0 {
             self.width = 1920.0;
         }
@@ -1203,7 +1203,7 @@ pub fn hex(c: Rgba) -> String {
 // Templates (starting layouts for game UIs)
 // ---------------------------------------------------------------------------
 
-/// Los números son estables (la línea de comandos y el MCP los usan): las nuevas se añaden al final.
+/// The numbers are stable (the command line and the MCP use them): new ones are added at the end.
 pub const TEMPLATES: &[&str] = &[
     "Menú principal",
     "HUD de juego",
@@ -1224,7 +1224,7 @@ pub fn blank_template() -> usize {
     5
 }
 
-/// Orden en que se muestran: «En blanco» al final.
+/// Order in which they are shown: "En blanco" last.
 pub fn template_order() -> impl Iterator<Item = usize> {
     (0..TEMPLATES.len()).filter(|&i| i != blank_template()).chain(std::iter::once(blank_template()))
 }
@@ -1246,8 +1246,8 @@ fn anchor(e: &mut Element, min: [f32; 2], max: [f32; 2]) {
     e.anchor_max = max;
 }
 
-/// Las plantillas están pensadas para 1920×1080: en páginas más pequeñas se construyen a una
-/// escala que quepa (misma proporción de página) y luego se reducen de forma uniforme.
+/// Templates are designed for 1920×1080: on smaller pages they are built at a
+/// scale that fits (same page proportion) and then shrunk uniformly.
 pub fn template(index: usize, width: f32, height: f32) -> Doc {
     let (width, height) = (width.max(1.0), height.max(1.0));
     let k = (1920.0 / width).max(1080.0 / height).max(1.0);
@@ -2191,7 +2191,7 @@ mod template_tests {
                     if let Some(p) = e.parent {
                         assert!(d.get(p).is_some(), "{}: padre perdido", TEMPLATES[i]);
                     }
-                    // Nada se sale de la página (margen por sombras/bordes).
+                    // Nothing goes outside the page (margin for shadows/borders).
                     assert!(e.x >= -1.0 && e.y >= -1.0 && e.x + e.w <= w + 1.0 && e.y + e.h <= h + 1.0, "{} @{}x{}: «{}» fuera de la página {:?}", TEMPLATES[i], w, h, e.name, [e.x, e.y, e.w, e.h]);
                 }
             }

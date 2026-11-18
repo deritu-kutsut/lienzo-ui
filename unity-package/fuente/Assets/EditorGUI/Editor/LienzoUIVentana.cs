@@ -1,6 +1,6 @@
-// Lienzo UI for Unity · ventana de acceso. MIT.
-// Abre la app Lienzo UI (editor visual de interfaces) y enseña cómo traer sus diseños a Unity.
-// La app de escritorio es gratuita y de código abierto: https://github.com/deritu-kutsut/lienzo-ui
+// Lienzo UI for Unity · access window. MIT.
+// Opens the Lienzo UI app (visual interface editor) and shows how to bring its designs into Unity.
+// The desktop app is free and open source: https://github.com/deritu-kutsut/lienzo-ui
 #if UNITY_EDITOR
 using System;
 using System.Diagnostics;
@@ -39,7 +39,7 @@ namespace EditorGui
             if (string.IsNullOrEmpty(exe) || !File.Exists(exe)) exe = Buscar();
         }
 
-        /// <summary>Busca la app en los sitios habituales de Windows.</summary>
+        /// <summary>Looks for the app in the usual Windows locations.</summary>
         static string Buscar()
         {
             var candidatos = new[]

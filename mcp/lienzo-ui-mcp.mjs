@@ -1,14 +1,14 @@
 #!/usr/bin/env node
-// Lienzo UI — servidor MCP (Model Context Protocol) sin dependencias. Requiere Node 18+.
-// Transporte stdio (JSON-RPC 2.0, un mensaje por línea).
+// Lienzo UI — MCP (Model Context Protocol) server with no dependencies. Requires Node 18+.
+// stdio transport (JSON-RPC 2.0, one message per line).
 //
-// Permite que cualquier IA compatible con MCP (Claude, Cursor, VS Code, Windsurf, etc.) cree y
-// edite diseños de Lienzo UI, los exporte a un proyecto de Unity y saque capturas.
-// Configuración: docs/MCP.md
+// Lets any MCP-compatible AI (Claude, Cursor, VS Code, Windsurf, etc.) create and
+// edit Lienzo UI designs, export them to a Unity project and take screenshots.
+// Setup: docs/MCP.md
 //
-// Seguridad: los diseños solo se leen y escriben dentro de la carpeta de diseños
-// (LIENZO_DISENOS, por defecto <repo>/disenos); la exportación solo escribe en
-// <proyecto Unity>/Assets/EditorGUI (lo hace el propio Lienzo UI).
+// Security: designs are only read and written inside the designs folder
+// (LIENZO_DISENOS, default <repo>/disenos); export only writes to
+// <Unity project>/Assets/EditorGUI (done by Lienzo UI itself).
 
 import { spawn } from "node:child_process";
 import fs from "node:fs";
@@ -29,7 +29,7 @@ const CAMPOS_EDITABLES = {
   value: "number", on_click: "string", options: "strings", interactable: "boolean", image: "image",
 };
 
-// ---------- utilidades ----------
+// ---------- utilities ----------
 
 function binario() {
   const candidatos = [
@@ -55,7 +55,7 @@ function ejecutar(args, timeoutMs = 120_000) {
   });
 }
 
-/** Ruta segura de un diseño: solo un nombre de archivo dentro de la carpeta de diseños. */
+/** Safe path of a design: only a file name inside the designs folder. */
 function rutaDiseno(nombre) {
   if (typeof nombre !== "string" || !/^[\p{L}\p{N} _.-]{1,80}$/u.test(nombre) || nombre.includes(".."))
     throw new Error("'archivo' debe ser un nombre simple (letras, números, espacios, _ . -), sin carpetas.");
@@ -75,7 +75,7 @@ function leer(nombre) {
   return { abs, doc };
 }
 
-/** Rangos válidos de campos numéricos: [mín, máx, exclusivoMín]. */
+/** Valid ranges for numeric fields: [min, max, exclusiveMin]. */
 const RANGOS = { w: [0, 100000, true], h: [0, 100000, true], font_size: [0, 1000, true], opacity: [0, 1], stroke_w: [0, 1000], radius: [0, 100000], x: [-1e6, 1e6], y: [-1e6, 1e6] };
 function validarRango(k, v) {
   const r = RANGOS[k];
@@ -94,14 +94,14 @@ function color(v) {
   return [(n >> 16) & 255, (n >> 8) & 255, n & 255, m[2] ? parseInt(m[2], 16) : 255];
 }
 
-/** Ruta de imagen válida: absoluta, PNG o JPG y existente (o "" para quitarla). */
+/** Valid image path: absolute, PNG or JPG and existing (or "" to remove it). */
 function rutaImagen(v) {
   if (typeof v !== "string") throw new Error("image debe ser la ruta absoluta de un PNG o JPG, o \"\" para quitarla");
   if (v && (!path.isAbsolute(v) || !/\.(png|jpe?g)$/i.test(v) || !fs.existsSync(v))) throw new Error(`image: no existe o no es PNG/JPG: ${v}`);
   return v;
 }
 
-/** Límites de tamaño: un diseño con textos o listas enormes dejaría la app minutos sin responder. */
+/** Size limits: a design with huge texts or lists would leave the app unresponsive for minutes. */
 const LIM = { nombre: 120, texto: 5000, lista: 200, item: 200 };
 function limitar(campo, v, max) {
   if (typeof v === "string" && v.length > max) throw new Error(`${campo} admite como máximo ${max} caracteres.`);
@@ -109,7 +109,7 @@ function limitar(campo, v, max) {
 }
 
 function buscar(doc, ref) {
-  // Primero el nombre exacto; solo si no hay ninguno se interpreta como id (un elemento llamado «3» no debe perder ante el id 3).
+  // Exact name first; only if there is none is it interpreted as an id (an element named «3» must not lose to id 3).
   const e = doc.elements.find((x) => x.name === ref) ?? doc.elements.find((x) => String(x.id) === String(ref));
   if (!e) throw new Error(`No hay ningún elemento «${ref}». Usa leer_diseno para ver los nombres.`);
   return e;
@@ -125,7 +125,7 @@ function descendientes(doc, id) {
   return ids;
 }
 
-// ---------- herramientas ----------
+// ---------- tools ----------
 
 const HERRAMIENTAS = [
   {
@@ -282,7 +282,7 @@ const HERRAMIENTAS = [
       if (w <= 0 || h <= 0) throw new Error("w y h deben ser mayores que 0");
       if (image !== undefined && tipo !== "Image") throw new Error("'image' solo se usa con tipo Image.");
       const p = padre !== undefined ? buscar(doc, padre) : null;
-      // Base: un elemento del mismo tipo (mismos valores por defecto) o, si no hay, cualquiera ya existente.
+      // Base: an element of the same type (same defaults) or, if none, any existing one.
       const base = doc.elements.find((e) => e.kind === tipo) || doc.elements[0];
       if (!base) throw new Error("El diseño está vacío: crea el diseño desde una plantilla que tenga elementos.");
       const e = structuredClone(base);
@@ -297,7 +297,7 @@ const HERRAMIENTAS = [
       if (tipo === "Image") { e.fill = [255, 255, 255, 255]; e.fill2 = [255, 255, 255, 255]; e.stroke_w = 0; e.radius = 0; e.raycast = false; }
       if (c !== undefined) e.fill = color(c);
       if (doc.pixel_art) { e.x = Math.round(e.x); e.y = Math.round(e.y); e.w = Math.round(e.w); e.h = Math.round(e.h); }
-      // Se dibuja encima del padre y de sus hijos actuales.
+      // Drawn on top of the parent and its current children.
       const ids = p ? descendientes(doc, p.id) : null;
       const ultimo = ids ? Math.max(...doc.elements.map((x, i) => (ids.has(x.id) ? i : -1))) : doc.elements.length - 1;
       doc.elements.splice(ultimo + 1, 0, e);
@@ -381,11 +381,11 @@ const HERRAMIENTAS = [
   },
 ];
 
-// ---------- protocolo MCP (JSON-RPC 2.0 por stdio) ----------
+// ---------- MCP protocol (JSON-RPC 2.0 over stdio) ----------
 
 let cola = Promise.resolve();
 const enviar = (m) => { if (!process.stdout.destroyed) process.stdout.write(JSON.stringify(m) + "\n"); };
-process.stdout.on("error", () => process.exit(0)); // el cliente cerró la conexión
+process.stdout.on("error", () => process.exit(0)); // the client closed the connection
 const responder = (id, result) => enviar({ jsonrpc: "2.0", id, result });
 const fallo = (id, code, message) => enviar({ jsonrpc: "2.0", id, error: { code, message } });
 
@@ -411,7 +411,7 @@ async function manejar(m) {
       case "tools/call": {
         const h = HERRAMIENTAS.find((x) => x.name === params?.name);
         if (!h) return fallo(id, -32602, `Herramienta desconocida: ${params?.name}`);
-        // Las llamadas se ejecutan de una en una: dos órdenes simultáneas sobre el mismo diseño no se pisan.
+        // Calls run one at a time: two simultaneous commands on the same design do not overwrite each other.
         const turno = cola.then(async () => {
           try {
             responder(id, { content: [{ type: "text", text: String(await h.run(params?.arguments || {})) }] });

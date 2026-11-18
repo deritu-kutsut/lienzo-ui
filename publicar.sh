@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# Publica una versión de Lienzo UI.
+# Publishes a Lienzo UI version.
 #   bash publicar.sh 1.1.0
-# 1. Ejecuta las pruebas y compila en release
-# 2. Empaqueta dist/LienzoUI-windows-<versión>.zip (ejecutable, servidor MCP, documentación, ejemplos)
-# 3. Crea el tag v<versión> y la release en GitHub con las notas de CHANGELOG.md (requiere gh)
-# 4. Si butler está instalado y con sesión, sube el paquete a itch.io (canal windows)
-# Variables: REMOTO (remoto de git, por defecto origin), ITCH_DESTINO.
+# 1. Runs the tests and builds in release
+# 2. Packages dist/LienzoUI-windows-<version>.zip (executable, MCP server, documentation, examples)
+# 3. Creates the v<version> tag and the GitHub release with the notes from CHANGELOG.md (requires gh)
+# 4. If butler is installed and signed in, uploads the package to itch.io (windows channel)
+# Variables: REMOTO (git remote, default origin), ITCH_DESTINO.
 set -euo pipefail
 cd "$(dirname "$0")"
 

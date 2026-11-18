@@ -86,7 +86,7 @@ pub fn btn_tint<'a>(name: &str, text: impl Into<egui::WidgetText>, tint: Color32
     }
 }
 
-/// Icono (sin texto) como botón redondo sobre una imagen, p. ej. las cámaras del editor de perfil.
+/// Icon (no text) as a round button over an image, e.g. the cameras in the profile editor.
 pub fn redondo<'a>(name: &str, lado: f32, tint: Color32) -> egui::Button<'a> {
     let b = match image(name, lado * 0.42, tint) {
         Some(img) => egui::Button::image(img),
@@ -95,7 +95,7 @@ pub fn redondo<'a>(name: &str, lado: f32, tint: Color32) -> egui::Button<'a> {
     b.fill(Color32::from_black_alpha(150)).corner_radius(lado / 2.0).min_size(Vec2::splat(lado))
 }
 
-/// Icono pequeño seguido de un texto (contadores): imagen + texto en la misma línea.
+/// Small icon followed by text (counters): image + text on the same line.
 pub fn con_texto(ui: &mut Ui, name: &str, texto: impl Into<egui::RichText>, tint: Color32) {
     ui.horizontal(|ui| {
         ui.spacing_mut().item_spacing.x = 3.0;

@@ -1,4 +1,4 @@
-// Icono del ejecutable en Windows (assets/marca/icono.ico, generado desde icono.svg).
+// Executable icon on Windows (assets/marca/icono.ico, generated from icono.svg).
 fn main() {
     println!("cargo:rerun-if-changed=assets/marca/icono.ico");
     #[cfg(windows)]

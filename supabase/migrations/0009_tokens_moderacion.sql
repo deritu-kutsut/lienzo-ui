@@ -1,9 +1,9 @@
--- Tokens de moderación: credenciales para que un script o una automatización revise contenido por la API / la web de moderación.
--- Diseño:
---   · El token completo se muestra UNA vez al crearlo; aquí solo se guarda su huella SHA-256 (no se puede recuperar).
---   · Cada token tiene alcances (leer, aprobar, rechazar), caducidad (máx. 90 días) y se puede revocar al instante.
---   · Solo una persona moderadora (por su cuenta) puede crearlos, verlos o revocarlos; un token no puede crear otros.
---   · Sin políticas RLS: nadie los lee desde la API pública; solo las Edge Functions con la clave de servicio.
+-- Moderation tokens: credentials so a script or automation can review content through the API / the moderation web.
+-- Design:
+--   · The full token is shown ONCE when created; only its SHA-256 fingerprint is stored here (it cannot be recovered).
+--   · Each token has scopes (read, approve, reject), an expiry (max. 90 days) and can be revoked instantly.
+--   · Only a moderator (through their own account) can create, view or revoke them; a token cannot create others.
+--   · No RLS policies: nobody reads them through the public API; only Edge Functions with the service key.
 create table if not exists public.tokens_moderacion (
   id uuid primary key default gen_random_uuid(),
   nombre text not null check (char_length(nombre) between 3 and 60),

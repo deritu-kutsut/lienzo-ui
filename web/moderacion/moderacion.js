@@ -1,14 +1,14 @@
-// Web de moderación de Lienzo UI. Sin librerías ni compilación.
-// Seguridad: todo lo que viene de usuarios se pinta con textContent (jamás como HTML); la sesión vive en sessionStorage
-// (se borra al cerrar la pestaña); la política CSP de index.html impide cargar nada ajeno a este sitio y a Supabase.
+// Lienzo UI moderation web. No libraries or build step.
+// Security: everything coming from users is rendered with textContent (never as HTML); the session lives in sessionStorage
+// (cleared when the tab closes); the CSP policy in index.html prevents loading anything outside this site and Supabase.
 "use strict";
 
 const URL_SUPABASE = "https://btotvbdhoyfjpdixlcrw.supabase.co";
-const CLAVE_PUBLICA = "sb_publishable_UNvWtzs_M8N_N6fLrZ9VCQ_E6hkxXrL"; // pública por diseño
+const CLAVE_PUBLICA = "sb_publishable_UNvWtzs_M8N_N6fLrZ9VCQ_E6hkxXrL"; // public by design
 const RETORNO = location.origin + location.pathname;
 const $ = (id) => document.getElementById(id);
 
-// ───────── utilidades ─────────
+// ───────── utilities ─────────
 function el(tag, props = {}, ...hijos) {
   const e = document.createElement(tag);
   for (const [k, v] of Object.entries(props)) {
@@ -37,10 +37,10 @@ const guardar = (s) => sessionStorage.setItem("lm_sesion", JSON.stringify(s));
 const leer = () => {
   try { return JSON.parse(sessionStorage.getItem("lm_sesion") || "null"); } catch { return null; }
 };
-// Solo se siguen enlaces firmados de nuestro Supabase: nada que haya escrito un usuario.
+// Only signed links from our Supabase are followed: nothing a user wrote.
 const urlSegura = (u) => typeof u === "string" && u.startsWith(URL_SUPABASE + "/storage/v1/object/sign/") ? u : null;
 
-// ───────── sesión ─────────
+// ───────── session ─────────
 let sesion = leer();
 
 async function entrarOAuth(proveedor) {
@@ -54,7 +54,7 @@ async function entrarOAuth(proveedor) {
 async function canjearCodigo(codigo) {
   const verificador = sessionStorage.getItem("lm_pkce");
   sessionStorage.removeItem("lm_pkce");
-  history.replaceState(null, "", RETORNO); // el código no se queda en la barra de direcciones
+  history.replaceState(null, "", RETORNO); // the code does not stay in the address bar
   if (!verificador || !/^[A-Za-z0-9_-]{1,300}$/.test(codigo)) throw new Error("Inicio de sesión no válido.");
   const r = await fetch(`${URL_SUPABASE}/auth/v1/token?grant_type=pkce`, {
     method: "POST",
@@ -92,7 +92,7 @@ async function api(accion, cuerpo = {}) {
   return j;
 }
 
-// ───────── pantalla ─────────
+// ───────── screen ─────────
 let pestana = "pendientes";
 
 function pintar() {
@@ -130,7 +130,7 @@ async function verContenido(url, destino, boton) {
   try {
     const r = await fetch(u);
     const texto = (await r.text()).slice(0, 200000);
-    destino.textContent = texto; // como texto: aunque el archivo traiga HTML o scripts, aquí no se ejecuta
+    destino.textContent = texto; // as text: even if the file contains HTML or scripts, they do not run here
     destino.hidden = false;
   } catch {
     estado("No se pudo leer el archivo.", true);
@@ -177,7 +177,7 @@ const CATEGORIAS = [
   ["perfil", "Fotos de perfil y banners"],
 ];
 let categoria = "todo";
-let ultimo = null; // última lista recibida, para cambiar de categoría sin volver a pedirla
+let ultimo = null; // last list received, to switch category without requesting it again
 
 function pintarPendientes() {
   const caja = $("pendientes");
@@ -213,7 +213,7 @@ async function cargarPendientes(avisar = true) {
   }
 }
 
-// ───────── tokens (solo personas) ─────────
+// ───────── tokens (people only) ─────────
 async function cargarTokens() {
   const caja = $("tokens");
   try {
@@ -232,7 +232,7 @@ async function cargarTokens() {
           el("div", { class: "meta", texto: `Caduca: ${j.expira_en}` })));
         campo.select();
         estado("Token creado.");
-        await cargarTokens(); // refresca la lista pero conserva el aviso del token nuevo
+        await cargarTokens(); // refreshes the list but keeps the new token notice
         $("tokens").prepend(nuevo);
       } catch (e) { estado(e.message, true); }
     } });
@@ -256,7 +256,7 @@ async function cargarTokens() {
   }
 }
 
-// ───────── arranque ─────────
+// ───────── startup ─────────
 $("github").addEventListener("click", () => entrarOAuth("github"));
 $("google").addEventListener("click", () => entrarOAuth("google"));
 $("salir").addEventListener("click", salir);

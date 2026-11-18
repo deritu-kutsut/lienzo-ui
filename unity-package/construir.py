@@ -14,7 +14,7 @@ from pathlib import Path
 RAIZ = Path(__file__).resolve().parent.parent
 FUENTE = RAIZ / "unity-package" / "fuente"
 DIST = RAIZ / "dist"
-ESPACIO = uuid.UUID("6f6c6c0a-4c69-656e-7a6f-554921c0ffee")  # fijo: los GUID salen siempre iguales
+ESPACIO = uuid.UUID("6f6c6c0a-4c69-656e-7a6f-554921c0ffee")  # fixed: GUIDs always come out the same
 
 
 def version() -> str:
@@ -23,7 +23,7 @@ def version() -> str:
 
 
 def guid(ruta: str) -> str:
-    return uuid.uuid5(ESPACIO, ruta).hex  # 32 hex, como los GUID de Unity
+    return uuid.uuid5(ESPACIO, ruta).hex  # 32 hex, like Unity GUIDs
 
 
 META = {
@@ -49,10 +49,10 @@ def main() -> int:
     if trabajo.exists():
         shutil.rmtree(trabajo)
     shutil.copytree(FUENTE, trabajo)
-    # el importador siempre es el de la app: así el paquete y la app no se separan
+    # the importer is always the app's: this keeps the package and the app in sync
     shutil.copy2(RAIZ / "src" / "export" / "EditorGuiImporter.cs", trabajo / "Assets" / "EditorGUI" / "Editor" / "EditorGuiImporter.cs")
 
-    entradas = []  # (ruta dentro de Unity, es_carpeta, archivo en disco o None)
+    entradas = []  # (path inside Unity, is_folder, file on disk or None)
     carpetas = set()
     for f in sorted(trabajo.rglob("*")):
         rel = f.relative_to(trabajo).as_posix()
@@ -76,7 +76,7 @@ def main() -> int:
         def poner(nombre: str, datos: bytes):
             ti = tarfile.TarInfo(nombre)
             ti.size = len(datos)
-            ti.mtime = 1763337600  # fecha fija: el archivo sale idéntico cada vez
+            ti.mtime = 1763337600  # fixed date: the file comes out identical every time
             tar.addfile(ti, io.BytesIO(datos))
 
         for ruta, carpeta, archivo in todas:

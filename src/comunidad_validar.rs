@@ -1,6 +1,6 @@
-//! Validación de lo que baja y sube la comunidad. Es la misma regla que aplica el servidor
-//! (`supabase/functions/_compartido/validar.ts`): la app NUNCA confía en lo que descarga, lo vuelve a comprobar.
-//! Solo formatos de datos; jamás ejecutables, instaladores, scripts de sistema, comprimidos ni SVG.
+//! Validation of what the community downloads and uploads. These are the same rules the server applies
+//! (`supabase/functions/_compartido/validar.ts`): the app NEVER trusts what it downloads and re-checks it.
+//! Data formats only; never executables, installers, system scripts, archives or SVG.
 
 use sha2::{Digest, Sha256};
 use std::collections::BTreeMap;
@@ -13,7 +13,7 @@ pub fn limite_bytes(tipo: &str) -> usize {
         "fuente" => 5 * 1024 * 1024,
         "plantilla" => 512 * 1024,
         "tema" => 32 * 1024,
-        _ => 256 * 1024, // elemento, plugin
+        _ => 256 * 1024, // element, plugin
     }
 }
 
@@ -30,7 +30,7 @@ fn ext(nombre: &str) -> String {
     nombre.rsplit_once('.').map(|(_, e)| e.to_lowercase()).unwrap_or_default()
 }
 
-/// Formato real por los primeros bytes (no por la extensión).
+/// Actual format from the first bytes (not from the extension).
 pub fn detectar(b: &[u8]) -> Option<&'static str> {
     let empieza = |f: &[u8], d: usize| b.len() >= d + f.len() && &b[d..d + f.len()] == f;
     if empieza(&[0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a], 0) {
@@ -84,7 +84,7 @@ fn url_externa(s: &str) -> bool {
 
 fn validar_diseno(json: serde_json::Value, es_plantilla: bool) -> Result<(), String> {
     let json = if !es_plantilla && (json.is_array() || json.is_object()) {
-        // un elemento de la biblioteca es una lista de elementos (o uno solo)
+        // a library element is a list of elements (or a single one)
         let lista = if json.is_array() { json } else { serde_json::Value::Array(vec![json]) };
         serde_json::json!({ "elements": lista })
     } else {
@@ -107,7 +107,7 @@ fn validar_diseno(json: serde_json::Value, es_plantilla: bool) -> Result<(), Str
     Ok(())
 }
 
-/// Un plugin viaja como un único JSON: { manifiesto, archivos: { "ruta.rhai": "código" } }.
+/// A plugin travels as a single JSON: { manifiesto, archivos: { "ruta.rhai": "código" } }.
 #[derive(serde::Serialize, serde::Deserialize)]
 pub struct Paquete {
     pub manifiesto: serde_json::Value,
@@ -152,7 +152,7 @@ fn sospechoso(codigo: &str) -> bool {
     if l.contains("http://") || l.contains("https://") || l.contains("std::") || l.contains("os::") || l.contains(".exe") {
         return true;
     }
-    // palabras completas: eval, import "…", Engine, process, Command, spawn
+    // whole words: eval, import "…", Engine, process, Command, spawn
     let es_palabra = |w: &str| {
         let mut desde = 0;
         while let Some(i) = l[desde..].find(w) {
@@ -169,7 +169,7 @@ fn sospechoso(codigo: &str) -> bool {
     es_palabra("eval") || es_palabra("engine") || es_palabra("process") || es_palabra("command") || es_palabra("spawn") || l.contains("import \"") || l.contains("import '")
 }
 
-/// Valida un archivo según su tipo. `Ok(())` = es seguro de instalar o subir.
+/// Validates a file according to its type. `Ok(())` = safe to install or upload.
 pub fn validar(tipo: &str, nombre: &str, bytes: &[u8]) -> Result<(), String> {
     if !TIPOS.contains(&tipo) {
         return Err("Tipo de contenido desconocido.".into());
@@ -213,7 +213,7 @@ pub fn validar(tipo: &str, nombre: &str, bytes: &[u8]) -> Result<(), String> {
             let texto = std::str::from_utf8(bytes).map_err(|_| "El archivo no es JSON UTF-8 válido.")?;
             let json: serde_json::Value = serde_json::from_str(texto).map_err(|_| "El archivo no es JSON válido.")?;
             if tipo == "tema" {
-                // Solo los campos conocidos de un tema: colores #RRGGBB, esquinas, base clara y un nombre de fuente.
+                // Only the known theme fields: #RRGGBB colors, corners, light base and a font name.
                 let t: crate::theme::Tema = serde_json::from_value(json).map_err(|_| "El archivo no es un tema de Lienzo UI.")?;
                 t.validar()
             } else if tipo == "plugin" {
@@ -225,7 +225,7 @@ pub fn validar(tipo: &str, nombre: &str, bytes: &[u8]) -> Result<(), String> {
     }
 }
 
-/// Lee un plugin descargado ya validado.
+/// Reads an already-validated downloaded plugin.
 pub fn leer_paquete(bytes: &[u8]) -> Result<Paquete, String> {
     validar("plugin", "plugin.json", bytes)?;
     let json: serde_json::Value = serde_json::from_slice(bytes).map_err(|e| e.to_string())?;
@@ -307,13 +307,13 @@ mod tests {
         ] {
             assert!(validar("plugin", "p.json", &plugin(malo)).is_err(), "{}", malo);
         }
-        // «evaluar» o «processing» no son «eval» ni «process»
+        // "evaluar" or "processing" are not "eval" or "process"
         assert!(validar("plugin", "p.json", &plugin(r#"{"a.rhai":"let evaluar = 1; let processing = 2; fn ejecutar(d){ d }"}"#)).is_ok());
     }
 
     #[test]
     fn los_plugins_de_ejemplo_se_pueden_empaquetar() {
-        // el formato de subida debe aceptar lo que ya trae el repositorio
+        // the upload format must accept what the repository already ships
         let base = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("plugins/ajustar-cuadricula");
         let mut archivos = BTreeMap::new();
         for f in ["plugin.json", "ajustar.rhai"] {
@@ -330,8 +330,8 @@ mod tests {
     }
 }
 
-/// Imágenes auxiliares (icono y vista previa de un contenido, avatar y banner de perfil): solo PNG con límites.
-/// Mismas reglas que `validarPng` del servidor. Devuelve (ancho, alto).
+/// Auxiliary images (icon and preview of a content item, profile avatar and banner): PNG only, with limits.
+/// Same rules as the server's `validarPng`. Returns (width, height).
 pub fn validar_png(clase: &str, bytes: &[u8]) -> Result<(u32, u32), String> {
     let (max_bytes, max_w, max_h) = match clase {
         "icono" => (256 * 1024, 512, 512),

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-// Pruebas del servidor MCP de Lienzo UI: protocolo, flujo completo y entradas inválidas.
-// Uso: node mcp/probar-mcp.mjs   (necesita lienzo-ui compilado; sale con 1 si algo falla)
-// Crea y borra un diseño temporal en la carpeta de diseños.
+// Tests for the Lienzo UI MCP server: protocol, full flow and invalid inputs.
+// Usage: node mcp/probar-mcp.mjs   (needs lienzo-ui built; exits with 1 if anything fails)
+// Creates and deletes a temporary design in the designs folder.
 import { spawn } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
@@ -46,7 +46,7 @@ ok("ajustar_diseno rechaza pixel_art no booleano", esError(await llamar("ajustar
 ok("image rechaza archivos que no son PNG/JPG", esError(await llamar("modificar_elemento", { archivo: "Tienda", elemento: "Comprar", cambios: { image: process.execPath } })));
 ok("image rechaza rutas relativas", esError(await llamar("modificar_elemento", { archivo: "Tienda", elemento: "Comprar", cambios: { image: "a.png" } })));
 {
-  // 5 cambios simultáneos sobre el mismo diseño: con la cola ninguno se pierde
+  // 5 simultaneous changes on the same design: with the queue none is lost
   const nombres = ["A1", "A2", "A3", "A4", "A5"];
   await Promise.all(nombres.map((n, i) => llamar("duplicar_elemento", { archivo: "Tienda", elemento: "Cerrar", nuevo_nombre: n, dx: -90 * (i + 1) })));
   const t = texto(await llamar("leer_diseno", { archivo: "Tienda" }));
@@ -72,7 +72,7 @@ ok("texto enorme rechazado", esError(await llamar("modificar_elemento", { archiv
 ok("nombre enorme rechazado", esError(await llamar("modificar_elemento", { archivo: "Tienda", elemento: "Comprar", cambios: { name: "n".repeat(500) } })));
 ok("lista enorme rechazada", esError(await llamar("modificar_elemento", { archivo: "Tienda", elemento: "Comprar", cambios: { options: Array(1000).fill("a") } })));
 {
-  // un elemento llamado como el id de otro debe encontrarse por nombre
+  // an element named like another's id must be found by name
   await llamar("agregar_elemento", { archivo: "Tienda", tipo: "Button", nombre: "3", x: 0, y: 0, w: 50, h: 20 });
   await llamar("modificar_elemento", { archivo: "Tienda", elemento: "3", cambios: { text: "POR-NOMBRE" } });
   const docT = JSON.parse(fs.readFileSync(path.join(DISENOS, "Tienda.editorgui.json"), "utf8"));
@@ -87,7 +87,7 @@ srv.stdin.write("{no es json}\n");
 ok("JSON inválido no tumba el servidor", (await pedir("ping", {})).result !== undefined);
 
 if (process.argv[2]) {
-  // node mcp/probar-mcp.mjs <proyecto Unity>  → también exporta la tienda y la deja en disenos/
+  // node mcp/probar-mcp.mjs <Unity project>  → also exports the store and leaves it in disenos/
   const r = await llamar("exportar_unity", { archivo: "Tienda", proyecto_unity: process.argv[2] });
   ok("exportar_unity al proyecto indicado", !esError(r), texto(r).slice(0, 200));
   fs.mkdirSync(path.join(RAIZ, "disenos"), { recursive: true });

@@ -60,8 +60,8 @@ fn templates_dir() -> PathBuf {
     root_dir().join("plantillas")
 }
 
-/// Carpeta del diseño abierto: las imágenes con ruta relativa se buscan ahí (diseños portables,
-/// sin rutas personales del equipo).
+/// Folder of the open design: images with a relative path are looked up there (portable designs,
+/// no personal machine paths).
 pub static CARPETA_DISENO: std::sync::Mutex<Option<PathBuf>> = std::sync::Mutex::new(None);
 
 pub fn set_carpeta_diseno(archivo: &Path) {
@@ -70,8 +70,8 @@ pub fn set_carpeta_diseno(archivo: &Path) {
     }
 }
 
-/// Ruta de la imagen de un elemento: absoluta, relativa a la carpeta del diseño abierto
-/// (por ejemplo «pixel/espada.png») o un archivo de la biblioteca del usuario.
+/// Path of an element's image: absolute, relative to the open design's folder
+/// (e.g. «pixel/espada.png») or a file in the user's library.
 pub fn resolve_image(name: &str) -> PathBuf {
     let p = Path::new(name);
     if p.is_absolute() {
@@ -243,7 +243,7 @@ pub fn add_font_file(src: &Path) -> Result<(String, Vec<u8>, PathBuf), String> {
     let dir = fonts_dir();
     std::fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
     let mut dest = dir.join(src.file_name().ok_or("nombre no válido")?);
-    // Otra fuente con el mismo nombre de archivo: se guarda aparte (antes se usaba la nueva en esta sesión y la vieja al reiniciar).
+    // Another font with the same file name: stored separately (previously the new one was used this session and the old one after a restart).
     if dest.exists() && std::fs::read(&dest).map(|b| b != bytes).unwrap_or(true) {
         dest = dir.join(unique_name(&dir, &stem(src), &ext_of(src)));
     }
@@ -269,19 +269,19 @@ pub struct Settings {
     /// Last Unity project the design was exported to.
     pub unity_project: String,
     pub last_project_file: String,
-    /// El tutorial ya se mostró (no se abre solo al iniciar).
+    /// The tutorial has already been shown (it does not open by itself on startup).
     pub tutorial_visto: bool,
-    /// Accesibilidad: idioma de la interfaz («es», «en»…), tamaño (1.0 = 100 %), alto contraste y movimiento reducido.
+    /// Accessibility: interface language («es», «en»…), size (1.0 = 100 %), high contrast and reduced motion.
     pub idioma: String,
     pub escala_ui: f32,
     pub alto_contraste: bool,
     pub reducir_movimiento: bool,
-    /// Actualizaciones: no comprobar al abrir, y versión que el usuario decidió omitir.
+    /// Updates: do not check on startup, and the version the user chose to skip.
     pub no_buscar_actualizaciones: bool,
     pub version_omitida: String,
-    /// Tema de la interfaz (None = el predeterminado).
+    /// Interface theme (None = the default one).
     pub tema: Option<crate::theme::Tema>,
-    /// Sesión automática (capturas, pruebas): no se escribe nada en disco.
+    /// Automated session (screenshots, tests): nothing is written to disk.
     #[serde(skip)]
     pub solo_lectura: bool,
 }

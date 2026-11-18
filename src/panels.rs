@@ -74,7 +74,7 @@ fn tile(ui: &mut egui::Ui, size: Vec2, label: &str, paint: impl FnOnce(&egui::Pa
         ui.painter().rect_stroke(img, 7.0, Stroke::new(1.5, ACCENT()), StrokeKind::Inside);
     }
     paint(&ui.painter().with_clip_rect(img.shrink(2.0)), img.shrink(10.0));
-    // Etiquetas largas (alemán, ruso…): se acortan con «…» para no pisar la de al lado; el nombre completo va en el tooltip.
+    // Long labels (German, Russian…): shortened with «…» so they don't overlap the neighbor; the full name goes in the tooltip.
     let full = crate::i18n::t(label);
     let font = FontId::proportional(11.0);
     let fits = |s: &str| ui.fonts_mut(|f| f.layout_no_wrap(s.to_string(), font.clone(), MUTED()).size().x) <= size.x;
@@ -464,7 +464,7 @@ impl EditorApp {
         }
         let mut load = None;
         let mut remove = None;
-        // Se toma prestada la lista (sin clonarla cada frame) y se devuelve al final.
+        // The list is borrowed (not cloned every frame) and returned at the end.
         let templates = std::mem::take(&mut self.library.templates);
         ui.horizontal_wrapped(|ui| {
             ui.spacing_mut().item_spacing = Vec2::new(8.0, 8.0);
@@ -519,7 +519,7 @@ impl EditorApp {
         if self.library.elements.is_empty() {
             hint(ui, &crate::i18n::t("Sube imágenes o guarda una selección para tenerla aquí."));
         }
-        // Se toma prestada la lista (sin clonarla cada frame) y se devuelve al final.
+        // The list is borrowed (not cloned every frame) and returned at the end.
         let items = std::mem::take(&mut self.library.elements);
         let mut remove = None;
         ui.horizontal_wrapped(|ui| {
@@ -870,7 +870,7 @@ impl EditorApp {
         if self.library.images.is_empty() {
             hint(ui, &crate::i18n::t("Las imágenes que subas aparecerán aquí y se guardan para tus próximos diseños."));
         }
-        // Se toma prestada la lista (sin clonarla cada frame) y se devuelve al final.
+        // The list is borrowed (not cloned every frame) and returned at the end.
         let images = std::mem::take(&mut self.library.images);
         let mut remove = None;
         ui.horizontal_wrapped(|ui| {
@@ -1674,8 +1674,8 @@ impl EditorApp {
             let title = if e.kind == Kind::Dropdown { "TMP_Dropdown · opciones" } else { "TextMeshPro · texto" };
             component(ui, "txt", title, true, |ui| {
                 if e.kind == Kind::Dropdown {
-                    // Mientras se escribe se guarda el texto tal cual (con la línea vacía tras pulsar Enter);
-                    // las opciones se toman de él sin las líneas vacías.
+                    // While typing, the text is stored as is (with the empty line after pressing Enter);
+                    // the options are taken from it without the empty lines.
                     #[allow(deprecated)]
                     let buf_id = egui::Id::new(("dd_opts", e.id));
                     let mut opts = ui.data(|d| d.get_temp::<String>(buf_id)).unwrap_or_else(|| e.options.join("\n"));
@@ -2169,13 +2169,13 @@ fn rail_icon(p: &egui::Painter, t: Tab, r: Rect, c: Color32) {
             p.add(egui::Shape::line(vec![Pos2::new(r.left() + 2.0, r.bottom() - 3.0), Pos2::new(r.left() + 9.0, r.center().y + 1.0), Pos2::new(r.left() + 14.0, r.bottom() - 6.0), Pos2::new(r.right() - 2.0, r.center().y)], s));
         }
         Tab::Plugins => {
-            // pieza de rompecabezas simplificada
+            // simplified puzzle piece
             p.rect_stroke(Rect::from_min_max(Pos2::new(r.left() + 2.0, r.top() + 5.0), Pos2::new(r.right() - 5.0, r.bottom() - 2.0)), 3.0, s, StrokeKind::Inside);
             p.circle_stroke(Pos2::new(r.center().x - 1.5, r.top() + 4.0), 3.0, s);
             p.circle_stroke(Pos2::new(r.right() - 3.5, r.center().y + 1.5), 3.0, s);
         }
         Tab::Comunidad => {
-            // dos personas
+            // two people
             for dx in [-4.0f32, 4.0] {
                 let c = Pos2::new(r.center().x + dx, r.top() + 6.0);
                 p.circle_stroke(c, 3.5, s);
