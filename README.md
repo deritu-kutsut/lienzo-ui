@@ -41,7 +41,7 @@
 - **Elements › Ready-made components** and **Text › For buttons and HUD:** click to add at the centre, or drag onto a panel to make it a child.
 - **Images:** 8 more gradient placeholders (exported to uGUI as generated sprites).
 
-**1.3.1:** the interface and the built-in tutorial are now available in English, Spanish, Portuguese, French, German, Italian and Russian (**Accessibility › Language**).
+**1.3.2:** the interface, the built-in tutorial and the written tutorials are available in 10 languages: English, Spanish, Portuguese, French, German, Italian, Russian, Chinese, Japanese and Korean (**Accessibility › Language**).
 
 Full list in the [changelog](CHANGELOG.md).
 
@@ -129,7 +129,7 @@ Moderation lives in a web panel (also usable by AIs with revocable tokens): [doc
 🎬 [Tráiler en español](https://youtu.be/xb7x16KGKBY) · [Trailer in English](https://youtu.be/7G-g5H3nHtg)
 
 - **Probarlo:** descarga `LienzoUI-windows.zip` de las [releases](../../releases/latest) y abre `lienzo-ui.exe`. La primera vez se abre el tutorial; al terminarlo se abre el editor (botón **Tutorial** o F1 para volver).
-- **Novedades de la 1.3.1:** interfaz y tutorial en español, inglés, portugués, francés, alemán, italiano y ruso (**Accesibilidad › Idioma**).
+- **Novedades de la 1.3.2:** interfaz, tutorial y tutoriales escritos en 10 idiomas: español, inglés, portugués, francés, alemán, italiano, ruso, chino, japonés y coreano (**Accesibilidad › Idioma**).
 - **Novedades de la 1.3:** 7 plantillas nuevas (pausa, fin de partida, selección de nivel, carga, diálogo de personaje, clasificación y selección de personaje), **componentes listos** en Elementos, **estilos de HUD** en Texto y 8 degradados más. El botón **Revisar** de la cabecera avisa de letra pequeña, poco contraste, botones pequeños para tocar, elementos fuera de la página, nombres repetidos e imágenes que faltan; clic en un aviso para seleccionar el elemento. También con `--revisar` (sale con código 1 si hay errores) y con la herramienta MCP `revisar_diseno`.
 - **Pixel art, plugins y accesibilidad:** modo pixel art, plugins con scripts Rhai ([guía](docs/PLUGINS.md)) e interfaz en español, inglés, portugués, francés, alemán, italiano, ruso, chino, japonés o coreano, con tamaño hasta 200 %, alto contraste y movimiento reducido.
 - **Aprender:** [tutorial para novatos](docs/TUTORIAL_NOVATOS.md), [tutorial para profesionales](docs/TUTORIAL_PROFESIONALES.md), [cómo añadir cosas](docs/EXTENDER.md) y [servidor MCP para IA](docs/MCP.md).

@@ -2,7 +2,9 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); versiones con [SemVer](https://semver.org/lang/es/).
 
-## [Sin publicar]
+## [1.3.2] - 2026-11-18
+
+Chino, japonés y coreano: la app ya habla diez idiomas.
 
 ### Añadido
 - **Chino simplificado, japonés y coreano** en la interfaz, el tutorial integrado y los tutoriales de `docs/` (10 idiomas en total). La app usa las fuentes que ya trae el sistema (Microsoft YaHei, Yu Gothic, Malgun Gothic; en macOS y Linux, PingFang, Hiragino, Apple SD Gothic Neo o Noto Sans CJK) y solo las carga al elegir uno de estos idiomas; si no encuentra ninguna, Accesibilidad lo avisa.
