@@ -2,6 +2,11 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); versiones con [SemVer](https://semver.org/lang/es/).
 
+## [Sin publicar]
+
+### Añadido
+- Tutoriales escritos de `docs/` (novatos y profesionales) en portugués, francés, alemán, italiano y ruso, con una línea para cambiar de idioma en cada uno.
+
 ## [1.3.1] - 2026-11-18
 
 La interfaz y el tutorial, en siete idiomas.

@@ -1,6 +1,6 @@
 # Pro tutorial
 
-[Versión en español](TUTORIAL_PROFESIONALES.md).
+🌐 [English](TUTORIAL_PROS.md) · [Español](TUTORIAL_PROFESIONALES.md) · [Português](TUTORIAL_PROS.pt.md) · [Français](TUTORIAL_PROS.fr.md) · [Deutsch](TUTORIAL_PROS.de.md) · [Italiano](TUTORIAL_PROS.it.md) · [Русский](TUTORIAL_PROS.ru.md)
 
 ## What the export generates
 

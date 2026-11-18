@@ -1,6 +1,8 @@
 # Beginner tutorial
 
-Your first interface with Lienzo UI and your first export to Unity. No programming needed. [Versión en español](TUTORIAL_NOVATOS.md).
+🌐 [English](TUTORIAL_BEGINNERS.md) · [Español](TUTORIAL_NOVATOS.md) · [Português](TUTORIAL_BEGINNERS.pt.md) · [Français](TUTORIAL_BEGINNERS.fr.md) · [Deutsch](TUTORIAL_BEGINNERS.de.md) · [Italiano](TUTORIAL_BEGINNERS.it.md) · [Русский](TUTORIAL_BEGINNERS.ru.md)
+
+Your first interface with Lienzo UI and your first export to Unity. No programming needed.
 
 ## 1. Install and open
 
