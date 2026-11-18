@@ -245,11 +245,51 @@ Languages are assets/i18n/<code>.tsv files: to add one, translate en.tsv.",
     },
 ];
 
+/// Tutoriales de los demás idiomas: `assets/tutorial/<código>.json` con las mismas páginas que `NOVATO` y `PROFESIONAL`.
+const TUTORIALES: &[(&str, &str)] = &[
+    ("pt", include_str!("../assets/tutorial/pt.json")),
+    ("fr", include_str!("../assets/tutorial/fr.json")),
+    ("de", include_str!("../assets/tutorial/de.json")),
+    ("it", include_str!("../assets/tutorial/it.json")),
+    ("ru", include_str!("../assets/tutorial/ru.json")),
+];
+
+#[derive(serde::Deserialize)]
+struct PaginaJson {
+    titulo: String,
+    texto: String,
+}
+
+#[derive(serde::Deserialize)]
+struct TutorialJson {
+    novato: Vec<PaginaJson>,
+    profesional: Vec<PaginaJson>,
+}
+
+type Pistas = (&'static [Pagina], &'static [Pagina]);
+
+/// Se leen una sola vez; un archivo mal formado o incompleto se ignora (se usa el inglés).
+static OTROS: std::sync::LazyLock<std::collections::HashMap<&'static str, Pistas>> = std::sync::LazyLock::new(|| {
+    let leak = |v: Vec<PaginaJson>| -> &'static [Pagina] {
+        Box::leak(v.into_iter().map(|p| Pagina { titulo: Box::leak(p.titulo.into_boxed_str()), texto: Box::leak(p.texto.into_boxed_str()) }).collect::<Vec<_>>().into_boxed_slice())
+    };
+    TUTORIALES
+        .iter()
+        .filter_map(|(codigo, json)| {
+            let t: TutorialJson = serde_json::from_str(json).ok()?;
+            (t.novato.len() == NOVATO.len() && t.profesional.len() == PROFESIONAL.len()).then(|| (*codigo, (leak(t.novato), leak(t.profesional))))
+        })
+        .collect()
+});
+
 pub fn paginas(p: Pista) -> &'static [Pagina] {
-    let es = crate::i18n::es_espanol();
+    let (novato, profesional) = match crate::i18n::codigo() {
+        "es" => (NOVATO, PROFESIONAL),
+        codigo => OTROS.get(codigo).copied().unwrap_or((NOVATO_EN, PROFESIONAL_EN)),
+    };
     match p {
-        Pista::Novato => if es { NOVATO } else { NOVATO_EN },
-        Pista::Profesional => if es { PROFESIONAL } else { PROFESIONAL_EN },
+        Pista::Novato => novato,
+        Pista::Profesional => profesional,
     }
 }
 
@@ -380,6 +420,23 @@ mod tests {
         assert!(NOVATO.len() >= 3 && PROFESIONAL.len() >= 3);
         for p in NOVATO.iter().chain(PROFESIONAL) {
             assert!(!p.titulo.trim().is_empty() && !p.texto.trim().is_empty());
+        }
+    }
+
+    #[test]
+    fn cada_idioma_tiene_su_tutorial_completo() {
+        for (codigo, json) in TUTORIALES {
+            let t: TutorialJson = serde_json::from_str(json).unwrap_or_else(|e| panic!("{}.json no es válido: {}", codigo, e));
+            assert_eq!(t.novato.len(), NOVATO.len(), "{}: páginas de novatos", codigo);
+            assert_eq!(t.profesional.len(), PROFESIONAL.len(), "{}: páginas de profesionales", codigo);
+            for p in t.novato.iter().chain(&t.profesional) {
+                assert!(!p.titulo.trim().is_empty() && !p.texto.trim().is_empty(), "{}: página vacía", codigo);
+            }
+            assert!(OTROS.contains_key(codigo), "{} no se cargó", codigo);
+        }
+        // Todos los idiomas de la interfaz tienen tutorial propio (español e inglés están en el código).
+        for (codigo, _, _) in crate::i18n::IDIOMAS {
+            assert!(matches!(*codigo, "es" | "en") || TUTORIALES.iter().any(|(c, _)| c == codigo), "{} sin tutorial", codigo);
         }
     }
 }

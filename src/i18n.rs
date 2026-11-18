@@ -42,10 +42,6 @@ pub fn codigo() -> &'static str {
     IDIOMAS[ACTUAL.load(Ordering::Relaxed)].0
 }
 
-pub fn es_espanol() -> bool {
-    ACTUAL.load(Ordering::Relaxed) == 0
-}
-
 /// Traduce un texto de la interfaz al idioma actual (o lo deja igual si no hay traducción).
 pub fn t(texto: &str) -> String {
     let i = ACTUAL.load(Ordering::Relaxed);
