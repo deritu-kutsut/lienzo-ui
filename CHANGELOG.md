@@ -1,164 +1,164 @@
 # Changelog
 
-Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); versiones con [SemVer](https://semver.org/lang/es/).
+Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow [SemVer](https://semver.org/).
 
 ## [1.3.3] - 2026-11-18
 
-Corrección de bugs: lienzo, modo prueba, plugins y archivos dañados.
+Bug fixes: canvas, test mode, plugins and damaged files.
 
-### Corregido
-- Modo prueba: `mover`, `posicion` y `girar` mueven también los hijos del elemento; `valor` en un desplegable elige la opción (antes se limitaba a 0–1); `leer_texto` y `leer_valor` avisan si el elemento no existe; números infinitos ya no dejan coordenadas rotas.
-- Doble clic sobre un elemento dentro de un Contenedor ya no devuelve la selección al Contenedor al soltar.
-- Alt+clic sin arrastrar ya no deja una copia encima.
-- Pegar (Ctrl+V) un Contenedor o panel lo pone a su lado en vez de dentro de sí mismo.
-- Agrupar y desagrupar respetan los elementos bloqueados; desagrupar contenedores anidados ya no deja la selección con elementos borrados.
-- Subir o bajar varios elementos seguidos con Ctrl+] / Ctrl+[ ya no se anula, y «Al fondo» conserva su orden.
-- Al agregar un componente se conservan su rotación y su nombre (el «Combo» llegaba recto y «Botón píldora» pasaba a «Botón 12»).
-- Escalar una selección con elementos bloqueados ya no deforma el resto.
-- Las opciones de un desplegable se pueden escribir con Enter en el inspector.
-- Abrir un proyecto mientras se edita un texto ya no deja la edición abierta sobre el diseño nuevo.
-- Plugins: una ruta como `\carpeta\script.rhai` ya no puede salir de la carpeta del plugin en Windows.
-- Subir una fuente con el mismo nombre de archivo que otra ya no hace que se use la vieja al reiniciar.
-- Archivos dañados o ajenos: se corrigen letra de tamaño absurdo, bordes y radios negativos, opacidad fuera de rango, números infinitos, página sin tamaño y caracteres de control (que rompían el UXML exportado).
-- Un diseño titulado «CON», «NUL», «COM1»… se exporta con un nombre de archivo válido en Windows.
+### Fixed
+- Test mode: `mover`, `posicion` and `girar` also move the element's children; `valor` on a dropdown picks the option (before, it was limited to 0–1); `leer_texto` and `leer_valor` warn if the element does not exist; infinite numbers no longer leave broken coordinates.
+- Double-clicking an element inside a Container no longer returns the selection to the Container on release.
+- Alt+click without dragging no longer leaves a copy on top.
+- Pasting (Ctrl+V) a Container or panel puts it next to itself instead of inside itself.
+- Group and ungroup respect locked elements; ungrouping nested containers no longer leaves the selection holding deleted elements.
+- Moving several elements forward or backward in a row with Ctrl+] / Ctrl+[ is no longer cancelled out, and "To back" keeps their order.
+- Adding a component keeps its rotation and name (the "Combo" arrived straight and "Pill button" turned into "Button 12").
+- Scaling a selection that includes locked elements no longer distorts the rest.
+- Dropdown options can be typed with Enter in the inspector.
+- Opening a project while editing a text no longer leaves the edit open over the new design.
+- Plugins: a path like `\carpeta\script.rhai` can no longer escape the plugin folder on Windows.
+- Uploading a font with the same file name as another no longer makes the old one get used after restarting.
+- Damaged or third-party files: absurd font sizes, negative borders and radii, out-of-range opacity, infinite numbers, zero-size pages and control characters (which broke the exported UXML) are fixed.
+- A design titled "CON", "NUL", "COM1"… is exported with a file name that is valid on Windows.
 
 ## [1.3.2] - 2026-11-18
 
-Chino, japonés y coreano: la app ya habla diez idiomas.
+Chinese, Japanese and Korean: the app now speaks ten languages.
 
-### Añadido
-- **Chino simplificado, japonés y coreano** en la interfaz, el tutorial integrado y los tutoriales de `docs/` (10 idiomas en total). La app usa las fuentes que ya trae el sistema (Microsoft YaHei, Yu Gothic, Malgun Gothic; en macOS y Linux, PingFang, Hiragino, Apple SD Gothic Neo o Noto Sans CJK) y solo las carga al elegir uno de estos idiomas; si no encuentra ninguna, Accesibilidad lo avisa.
-- Tutoriales escritos de `docs/` (novatos y profesionales) en portugués, francés, alemán, italiano y ruso, con una línea para cambiar de idioma en cada uno.
+### Added
+- **Simplified Chinese, Japanese and Korean** in the interface, the built-in tutorial and the tutorials in `docs/` (10 languages in total). The app uses the fonts the system already provides (Microsoft YaHei, Yu Gothic, Malgun Gothic; on macOS and Linux, PingFang, Hiragino, Apple SD Gothic Neo or Noto Sans CJK) and only loads them when one of these languages is chosen; if it finds none, Accessibility warns about it.
+- Written tutorials in `docs/` (beginners and pros) in Portuguese, French, German, Italian and Russian, with a line for switching language in each one.
 
 ## [1.3.1] - 2026-11-18
 
-La interfaz y el tutorial, en siete idiomas.
+The interface and the tutorial, in seven languages.
 
-### Añadido
-- **5 idiomas nuevos en la interfaz:** portugués, francés, alemán, italiano y ruso (Accesibilidad › Idioma). El tutorial integrado también está traducido a los cinco.
-- Tutoriales en inglés en `docs/` (`TUTORIAL_BEGINNERS.md` y `TUTORIAL_PROS.md`), y tutoriales al día con la 1.3.
-- `cargo test` valida cada idioma: claves existentes, sin repetir, huecos `{}` y saltos `\n` conservados y al menos el 95 % traducido.
+### Added
+- **5 new interface languages:** Portuguese, French, German, Italian and Russian (Accessibility › Language). The built-in tutorial is also translated into all five.
+- English tutorials in `docs/` (`TUTORIAL_BEGINNERS.md` and `TUTORIAL_PROS.md`), and tutorials up to date with 1.3.
+- `cargo test` validates every language: keys exist, no duplicates, `{}` placeholders and `\n` line breaks preserved, and at least 95% translated.
 
-### Corregido
-- Se traducen los tamaños de página, las pantallas del modo prueba, la lista de atajos, los títulos «Controles de UI», «Contenedores y Layout Groups» y «Formas», el tipo de elemento, la fuente predeterminada y los títulos de componente del inspector.
-- Las etiquetas largas de las miniaturas se acortan con «…» en vez de pisar la de al lado; el nombre completo aparece al pasar el ratón.
+### Fixed
+- Page sizes, test-mode screens, the shortcut list, the titles "UI Controls", "Containers and Layout Groups" and "Shapes", the element type, the default font and the inspector's component titles are now translated.
+- Long thumbnail labels are shortened with "…" instead of overlapping the next one; the full name appears on hover.
 
 ## [1.3.0] - 2026-11-18
 
-Siete plantillas nuevas, componentes y estilos listos, la herramienta **Revisar diseño** y correcciones.
+Seven new templates, ready-made components and styles, the **Review design** tool and fixes.
 
-### Añadido
-- **7 plantillas nuevas:** Menú de pausa, Fin de partida, Selección de nivel, Pantalla de carga, Diálogo de personaje, Clasificación y Selección de personaje (13 en total). «En blanco» sigue siendo la 5 y se muestra al final.
-- **Revisar diseño** (botón **Revisar** en la cabecera, `--revisar` en la línea de comandos y `revisar_diseno` en el MCP): avisa de letra demasiado pequeña, poco contraste (WCAG), controles demasiado pequeños para tocar, elementos fuera de la página, nombres repetidos que confunden a `GameObject.Find` e imágenes que faltan. Clic en un problema selecciona el elemento.
-- **Elementos › Componentes listos:** botón píldora, botón contorno, botón cerrar, barras de vida y maná, tarjeta, panel translúcido, insignia y casilla.
-- **Texto › Para botones y HUD:** temporizador, monedas, daño, combo, nivel y subtítulo de diálogo.
-- **Imágenes:** 8 degradados más (Océano, Desierto, Neón, Hielo, Volcán, Caramelo, Madera, Viñeta).
+### Added
+- **7 new templates:** Pause menu, Game over, Level select, Loading screen, Character dialogue, Leaderboard and Character select (13 in total). "Blank" is still number 5 and is shown last.
+- **Review design** (**Review** button in the header, `--revisar` on the command line and `revisar_diseno` in the MCP): warns about text that is too small, low contrast (WCAG), controls too small to tap, elements outside the page, duplicate names that confuse `GameObject.Find`, and missing images. Clicking a problem selects the element.
+- **Elements › Ready-made components:** pill button, outline button, close button, health and mana bars, card, translucent panel, badge and checkbox.
+- **Text › For buttons and HUD:** timer, coins, damage, combo, level and dialogue subtitle.
+- **Images:** 8 more gradients (Ocean, Desert, Neon, Ice, Volcano, Candy, Wood, Vignette).
 
-### Corregido
-- Las plantillas aplicadas a páginas más pequeñas que 1920×1080 (720p, 800×600, vertical) se salían de la página: ahora se escalan para caber.
-- Guardar, guardar como plantilla o exportar en modo prueba guardaba los cambios hechos por los clics de prueba.
-- Abrir un proyecto o una plantilla en modo prueba y después salir de él devolvía el diseño anterior.
-- **Distribuir** movía elementos bloqueados.
-- Si faltaba una imagen, la exportación dejaba el proyecto de Unity a medias: ahora se comprueba antes de escribir nada.
-- Con la interfaz en inglés seguían en español los nombres de los elementos, formas, estilos de texto, degradados y tipos de control. La búsqueda encuentra también por el nombre traducido.
-- Más contraste en los botones naranjas y verdes de las plantillas.
+### Fixed
+- Templates applied to pages smaller than 1920×1080 (720p, 800×600, portrait) overflowed the page: they are now scaled to fit.
+- Saving, saving as a template or exporting in test mode kept the changes made by the test clicks.
+- Opening a project or a template in test mode and then leaving it brought back the previous design.
+- **Distribute** moved locked elements.
+- If an image was missing, the export left the Unity project half-written: this is now checked before anything is written.
+- With the interface in English, element names, shapes, text styles, gradients and control types were still in Spanish. Search also matches by the translated name.
+- More contrast on the orange and green buttons of the templates.
 
-### Rendimiento
-- Las miniaturas de las plantillas se generan una vez (antes, cada frame) y las listas de la biblioteca ya no se copian cada frame.
-- La visibilidad de los elementos al dibujar el lienzo se calcula en una pasada (antes, cuadrática).
+### Performance
+- Template thumbnails are generated once (before, every frame) and library lists are no longer copied every frame.
+- The visibility of elements when drawing the canvas is computed in a single pass (before, quadratic).
 
 ## [1.2.4] - 2026-11-17
 
-Traducción al inglés de los botones, tooltips y plantillas.
+English translation of buttons, tooltips and templates.
 
-### Corregido
-- Con la interfaz en inglés seguían en español los tooltips de los botones con icono (Deshacer, Rehacer, Duplicar, Eliminar, alineación…), los títulos de sección (Plantillas de interfaz, Mis plantillas, Estilos de texto…), los botones Atrás, Adelante, Al fondo, Al frente, Distribuir, Agrupar y Desagrupar, y los nombres de las plantillas. Ahora se traducen.
+### Fixed
+- With the interface in English, the tooltips of icon buttons (Undo, Redo, Duplicate, Delete, alignment…), the section titles (Interface templates, My templates, Text styles…), the Backward, Forward, To back, To front, Distribute, Group and Ungroup buttons, and the template names were still in Spanish. They are now translated.
 
 ## [1.2.3] - 2026-11-17
 
-Interfaz en inglés completa y límites en el servidor MCP.
+Fully English interface and limits in the MCP server.
 
-### Corregido
-- Con la interfaz en inglés, la barra de estado y varios textos del inspector (jerarquía, Layout Group, «Padre») seguían en español. Ahora se traducen.
-- Servidor MCP: un elemento llamado «3» ya no pierde ante el elemento de id 3 (el nombre exacto tiene prioridad).
-- Servidor MCP: límites de tamaño (nombre 120 caracteres, texto 5000, listas de 200 elementos). Un diseño con 5 MB de texto tardaba 32 s en abrirse.
+### Fixed
+- With the interface in English, the status bar and several inspector texts (hierarchy, Layout Group, "Parent") were still in Spanish. They are now translated.
+- MCP server: an element named "3" no longer loses to the element with id 3 (the exact name takes priority).
+- MCP server: size limits (name 120 characters, text 5000, lists of 200 elements). A design with 5 MB of text took 32 s to open.
 
 ## [1.2.2] - 2026-11-17
 
-Robustez ante diseños malformados.
+Robustness against malformed designs.
 
-### Corregido
-- Un diseño con padres en ciclo (o un elemento padre de sí mismo) ya no cuelga la app al seleccionar, borrar o duplicar.
-- Exportar un diseño con ancho o alto negativos o no numéricos ya no cierra la app.
-- Los ids repetidos y un `next_id` demasiado bajo se corrigen al abrir el archivo; las coordenadas no numéricas pasan a 0.
-- Los títulos muy largos se acortan a 64 caracteres en los nombres de archivo y de clase exportados.
+### Fixed
+- A design with parents in a cycle (or an element that is its own parent) no longer freezes the app when selecting, deleting or duplicating.
+- Exporting a design with negative or non-numeric width or height no longer closes the app.
+- Duplicate ids and a `next_id` that is too low are fixed when the file is opened; non-numeric coordinates become 0.
+- Very long titles are shortened to 64 characters in exported file and class names.
 
 ## [1.2.1] - 2026-11-17
 
-Corrección del actualizador.
+Updater fix.
 
-### Corregido
-- Tras actualizar, **Reiniciar ahora** relanzaba la versión anterior: ahora abre la nueva.
-- Las notas de la versión se muestran como texto plano en la ventana de actualización.
+### Fixed
+- After updating, **Restart now** relaunched the previous version: it now opens the new one.
+- Release notes are shown as plain text in the update window.
 
 ## [1.2.0] - 2026-11-17
 
-Actualizaciones desde la app.
+In-app updates.
 
-### Añadido
-- **Actualizaciones desde la app**: al abrir, Lienzo UI consulta la última release de GitHub (solo `github.com`, sin enviar datos) y, si hay una versión nueva, aparece el botón **Actualizar a X.Y.Z** en la cabecera. Funciona igual si descargaste la app de GitHub o de itch.io. Descarga el zip, comprueba su huella SHA-256, reemplaza el `.exe` (el anterior queda como `.viejo` hasta el siguiente arranque) y ofrece reiniciar. Si algo no se puede verificar, abre la página de descarga. Se puede desactivar la búsqueda al abrir, omitir una versión o buscar a mano desde **Archivo → Buscar actualizaciones…**.
+### Added
+- **In-app updates**: on startup, Lienzo UI checks the latest GitHub release (only `github.com`, sending no data) and, if there is a new version, the **Update to X.Y.Z** button appears in the header. It works the same whether you downloaded the app from GitHub or from itch.io. It downloads the zip, checks its SHA-256 fingerprint, replaces the `.exe` (the previous one stays as `.viejo` until the next launch) and offers to restart. If something cannot be verified, it opens the download page. You can turn off the startup check, skip a version or check manually from **File → Check for updates…**.
 
-### Corregido
-- Servidor MCP: valida rangos (`w`, `h`, `font_size`, `opacity`…), nombres vacíos o duplicados al renombrar, diseños corruptos y nombres de archivo reservados de Windows.
+### Fixed
+- MCP server: validates ranges (`w`, `h`, `font_size`, `opacity`…), empty or duplicate names when renaming, corrupt designs and reserved Windows file names.
 
 ## [1.1.1] - 2026-11-17
 
-Moderación automática y arranque maximizado.
+Automatic moderation and maximized startup.
 
-### Añadido
-- **Moderación automática**: todo lo que se sube (también fotos de perfil y banners) se comprueba solo; lo limpio se publica y lo dudoso queda pendiente para una persona. `reanalizar` vuelve a pasar lo pendiente.
-- La ventana arranca **maximizada**.
-- **Paquete de Unity** gratuito (`LienzoUI-for-Unity`): importador, ventana de acceso y 7 pantallas de ejemplo, enviado a la Asset Store.
+### Added
+- **Automatic moderation**: everything that is uploaded (profile pictures and banners too) is checked automatically; clean items are published and doubtful ones stay pending for a person. `reanalizar` re-runs the pending ones.
+- The window starts **maximized**.
+- Free **Unity package** (`LienzoUI-for-Unity`): importer, launcher window and 7 sample screens, submitted to the Asset Store.
 
 ## [1.1.0] - 2026-11-17
 
-Comunidad, perfiles de creador y temas.
+Community, creator profiles and themes.
 
-### Añadido
-- **Comunidad**: pestaña para explorar, instalar, subir y reportar **plugins, imágenes, fuentes, plantillas, elementos y temas**. Se instala con un clic tras verificar la huella SHA-256 y volver a validar el archivo. Explorar no necesita cuenta.
-- **Cuentas con GitHub o Google** (sin contraseñas) y **perfil de creador**: foto, banner, biografía, GitHub y redes (X, YouTube, itch.io, Twitch, Bluesky, Instagram). Editor de perfil al estilo de X; las fotos se recortan y reducen solas y se ven al momento mientras se revisan. Botón de perfil con tu foto en la cabecera.
-- **Seguir creadores** y **corazones** (como la estrella de GitHub), con filtro «Siguiendo». Quién sigue a quién no es público; solo los totales.
-- **Subir contenido** con vista previa opcional (se amplía con un clic) y un icono SVG por tipo. Cada subida pasa por cuarentena, validación de formato (solo formatos de datos), antivirus y moderación de texto; lo dudoso espera revisión humana.
-- **Filtro +18** aplicado en el servidor: solo lo ve quien confirma ser mayor de 18 años.
-- **Temas**: botón **Temas** para cambiar colores, esquinas y fuente de toda la app. Cinco temas incluidos (Lienzo oscuro, Lienzo claro, Medianoche, Atardecer, Bosque), temas propios y compartibles en la comunidad.
-- **Web de moderación** (`web/moderacion`): panel para revisar lo pendiente por categorías, con acceso para personas (cuenta) y para scripts (tokens revocables con alcances y caducidad). La orden `--comunidad-revisar` también aprueba fotos de perfil y gestiona tokens.
-- Iconos SVG propios en lugar de emojis; ejecutable `Lienzo UI.exe`.
-- Servidor en `supabase/` (esquema con RLS, funciones de moderación) y guías `docs/COMUNIDAD.md` y `docs/MODERACION.md`.
+### Added
+- **Community**: a tab to browse, install, upload and report **plugins, images, fonts, templates, elements and themes**. Installs with one click after verifying the SHA-256 fingerprint and re-validating the file. Browsing does not need an account.
+- **Accounts with GitHub or Google** (no passwords) and **creator profile**: photo, banner, bio, GitHub and social links (X, YouTube, itch.io, Twitch, Bluesky, Instagram). X-style profile editor; photos are cropped and reduced automatically and show up instantly while they are being reviewed. Profile button with your photo in the header.
+- **Follow creators** and **hearts** (like GitHub's star), with a "Following" filter. Who follows whom is not public; only the totals.
+- **Upload content** with an optional preview (enlarges with one click) and one SVG icon per type. Every upload goes through quarantine, format validation (data formats only), antivirus and text moderation; doubtful items wait for human review.
+- **18+ filter** enforced on the server: only those who confirm they are over 18 can see it.
+- **Themes**: **Themes** button to change colors, corners and font of the whole app. Five built-in themes (Dark canvas, Light canvas, Midnight, Sunset, Forest), custom themes that can be shared in the community.
+- **Moderation web** (`web/moderacion`): panel to review pending items by category, with access for people (account) and for scripts (revocable tokens with scopes and expiry). The `--comunidad-revisar` command also approves profile photos and manages tokens.
+- Own SVG icons instead of emojis; `Lienzo UI.exe` executable.
+- Server in `supabase/` (schema with RLS, moderation functions) and the guides `docs/COMUNIDAD.md` and `docs/MODERACION.md`.
 
-### Cambiado
-- Los colores de la interfaz se leen del tema en uso (antes eran constantes).
+### Changed
+- Interface colors are read from the theme in use (before, they were constants).
 
-### Seguridad
-- Sin contraseñas ni correos en la app; sesión guardada en el Administrador de credenciales de Windows; la app no se conecta hasta que abres la pestaña Comunidad.
+### Security
+- No passwords or emails in the app; session stored in the Windows Credential Manager; the app does not connect until you open the Community tab.
 
 ## [1.0.0] - 2026-11-16
 
-Primera versión pública de **Lienzo UI** (antes «Editor GUI»).
+First public release of **Lienzo UI** (formerly "Editor GUI").
 
-### Añadido
-- **Pixel art**: imágenes sin suavizado y píxeles enteros en el editor; Canvas Pixel Perfect y sprites Point sin compresión en Unity.
-- **Plugins**: comandos, exportadores y plantillas con scripts Rhai aislados; pestaña Plugins y tres plugins de ejemplo.
-- **Accesibilidad**: interfaz en español o inglés, tamaño hasta 200 % (Ctrl+Alt+= / -), alto contraste y movimiento reducido. Tutorial completo en inglés.
-- Nombre, icono SVG y portada.
-- Tutorial integrado para novatos (5 pasos) y profesionales (9 pasos): se abre la primera vez; al terminarlo se abre el editor; botón **Tutorial** y F1 para reabrirlo.
-- Línea de comandos: `--plantillas`, `--plantilla`, `--abrir`, `--guardar`, `--exportar` (sin ventana), `--tutorial`, `--sin-tutorial`.
-- Servidor MCP (`mcp/lienzo-ui-mcp.mjs`) con 12 herramientas, llamadas en cola y `mcp/probar-mcp.mjs` (32 comprobaciones).
-- Documentación: tutoriales, guía para extender, MCP y contribución. Licencia MIT.
+### Added
+- **Pixel art**: images without smoothing and whole pixels in the editor; Canvas Pixel Perfect and uncompressed Point sprites in Unity.
+- **Plugins**: commands, exporters and templates with isolated Rhai scripts; Plugins tab and three sample plugins.
+- **Accessibility**: interface in Spanish or English, size up to 200% (Ctrl+Alt+= / -), high contrast and reduced motion. Complete tutorial in English.
+- Name, SVG icon and cover.
+- Built-in tutorial for beginners (5 steps) and pros (9 steps): it opens the first time; when you finish it the editor opens; **Tutorial** button and F1 to reopen it.
+- Command line: `--plantillas`, `--plantilla`, `--abrir`, `--guardar`, `--exportar` (no window), `--tutorial`, `--sin-tutorial`.
+- MCP server (`mcp/lienzo-ui-mcp.mjs`) with 12 tools, queued calls and `mcp/probar-mcp.mjs` (32 checks).
+- Documentation: tutorials, extension guide, MCP and contributing. MIT license.
 
-### Probado
-- Las 5 plantillas y dos diseños creados por MCP («Tienda del herrero» y «HUD pixel art») exportados a Unity 6000.3 (URP): prefabs uGUI, UI Toolkit e IMGUI sin errores; el modo pixel art deja el Canvas en Pixel Perfect y los sprites en Point.
+### Tested
+- The 5 templates and two designs created via MCP ("Blacksmith's shop" and "Pixel art HUD") exported to Unity 6000.3 (URP): uGUI, UI Toolkit and IMGUI prefabs without errors; pixel art mode leaves the Canvas as Pixel Perfect and the sprites as Point.
 
-### Corregido (encontrado al probar en Unity)
-- Sin los TMP Essential Resources los textos quedaban sin fuente y fallaban en RectMask2D: el importador ahora lo detecta, abre TMP Importer y regenera los prefabs.
-- Títulos que se partían en uGUI (fuente de TMP más ancha): los textos se reducen hasta caber.
-- Cuadrícula de UI Toolkit con una columna de menos por el espaciado.
+### Fixed (found while testing in Unity)
+- Without the TMP Essential Resources, texts were left without a font and failed in RectMask2D: the importer now detects this, opens TMP Importer and regenerates the prefabs.
+- Titles that wrapped in uGUI (wider TMP font): texts are shrunk until they fit.
+- UI Toolkit grid with one column too few because of spacing.

@@ -1,15 +1,15 @@
-# Paquete de Unity: Lienzo UI for Unity
+# Unity package: Lienzo UI for Unity
 
-El lado de Unity de Lienzo UI (importador, ventana de acceso y 7 pantallas de ejemplo), listo para la Asset Store (gratis).
+The Unity side of Lienzo UI (importer, launcher window and 7 sample screens), ready for the Asset Store (free).
 
 ```bash
-python unity-package/construir.py        # dist/LienzoUI-for-Unity-<versión>.unitypackage (sin necesitar Unity)
-python unity-package/imagenes_store.py   # icono, tarjeta, portada y capturas para la ficha, en unity-package/asset-store/
+python unity-package/construir.py        # dist/LienzoUI-for-Unity-<version>.unitypackage (no Unity needed)
+python unity-package/imagenes_store.py   # icon, card, cover and screenshots for the listing, in unity-package/asset-store/
 ```
 
-- `fuente/Assets/EditorGUI/`: lo que contiene el paquete. El importador se copia de `src/export/EditorGuiImporter.cs` al construir, así que el paquete y la app no se separan.
-- Los `.meta` se generan con **GUID estables** (derivados de la ruta): al actualizar el paquete nadie pierde referencias.
-- `EditorGui.Editor.asmdef` hace que el importador **solo se compile si Unity UI (uGUI/TextMeshPro) está instalado**: en un proyecto sin él no da errores.
-- `asset-store/ficha.md`: los textos y datos para el Publisher Portal y los pasos para subirlo.
+- `fuente/Assets/EditorGUI/`: what the package contains. The importer is copied from `src/export/EditorGuiImporter.cs` at build time, so the package and the app never drift apart.
+- The `.meta` files are generated with **stable GUIDs** (derived from the path): when the package is updated, nobody loses references.
+- `EditorGui.Editor.asmdef` makes the importer **compile only if Unity UI (uGUI/TextMeshPro) is installed**: in a project without it, there are no errors.
+- `asset-store/ficha.md`: the texts and data for the Publisher Portal and the steps to upload it.
 
-Validado en Unity 6000.3.25f1: con `com.unity.ugui` compila sin errores y sin él tampoco rompe el proyecto.
+Validated on Unity 6000.3.25f1: with `com.unity.ugui` it compiles without errors, and without it the project doesn't break either.

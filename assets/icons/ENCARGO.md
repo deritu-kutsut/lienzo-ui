@@ -1,25 +1,25 @@
-Necesito un set de iconos SVG para la interfaz de un editor de UI para Unity (tema oscuro).
+I need a set of SVG icons for the interface of a UI editor for Unity (dark theme).
 
-Estilo: minimalista, lineal, coherente entre sí (tipo Lucide / Feather).
-Reglas técnicas, todas obligatorias:
-- viewBox="0 0 24 24", width="24" height="24", sin <title>, sin estilos CSS, sin transform.
-- Solo trazos: fill="none" stroke="#FFFFFF" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" en el <svg>.
-- Si un detalle necesita relleno (un punto), usa fill="#FFFFFF" en ese elemento solamente.
-- Solo <path>, <rect>, <circle>, <line>, <polyline>, <polygon>. Nada de texto ni fuentes.
-- Margen de 2 px dentro del viewBox.
+Style: minimalist, line-based, consistent with each other (Lucide / Feather style).
+Technical rules, all mandatory:
+- viewBox="0 0 24 24", width="24" height="24", no <title>, no CSS styles, no transform.
+- Strokes only: fill="none" stroke="#FFFFFF" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" on the <svg>.
+- If a detail needs a fill (a dot), use fill="#FFFFFF" on that element only.
+- Only <path>, <rect>, <circle>, <line>, <polyline>, <polygon>. No text or fonts.
+- 2 px margin inside the viewBox.
 
-Entrégalos en UN solo bloque de código JSON con la forma {"nombre": "<svg ...>...</svg>", ...} usando exactamente estos nombres:
+Deliver them in ONE single JSON code block with the shape {"name": "<svg ...>...</svg>", ...} using exactly these names:
 
-Tipos de elemento:
-  panel (rectángulo redondeado), ellipse (círculo), image (marco con montaña y sol), text (letra T trazada con líneas),
-  button (píldora con un punto/cursor), toggle (casilla con check), slider (línea con perilla), input (campo con cursor de texto),
-  dropdown (caja con chevron abajo), scrollview (caja con barra de scroll), empty (rectángulo con línea discontinua)
-Acciones:
-  eye, eye_off, lock, unlock, duplicate, trash, parent_up (flecha arriba-izquierda saliendo de una caja), bolt (rayo),
-  layout (rejilla 2x2), mask (cuadrado recortando un círculo), play, stop, undo, redo, export (flecha hacia abajo a una bandeja),
+Element types:
+  panel (rounded rectangle), ellipse (circle), image (frame with mountain and sun), text (letter T drawn with lines),
+  button (pill with a dot/cursor), toggle (box with check), slider (line with knob), input (field with text cursor),
+  dropdown (box with chevron down), scrollview (box with scroll bar), empty (rectangle with dashed line)
+Actions:
+  eye, eye_off, lock, unlock, duplicate, trash, parent_up (up-left arrow leaving a box), bolt (lightning bolt),
+  layout (2x2 grid), mask (square clipping a circle), play, stop, undo, redo, export (arrow down into a tray),
   save, search, plus, close, code (</>)
-Alineación:
+Alignment:
   align_left, align_center, align_right, align_top, align_middle, align_bottom
-Pestañas laterales:
-  tab_hierarchy (árbol de nodos), tab_elements (formas: círculo, cuadrado, triángulo), tab_templates (tres paneles de layout),
-  tab_text (T con subrayado), tab_images (dos imágenes apiladas)
+Side tabs:
+  tab_hierarchy (tree of nodes), tab_elements (shapes: circle, square, triangle), tab_templates (three layout panels),
+  tab_text (T with underline), tab_images (two stacked images)

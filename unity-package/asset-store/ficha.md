@@ -1,24 +1,24 @@
-# Ficha de la Asset Store · Lienzo UI for Unity
+# Asset Store listing · Lienzo UI for Unity
 
-Todo lo que se pega en el Publisher Portal (https://publisher.unity.com/). Precio: **gratis (Free)**.
+Everything to paste into the Publisher Portal (https://publisher.unity.com/). Price: **free (Free)**.
 
-## Datos básicos
+## Basic data
 
-| Campo | Valor |
+| Field | Value |
 |---|---|
 | **Package name** | Lienzo UI for Unity |
-| **Category** | Editor Extensions › Utilities (alternativa: Tools › GUI) |
+| **Category** | Editor Extensions › Utilities (alternative: Tools › GUI) |
 | **Price** | Free |
 | **Version** | 1.1.0 |
 | **Publisher** | Deritu Kutsut |
-| **Support email / website** | los de tu perfil de publisher |
+| **Support email / website** | the ones from your publisher profile |
 | **Unity version (minimum)** | 6000.0 |
 | **Tested on** | 6000.3.25f1 (URP) |
-| **Render pipelines** | Built-in, URP, HDRP (uGUI normal) |
-| **Package type** | Assets (carpeta `Assets/EditorGUI`) |
-| **Keywords (máx. 15)** | ui, gui, ugui, textmeshpro, ui toolkit, imgui, editor, tool, canvas, layout, hud, menu, pixel art, designer, export |
+| **Render pipelines** | Built-in, URP, HDRP (standard uGUI) |
+| **Package type** | Assets (folder `Assets/EditorGUI`) |
+| **Keywords (max. 15)** | ui, gui, ugui, textmeshpro, ui toolkit, imgui, editor, tool, canvas, layout, hud, menu, pixel art, designer, export |
 
-## Short description (máx. 200 caracteres)
+## Short description (max. 200 characters)
 
 Free visual editor for game UI: design a screen once and export it to Unity as uGUI + TextMeshPro, UI Toolkit and IMGUI. Includes the importer, a launcher window and 7 sample screens.
 
@@ -33,7 +33,7 @@ Free visual editor for game UI: design a screen once and export it to Unity as u
 - Launcher window: opens the app, shows your project path, lists the sample projects and opens them in the app.
 - 7 sample screens: main menu, game HUD, pixel-art HUD, dialog, settings, inventory and shop (exported designs, sprites and Lienzo UI projects).
 - Pixel-art mode: Pixel Perfect canvas and point-filtered sprites.
-- Documentation in English and Spanish.
+- Documentation in English.
 
 **What the app does**
 - Design-tool editing: handles, smart guides, groups, layers, undo/redo.
@@ -45,7 +45,7 @@ Free visual editor for game UI: design a screen once and export it to Unity as u
 
 Links: https://github.com/deritu-kutsut/lienzo-ui · https://deritu.itch.io/lienzo-ui
 
-## Key features (5-8 líneas cortas)
+## Key features (5-8 short lines)
 
 - Free and open source (MIT)
 - Visual canvas editor with real Unity concepts
@@ -58,21 +58,21 @@ Links: https://github.com/deritu-kutsut/lienzo-ui · https://deritu.itch.io/lien
 
 ## Release notes (v1.1.0)
 
-First Asset Store release: importer, launcher window, 7 sample screens, English/Spanish docs.
+First Asset Store release: importer, launcher window, 7 sample screens, English docs.
 
-## Imágenes (en esta carpeta)
+## Images (in this folder)
 
-| Archivo | Para |
+| File | For |
 |---|---|
 | `icon_160x160.png` | Package icon (160×160) |
 | `card_420x280.png` | Card image (420×280) |
 | `cover_1950x1300.png` | Cover image (1950×1300) |
-| `screenshot_*_1920x1080.png` | Screenshots (editor, Unity, comunidad, perfil, temas, tutorial) |
+| `screenshot_*_1920x1080.png` | Screenshots (editor, Unity, community, profile, themes, tutorial) |
 
-## Cómo subirlo (lo haces tú, porque exige tu cuenta y aceptar sus términos)
+## How to upload it (you do this yourself, because it requires your account and accepting its terms)
 
-1. En el **Publisher Portal** crea un paquete nuevo («Create package»), rellénalo con esta ficha y sube las imágenes.
-2. En Unity, instala **Asset Store Tools** (Package Manager › My Assets › «Asset Store Publishing Tools»), arrastra `dist/LienzoUI-for-Unity-1.1.0.unitypackage` a un proyecto vacío (o abre `unity-package/fuente`) y usa **Asset Store Tools › Package Upload**: elige la carpeta `Assets/EditorGUI`, inicia sesión y sube.
-3. Vuelve al portal, comprueba la validación y pulsa **Submit for approval**. La revisión de Unity tarda unos días.
+1. In the **Publisher Portal** create a new package ("Create package"), fill it in with this listing and upload the images.
+2. In Unity, install **Asset Store Tools** (Package Manager › My Assets › "Asset Store Publishing Tools"), drag `dist/LienzoUI-for-Unity-1.1.0.unitypackage` into an empty project (or open `unity-package/fuente`) and use **Asset Store Tools › Package Upload**: pick the `Assets/EditorGUI` folder, sign in and upload.
+3. Go back to the portal, check the validation and click **Submit for approval**. Unity's review takes a few days.
 
-Nota: la Asset Store pide que el paquete funcione por sí solo y que se declare el software externo que necesita; ya está explicado en la descripción y en el README del paquete.
+Note: the Asset Store requires the package to work on its own and any external software it needs to be declared; this is already explained in the description and in the package README.

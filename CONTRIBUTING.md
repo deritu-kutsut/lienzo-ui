@@ -1,27 +1,27 @@
-# Contribuir
+# Contributing
 
-¡Gracias por querer mejorar Lienzo UI! Cualquier persona puede proponer cambios.
+Thank you for wanting to improve Lienzo UI! Anyone can propose changes.
 
-1. Haz un **fork** y crea una rama: `git checkout -b feat/mi-mejora`.
-2. Sigue [docs/EXTENDER.md](docs/EXTENDER.md).
-3. Comprueba: `cargo test`, `node mcp/probar-mcp.mjs` y, si tocaste la exportación, una exportación real a Unity.
-4. Añade una línea a `CHANGELOG.md` en **Sin publicar**.
-5. Abre un **pull request** explicando qué cambia y por qué, con una captura si es visual.
+1. Make a **fork** and create a branch: `git checkout -b feat/mi-mejora`.
+2. Follow [docs/EXTENDER.md](docs/EXTENDER.md).
+3. Check: `cargo test`, `node mcp/probar-mcp.mjs` and, if you touched the export, a real export to Unity.
+4. Add a line to `CHANGELOG.md` under **Unreleased**.
+5. Open a **pull request** explaining what changes and why, with a screenshot if it is visual.
 
-¿Un error o una idea? Abre un **issue**.
+A bug or an idea? Open an **issue**.
 
-## Convenciones
+## Conventions
 
-- Rust 2024, `cargo fmt` antes de enviar. Textos de la interfaz en español.
-- Los cambios en el formato del diseño deben seguir leyendo los proyectos antiguos (`#[serde(default)]`).
-- Lo que se exporta a Unity no debe pisar el código del usuario (`<Diseño>View.cs`).
+- Rust 2024, `cargo fmt` before submitting. Interface texts in Spanish.
+- Changes to the design format must keep reading old projects (`#[serde(default)]`).
+- What is exported to Unity must not overwrite the user's code (`<Diseño>View.cs`).
 
-## Publicar una versión (mantenedores)
+## Publishing a release (maintainers)
 
 ```bash
 bash publicar.sh 1.1.0
 ```
 
-Compila en release, empaqueta `LienzoUI-windows-<versión>.zip` (ejecutable, servidor MCP y documentación), crea el tag y la release en GitHub y, si `butler` está instalado, la sube a itch.io.
+It builds in release, packages `LienzoUI-windows-<version>.zip` (executable, MCP server and documentation), creates the tag and the release on GitHub and, if `butler` is installed, uploads it to itch.io.
 
-Al contribuir aceptas publicar tu aporte bajo la [licencia MIT](LICENSE).
+By contributing you agree to publish your contribution under the [MIT license](LICENSE).

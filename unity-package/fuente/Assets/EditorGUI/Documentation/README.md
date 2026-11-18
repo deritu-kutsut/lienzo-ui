@@ -35,13 +35,3 @@ Assets/EditorGUI/
 ## Support
 
 Issues and questions: https://github.com/deritu-kutsut/lienzo-ui/issues · MIT license.
-
----
-
-# Lienzo UI para Unity
-
-Editor visual de interfaces para juegos, gratuito y de código abierto. Diseñas una pantalla una vez y la exportas a Unity como **uGUI + TextMeshPro**, **UI Toolkit** e **IMGUI**.
-
-Este paquete es la parte de Unity: el **importador** (`Tools > Lienzo UI`), una **ventana** que abre la app y lista los ejemplos, y **siete diseños de ejemplo** (menú, HUD, HUD pixel art, diálogo, ajustes, inventario y tienda). Necesitas **Unity 6**, **uGUI + TextMeshPro** (con sus Essential Resources) y la **app de escritorio** (Windows, gratis): https://github.com/deritu-kutsut/lienzo-ui/releases/latest
-
-Pasos: 1) abre la app y elige una plantilla · 2) **Exportar a Unity** (Ctrl+E) y elige esta carpeta de proyecto · 3) el prefab aparece en `Assets/EditorGUI/Prefabs` · 4) cambia el diseño en la app y vuelve a exportar: el prefab se regenera solo.

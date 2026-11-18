@@ -1,10 +1,10 @@
-# Cómo añadir cosas a Lienzo UI
+# How to add things to Lienzo UI
 
-Guía práctica para ampliar el código. Después de cada cambio: `cargo test` y prueba en la app.
+A practical guide to extending the code. After every change: `cargo test` and try it in the app.
 
-## Añadir una página al tutorial
+## Add a tutorial page
 
-Edita `src/tutorial.rs` y añade un elemento a `NOVATO` o `PROFESIONAL`:
+Edit `src/tutorial.rs` and add an item to `NOVATO` or `PROFESIONAL`:
 
 ```rust
 Pagina {
@@ -13,35 +13,35 @@ Pagina {
 },
 ```
 
-Los puntos y la numeración se generan solos. Actualiza también `docs/TUTORIAL_*.md`.
+Bullets and numbering are generated automatically. Also update `docs/TUTORIAL_*.md`.
 
-## Añadir una plantilla
+## Add a template
 
-1. En `src/model.rs`, añade el nombre al final de `TEMPLATES` (antes de «En blanco» si quieres que salga antes).
-2. En `template(index, width, height)`, añade un brazo al `match` que construya el diseño con `put(&mut d, padre, Kind::..., "Nombre", [x, y, w, h], |e| { ... })` y las anclas con `anchor(e, min, max)`. Copia una plantilla existente como base.
-3. Comprueba: `lienzo-ui --plantilla N --screenshot prueba.png` y exporta a un proyecto de Unity.
+1. In `src/model.rs`, add the name at the end of `TEMPLATES` (before "En blanco" if you want it to appear earlier).
+2. In `template(index, width, height)`, add an arm to the `match` that builds the design with `put(&mut d, padre, Kind::..., "Nombre", [x, y, w, h], |e| { ... })` and the anchors with `anchor(e, min, max)`. Copy an existing template as a starting point.
+3. Check: `lienzo-ui --plantilla N --screenshot prueba.png` and export to a Unity project.
 
-## Añadir un tipo de elemento
+## Add an element type
 
-1. `src/model.rs`: nueva variante en `enum Kind` y sus valores por defecto donde se crean elementos.
-2. `src/render.rs`: cómo se dibuja en el lienzo.
-3. `src/panels.rs`: dónde aparece en **Elementos** y qué muestra el Inspector.
-4. `src/export/ugui.rs` (JSON del importador) y `src/export/EditorGuiImporter.cs` (cómo se construye en Unity).
-5. `src/export/uitk.rs` e `imgui.rs`: su equivalente en UI Toolkit e IMGUI.
-6. `src/export/view.rs`: si tiene eventos (clic, valor), su campo y método en la vista.
-7. Añade un test en `src/export/mod.rs`.
+1. `src/model.rs`: a new variant in `enum Kind` and its default values where elements are created.
+2. `src/render.rs`: how it is drawn on the canvas.
+3. `src/panels.rs`: where it appears in **Elements** and what the Inspector shows.
+4. `src/export/ugui.rs` (importer JSON) and `src/export/EditorGuiImporter.cs` (how it is built in Unity).
+5. `src/export/uitk.rs` and `imgui.rs`: its equivalent in UI Toolkit and IMGUI.
+6. `src/export/view.rs`: if it has events (click, value), its field and method in the view.
+7. Add a test in `src/export/mod.rs`.
 
-## Añadir un exportador
+## Add an exporter
 
-Crea `src/export/<formato>.rs` con una función `pub fn <formato>(doc: &Doc) -> String`, regístrala en `src/export/mod.rs` (`write_unity_package` escribe los archivos) y añádela a la ventana **Código…** en `src/panels.rs` (`export_window`).
+Create `src/export/<format>.rs` with a function `pub fn <format>(doc: &Doc) -> String`, register it in `src/export/mod.rs` (`write_unity_package` writes the files) and add it to the **Code…** window in `src/panels.rs` (`export_window`).
 
-## Añadir una opción de línea de comandos
+## Add a command-line option
 
-En `src/main.rs`: las opciones sin ventana van en `headless()`; las que configuran el editor al arrancar, dentro del cierre de `eframe::run_native`. Documenta la opción en `docs/TUTORIAL_PROFESIONALES.md`.
+In `src/main.rs`: options without a window go in `headless()`; those that configure the editor at startup go inside the `eframe::run_native` closure. Document the option in `docs/TUTORIAL_PROFESIONALES.md`.
 
-## Añadir una herramienta al servidor MCP
+## Add a tool to the MCP server
 
-En `mcp/lienzo-ui-mcp.mjs`, añade un objeto a `HERRAMIENTAS`:
+In `mcp/lienzo-ui-mcp.mjs`, add an object to `HERRAMIENTAS`:
 
 ```js
 {
@@ -52,24 +52,24 @@ En `mcp/lienzo-ui-mcp.mjs`, añade un objeto a `HERRAMIENTAS`:
 },
 ```
 
-Usa siempre `rutaDiseno()`/`leer()` para tocar archivos, añade casos a `mcp/probar-mcp.mjs` y documenta la herramienta en [MCP.md](MCP.md).
+Always use `rutaDiseno()`/`leer()` to touch files, add cases to `mcp/probar-mcp.mjs` and document the tool in [MCP.md](MCP.md).
 
-## Antes de abrir un pull request
+## Before opening a pull request
 
-- `cargo test` y `node mcp/probar-mcp.mjs` en verde.
-- Si cambiaste la exportación, exporta las plantillas a un proyecto de Unity y comprueba que los prefabs se generan sin errores.
-- Añade una línea a `CHANGELOG.md` en **Sin publicar**.
+- `cargo test` and `node mcp/probar-mcp.mjs` passing.
+- If you changed the export, export the templates to a Unity project and check that the prefabs are generated without errors.
+- Add a line to `CHANGELOG.md` under **Unreleased**.
 
-## Añadir un idioma
+## Add a language
 
-1. Copia `assets/i18n/en.tsv` como `assets/i18n/<código>.tsv` (por ejemplo `pt.tsv`) y traduce la segunda columna. Cada línea es «texto en español<TAB>traducción»; los textos sin traducción se ven en español.
-2. En `src/i18n.rs`, añade `("pt", "Português", include_str!("../assets/i18n/pt.tsv"))` a `IDIOMAS`.
-3. Para el tutorial, copia `assets/tutorial/pt.json` como `assets/tutorial/<código>.json`, traduce `titulo` y `texto` de cada página (mismo número de páginas) y añádelo a `TUTORIALES` en `src/tutorial.rs`. Sin él, el tutorial se muestra en inglés.
-4. `cargo test` comprueba que los archivos están bien formados (el tutorial, que tenga todas sus páginas) y, para el `.tsv`: cada clave existe en `en.tsv` y no se repite, se conservan los huecos `{}` y los `
-`, y está traducido al menos el 95 % de los textos.
+1. Copy `assets/i18n/en.tsv` as `assets/i18n/<code>.tsv` (for example `pt.tsv`) and translate the second column. Each line is "Spanish text<TAB>translation"; untranslated texts appear in Spanish.
+2. In `src/i18n.rs`, add `("pt", "Português", include_str!("../assets/i18n/pt.tsv"))` to `IDIOMAS`.
+3. For the tutorial, copy `assets/tutorial/pt.json` as `assets/tutorial/<code>.json`, translate `titulo` and `texto` of each page (same number of pages) and add it to `TUTORIALES` in `src/tutorial.rs`. Without it, the tutorial is shown in English.
+4. `cargo test` checks that the files are well formed (for the tutorial, that it has all its pages) and, for the `.tsv`: every key exists in `en.tsv` and is not repeated, the `{}` placeholders and the `
+` are preserved, and at least 95% of the texts are translated.
 
-Al escribir textos nuevos en la interfaz, envuélvelos con `crate::i18n::t("…")` y añade su traducción a cada `.tsv`.
+When writing new interface texts, wrap them with `crate::i18n::t("…")` and add their translation to each `.tsv`.
 
-## Escribir un plugin
+## Write a plugin
 
-No hace falta tocar el código: lee [PLUGINS.md](PLUGINS.md).
+No need to touch the code: read [PLUGINS.md](PLUGINS.md).

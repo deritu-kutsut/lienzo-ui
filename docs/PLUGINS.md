@@ -1,22 +1,22 @@
-# Plugins (complementos)
+# Plugins (add-ons)
 
-Lienzo UI se amplía con plugins sin recompilar la app. Un plugin es una **carpeta con un `plugin.json`** que puede añadir:
+Lienzo UI is extended with plugins, without recompiling the app. A plugin is a **folder with a `plugin.json`** that can add:
 
-- **Comandos**: modifican el diseño abierto (se deshacen con Ctrl+Z).
-- **Exportadores**: generan archivos en formatos nuevos.
-- **Plantillas**: diseños listos para usar.
+- **Commands**: they modify the open design (undone with Ctrl+Z).
+- **Exporters**: they generate files in new formats.
+- **Templates**: ready-to-use designs.
 
-Aparecen en la pestaña **Plugins** de la barra izquierda.
+They appear in the **Plugins** tab of the left bar.
 
-## Dónde se instalan
+## Where they are installed
 
-Lienzo UI busca carpetas de plugins en:
+Lienzo UI looks for plugin folders in:
 
-1. `plugins/` junto a `lienzo-ui.exe` (los del paquete descargado).
-2. `plugins/` en la carpeta de trabajo (útil al desarrollar desde el repositorio).
-3. La carpeta del usuario: `%APPDATA%\EditorGUI\plugins` en Windows, `~/Library/Application Support/EditorGUI/plugins` en macOS, `~/.local/share/EditorGUI/plugins` en Linux. El botón **Abrir carpeta** de la pestaña Plugins la abre.
+1. `plugins/` next to `lienzo-ui.exe` (those of the downloaded package).
+2. `plugins/` in the working folder (useful when developing from the repository).
+3. The user folder: `%APPDATA%\EditorGUI\plugins` on Windows, `~/Library/Application Support/EditorGUI/plugins` on macOS, `~/.local/share/EditorGUI/plugins` on Linux. The **Open folder** button in the Plugins tab opens it.
 
-Copia la carpeta del plugin y pulsa **Recargar**.
+Copy the plugin folder and press **Reload**.
 
 ## plugin.json
 
@@ -36,31 +36,31 @@ Copia la carpeta del plugin y pulsa **Recargar**.
 }
 ```
 
-Todas las rutas son relativas a la carpeta del plugin y no pueden salir de ella (`..` o rutas absolutas se rechazan).
+All paths are relative to the plugin folder and cannot leave it (`..` or absolute paths are rejected).
 
 ## Scripts
 
-Los scripts usan [Rhai](https://rhai.rs), un lenguaje parecido a Rust/JavaScript.
+Scripts use [Rhai](https://rhai.rs), a language similar to Rust/JavaScript.
 
-### Comando
+### Command
 
-Define `fn ejecutar(diseno)`, que recibe el diseño y **devuelve el diseño modificado**:
+Define `fn ejecutar(diseno)`, which receives the design and **returns the modified design**:
 
 ```rust
 fn ejecutar(diseno) {
     for i in 0..diseno.elements.len() {
         let e = diseno.elements[i];
         e.x = (e.x / 8.0).round() * 8.0;
-        diseno.elements[i] = e;      // los elementos se copian: hay que volver a guardarlos
+        diseno.elements[i] = e;      // elements are copied: they must be stored back
     }
-    log("listo");                    // el mensaje aparece en la barra de estado
+    log("listo");                    // the message appears in the status bar
     diseno
 }
 ```
 
-### Exportador
+### Exporter
 
-Define `fn exportar(diseno)` y **devuelve un texto**; Lienzo UI pide dónde guardarlo con la extensión del manifiesto.
+Define `fn exportar(diseno)` and **return a text**; Lienzo UI asks where to save it, using the extension from the manifest.
 
 ```rust
 fn exportar(diseno) {
@@ -72,36 +72,36 @@ fn exportar(diseno) {
 }
 ```
 
-### El diseño
+### The design
 
-| Campo | Contenido |
+| Field | Contents |
 |---|---|
-| `title`, `width`, `height` | Título y resolución de referencia |
+| `title`, `width`, `height` | Title and reference resolution |
 | `background` | Color `[r, g, b, a]` (0–255) |
-| `canvas_match`, `pixel_art` | Ajustes del Canvas Scaler y modo pixel art |
-| `elements` | Lista de elementos, en orden de dibujo |
-| `next_id` | Siguiente id libre: súmale 1 si creas elementos |
+| `canvas_match`, `pixel_art` | Canvas Scaler settings and pixel art mode |
+| `elements` | List of elements, in drawing order |
+| `next_id` | Next free id: add 1 to it if you create elements |
 
-Cada elemento tiene, entre otros: `id`, `name`, `kind` (`"Panel"`, `"Image"`, `"Text"`, `"Button"`, `"Toggle"`, `"Slider"`, `"InputField"`, `"Dropdown"`, `"ScrollView"`, `"Ellipse"`, `"Empty"`), `x`, `y`, `w`, `h`, `rot`, `fill`, `stroke`, `stroke_w`, `radius`, `opacity`, `text`, `font_size`, `text_color`, `bold`, `image`, `parent`, `visible`, `anchor_min`, `anchor_max`, `pivot`, `layout`. La lista completa está en `src/model.rs` (`struct Element`).
+Each element has, among others: `id`, `name`, `kind` (`"Panel"`, `"Image"`, `"Text"`, `"Button"`, `"Toggle"`, `"Slider"`, `"InputField"`, `"Dropdown"`, `"ScrollView"`, `"Ellipse"`, `"Empty"`), `x`, `y`, `w`, `h`, `rot`, `fill`, `stroke`, `stroke_w`, `radius`, `opacity`, `text`, `font_size`, `text_color`, `bold`, `image`, `parent`, `visible`, `anchor_min`, `anchor_max`, `pivot`, `layout`. The full list is in `src/model.rs` (`struct Element`).
 
-### Seguridad y límites
+### Security and limits
 
-- Sin acceso a archivos, red ni procesos; `import` está desactivado.
-- Límite de operaciones (un bucle infinito se corta con un error) y de tamaño de textos, listas y mapas.
-- Si el diseño devuelto no es válido, no se aplica nada y se muestra el error.
+- No access to files, network or processes; `import` is disabled.
+- Operation limit (an infinite loop is cut off with an error) and size limit for texts, lists and maps.
+- If the returned design is not valid, nothing is applied and the error is shown.
 
-## Ejemplos incluidos
+## Included examples
 
-| Carpeta | Aporta |
+| Folder | Provides |
 |---|---|
-| `plugins/ajustar-cuadricula` | Comando «Ajustar a 8 px» |
-| `plugins/textos-csv` | Exportador de todos los textos a CSV (para traducir) |
-| `plugins/plantillas-extra` | Plantilla «Tienda del herrero» |
+| `plugins/ajustar-cuadricula` | "Ajustar a 8 px" command |
+| `plugins/textos-csv` | Exporter of all texts to CSV (for translating) |
+| `plugins/plantillas-extra` | "Tienda del herrero" template |
 
-## Probar un plugin
+## Testing a plugin
 
 ```bash
-cargo test plugins     # carga los ejemplos y ejecuta su comando y su exportador
+cargo test plugins     # loads the examples and runs their command and exporter
 ```
 
-Para publicar tu plugin, súbelo a tu propio repositorio o propón añadirlo a `plugins/` con un pull request (ver [CONTRIBUTING.md](../CONTRIBUTING.md)).
+To publish your plugin, upload it to your own repository or propose adding it to `plugins/` with a pull request (see [CONTRIBUTING.md](../CONTRIBUTING.md)).

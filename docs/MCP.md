@@ -1,35 +1,35 @@
-# Servidor MCP para cualquier IA
+# MCP server for any AI
 
-`mcp/lienzo-ui-mcp.mjs` es un servidor [MCP](https://modelcontextprotocol.io) que permite a cualquier asistente compatible crear y editar diseños de Lienzo UI, exportarlos a Unity y sacar capturas.
+`mcp/lienzo-ui-mcp.mjs` is an [MCP](https://modelcontextprotocol.io) server that lets any compatible assistant create and edit Lienzo UI designs, export them to Unity and take screenshots.
 
-- Sin dependencias: **Node.js 18+**.
-- Transporte **stdio**.
-- Necesita el ejecutable de Lienzo UI: lo busca en la carpeta del repositorio (`lienzo-ui.exe`, `target/release`, `target/debug`) o en la variable `LIENZO_UI`.
-- Los diseños viven en `disenos/` (o en `LIENZO_DISENOS`). Solo se leen y escriben archivos `.editorgui.json` de esa carpeta, por nombre simple.
+- No dependencies: **Node.js 18+**.
+- **stdio** transport.
+- It needs the Lienzo UI executable: it looks for it in the repository folder (`lienzo-ui.exe`, `target/release`, `target/debug`) or in the `LIENZO_UI` variable.
+- Designs live in `disenos/` (or in `LIENZO_DISENOS`). Only `.editorgui.json` files in that folder are read and written, by plain file name.
 
-## Herramientas
+## Tools
 
-| Herramienta | Qué hace |
+| Tool | What it does |
 |---|---|
-| `info_lienzo` | Resumen, carpeta de diseños y flujo recomendado. Llamarla primero. |
-| `listar_plantillas` | Plantillas incluidas. |
-| `crear_diseno` | Diseño nuevo desde una plantilla (0-12; 5 = en blanco), con título opcional. |
-| `revisar_diseno` | Revisa legibilidad, contraste, tamaño táctil, elementos fuera de la página, nombres repetidos e imágenes que faltan. |
-| `listar_disenos` | Diseños guardados. |
-| `leer_diseno` | Elementos: id, nombre, tipo, posición, tamaño, texto, padre. |
-| `modificar_elemento` | Cambia texto, posición, tamaño, colores, fuente, visibilidad, valor, opciones… |
-| `ajustar_diseno` | Título, modo pixel art, fondo y *match* del lienzo. |
-| `agregar_elemento` | Añade un elemento (Image, Text, Button…), opcionalmente dentro de otro; las imágenes, por ruta absoluta a PNG/JPG. |
-| `duplicar_elemento` | Copia un elemento con sus hijos (para añadir botones o casillas del mismo estilo). |
-| `eliminar_elemento` | Borra un elemento y sus hijos. |
-| `captura` | PNG del diseño abierto en el editor. |
-| `exportar_unity` | Exporta a un proyecto de Unity (escribe en `Assets/EditorGUI`). |
+| `info_lienzo` | Summary, designs folder and recommended workflow. Call it first. |
+| `listar_plantillas` | Included templates. |
+| `crear_diseno` | New design from a template (0-12; 5 = blank), with an optional title. |
+| `revisar_diseno` | Checks legibility, contrast, touch target size, elements outside the page, repeated names and missing images. |
+| `listar_disenos` | Saved designs. |
+| `leer_diseno` | Elements: id, name, type, position, size, text, parent. |
+| `modificar_elemento` | Changes text, position, size, colors, font, visibility, value, options… |
+| `ajustar_diseno` | Title, pixel art mode, background and canvas *match*. |
+| `agregar_elemento` | Adds an element (Image, Text, Button…), optionally inside another one; images by absolute path to a PNG/JPG. |
+| `duplicar_elemento` | Copies an element with its children (to add buttons or checkboxes with the same style). |
+| `eliminar_elemento` | Deletes an element and its children. |
+| `captura` | PNG of the design open in the editor. |
+| `exportar_unity` | Exports to a Unity project (writes to `Assets/EditorGUI`). |
 
-## Configuración
+## Setup
 
-Sustituye `RUTA/AL/REPO` por la carpeta del repositorio (o la del zip descomprimido).
+Replace `RUTA/AL/REPO` with the repository folder (or the unzipped folder).
 
-**Claude Code:** el repositorio trae `.mcp.json`. A mano: `claude mcp add lienzo-ui -- node mcp/lienzo-ui-mcp.mjs`
+**Claude Code:** the repository ships with `.mcp.json`. By hand: `claude mcp add lienzo-ui -- node mcp/lienzo-ui-mcp.mjs`
 
 **Claude Desktop, Cursor, Windsurf** (`claude_desktop_config.json`, `.cursor/mcp.json`…):
 
@@ -43,32 +43,32 @@ Sustituye `RUTA/AL/REPO` por la carpeta del repositorio (o la del zip descomprim
 { "servers": { "lienzo-ui": { "type": "stdio", "command": "node", "args": ["${workspaceFolder}/mcp/lienzo-ui-mcp.mjs"] } } }
 ```
 
-## Conectarlo a otras IAs
+## Connecting it to other AIs
 
-El servidor habla el estándar MCP por **stdio**, así que sirve para cualquier cliente que lo soporte. La app **no guarda claves de ninguna IA**: la clave (o el modelo local) la pones en el cliente que elijas, nunca en Lienzo UI ni en el repositorio.
+The server speaks the MCP standard over **stdio**, so it works with any client that supports it. The app **does not store keys for any AI**: you put the key (or the local model) in the client you choose, never in Lienzo UI or in the repository.
 
-Antes de empezar: Node.js 18+ y la carpeta del repositorio (o del zip descomprimido). En todos los casos el comando es el mismo: `node RUTA/AL/REPO/mcp/lienzo-ui-mcp.mjs`.
+Before you start: Node.js 18+ and the repository folder (or the unzipped folder). In every case the command is the same: `node RUTA/AL/REPO/mcp/lienzo-ui-mcp.mjs`.
 
-| Cliente | Cómo se añade |
+| Client | How to add it |
 |---|---|
-| **Claude Code** | `claude mcp add lienzo-ui -- node mcp/lienzo-ui-mcp.mjs` (o usa el `.mcp.json` del repositorio) |
-| **Claude Desktop, Cursor, Windsurf** | Bloque `mcpServers` de su archivo de configuración (ver arriba) |
-| **VS Code (Copilot)** | `.vscode/mcp.json` (ver arriba) |
+| **Claude Code** | `claude mcp add lienzo-ui -- node mcp/lienzo-ui-mcp.mjs` (or use the repository's `.mcp.json`) |
+| **Claude Desktop, Cursor, Windsurf** | `mcpServers` block in their configuration file (see above) |
+| **VS Code (Copilot)** | `.vscode/mcp.json` (see above) |
 | **Codex CLI** | `codex mcp add lienzo-ui -- node RUTA/AL/REPO/mcp/lienzo-ui-mcp.mjs` |
-| **Gemini CLI** | En `~/.gemini/settings.json`: `{ "mcpServers": { "lienzo-ui": { "command": "node", "args": ["RUTA/AL/REPO/mcp/lienzo-ui-mcp.mjs"] } } }` |
-| **Cline, Continue, Zed, LM Studio, Open WebUI…** | Añade un servidor MCP «stdio» con `command: node` y el argumento de arriba (cada uno lo llama algo distinto en sus ajustes) |
+| **Gemini CLI** | In `~/.gemini/settings.json`: `{ "mcpServers": { "lienzo-ui": { "command": "node", "args": ["RUTA/AL/REPO/mcp/lienzo-ui-mcp.mjs"] } } }` |
+| **Cline, Continue, Zed, LM Studio, Open WebUI…** | Add a "stdio" MCP server with `command: node` and the argument above (each one calls it something different in its settings) |
 
-Los nombres de los comandos y archivos de configuración cambian con las versiones de cada programa: si alguno no coincide, busca en su documentación «add MCP server (stdio)». Para comprobar que Lienzo UI responde, pídele a la IA: «llama a `info_lienzo`».
+Command names and configuration files change between versions of each program: if one doesn't match, look in its documentation for "add MCP server (stdio)". To check that Lienzo UI responds, ask the AI: "call `info_lienzo`".
 
-**Con un modelo local (sin enviar nada a internet):** usa un cliente MCP que funcione con modelos locales (LM Studio, Open WebUI, Cline con Ollama…) y añade el mismo servidor. Elige un modelo que soporte *tool calling*.
+**With a local model (nothing sent to the internet):** use an MCP client that works with local models (LM Studio, Open WebUI, Cline with Ollama…) and add the same server. Pick a model that supports *tool calling*.
 
-## Usar la API de una IA para generar cosas dentro de la app
+## Using an AI's API to generate things inside the app
 
-Lienzo UI no llama a ninguna IA por su cuenta: el flujo es que **una IA con tu clave maneja el editor a través de MCP** y tú ves el resultado en la ventana (el diseño abierto se actualiza y la herramienta `captura` le deja comprobar cómo quedó).
+Lienzo UI does not call any AI on its own: the workflow is that **an AI with your key drives the editor through MCP** and you see the result in the window (the open design updates, and the `captura` tool lets the AI check how it turned out).
 
-**Opción A: un cliente MCP con tu clave (la más fácil).** Configura Claude, Cursor, VS Code, Codex, Gemini… con **su propia clave**, como indica cada programa, y añade el servidor de arriba. Luego pide en lenguaje natural: «crea un HUD con vida y maná en modo pixel art y expórtalo a mi proyecto».
+**Option A: an MCP client with your key (the easiest).** Configure Claude, Cursor, VS Code, Codex, Gemini… with **its own key**, as each program indicates, and add the server above. Then ask in natural language: "create a HUD with health and mana in pixel art mode and export it to my project".
 
-**Opción B: tu propio script con la API de una IA.** Para automatizar (por ejemplo, generar 20 pantallas desde una lista), arranca el servidor como proceso hijo, pasa sus herramientas al modelo y devuelve las llamadas. Este ejemplo usa el SDK oficial de MCP y cualquier API compatible con el formato de OpenAI (OpenAI, DeepSeek, OpenRouter, Ollama… cambiando `baseURL` y `model`). No está probado con todos los proveedores:
+**Option B: your own script with an AI's API.** To automate (for example, generating 20 screens from a list), start the server as a child process, pass its tools to the model and return the calls. This example uses the official MCP SDK and any API compatible with the OpenAI format (OpenAI, DeepSeek, OpenRouter, Ollama… by changing `baseURL` and `model`). It has not been tested with every provider:
 
 ```js
 // npm i @modelcontextprotocol/sdk openai
@@ -80,12 +80,12 @@ const mcp = new Client({ name: "mi-script", version: "1.0.0" });
 await mcp.connect(new StdioClientTransport({ command: "node", args: ["RUTA/AL/REPO/mcp/lienzo-ui-mcp.mjs"] }));
 const { tools } = await mcp.listTools();
 
-// La clave sale SOLO de una variable de entorno (nunca del código ni del repositorio)
+// The key comes ONLY from an environment variable (never from the code or the repository)
 const ia = new OpenAI({ apiKey: process.env.IA_API_KEY, baseURL: process.env.IA_BASE_URL });
 const mensajes = [{ role: "user", content: "Crea un menú principal llamado Ecos y expórtalo a C:/MiJuego" }];
 const herramientas = tools.map(t => ({ type: "function", function: { name: t.name, description: t.description, parameters: t.inputSchema } }));
 
-for (let i = 0; i < 20; i++) {                       // límite de pasos
+for (let i = 0; i < 20; i++) {                       // step limit
   const r = (await ia.chat.completions.create({ model: process.env.IA_MODELO, messages: mensajes, tools: herramientas })).choices[0].message;
   mensajes.push(r);
   if (!r.tool_calls?.length) { console.log(r.content); break; }
@@ -97,26 +97,26 @@ for (let i = 0; i < 20; i++) {                       // límite de pasos
 await mcp.close();
 ```
 
-Ejecútalo con las variables en tu consola, sin escribirlas en ningún archivo del proyecto:
+Run it with the variables set in your console, without writing them to any file in the project:
 
 ```powershell
 $env:IA_API_KEY = "…"; $env:IA_BASE_URL = "https://api.openai.com/v1"; $env:IA_MODELO = "nombre-del-modelo"; node mi-script.mjs
 ```
 
-**Seguridad:**
-- No pegues claves en el chat, en el código ni en `.mcp.json`; usa variables de entorno o el gestor de secretos de tu cliente.
-- El servidor solo lee y escribe `.editorgui.json` de la carpeta de diseños y exporta donde le indiques; revisa lo que la IA va a exportar.
-- Un modelo puede equivocarse: trabaja sobre copias de tus diseños y usa `captura` para verificar el resultado.
+**Security:**
+- Don't paste keys into the chat, the code or `.mcp.json`; use environment variables or your client's secrets manager.
+- The server only reads and writes `.editorgui.json` files in the designs folder and exports where you tell it to; review what the AI is about to export.
+- A model can make mistakes: work on copies of your designs and use `captura` to verify the result.
 
-## Ejemplos de peticiones
+## Example requests
 
-- «Crea una tienda a partir de la plantilla de inventario, titúlala Herrería y añade un botón verde Comprar.»
-- «En el menú principal cambia el título a Ecos del Abismo y pon los botones en naranja.»
-- «Exporta todos los diseños a C:/MiJuego y haz una captura de cada uno.»
+- "Create a shop from the inventory template, title it Blacksmith and add a green Buy button."
+- "In the main menu change the title to Echoes of the Abyss and make the buttons orange."
+- "Export all designs to C:/MiJuego and take a screenshot of each one."
 
-## Pruebas
+## Tests
 
 ```bash
-node mcp/probar-mcp.mjs                 # 32 comprobaciones (protocolo, flujo y entradas maliciosas)
-node mcp/probar-mcp.mjs "C:/MiJuego"    # además exporta un diseño de prueba a ese proyecto
+node mcp/probar-mcp.mjs                 # 32 checks (protocol, workflow and malicious inputs)
+node mcp/probar-mcp.mjs "C:/MiJuego"    # also exports a test design to that project
 ```

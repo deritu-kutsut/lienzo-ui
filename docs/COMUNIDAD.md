@@ -1,132 +1,132 @@
-# Comunidad de Lienzo UI: seguridad y puesta en marcha
+# Lienzo UI Community: security and setup
 
-La comunidad (plugins, imágenes, fuentes, plantillas y elementos) usa **Supabase** como servidor. Este documento explica cómo se protege y cómo se monta. El código del servidor está en `supabase/`.
+The community (plugins, images, fonts, templates and elements) uses **Supabase** as its server. This document explains how it is protected and how to set it up. The server code is in `supabase/`.
 
-> Estado: **servidor listo y probado en su lógica; falta crear el proyecto de Supabase y conectar la pestaña Comunidad de la app.** Todo lo que se puede añadir de forma externa (carpeta `plugins/`, abrir imágenes y diseños a mano) sigue funcionando sin cuenta ni internet.
+> Status: **server ready and its logic tested; the Supabase project still has to be created and the app's Community tab connected.** Everything that can be added externally (the `plugins/` folder, opening images and designs by hand) keeps working without an account or internet.
 
-## Qué datos se guardan de cada persona
+## What data is stored about each person
 
-| Dato | Dónde | Para qué |
+| Data | Where | What for |
 |---|---|---|
-| Identificador de la cuenta y correo | `auth.users` (gestionado por Supabase) | Iniciar sesión. **El correo no se copia a ninguna tabla nuestra ni se muestra a nadie.** |
-| Nombre público (3-32 caracteres) | `perfiles` | Firmar lo que subes |
-| Preferencia +18 | `perfiles` | Mostrar u ocultar contenido para mayores de 18 |
-| Contenido que subes y su estado | `items` | Catálogo |
+| Account identifier and email | `auth.users` (managed by Supabase) | Signing in. **The email is not copied to any table of ours nor shown to anyone.** |
+| Public name (3-32 characters) | `perfiles` | Signing what you upload |
+| 18+ preference | `perfiles` | Showing or hiding content for people over 18 |
+| Content you upload and its status | `items` | Catalog |
 
-**No hay contraseñas**: el acceso es solo con proveedores externos (GitHub, Google…). No se guardan IP, dispositivo ni analítica. Tu cuenta y todo lo tuyo se borra con un botón (función `borrar-cuenta`).
+**There are no passwords**: access is only through external providers (GitHub, Google…). No IP, device or analytics is stored. Your account and everything of yours is deleted with one button (the `borrar-cuenta` function).
 
-## Defensas, capa por capa
+## Defenses, layer by layer
 
-1. **Cerrado por defecto (RLS).** Ninguna tabla es legible o editable sin una política explícita. Un usuario solo ve lo aprobado y lo suyo; no puede aprobar, cambiar rutas ni quitar la marca +18 (permisos de columna + políticas, `migrations/0001_comunidad.sql`).
-2. **Cuarentena.** Todo archivo entra a un bucket privado (`cuarentena`) en la carpeta del propio usuario. No es público hasta ser aprobado; solo el servidor lo mueve al bucket `publico`.
-3. **Solo formatos de datos.** PNG, JPEG, GIF, WebP, TTF, OTF y JSON. Se identifica el formato por los **bytes reales**, no por la extensión: un `.exe` renombrado a `.png` se rechaza. Se prohíben ejecutables, instaladores, scripts de sistema, comprimidos y SVG.
-4. **Límites.** 2 MB imágenes, 5 MB fuentes, 512 KB plantillas, 256 KB plugins y elementos; 4096×4096 px; 10 subidas pendientes y 20 al día por persona.
-5. **Plugins sin binarios.** Un plugin se sube como un único JSON con scripts Rhai en texto. Rutas con `..` o absolutas, archivos que no sean `.rhai`/`.json`, `eval`, `import`, enlaces o llamadas a procesos se rechazan. Además Rhai corre en una caja aislada en la app (sin archivos, red ni procesos, con límite de operaciones).
-6. **Antivirus.** El archivo se comprueba automáticamente. Un plugin sin historial va a revisión humana.
-7. **Moderación del texto.** El texto de la ficha (título, descripción, etiquetas y textos del diseño) se revisa automáticamente. **No se usa tu nombre, correo ni identificador.**
-8. **Filtro +18.** Marca el autor; La moderación automática puede subir la marca, nunca bajarla. Por defecto está **apagado**: el contenido +18 no se muestra a nadie que no lo active en su perfil.
-9. **Reportes.** Cualquier persona puede reportar. Con 3 reportes distintos el contenido se oculta hasta que lo revise una persona.
-10. **Descargas verificadas.** La app comprueba el SHA-256 del archivo descargado antes de instalarlo, y vuelve a validarlo con las mismas reglas.
-11. **Registro de moderación.** Guarda qué se decidió y por qué (sin datos personales). Solo el servidor lo lee.
+1. **Closed by default (RLS).** No table is readable or editable without an explicit policy. A user only sees what is approved and what is theirs; they cannot approve, change paths or remove the 18+ flag (column permissions + policies, `migrations/0001_comunidad.sql`).
+2. **Quarantine.** Every file goes into a private bucket (`cuarentena`) in the user's own folder. It is not public until approved; only the server moves it to the `publico` bucket.
+3. **Data formats only.** PNG, JPEG, GIF, WebP, TTF, OTF and JSON. The format is identified by the **actual bytes**, not by the extension: an `.exe` renamed to `.png` is rejected. Executables, installers, system scripts, archives and SVG are forbidden.
+4. **Limits.** 2 MB images, 5 MB fonts, 512 KB templates, 256 KB plugins and elements; 4096×4096 px; 10 pending uploads and 20 per day per person.
+5. **Plugins without binaries.** A plugin is uploaded as a single JSON with Rhai scripts as text. Paths with `..` or absolute paths, files that are not `.rhai`/`.json`, `eval`, `import`, links or process calls are rejected. In addition, Rhai runs in a sandbox in the app (no files, network or processes, with an operation limit).
+6. **Antivirus.** The file is checked automatically. A plugin with no track record goes to human review.
+7. **Text moderation.** The listing text (title, description, tags and the design's texts) is reviewed automatically. **Your name, email or identifier are not used.**
+8. **18+ filter.** The author sets the flag; automatic moderation can raise the flag, never lower it. By default it is **off**: 18+ content is not shown to anyone who has not enabled it in their profile.
+9. **Reports.** Anyone can report. With 3 distinct reports the content is hidden until a person reviews it.
+10. **Verified downloads.** The app checks the SHA-256 of the downloaded file before installing it, and validates it again with the same rules.
+11. **Moderation log.** It records what was decided and why (without personal data). Only the server reads it.
 
-## Límites honestos
+## Honest limits
 
-- **Imágenes:** pasan por revisión automática y, si hay duda, por una persona.
-- **Ningún antivirus es infalible.** Por eso el contenido es solo datos y los plugins corren aislados; el antivirus es una capa más, no la única.
-- Alguien tiene que revisar la cola de «pendiente». Sin moderadores, lo dudoso simplemente no se publica.
+- **Images:** they go through automatic review and, if in doubt, through a person.
+- **No antivirus is infallible.** That is why the content is only data and plugins run isolated; the antivirus is one more layer, not the only one.
+- Someone has to review the "pending" queue. Without moderators, anything doubtful simply is not published.
 
-## Puesta en marcha (paso a paso)
+## Setup (step by step)
 
-1. Crea un proyecto en [supabase.com](https://supabase.com) (región cercana a tus usuarios).
-2. Instala el CLI (`npm i -g supabase`) y enlaza: `supabase link --project-ref <ref>`.
-3. Aplica el esquema: `supabase db push`.
-4. En **Authentication → Providers**, activa **GitHub** y **Google** con las credenciales de cada uno (cada proveedor te da un *client id* y un *secret*; la URL de retorno es la que muestra Supabase). Para **itch.io** y **Unity**, que no vienen incluidos, se configuran como proveedor OIDC/personalizado si el servicio lo permite; se añaden después.
-5. Guarda los secretos **en Supabase, nunca en el repositorio**:
+1. Create a project at [supabase.com](https://supabase.com) (a region close to your users).
+2. Install the CLI (`npm i -g supabase`) and link it: `supabase link --project-ref <ref>`.
+3. Apply the schema: `supabase db push`.
+4. Under **Authentication → Providers**, enable **GitHub** and **Google** with each one's credentials (each provider gives you a *client id* and a *secret*; the callback URL is the one Supabase shows). For **itch.io** and **Unity**, which are not included, configure them as an OIDC/custom provider if the service allows it; they are added later.
+5. Store the secrets **in Supabase, never in the repository**:
    ```bash
-   # los secretos del servidor se guardan en Supabase, nunca en el repositorio
+   # server secrets are stored in Supabase, never in the repository
    ```
-6. Despliega las funciones: `supabase functions deploy moderar` y `supabase functions deploy borrar-cuenta`.
-7. En **Authentication → URL Configuration → Redirect URLs** añade `http://127.0.0.1:53682/callback` (la app recibe el inicio de sesión en ese puerto local temporal).
-8. La app solo necesita dos valores **públicos** (URL del proyecto y clave publicable, en `src/comunidad.rs`); antes:  la app solo necesita dos valores **públicos**: la URL y la clave `anon`. Con RLS la clave `anon` no da acceso a nada que no esté permitido. **La clave `service_role` jamás va en la app ni en el repositorio.**
+6. Deploy the functions: `supabase functions deploy moderar` and `supabase functions deploy borrar-cuenta`.
+7. Under **Authentication → URL Configuration → Redirect URLs**, add `http://127.0.0.1:53682/callback` (the app receives the sign-in on that temporary local port).
+8. The app only needs two **public** values (project URL and publishable key, in `src/comunidad.rs`); before: the app only needs two **public** values: the URL and the `anon` key. With RLS the `anon` key gives no access to anything that is not allowed. **The `service_role` key never goes in the app or in the repository.**
 
-## Pruebas
+## Tests
 
 ```bash
-node --test supabase/functions/_compartido/validar.test.ts supabase/functions/_compartido/decidir.test.ts   # 23 pruebas
+node --test supabase/functions/_compartido/validar.test.ts supabase/functions/_compartido/decidir.test.ts   # 23 tests
 ```
 
-## Notas de la app
+## App notes
 
-- **No hay conexión hasta que abres la pestaña Comunidad.**
-- El token de sesión se guarda en el Administrador de credenciales de Windows (no en un archivo). En otros sistemas la sesión no se recuerda entre ejecuciones.
-- Cada descarga se verifica con el SHA-256 aprobado y se valida de nuevo localmente antes de instalarse (`src/comunidad_validar.rs`, mismas reglas que el servidor).
-- Los permisos base de las tablas están en `migrations/0004_permisos_base.sql`: el proyecto se creó con «exponer tablas automáticamente» desactivado, así que **cada tabla nueva necesita su `grant` explícito además de su política RLS**.
+- **There is no connection until you open the Community tab.**
+- The session token is stored in the Windows Credential Manager (not in a file). On other systems the session is not remembered between runs.
+- Every download is verified against the approved SHA-256 and validated again locally before being installed (`src/comunidad_validar.rs`, same rules as the server).
+- The base table permissions are in `migrations/0004_permisos_base.sql`: the project was created with "automatically expose tables" turned off, so **every new table needs its explicit `grant` in addition to its RLS policy**.
 
-## Línea de comandos
+## Command line
 
-Usan la sesión guardada por la app (misma que el botón de la pestaña). **Cierra la app antes**: el token de sesión rota y la app abierta con el token anterior perdería la sesión.
+They use the session saved by the app (the same one as the tab's button). **Close the app first**: the session token rotates and the app, left open with the old token, would lose the session.
 
 ```bash
 lienzo-ui --comunidad-subir <plugin|imagen|fuente|plantilla|elemento> <archivo|carpeta> --titulo "…" [--descripcion "…"] [--etiquetas a,b] [--18]
-lienzo-ui --comunidad-reintentar     # vuelve a moderar tus fichas que quedaron pendientes sin decisión
+lienzo-ui --comunidad-reintentar     # re-moderates your listings that were left pending without a decision
 ```
 
-Una ficha puede quedar **pendiente** con motivo (por ejemplo, una imagen mientras no haya moderador de imágenes, o un plugin que el antivirus no conoce): espera a una persona que la revise. Las rechazadas muestran el motivo y su archivo se borra.
+A listing can be left **pending** with a reason (for example, an image while there is no image moderator, or a plugin the antivirus does not know): it waits for a person to review it. Rejected ones show the reason and their file is deleted.
 
-> Las Edge Functions usan la clave de servicio, que también necesita sus `grant` (`migrations/0005_permisos_servidor.sql`). Tras cambiar `validar.ts` o `decidir.ts` hay que volver a desplegar `moderar`.
+> The Edge Functions use the service key, which also needs its `grant`s (`migrations/0005_permisos_servidor.sql`). After changing `validar.ts` or `decidir.ts`, `moderar` has to be deployed again.
 
-## Revisión humana (moderadores)
+## Human review (moderators)
 
-Lo que queda **pendiente** lo revisa una persona. Solo pueden hacerlo las cuentas cuyo identificador esté en el secreto `MODERADORES` del servidor (separadas por comas). Tu identificador sale con `lienzo-ui --comunidad-yo`; se configura con `supabase secrets set MODERADORES=<id>[,<id>…]`.
+Whatever stays **pending** is reviewed by a person. Only accounts whose identifier is in the server's `MODERADORES` secret (comma-separated) can do it. Your identifier is shown by `lienzo-ui --comunidad-yo`; it is configured with `supabase secrets set MODERADORES=<id>[,<id>…]`.
 
 ```bash
-lienzo-ui --comunidad-revisar listar                      # pendientes, con motivo y un enlace temporal (10 min) al archivo
-lienzo-ui --comunidad-revisar aprobar <id> [--18]         # lo publica (se vuelve a validar y se comprueba la huella)
-lienzo-ui --comunidad-revisar rechazar <id> "motivo"      # lo rechaza y borra el archivo
+lienzo-ui --comunidad-revisar listar                      # pending items, with reason and a temporary (10 min) link to the file
+lienzo-ui --comunidad-revisar aprobar <id> [--18]         # publishes it (re-validated and fingerprint checked)
+lienzo-ui --comunidad-revisar rechazar <id> "motivo"      # rejects it and deletes the file
 ```
 
-La función `revisar` (`supabase/functions/revisar/`) comprueba que quien llama es moderador. **Conviene que quien aprueba no sea el autor del contenido.**
+The `revisar` function (`supabase/functions/revisar/`) checks that the caller is a moderator. **The person who approves should not be the author of the content.**
 
-## Iconos, vistas previas y perfiles de creador
+## Icons, previews and creator profiles
 
-- **Icono y vista previa** (opcionales, para cualquier tipo de contenido): PNG de hasta 512×512 / 256 KB y 1920×1080 / 1 MB. Pasan la misma moderación: mientras no haya moderador de imágenes, el contenido que los lleva espera revisión humana. Por línea de comandos: `--icono icono.png --vista vista.png`.
-- **Perfil de creador** (`perfiles_publicos`): foto de perfil (PNG ≤ 512×512), banner (PNG ≤ 1920×640), descripción (≤ 300, sin enlaces, revisada automáticamente), usuario de GitHub y enlaces a X, YouTube, itch.io, Twitch, Bluesky e Instagram (solo `https://` de esos dominios). Solo se edita a través de la función `perfil`; la tabla no se puede escribir desde la app.
-- Un perfil es **público solo si la persona tiene al menos un contenido aprobado**; el propio siempre se ve. Nunca incluye el correo ni las preferencias.
-- Moderadores: `--comunidad-revisar listar` muestra también las imágenes de perfil pendientes; se aprueban con `aprobar_perfil` desde la función `revisar`.
+- **Icon and preview** (optional, for any content type): PNG up to 512×512 / 256 KB and 1920×1080 / 1 MB. They go through the same moderation: while there is no image moderator, content that carries them waits for human review. On the command line: `--icono icono.png --vista vista.png`.
+- **Creator profile** (`perfiles_publicos`): profile photo (PNG ≤ 512×512), banner (PNG ≤ 1920×640), description (≤ 300, no links, reviewed automatically), GitHub username and links to X, YouTube, itch.io, Twitch, Bluesky and Instagram (only `https://` on those domains). It can only be edited through the `perfil` function; the table cannot be written from the app.
+- A profile is **public only if the person has at least one approved piece of content**; your own is always visible. It never includes the email or preferences.
+- Moderators: `--comunidad-revisar listar` also shows pending profile images; they are approved with `aprobar_perfil` from the `revisar` function.
 
-## Filtro +18
+## 18+ filter
 
-Lo decide **el servidor**: un visitante anónimo nunca recibe contenido +18, y con sesión solo se recibe si la cuenta declaró ser mayor de 18 años (`perfiles.declara_mayor_18_en`, obligatorio para activar `mostrar_18`).
+**The server** decides: an anonymous visitor never receives 18+ content, and with a session it is only received if the account declared being over 18 (`perfiles.declara_mayor_18_en`, required to enable `mostrar_18`).
 
-## Seguir creadores y corazones
+## Following creators and hearts
 
-- **Corazón** (la «estrella» de la comunidad): se da a un contenido aprobado; cada creador acumula los que recibe. **Seguir**: en el perfil de un creador. El filtro **♥ Siguiendo** muestra solo el contenido de a quienes sigues.
-- **Privacidad:** quién sigue a quién y quién dio cada corazón **no es público**: solo cada persona ve lo suyo (RLS) y el resto ve únicamente los totales, que solo mueven triggers del servidor.
-- **Límites:** 200 corazones al día y 1000 creadores seguidos por persona; no se puede seguir a uno mismo.
-- **Cabecera de la app:** un botón con tu foto de perfil (una imagen por defecto si no tienes) abre tu perfil de creador; sin sesión, abre la pestaña Comunidad. En una vista previa, un clic la amplía.
-- Línea de comandos: `--comunidad-corazon <id-del-contenido>` y `--comunidad-seguir <id-del-creador>` (alternan).
+- **Heart** (the community's "star"): given to approved content; each creator accumulates the ones they receive. **Follow**: on a creator's profile. The **♥ Following** filter shows only the content of the people you follow.
+- **Privacy:** who follows whom and who gave each heart **is not public**: each person only sees their own (RLS) and everyone else sees only the totals, which only server triggers change.
+- **Limits:** 200 hearts per day and 1000 followed creators per person; you cannot follow yourself.
+- **App header:** a button with your profile photo (a default image if you have none) opens your creator profile; without a session, it opens the Community tab. In a preview, one click enlarges it.
+- Command line: `--comunidad-corazon <id-del-contenido>` and `--comunidad-seguir <id-del-creador>` (they toggle).
 
-## Temas
+## Themes
 
-- Botón **Temas** en la cabecera: cinco temas incluidos (Lienzo oscuro, Lienzo claro, Medianoche, Atardecer, Bosque), colores editables uno a uno, esquinas, base clara u oscura y **fuente de la interfaz** (cualquier fuente del sistema o de tu biblioteca; las de la comunidad se instalan desde Comunidad › Fuentes).
-- **Guardar como tema** lo deja en tu biblioteca (`temas/`); **Compartir en la comunidad** abre el formulario de subida con el tema listo. En Comunidad › Temas, **Instalar** lo guarda y lo pone en uso.
-- Un tema es un JSON pequeño (≤ 32 KB) que solo admite colores `#RRGGBB`, esquinas 0-16, base clara y el **nombre** de una fuente: nunca archivos, enlaces ni código. Lo comprueban el servidor y la app.
-- Para capturas o pruebas: `lienzo-ui --tema "Lienzo claro"` (solo esa sesión).
+- **Themes** button in the header: five built-in themes (Dark canvas, Light canvas, Midnight, Sunset, Forest), colors editable one by one, corners, light or dark base and **interface font** (any system font or one from your library; community ones are installed from Community › Fonts).
+- **Save as theme** puts it in your library (`temas/`); **Share in the community** opens the upload form with the theme ready. In Community › Themes, **Install** saves it and puts it in use.
+- A theme is a small JSON (≤ 32 KB) that only accepts `#RRGGBB` colors, corners 0-16, light base and the **name** of a font: never files, links or code. Both the server and the app check it.
+- For screenshots or tests: `lienzo-ui --tema "Lienzo claro"` (that session only).
 
-## Mi perfil de creador
+## My creator profile
 
-Ventana al estilo de X: banner con la foto superpuesta, botones de cámara para cambiarlos, campos con etiqueta (nombre, biografía, GitHub y redes) y **Guardar** arriba. Cualquier imagen (PNG, JPEG, WebP, GIF o BMP) se recorta y se reduce sola (foto 400×400, banner 1500×500). Mientras una persona la revisa, tú ya la ves en tu perfil y en el botón de la cabecera; los demás, cuando se aprueba.
+An X-style window: banner with the photo overlaid, camera buttons to change them, labeled fields (name, bio, GitHub and social links) and **Save** at the top. Any image (PNG, JPEG, WebP, GIF or BMP) is cropped and reduced automatically (photo 400×400, banner 1500×500). While a person reviews it, you already see it on your profile and on the header button; everyone else sees it once it is approved.
 
-## Moderación automática
+## Automatic moderation
 
-Cada subida de contenido y cada foto o banner de perfil pasa por una comprobación automática en las funciones `moderar` y `perfil`:
+Every content upload and every profile photo or banner goes through an automatic check in the `moderar` and `perfil` functions:
 
-- **Formato:** solo formatos de datos, comprobados por su contenido real (no por la extensión).
-- **Antivirus:** todos los archivos. Muchas detecciones = rechazo; pocas = revisión por una persona.
-- **Texto:** moderación automática de la ficha.
+- **Format:** data formats only, checked by their actual content (not by the extension).
+- **Antivirus:** all files. Many detections = rejection; few = review by a person.
+- **Text:** automatic moderation of the listing.
 
-**Reglas de decisión** (`decidir.ts`, con pruebas): lo limpio se publica solo; **ante la duda o un servicio caído no se publica** y queda pendiente para una persona. Todo queda en `moderacion_log` (paso, resultado y motivo, sin datos personales). `lienzo-ui --comunidad-revisar reanalizar [id]` vuelve a pasar el pendiente más antiguo.
+**Decision rules** (`decidir.ts`, with tests): clean content is published on its own; **when in doubt or if a service is down, it is not published** and stays pending for a person. Everything is recorded in `moderacion_log` (step, result and reason, without personal data). `lienzo-ui --comunidad-revisar reanalizar [id]` re-runs the oldest pending item.
 
-Los secretos del servidor se guardan **en Supabase, nunca en el repositorio** (`supabase secrets set ...`).
+Server secrets are stored **in Supabase, never in the repository** (`supabase secrets set ...`).
 
-> **Privacidad:** sube solo contenido pensado para ser público.
+> **Privacy:** only upload content meant to be public.

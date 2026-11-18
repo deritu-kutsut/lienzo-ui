@@ -4,9 +4,9 @@
 
 **A visual editor for game interfaces that exports to Unity.** Lay out menus, HUDs, dialogs, settings and inventories like in a design tool (canvas, handles, smart guides, layers), test them on any screen size, and export them to Unity as **uGUI + TextMeshPro prefabs**, **UI Toolkit (UXML + USS)** and **IMGUI** in one click. Free and open source (MIT).
 
-[Download for Windows](../../releases/latest) · [itch.io](https://deritu.itch.io/lienzo-ui) · [Español ↓](#español)
+[Download for Windows](../../releases/latest) · [itch.io](https://deritu.itch.io/lienzo-ui)
 
-🎬 [Trailer in English](https://youtu.be/7G-g5H3nHtg) · [Tráiler en español](https://youtu.be/xb7x16KGKBY)
+🎬 [Trailer in English](https://youtu.be/7G-g5H3nHtg) · [Trailer in Spanish](https://youtu.be/xb7x16KGKBY)
 
 <p align="center">
 <img src="docs/imagenes/editor.png" width="49%"> <img src="docs/imagenes/tutorial.png" width="49%"><br>
@@ -119,27 +119,3 @@ Moderation lives in a web panel (also usable by AIs with revocable tokens): [doc
 ## License
 
 [MIT](LICENSE). Independent project, not affiliated with Unity Technologies or Canva. Built with the help of AI (Claude); cover art generated with ChatGPT.
-
----
-
-## Español
-
-**Lienzo UI es un editor visual de interfaces de juego que exporta a Unity.** Diseña menús, HUD, ventanas, ajustes e inventarios como en una herramienta de diseño, pruébalos en cualquier pantalla y expórtalos a Unity como prefab uGUI + TextMeshPro, UI Toolkit (UXML + USS) e IMGUI con un clic. Gratis y de código abierto (MIT).
-
-🎬 [Tráiler en español](https://youtu.be/xb7x16KGKBY) · [Trailer in English](https://youtu.be/7G-g5H3nHtg)
-
-- **Probarlo:** descarga `LienzoUI-windows.zip` de las [releases](../../releases/latest) y abre `lienzo-ui.exe`. La primera vez se abre el tutorial; al terminarlo se abre el editor (botón **Tutorial** o F1 para volver).
-- **Novedades de la 1.3.2:** interfaz, tutorial y tutoriales escritos en 10 idiomas: español, inglés, portugués, francés, alemán, italiano, ruso, chino, japonés y coreano (**Accesibilidad › Idioma**).
-- **Novedades de la 1.3:** 7 plantillas nuevas (pausa, fin de partida, selección de nivel, carga, diálogo de personaje, clasificación y selección de personaje), **componentes listos** en Elementos, **estilos de HUD** en Texto y 8 degradados más. El botón **Revisar** de la cabecera avisa de letra pequeña, poco contraste, botones pequeños para tocar, elementos fuera de la página, nombres repetidos e imágenes que faltan; clic en un aviso para seleccionar el elemento. También con `--revisar` (sale con código 1 si hay errores) y con la herramienta MCP `revisar_diseno`.
-- **Pixel art, plugins y accesibilidad:** modo pixel art, plugins con scripts Rhai ([guía](docs/PLUGINS.md)) e interfaz en español, inglés, portugués, francés, alemán, italiano, ruso, chino, japonés o coreano, con tamaño hasta 200 %, alto contraste y movimiento reducido.
-- **Aprender:** [tutorial para novatos](docs/TUTORIAL_NOVATOS.md), [tutorial para profesionales](docs/TUTORIAL_PROFESIONALES.md), [cómo añadir cosas](docs/EXTENDER.md) y [servidor MCP para IA](docs/MCP.md).
-### Comunidad
-
-Comparte y encuentra **plugins, imágenes, fuentes, plantillas, elementos y temas** sin salir de la app. Explorar no necesita cuenta.
-
-- **Explorar e instalar:** pestaña **Comunidad** › elige categoría › **Instalar**. Se verifica la huella SHA-256 y se valida de nuevo antes de tocar tu disco. Corazones (como la estrella de GitHub), **Seguir** creadores y **Reportar**.
-- **Crear tu cuenta y perfil de creador:** en Comunidad pulsa **Entrar con GitHub** o **Entrar con Google** (sin contraseñas), elige tu **nombre público** y pulsa **Crear perfil**. Luego pulsa el **botón redondo con tu foto** (arriba a la derecha) para editar tu perfil: foto, banner, biografía, GitHub y redes. Las fotos se recortan y reducen solas.
-- **Subir contenido:** **Compartir con la comunidad** › tipo, título, descripción, etiquetas y archivo (plugin: su carpeta; plantilla: **Usar el diseño abierto**; tema: **Usar el tema actual**), vista previa opcional › **Enviar a revisión**. Se revisa automáticamente (formato, antivirus y moderación) y se publica, pasa a revisión humana o se rechaza con su motivo. Solo formatos de datos: nunca ejecutables ni scripts. Lo +18 está oculto salvo que tu cuenta confirme ser mayor de edad.
-- **Temas:** botón **Temas** para cambiar colores, esquinas y fuente de la app, y guardarlos o compartirlos.
-- **Moderación:** panel web (también para IAs con tokens revocables): [docs/MODERACION.md](docs/MODERACION.md). Guía completa: [docs/COMUNIDAD.md](docs/COMUNIDAD.md). Las capturas de arriba muestran cada paso.
-- **Contribuir:** lee [CONTRIBUTING.md](CONTRIBUTING.md). Toda mejora es bienvenida.
