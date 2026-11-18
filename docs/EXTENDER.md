@@ -64,8 +64,9 @@ Usa siempre `rutaDiseno()`/`leer()` para tocar archivos, añade casos a `mcp/pro
 
 1. Copia `assets/i18n/en.tsv` como `assets/i18n/<código>.tsv` (por ejemplo `pt.tsv`) y traduce la segunda columna. Cada línea es «texto en español<TAB>traducción»; los textos sin traducción se ven en español.
 2. En `src/i18n.rs`, añade `("pt", "Português", include_str!("../assets/i18n/pt.tsv"))` a `IDIOMAS`.
-3. Para el tutorial, añade sus páginas traducidas en `src/tutorial.rs` siguiendo `NOVATO_EN` y `PROFESIONAL_EN`.
-4. `cargo test` comprueba que el archivo está bien formado.
+3. Para el tutorial, añade sus páginas traducidas en `src/tutorial.rs` siguiendo `NOVATO_EN` y `PROFESIONAL_EN`. Si no las añades, el tutorial se muestra en inglés.
+4. `cargo test` comprueba que el archivo está bien formado: cada clave existe en `en.tsv` y no se repite, se conservan los huecos `{}` y los `
+`, y está traducido al menos el 95 % de los textos.
 
 Al escribir textos nuevos en la interfaz, envuélvelos con `crate::i18n::t("…")` y añade su traducción a cada `.tsv`.
 

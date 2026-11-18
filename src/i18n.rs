@@ -8,7 +8,15 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::LazyLock;
 
 /// (código, nombre visible, contenido del .tsv)
-pub const IDIOMAS: &[(&str, &str, &str)] = &[("es", "Español", ""), ("en", "English", include_str!("../assets/i18n/en.tsv"))];
+pub const IDIOMAS: &[(&str, &str, &str)] = &[
+    ("es", "Español", ""),
+    ("en", "English", include_str!("../assets/i18n/en.tsv")),
+    ("pt", "Português", include_str!("../assets/i18n/pt.tsv")),
+    ("fr", "Français", include_str!("../assets/i18n/fr.tsv")),
+    ("de", "Deutsch", include_str!("../assets/i18n/de.tsv")),
+    ("it", "Italiano", include_str!("../assets/i18n/it.tsv")),
+    ("ru", "Русский", include_str!("../assets/i18n/ru.tsv")),
+];
 
 static ACTUAL: AtomicUsize = AtomicUsize::new(0);
 
@@ -73,14 +81,28 @@ mod tests {
         assert_eq!(codigo(), "es");
     }
 
+    fn filas(tsv: &str) -> Vec<(&str, &str)> {
+        tsv.lines()
+            .map(|l| l.trim_end_matches('\r'))
+            .filter(|l| !l.trim().is_empty() && !l.starts_with('#'))
+            .map(|l| l.split_once('\t').unwrap_or_else(|| panic!("línea sin TAB: {}", l)))
+            .collect()
+    }
+
     #[test]
-    fn el_tsv_ingles_esta_bien_formado() {
-        for (n, l) in IDIOMAS[1].2.lines().enumerate() {
-            if l.trim().is_empty() || l.starts_with('#') {
-                continue;
+    fn los_tsv_estan_bien_formados() {
+        let base: std::collections::HashSet<&str> = filas(IDIOMAS[1].2).into_iter().map(|(es, _)| es).collect();
+        for (codigo, _, tsv) in &IDIOMAS[1..] {
+            let mut vistas = std::collections::HashSet::new();
+            for (es, tr) in filas(tsv) {
+                assert!(!es.is_empty() && !tr.trim().is_empty(), "{}: «{}» vacía", codigo, es);
+                assert!(vistas.insert(es), "{}: clave repetida «{}»", codigo, es);
+                assert!(base.contains(es), "{}: clave que no existe en en.tsv «{}»", codigo, es);
+                assert_eq!(es.matches("{}").count(), tr.matches("{}").count(), "{}: huecos {{}} distintos en «{}»", codigo, es);
+                assert_eq!(es.matches("\\n").count(), tr.matches("\\n").count(), "{}: saltos \\n distintos en «{}»", codigo, es);
             }
-            let (es, en) = l.split_once('\t').unwrap_or_else(|| panic!("línea {} sin TAB: {}", n + 1, l));
-            assert!(!es.is_empty() && !en.trim().is_empty(), "línea {} vacía", n + 1);
+            // Cada idioma traduce al menos el 95 % de lo que traduce el inglés.
+            assert!(vistas.len() * 100 >= base.len() * 95, "{}: solo {} de {} textos", codigo, vistas.len(), base.len());
         }
     }
 

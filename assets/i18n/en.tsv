@@ -217,7 +217,6 @@ elementos seleccionados	elements selected
 seleccionados	selected
 NOVATOS	BEGINNERS
 PROFESIONALES	PROFESSIONALS
-PASO	STEP
 Siguiente	Next
 Abrir el editor	Open the editor
 Detener	Stop
@@ -552,3 +551,41 @@ Falta la imagen «{}»: se exportará vacía	Missing image “{}”: it will be 
 Ninguno	None
 TextMeshPro · texto	TextMeshPro · text
 TMP_Dropdown · opciones	TMP_Dropdown · options
+# Tamaños de página, pantallas de prueba y atajos
+Controles de UI (uGUI)	UI controls (uGUI)
+Contenedores y Layout Groups	Containers and Layout Groups
+Formas	Shapes
+Guardar archivo	Save file
+Resolución de referencia	Reference resolution
+PC / consola Full HD	PC / console Full HD
+PC HD	PC HD
+PC 4K	PC 4K
+Ultrapanorámico 21:9	Ultrawide 21:9
+Móvil vertical	Phone portrait
+Móvil horizontal	Phone landscape
+Tableta 4:3	Tablet 4:3
+2400 × 1080 (móvil apaisado)	2400 × 1080 (phone landscape)
+1080 × 2400 (móvil vertical)	1080 × 2400 (phone portrait)
+1080 × 1080 (cuadrado)	1080 × 1080 (square)
+Clic / Shift+clic	Click / Shift+click
+Seleccionar / sumar	Select / add
+Ctrl+clic	Ctrl+click
+Seleccionar dentro de un grupo	Select inside a group
+Seleccionar el padre	Select the parent
+Arrastrar vacío	Drag on empty space
+Selección por área	Area selection
+Doble clic	Double-click
+Editar texto	Edit text
+Escalar (Shift: libre)	Scale (Shift: free)
+Tirador de giro	Rotation handle
+Girar (Shift: 15°)	Rotate (Shift: 15°)
+Alt+arrastrar	Alt+drag
+Duplicar y mover	Duplicate and move
+Agrupar / desagrupar	Group / ungroup
+Ctrl+D / Supr	Ctrl+D / Del
+Duplicar / borrar	Duplicate / delete
+Deshacer / rehacer	Undo / redo
+Flechas	Arrows
+Mover 1 px (Shift: 10)	Move 1 px (Shift: 10)
+Ctrl+rueda	Ctrl+wheel
+Probar / simular pantallas	Test / simulate screens

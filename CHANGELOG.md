@@ -2,6 +2,18 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); versiones con [SemVer](https://semver.org/lang/es/).
 
+## [Sin publicar]
+
+### Añadido
+- **5 idiomas nuevos en la interfaz:** portugués, francés, alemán, italiano y ruso (Accesibilidad › Idioma). El tutorial integrado se muestra en inglés en esos idiomas.
+- Tutoriales en inglés en `docs/` (`TUTORIAL_BEGINNERS.md` y `TUTORIAL_PROS.md`), y tutoriales al día con la 1.3.
+- `cargo test` valida cada idioma: claves existentes, sin repetir, huecos `{}` y `
+` conservados y al menos el 95 % traducido.
+
+### Corregido
+- Se traducen los tamaños de página, las pantallas del modo prueba, la lista de atajos, los títulos «Controles de UI», «Contenedores y Layout Groups» y «Formas», el tipo de elemento, la fuente predeterminada y los títulos de componente del inspector.
+- Las etiquetas largas de las miniaturas se acortan con «…» en vez de pisar la de al lado; el nombre completo aparece al pasar el ratón.
+
 ## [1.3.0] - 2026-11-18
 
 Siete plantillas nuevas, componentes y estilos listos, la herramienta **Revisar diseño** y correcciones.

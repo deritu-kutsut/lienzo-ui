@@ -74,8 +74,25 @@ fn tile(ui: &mut egui::Ui, size: Vec2, label: &str, paint: impl FnOnce(&egui::Pa
         ui.painter().rect_stroke(img, 7.0, Stroke::new(1.5, ACCENT()), StrokeKind::Inside);
     }
     paint(&ui.painter().with_clip_rect(img.shrink(2.0)), img.shrink(10.0));
-    ui.painter().text(Pos2::new(img.center().x, img.bottom() + 9.0), egui::Align2::CENTER_CENTER, crate::i18n::t(label), FontId::proportional(11.0), MUTED());
-    resp.on_hover_cursor(egui::CursorIcon::Grab)
+    // Etiquetas largas (alemán, ruso…): se acortan con «…» para no pisar la de al lado; el nombre completo va en el tooltip.
+    let full = crate::i18n::t(label);
+    let font = FontId::proportional(11.0);
+    let fits = |s: &str| ui.fonts_mut(|f| f.layout_no_wrap(s.to_string(), font.clone(), MUTED()).size().x) <= size.x;
+    let mut shown = full.clone();
+    if !fits(&shown) {
+        let chars: Vec<char> = full.chars().collect();
+        let mut n = chars.len();
+        while n > 1 {
+            n -= 1;
+            shown = chars[..n].iter().collect::<String>().trim_end().to_string() + "…";
+            if fits(&shown) {
+                break;
+            }
+        }
+    }
+    ui.painter().text(Pos2::new(img.center().x, img.bottom() + 9.0), egui::Align2::CENTER_CENTER, &shown, font, MUTED());
+    let resp = resp.on_hover_cursor(egui::CursorIcon::Grab);
+    if shown != full { resp.on_hover_text(full) } else { resp }
 }
 
 fn drag_f(ui: &mut egui::Ui, label: &str, v: &mut f32, speed: f32) -> bool {
@@ -257,7 +274,7 @@ impl EditorApp {
                     ui.menu_button(crate::i18n::t("Lienzo"), |ui| {
                         ui.label(RichText::new(crate::i18n::t("Resolución de referencia (CanvasScaler)")).small().color(MUTED()));
                         for (name, w, h) in SIZE_PRESETS {
-                            if ui.button(format!("{}  ·  {} × {}", name, w, h)).clicked() {
+                            if ui.button(format!("{}  ·  {} × {}", crate::i18n::t(name), w, h)).clicked() {
                                 self.resize_page(*w, *h);
                                 ui.close();
                             }
@@ -280,12 +297,12 @@ impl EditorApp {
                     if self.preview {
                         let cur = match self.preview_screen {
                             Some(s) => format!("{} × {}", s[0], s[1]),
-                            None => "Resolución de referencia".into(),
+                            None => crate::i18n::t("Resolución de referencia"),
                         };
                         egui::ComboBox::from_id_salt("screen").selected_text(cur).width(190.0).show_ui(ui, |ui| {
                             for (name, w, h) in SCREEN_PRESETS {
                                 let v = if *w == 0.0 { None } else { Some([*w, *h]) };
-                                ui.selectable_value(&mut self.preview_screen, v, *name);
+                                ui.selectable_value(&mut self.preview_screen, v, crate::i18n::t(name));
                             }
                         });
                     }
@@ -1351,7 +1368,7 @@ impl EditorApp {
             let mut preset = None;
             egui::ComboBox::from_id_salt("res_presets").selected_text(crate::i18n::t("Resoluciones comunes…")).width(ui.available_width() - 8.0).show_ui(ui, |ui| {
                 for (name, w, h) in SIZE_PRESETS {
-                    if ui.button(format!("{}  ·  {} × {}", name, w, h)).clicked() {
+                    if ui.button(format!("{}  ·  {} × {}", crate::i18n::t(name), w, h)).clicked() {
                         preset = Some((*w, *h));
                     }
                 }
@@ -1397,8 +1414,8 @@ impl EditorApp {
                 ("F1", "Tutorial"),
             ] {
                 ui.horizontal(|ui| {
-                    ui.label(RichText::new(k).monospace().size(11.0));
-                    ui.with_layout(Layout::right_to_left(Align::Center), |ui| ui.label(RichText::new(d).size(11.0).color(MUTED())));
+                    ui.label(RichText::new(crate::i18n::t(k)).monospace().size(11.0));
+                    ui.with_layout(Layout::right_to_left(Align::Center), |ui| ui.label(RichText::new(crate::i18n::t(d)).size(11.0).color(MUTED())));
                 });
             }
         });
@@ -2043,7 +2060,7 @@ impl EditorApp {
                     self.status = crate::i18n::t("Copiado al portapapeles");
                 }
                 if ui.add(crate::icons::btn("save", crate::i18n::t("Guardar archivo…"))).clicked() {
-                    self.save_text_file("Guardar archivo", &file, ext, &text);
+                    self.save_text_file(&crate::i18n::t("Guardar archivo"), &file, ext, &text);
                 }
                 ui.label(RichText::new(format!("{} líneas", text.lines().count())).small().color(MUTED()));
             });
