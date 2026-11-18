@@ -92,7 +92,9 @@ pub fn carpeta_usuario() -> PathBuf {
 /// Ruta de un archivo del plugin, sin salir de su carpeta.
 fn dentro(carpeta: &Path, rel: &str) -> Result<PathBuf, String> {
     let rel_path = Path::new(rel);
-    if rel.is_empty() || rel_path.is_absolute() || rel_path.components().any(|c| matches!(c, std::path::Component::ParentDir)) {
+    // Solo nombres normales: en Windows «\carpeta» o «C:x» no son absolutas pero `join` las saca de la carpeta.
+    let normal = rel_path.components().all(|c| matches!(c, std::path::Component::Normal(_) | std::path::Component::CurDir));
+    if rel.is_empty() || rel_path.is_absolute() || rel_path.has_root() || !normal {
         return Err(format!("ruta no permitida en el plugin: {}", rel));
     }
     Ok(carpeta.join(rel_path))
@@ -284,11 +286,9 @@ impl EditorApp {
                 _ => {
                     let f = &p.plantillas[j];
                     match std::fs::read_to_string(f).map_err(|e| e.to_string()).and_then(|s| serde_json::from_str::<Doc>(&s).map_err(|e| e.to_string())) {
-                        Ok(mut d) => {
-                            d.migrate_groups();
-                            self.doc = d;
-                            self.sel.clear();
-                            self.fit_pending = true;
+                        Ok(d) => {
+                            // Igual que una plantilla propia: sale del modo prueba y bloquea los fondos.
+                            self.load_user_template(&d);
                             self.status = format!("{} {}", t("Plantilla del plugin aplicada (Ctrl+Z para deshacer):"), f.display());
                         }
                         Err(e) => self.status = format!("{} {}", t("Error del plugin:"), e),
@@ -349,5 +349,21 @@ mod tests {
         let c = Accion { nombre: "bucle".into(), descripcion: String::new(), script: "bucle.rhai".into() };
         let doc = crate::model::template(5, 1920.0, 1080.0);
         assert!(ejecutar_comando(&dir, &c, &doc).is_err());
+    }
+}
+
+#[cfg(test)]
+mod rutas_tests {
+    use super::*;
+
+    #[test]
+    fn rutas_que_salen_de_la_carpeta() {
+        let c = Path::new("plugins/x");
+        for mala in ["", "../a.rhai", "a/../../b.rhai", "/etc/a.rhai", "\\Users\\a.rhai", "C:a.rhai", "C:\\a.rhai"] {
+            assert!(dentro(c, mala).is_err(), "debería rechazar {:?}", mala);
+        }
+        for buena in ["a.rhai", "sub/a.rhai", "./a.rhai"] {
+            assert!(dentro(c, buena).is_ok(), "debería aceptar {:?}", buena);
+        }
     }
 }

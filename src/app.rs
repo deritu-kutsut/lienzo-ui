@@ -37,6 +37,8 @@ pub struct Drag {
     /// element to select on release when the press did not turn into a drag
     pub click_select: Option<u64>,
     pub start_pan: Vec2,
+    /// Alt+arrastrar: duplicar la selección cuando el arrastre empiece de verdad.
+    pub duplicate: bool,
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -225,6 +227,11 @@ impl EditorApp {
     }
 
     pub fn undo(&mut self) {
+        // Cambios hechos mientras un campo tenía el foco aún no son un paso: se guardan antes de deshacer.
+        if !self.preview && self.doc != self.committed {
+            let prev = std::mem::replace(&mut self.committed, self.doc.clone());
+            self.undo.push(prev);
+        }
         if let Some(prev) = self.undo.pop() {
             self.redo.push(std::mem::replace(&mut self.doc, prev));
             self.committed = self.doc.clone();
@@ -326,7 +333,10 @@ impl EditorApp {
     /// The frame drawn around the selection: the rotated box for one element,
     /// otherwise the axis-aligned bounds of everything selected.
     pub fn sel_frame(&self) -> Option<SelFrame> {
-        let items = self.selected();
+        let mut items = self.selected();
+        if items.iter().any(|e| !e.locked) {
+            items.retain(|e| !e.locked);
+        }
         match items.len() {
             0 => None,
             1 => {
@@ -375,20 +385,20 @@ impl EditorApp {
                 }
             }
         }
-        e.rot = pf.rot;
+        e.rot = (pf.rot + e.rot) % 360.0;
         e.group = None;
         e.parent = parent;
         let kind = e.kind;
         let id = self.doc.add(e);
         self.doc.normalize();
         if let Some(el) = self.doc.get_mut(id) {
-            if el.name.is_empty() || el.name.starts_with(kind.label()) {
+            if el.name.is_empty() || el.name == kind.label() {
                 el.name = format!("{} {}", kind.label(), id);
             }
         }
         self.sel = vec![id];
         let pname = parent.and_then(|p| self.doc.get(p)).map(|p| format!(" dentro de «{}»", p.name)).unwrap_or_default();
-        self.status = crate::i18n::tf("Se agregó: {}{}", &[&kind.label().to_string(), &pname]);
+        self.status = crate::i18n::tf("Se agregó: {}{}", &[&crate::i18n::t(kind.label()), &pname]);
     }
 
     /// Topmost Panel / Contenedor / ScrollView under a page point (drop target).
@@ -461,14 +471,21 @@ impl EditorApp {
             e.y += 40.0;
         }
         let items = self.clipboard.clone();
-        let parent = self.insert_parent();
+        let mut parent = self.insert_parent();
+        if let Some(p) = parent {
+            if items.iter().any(|e| e.id == p) || self.doc.ancestors(p).iter().any(|a| items.iter().any(|e| e.id == *a)) {
+                parent = self.doc.parent_of(p);
+            }
+        }
         self.sel = self.doc.insert_items(&items, parent);
+        self.doc.sanitize();
         self.status = crate::i18n::t("Pegado");
     }
 
     /// Wrap the selection in a new "Contenedor" (an empty RectTransform), like grouping in Unity.
     pub fn group_selection(&mut self) {
-        let tops = self.sel_top();
+        // Un bloqueado dentro de un Contenedor nuevo (desbloqueado) se podría mover o borrar con él.
+        let tops: Vec<u64> = self.sel_top().into_iter().filter(|i| !self.doc.get(*i).map(|e| e.locked).unwrap_or(true)).collect();
         if tops.is_empty() {
             return;
         }
@@ -502,7 +519,7 @@ impl EditorApp {
         let mut freed = Vec::new();
         for id in self.sel.clone() {
             let Some(e) = self.doc.get(id) else { continue };
-            if e.kind != Kind::Empty {
+            if e.kind != Kind::Empty || e.locked {
                 continue;
             }
             let parent = self.doc.parent_of(id);
@@ -520,6 +537,7 @@ impl EditorApp {
             self.doc.set_sibling_order(parent, &sibs);
             freed.extend(kids);
         }
+        freed.retain(|id| self.doc.get(*id).is_some());
         if !freed.is_empty() {
             self.sel = freed;
             self.status = crate::i18n::t("Desagrupado");
@@ -555,7 +573,12 @@ impl EditorApp {
 
     /// Move the selection among its siblings. `to_front`: Some(true) last (drawn on top), Some(false) first.
     pub fn reorder(&mut self, to_front: Option<bool>, step: i32) {
-        for id in self.sel_top() {
+        let mut tops = self.sel_top();
+        // Hacia delante (o al fondo, insertando en 0) se recorre al revés: así dos hermanos seguidos no se anulan.
+        if step > 0 || to_front == Some(false) {
+            tops.reverse();
+        }
+        for id in tops {
             let parent = self.doc.parent_of(id);
             let mut sibs = self.doc.children(parent);
             let Some(i) = sibs.iter().position(|s| *s == id) else { continue };
@@ -714,6 +737,8 @@ impl EditorApp {
                 d.migrate_groups();
                 self.doc = d;
                 self.sel.clear();
+                self.editing = None;
+                self.drag = None;
                 self.fit_pending = true;
                 self.status = format!("{} {}", crate::i18n::t("Proyecto abierto:"), self.project_path);
                 self.remember_project();
@@ -825,6 +850,8 @@ impl EditorApp {
             items.insert(0, g);
         }
         self.sel = self.doc.insert_items(&items, parent);
+        // Lo que llega de la biblioteca o de la comunidad puede traer valores absurdos (letra de 1e9 px, NaN…).
+        self.doc.sanitize();
         self.status = crate::i18n::t("Elemento de tu biblioteca agregado");
     }
 
@@ -1112,5 +1139,91 @@ pub fn layout_texts(ctx: &egui::Context, doc: &mut Doc) {
             f.cy = top[1] + (h / 2.0) * c;
             doc.set_frame_keep_children(id, &f);
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn app_con(plantilla: usize) -> EditorApp {
+        let mut a = EditorApp::new(None);
+        a.doc = model::template(plantilla, 1920.0, 1080.0);
+        a.committed = a.doc.clone();
+        a.sel.clear();
+        a
+    }
+
+    fn id(a: &EditorApp, n: &str) -> u64 {
+        a.doc.elements.iter().find(|e| e.name == n).unwrap().id
+    }
+
+    #[test]
+    fn reordenar_varios_hermanos_no_se_anula() {
+        let mut a = app_con(0);
+        let (j, o) = (id(&a, "Botón Jugar"), id(&a, "Botón Opciones"));
+        let menu = a.doc.parent_of(j);
+        a.sel = vec![j, o];
+        a.reorder(None, 1);
+        let orden: Vec<String> = a.doc.children(menu).iter().map(|c| a.doc.get(*c).unwrap().name.clone()).collect();
+        assert_eq!(orden, ["Botón Créditos", "Botón Jugar", "Botón Opciones", "Botón Salir"]);
+        a.reorder(Some(false), 0);
+        let orden: Vec<String> = a.doc.children(menu).iter().map(|c| a.doc.get(*c).unwrap().name.clone()).collect();
+        assert_eq!(&orden[..2], ["Botón Jugar", "Botón Opciones"], "al fondo conserva su orden");
+    }
+
+    #[test]
+    fn desagrupar_anidados_no_deja_ids_borrados() {
+        let mut a = app_con(0);
+        let menu = id(&a, "Menú");
+        let head = id(&a, "Cabecera");
+        a.sel = vec![head, menu];
+        a.group_selection();
+        let g = a.sel[0];
+        a.sel = vec![g, head];
+        a.ungroup_selection();
+        assert!(!a.sel.is_empty() && a.sel.iter().all(|s| a.doc.get(*s).is_some()), "{:?}", a.sel);
+    }
+
+    #[test]
+    fn bloqueados_no_se_agrupan_ni_desagrupan() {
+        let mut a = app_con(0);
+        let fondo = id(&a, "Fondo");
+        let luna = id(&a, "Luna");
+        a.doc.get_mut(fondo).unwrap().locked = true;
+        a.sel = vec![fondo, luna];
+        a.group_selection();
+        assert_eq!(a.doc.parent_of(fondo), None, "el fondo bloqueado no entra en el grupo");
+        let menu = id(&a, "Menú");
+        a.doc.get_mut(menu).unwrap().locked = true;
+        a.sel = vec![menu];
+        a.ungroup_selection();
+        assert!(a.doc.get(menu).is_some(), "un Contenedor bloqueado no se deshace");
+    }
+
+    #[test]
+    fn pegar_un_contenedor_lo_pone_a_su_lado() {
+        let mut a = app_con(4);
+        let win = id(&a, "Inventario");
+        a.sel = vec![win];
+        a.copy();
+        a.paste();
+        let nuevo = a.sel[0];
+        assert_ne!(nuevo, win);
+        assert_eq!(a.doc.parent_of(nuevo), a.doc.parent_of(win), "hermano, no hijo");
+    }
+
+    #[test]
+    fn insertar_conserva_rotacion_y_nombre() {
+        let mut a = app_con(5);
+        let mut e = Element::new(0, Kind::Button);
+        e.name = "Botón píldora".into();
+        e.rot = -8.0;
+        a.insert(e, None);
+        let n = a.doc.get(a.sel[0]).unwrap();
+        assert_eq!(n.name, "Botón píldora");
+        assert!((n.rot + 8.0).abs() < 0.01);
+        a.insert(Element::new(0, Kind::Button), None);
+        assert!(a.doc.get(a.sel[0]).unwrap().name.starts_with(&format!("{} ", Kind::Button.label())));
     }
 }

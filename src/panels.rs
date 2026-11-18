@@ -1674,10 +1674,20 @@ impl EditorApp {
             let title = if e.kind == Kind::Dropdown { "TMP_Dropdown · opciones" } else { "TextMeshPro · texto" };
             component(ui, "txt", title, true, |ui| {
                 if e.kind == Kind::Dropdown {
-                    let mut opts = e.options.join("\n");
+                    // Mientras se escribe se guarda el texto tal cual (con la línea vacía tras pulsar Enter);
+                    // las opciones se toman de él sin las líneas vacías.
+                    #[allow(deprecated)]
+                    let buf_id = egui::Id::new(("dd_opts", e.id));
+                    let mut opts = ui.data(|d| d.get_temp::<String>(buf_id)).unwrap_or_else(|| e.options.join("\n"));
                     hint(ui, &crate::i18n::t("Una opción por línea"));
-                    if ui.add(egui::TextEdit::multiline(&mut opts).desired_rows(3).desired_width(f32::INFINITY)).changed() {
+                    let r = ui.add(egui::TextEdit::multiline(&mut opts).desired_rows(3).desired_width(f32::INFINITY));
+                    if r.changed() {
                         e.options = opts.lines().map(|l| l.to_string()).filter(|l| !l.trim().is_empty()).collect();
+                    }
+                    if r.has_focus() {
+                        ui.data_mut(|d| d.insert_temp(buf_id, opts));
+                    } else {
+                        ui.data_mut(|d| d.remove::<String>(buf_id));
                     }
                     if !e.options.is_empty() {
                         let mut idx = (e.value.round().max(0.0) as usize).min(e.options.len() - 1);

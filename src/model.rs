@@ -979,13 +979,58 @@ impl Doc {
                 vistos.insert(nuevo);
             }
         }
+        let limpiar = |t: &mut String, saltos: bool| {
+            if t.chars().any(|c| c.is_control() && !(saltos && (c == '\n' || c == '\t'))) {
+                *t = t.chars().filter(|c| !c.is_control() || (saltos && (*c == '\n' || *c == '\t'))).collect();
+            }
+        };
         for e in self.elements.iter_mut() {
-            for v in [&mut e.x, &mut e.y, &mut e.w, &mut e.h] {
+            for v in [&mut e.x, &mut e.y, &mut e.w, &mut e.h, &mut e.rot, &mut e.value, &mut e.stroke_w, &mut e.radius] {
                 if !v.is_finite() {
                     *v = 0.0;
                 }
             }
+            e.w = e.w.max(0.0);
+            e.h = e.h.max(0.0);
+            e.rot %= 360.0;
+            e.stroke_w = e.stroke_w.clamp(0.0, 1000.0);
+            e.radius = e.radius.clamp(0.0, 10_000.0);
+            e.opacity = if e.opacity.is_finite() { e.opacity.clamp(0.0, 1.0) } else { 1.0 };
+            // Una letra de 1e9 px haría que egui intentara dibujar un glifo gigante.
+            e.font_size = if e.font_size.is_finite() { e.font_size.clamp(1.0, 1000.0) } else { 32.0 };
+            // Caracteres de control (NUL…) rompen el UXML y los scripts exportados.
+            limpiar(&mut e.name, false);
+            limpiar(&mut e.text, true);
+            limpiar(&mut e.font, false);
+            limpiar(&mut e.image, false);
+            for o in e.options.iter_mut() {
+                limpiar(o, false);
+            }
         }
+        limpiar(&mut self.title, false);
+        for e in self.elements.iter_mut() {
+            for v in e.anchor_min.iter_mut().chain(e.anchor_max.iter_mut()).chain(e.pivot.iter_mut()).chain(e.shadow.offset.iter_mut()) {
+                if !v.is_finite() {
+                    *v = 0.5;
+                }
+            }
+            let l = &mut e.layout;
+            for v in l.padding.iter_mut().chain(l.spacing.iter_mut()) {
+                *v = if v.is_finite() { v.clamp(-10_000.0, 10_000.0) } else { 0.0 };
+            }
+            for v in l.cell.iter_mut() {
+                *v = if v.is_finite() { v.clamp(1.0, 10_000.0) } else { 100.0 };
+            }
+        }
+        // Página: sin tamaño o enorme deja el lienzo en NaN o sin escala.
+        if !self.width.is_finite() || self.width < 1.0 {
+            self.width = 1920.0;
+        }
+        if !self.height.is_finite() || self.height < 1.0 {
+            self.height = 1080.0;
+        }
+        self.width = self.width.min(16_384.0);
+        self.height = self.height.min(16_384.0);
         for i in 0..self.elements.len() {
             let mut cur = self.elements[i].parent;
             let mut pasos = 0usize;
@@ -2081,6 +2126,37 @@ mod sanitize_tests {
         d.migrate_groups();
         let e = d.get(ids[0]).unwrap();
         assert!(e.x.is_finite() && e.w.is_finite());
+    }
+}
+
+#[cfg(test)]
+mod sanitize_extra_tests {
+    use super::*;
+
+    #[test]
+    fn valores_absurdos_y_caracteres_de_control() {
+        let mut d = Doc::empty(1920.0, 1080.0);
+        let mut e = Element::new(0, Kind::Text);
+        e.name = "a\u{0}b\u{7}".into();
+        e.text = "uno\ndos\u{0}".into();
+        e.font_size = 1.0e9;
+        e.w = -40.0;
+        e.opacity = 7.0;
+        e.stroke_w = -3.0;
+        e.rot = 1.0e30;
+        d.add(e);
+        d.title = "T\u{1}".into();
+        d.sanitize();
+        let e = &d.elements[0];
+        assert_eq!(e.name, "ab");
+        assert_eq!(e.text, "uno\ndos");
+        assert_eq!(e.font_size, 1000.0);
+        assert_eq!((e.w, e.opacity, e.stroke_w), (0.0, 1.0, 0.0));
+        assert!(e.rot.abs() < 360.0);
+        assert_eq!(d.title, "T");
+        let mut p = Doc::empty(0.0, f32::INFINITY);
+        p.sanitize();
+        assert_eq!((p.width, p.height), (1920.0, 1080.0));
     }
 }
 

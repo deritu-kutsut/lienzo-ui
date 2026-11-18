@@ -2,6 +2,24 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); versiones con [SemVer](https://semver.org/lang/es/).
 
+## [Sin publicar]
+
+### Corregido
+- Modo prueba: `mover`, `posicion` y `girar` mueven también los hijos del elemento; `valor` en un desplegable elige la opción (antes se limitaba a 0–1); `leer_texto` y `leer_valor` avisan si el elemento no existe; números infinitos ya no dejan coordenadas rotas.
+- Doble clic sobre un elemento dentro de un Contenedor ya no devuelve la selección al Contenedor al soltar.
+- Alt+clic sin arrastrar ya no deja una copia encima.
+- Pegar (Ctrl+V) un Contenedor o panel lo pone a su lado en vez de dentro de sí mismo.
+- Agrupar y desagrupar respetan los elementos bloqueados; desagrupar contenedores anidados ya no deja la selección con elementos borrados.
+- Subir o bajar varios elementos seguidos con Ctrl+] / Ctrl+[ ya no se anula, y «Al fondo» conserva su orden.
+- Al agregar un componente se conservan su rotación y su nombre (el «Combo» llegaba recto y «Botón píldora» pasaba a «Botón 12»).
+- Escalar una selección con elementos bloqueados ya no deforma el resto.
+- Las opciones de un desplegable se pueden escribir con Enter en el inspector.
+- Abrir un proyecto mientras se edita un texto ya no deja la edición abierta sobre el diseño nuevo.
+- Plugins: una ruta como `\carpeta\script.rhai` ya no puede salir de la carpeta del plugin en Windows.
+- Subir una fuente con el mismo nombre de archivo que otra ya no hace que se use la vieja al reiniciar.
+- Archivos dañados o ajenos: se corrigen letra de tamaño absurdo, bordes y radios negativos, opacidad fuera de rango, números infinitos, página sin tamaño y caracteres de control (que rompían el UXML exportado).
+- Un diseño titulado «CON», «NUL», «COM1»… se exporta con un nombre de archivo válido en Windows.
+
 ## [1.3.2] - 2026-11-18
 
 Chino, japonés y coreano: la app ya habla diez idiomas.

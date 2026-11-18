@@ -242,11 +242,15 @@ pub fn add_font_file(src: &Path) -> Result<(String, Vec<u8>, PathBuf), String> {
     let bytes = std::fs::read(src).map_err(|e| e.to_string())?;
     let dir = fonts_dir();
     std::fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
-    let dest = dir.join(src.file_name().ok_or("nombre no válido")?);
+    let mut dest = dir.join(src.file_name().ok_or("nombre no válido")?);
+    // Otra fuente con el mismo nombre de archivo: se guarda aparte (antes se usaba la nueva en esta sesión y la vieja al reiniciar).
+    if dest.exists() && std::fs::read(&dest).map(|b| b != bytes).unwrap_or(true) {
+        dest = dir.join(unique_name(&dir, &stem(src), &ext_of(src)));
+    }
     if !dest.exists() {
         std::fs::write(&dest, &bytes).map_err(|e| e.to_string())?;
     }
-    Ok((stem(src), bytes, dest))
+    Ok((stem(&dest), bytes, dest))
 }
 
 /// Fonts previously uploaded to the library: (name, path, bytes).

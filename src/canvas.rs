@@ -271,7 +271,8 @@ impl EditorApp {
         }
 
         // double click: edit text, or enter a Contenedor
-        if double && over && self.drag.is_none() {
+        let double_handled = double && over && self.drag.is_none();
+        if double_handled {
             if let Some(m) = pointer {
                 if let Some(id) = self.hit_element(v.to_page(m)) {
                     if let Some(e) = self.doc.get(id) {
@@ -301,6 +302,7 @@ impl EditorApp {
                     moved: false,
                     click_select: None,
                     start_pan: self.pan,
+                    duplicate: false,
                 };
                 if middle_pressed || space {
                     d.kind = DragKind::Pan;
@@ -340,7 +342,7 @@ impl EditorApp {
                                 }
                                 d.kind = DragKind::Move;
                                 if mods.alt {
-                                    self.duplicate_selection(0.0);
+                                    d.duplicate = true;
                                     d.click_select = None;
                                 }
                             }
@@ -350,6 +352,10 @@ impl EditorApp {
                                 self.sel.clear();
                             }
                         }
+                    }
+                    // El segundo clic del doble clic no debe devolver la selección al Contenedor al soltar.
+                    if double_handled {
+                        d.click_select = None;
                     }
                     d.orig = self.doc.elements.clone();
                     d.frame = self.sel_frame().unwrap_or(d.frame);
@@ -367,6 +373,13 @@ impl EditorApp {
             d.cur_page = pg;
             if m.distance(d.start_screen) > 3.0 {
                 d.moved = true;
+                // Alt+arrastrar: la copia se crea al empezar a mover (un Alt+clic suelto no deja copias encima).
+                if d.duplicate {
+                    d.duplicate = false;
+                    self.duplicate_selection(0.0);
+                    d.orig = self.doc.elements.clone();
+                    d.frame = self.sel_frame().unwrap_or(d.frame);
+                }
             }
             if d.moved {
                 match d.kind {
@@ -604,7 +617,10 @@ impl EditorApp {
         let p0 = v.to_page(Pos2::new(top.left() + RULER, 0.0))[0];
         let p1 = v.to_page(Pos2::new(top.right(), 0.0))[0];
         let mut x = (p0 / minor).floor() * minor;
-        while x <= p1 {
+        let mut n = 0;
+        // Con desplazamientos enormes `x + minor == x` en f32: el tope evita un bucle sin fin.
+        while x <= p1 && n < 2000 {
+            n += 1;
             let sx = v.to_screen(x, 0.0).x;
             if sx >= top.left() + RULER {
                 let major = (x / step).round() * step == x || ((x / step) - (x / step).round()).abs() < 1e-3;
@@ -620,7 +636,9 @@ impl EditorApp {
         let q0 = v.to_page(Pos2::new(0.0, left.top() + RULER))[1];
         let q1 = v.to_page(Pos2::new(0.0, left.bottom()))[1];
         let mut y = (q0 / minor).floor() * minor;
-        while y <= q1 {
+        let mut n = 0;
+        while y <= q1 && n < 2000 {
+            n += 1;
             let sy = v.to_screen(0.0, y).y;
             if sy >= left.top() + RULER {
                 let major = ((y / step) - (y / step).round()).abs() < 1e-3;

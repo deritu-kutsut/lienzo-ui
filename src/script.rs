@@ -13,8 +13,22 @@ pub const HELP: &str = "Funciones (los nombres son los de la lista de capas; «y
   valor(\"Nombre\", 0.5)   leer_valor(\"Nombre\")   transparencia(\"Nombre\", 0.5)
   mensaje(\"texto\")  — también sirven let, if, for, while, +, etc.";
 
+/// Número de un argumento del script; NaN o infinito cuentan como 0 (no deben llegar a las coordenadas).
 fn num(d: &Dynamic) -> f32 {
-    d.as_float().map(|f| f as f32).or_else(|_| d.as_int().map(|i| i as f32)).unwrap_or(0.0)
+    let v = d.as_float().map(|f| f as f32).or_else(|_| d.as_int().map(|i| i as f32)).unwrap_or(0.0);
+    if v.is_finite() { v.clamp(-1.0e6, 1.0e6) } else { 0.0 }
+}
+
+/// Cambia el marco de un elemento por su nombre; los hijos lo siguen según sus anclas (como al moverlo en el editor).
+fn with_frame(doc: &Shared, log: &Log, name: &str, f: impl FnOnce(&mut crate::model::Frame)) {
+    let mut d = doc.borrow_mut();
+    match d.elements.iter().find(|e| e.name == name).map(|e| (e.id, e.frame())) {
+        Some((id, mut fr)) => {
+            f(&mut fr);
+            d.set_frame_keep_children(id, &fr);
+        }
+        None => log.borrow_mut().push(format!("⚠ No existe un elemento llamado «{}»", name)),
+    }
 }
 
 fn parse_hex(s: &str) -> Option<Rgba> {
@@ -67,19 +81,39 @@ pub fn run(doc: &mut Doc, id: u64, code: &str, log: &mut Vec<String>) {
     reg!("ocultar", |d, l, n: &str| with_el(&d, &l, n, |e| e.visible = false));
     reg!("alternar", |d, l, n: &str| with_el(&d, &l, n, |e| e.visible = !e.visible));
     reg!("texto", |d, l, n: &str, v: Dynamic| with_el(&d, &l, n, |e| e.text = v.to_string()));
-    reg!("leer_texto", |d, _l, n: &str| d.borrow().elements.iter().find(|e| e.name == n).map(|e| e.text.clone()).unwrap_or_default());
-    reg!("leer_valor", |d, _l, n: &str| d.borrow().elements.iter().find(|e| e.name == n).map(|e| e.value as f64).unwrap_or(0.0));
-    reg!("valor", |d, l, n: &str, v: Dynamic| with_el(&d, &l, n, |e| e.value = num(&v).clamp(0.0, 1.0)));
+    reg!("leer_texto", |d, l, n: &str| match d.borrow().elements.iter().find(|e| e.name == n) {
+        Some(e) => e.text.clone(),
+        None => {
+            l.borrow_mut().push(format!("⚠ No existe un elemento llamado «{}»", n));
+            String::new()
+        }
+    });
+    reg!("leer_valor", |d, l, n: &str| match d.borrow().elements.iter().find(|e| e.name == n) {
+        Some(e) => e.value as f64,
+        None => {
+            l.borrow_mut().push(format!("⚠ No existe un elemento llamado «{}»", n));
+            0.0
+        }
+    });
+    // Slider y barras: 0 a 1. Desplegable: número de la opción (0, 1, 2…).
+    reg!("valor", |d, l, n: &str, v: Dynamic| with_el(&d, &l, n, |e| {
+        e.value = if e.kind == crate::model::Kind::Dropdown {
+            num(&v).round().clamp(0.0, e.options.len().saturating_sub(1) as f32)
+        } else {
+            num(&v).clamp(0.0, 1.0)
+        }
+    }));
     reg!("transparencia", |d, l, n: &str, v: Dynamic| with_el(&d, &l, n, |e| e.opacity = num(&v).clamp(0.0, 1.0)));
-    reg!("mover", |d, l, n: &str, dx: Dynamic, dy: Dynamic| with_el(&d, &l, n, |e| {
-        e.x += num(&dx);
-        e.y += num(&dy);
+    reg!("mover", |d, l, n: &str, dx: Dynamic, dy: Dynamic| with_frame(&d, &l, n, |f| {
+        f.cx += num(&dx);
+        f.cy += num(&dy);
     }));
-    reg!("posicion", |d, l, n: &str, x: Dynamic, y: Dynamic| with_el(&d, &l, n, |e| {
-        e.x = num(&x);
-        e.y = num(&y);
+    // posicion: esquina superior izquierda, como x/y en el inspector.
+    reg!("posicion", |d, l, n: &str, x: Dynamic, y: Dynamic| with_frame(&d, &l, n, |f| {
+        f.cx = num(&x) + f.w / 2.0;
+        f.cy = num(&y) + f.h / 2.0;
     }));
-    reg!("girar", |d, l, n: &str, g: Dynamic| with_el(&d, &l, n, |e| e.rot = num(&g)));
+    reg!("girar", |d, l, n: &str, g: Dynamic| with_frame(&d, &l, n, |f| f.rot = num(&g) % 360.0));
     reg!("color", |d, l, n: &str, c: &str| match parse_hex(c) {
         Some(rgba) => with_el(&d, &l, n, |e| e.fill = rgba),
         None => l.borrow_mut().push(format!("⚠ Color no válido: {}", c)),
@@ -117,6 +151,28 @@ mod tests {
         assert_eq!(get("Botón Jugar").fill, [0x46, 0xBE, 0x78, 255]);
         assert_eq!(log[0], "Hola 3");
         assert!(log[1].contains("NoExiste"), "{:?}", log);
+    }
+
+    #[test]
+    fn mover_lleva_a_los_hijos_y_valor_respeta_desplegables() {
+        let mut doc = model::template(2, 1920.0, 1080.0);
+        let get = |d: &Doc, n: &str| d.elements.iter().find(|e| e.name == n).unwrap().clone();
+        let (v0, t0) = (get(&doc, "Ventana"), get(&doc, "Título ventana"));
+        let mut log = Vec::new();
+        run(&mut doc, v0.id, "mover(\"Ventana\", 100, -20);
+mover(\"Ventana\", 1.0/0.0, 0);", &mut log);
+        let (v1, t1) = (get(&doc, "Ventana"), get(&doc, "Título ventana"));
+        assert!((v1.x - v0.x - 100.0).abs() < 0.01 && (v1.y - v0.y + 20.0).abs() < 0.01, "{:?}", log);
+        assert!((t1.x - t0.x - 100.0).abs() < 0.01 && (t1.y - t0.y + 20.0).abs() < 0.01, "el hijo sigue al padre");
+        assert!(doc.elements.iter().all(|e| e.x.is_finite() && e.y.is_finite()));
+
+        let mut doc = model::template(3, 1920.0, 1080.0);
+        let id = get(&doc, "Calidad").id;
+        run(&mut doc, id, "valor(\"Calidad\", 3); valor(\"Slider Brillo\", 7);", &mut log);
+        assert_eq!(get(&doc, "Calidad").value, 3.0);
+        assert_eq!(get(&doc, "Slider Brillo").value, 1.0);
+        run(&mut doc, id, "valor(\"Calidad\", 99);", &mut log);
+        assert_eq!(get(&doc, "Calidad").value, 3.0, "no pasa de la última opción");
     }
 
     #[test]

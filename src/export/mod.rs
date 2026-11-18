@@ -63,7 +63,12 @@ pub fn class_name(s: &str) -> String {
         out = format!("Ui{}", out);
     }
     // Sirve de nombre de archivo y de clase: un título larguísimo no debe pasar del límite de rutas de Windows.
-    out.chars().take(64).collect()
+    let out: String = out.chars().take(64).collect();
+    // CON, PRN, AUX, NUL, COM1… y LPT1… no pueden ser nombres de archivo en Windows.
+    let up = out.to_ascii_uppercase();
+    let reservado = ["CON", "PRN", "AUX", "NUL"].contains(&up.as_str())
+        || ((up.starts_with("COM") || up.starts_with("LPT")) && up.len() == 4 && up.as_bytes()[3].is_ascii_digit());
+    if reservado { format!("{}Ui", out) } else { out }
 }
 
 /// camelCase C# identifier.
