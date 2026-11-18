@@ -4,8 +4,8 @@
 // Builds the interface with uGUI + TextMeshPro from the exported designs:
 //  * Every .json that appears or changes in Assets/EditorGUI/Designs is automatically
 //    turned into a prefab in Assets/EditorGUI/Prefabs.
-//  * Menu Tools > Lienzo UI > Importar diseño en la escena… creates it in the open scene.
-//  * Menu Tools > Lienzo UI > Regenerar todos los prefabs.
+//  * Menu Tools > Lienzo UI > Import design into scene… creates it in the open scene.
+//  * Menu Tools > Lienzo UI > Regenerate all prefabs.
 // Requires the packages "Unity UI" (com.unity.ugui) and TextMeshPro (included in ugui 2.0).
 using System;
 using System.Collections.Generic;
@@ -53,23 +53,23 @@ namespace EditorGui
         [Serializable] public class Doc { public string format; public Cv canvas; public El[] elements; }
 
         // ------------------------------------------------------------------ menus
-        [MenuItem("Tools/Lienzo UI/Importar diseño en la escena…")]
+        [MenuItem("Tools/Lienzo UI/Import design into scene…")]
         static void ImportIntoScene()
         {
             var start = Directory.Exists(Root + "/Designs") ? Root + "/Designs" : "";
-            var path = EditorUtility.OpenFilePanel("Diseño exportado por Lienzo UI", start, "json");
+            var path = EditorUtility.OpenFilePanel("Design exported by Lienzo UI", start, "json");
             if (string.IsNullOrEmpty(path)) return;
-            if (!TmpListo()) return;
+            if (!TmpReady()) return;
             var go = Build(Load(path));
-            Undo.RegisterCreatedObjectUndo(go, "Importar diseño");
+            Undo.RegisterCreatedObjectUndo(go, "Import design");
             EnsureEventSystem();
             Selection.activeGameObject = go;
         }
 
-        [MenuItem("Tools/Lienzo UI/Regenerar todos los prefabs")]
+        [MenuItem("Tools/Lienzo UI/Regenerate all prefabs")]
         public static void RebuildAll()
         {
-            if (!Directory.Exists(Root + "/Designs")) { Debug.LogWarning("[Lienzo UI] No hay diseños en " + Root + "/Designs"); return; }
+            if (!Directory.Exists(Root + "/Designs")) { Debug.LogWarning("[Lienzo UI] There are no designs in " + Root + "/Designs"); return; }
             foreach (var p in Directory.GetFiles(Root + "/Designs", "*.json")) BuildPrefab(p.Replace('\\', '/'));
         }
 
@@ -80,23 +80,27 @@ namespace EditorGui
         /// TextMeshPro needs its «TMP Essential Resources» (default font and settings). Without them
         /// texts have no font and fail when clipped inside a mask (RectMask2D).
         /// If they are missing, the official TMP window opens to import them and nothing is built.
-        public static bool TmpListo()
+        public static bool TmpReady()
         {
             if (AssetDatabase.FindAssets("t:TMP_Settings").Length > 0) return true;
-            if (!avisoTmp)
+            if (!tmpWarned)
             {
-                avisoTmp = true;
-                Debug.LogWarning("[Lienzo UI] Faltan los «TMP Essential Resources». En la ventana TMP Importer pulsa «Import TMP Essentials»: los prefabs se generarán solos después.");
+                tmpWarned = true;
+                Debug.LogWarning("[Lienzo UI] The «TMP Essential Resources» are missing. In the TMP Importer window press «Import TMP Essentials»: the prefabs will be generated automatically afterwards.");
                 EditorApplication.delayCall += TMPro.TMP_PackageResourceImporterWindow.ShowPackageImporterWindow;
             }
             return false;
         }
-        static bool avisoTmp;
+        static bool tmpWarned;
+
+        /// Old name of <see cref="TmpReady"/> (kept so existing code that calls it still compiles).
+        [Obsolete("Use TmpReady()")]
+        public static bool TmpListo() => TmpReady();
 
         /// Creates (or replaces) a design's prefab.
         public static string BuildPrefab(string jsonPath)
         {
-            if (!TmpListo()) return null;
+            if (!TmpReady()) return null;
             var doc = Load(jsonPath);
             Directory.CreateDirectory(Root + "/Prefabs");
             var prefabPath = PrefabPathFor(jsonPath);
@@ -112,7 +116,7 @@ namespace EditorGui
             {
                 EditorSceneManager.ClosePreviewScene(scene);
             }
-            Debug.Log("[Lienzo UI] Prefab actualizado: " + prefabPath);
+            Debug.Log("[Lienzo UI] Prefab updated: " + prefabPath);
             return prefabPath;
         }
 
@@ -175,7 +179,7 @@ namespace EditorGui
 
         static El Fix(El e)
         {
-            e.name = string.IsNullOrEmpty(e.name) ? "Elemento" : e.name;
+            e.name = string.IsNullOrEmpty(e.name) ? "Element" : e.name;
             e.type = e.type ?? "Panel";
             e.rect = e.rect ?? new RT();
             e.image = e.image ?? new Img();
@@ -740,13 +744,13 @@ namespace EditorGui
             var path = source.Replace('\\', '/');
             if (!path.StartsWith("Assets/"))
             {
-                if (!File.Exists(path)) { Debug.LogWarning("[Lienzo UI] No existe la imagen " + path); return null; }
+                if (!File.Exists(path)) { Debug.LogWarning("[Lienzo UI] The image does not exist: " + path); return null; }
                 Directory.CreateDirectory(Root + "/Sprites");
                 var dest = Root + "/Sprites/" + Path.GetFileName(path);
                 File.Copy(path, dest, true);
                 path = dest;
             }
-            if (!File.Exists(path)) { Debug.LogWarning("[Lienzo UI] No existe la imagen " + path); return null; }
+            if (!File.Exists(path)) { Debug.LogWarning("[Lienzo UI] The image does not exist: " + path); return null; }
             ConfigureSprite(path, Vector4.zero);
             return AssetDatabase.LoadAssetAtPath<Sprite>(path);
         }
@@ -885,7 +889,7 @@ namespace EditorGui
         static void Rebuild(string json)
         {
             try { EditorGuiImporter.BuildPrefab(json); }
-            catch (Exception ex) { Debug.LogError("[Lienzo UI] No se pudo construir " + json + ": " + ex); }
+            catch (Exception ex) { Debug.LogError("[Lienzo UI] Could not build " + json + ": " + ex); }
         }
     }
 }

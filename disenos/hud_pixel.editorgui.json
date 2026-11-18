@@ -1,5 +1,5 @@
 {
-  "title": "HUD pixel art",
+  "title": "Pixel art HUD",
   "width": 1920,
   "height": 1080,
   "background": [
@@ -11,7 +11,7 @@
   "elements": [
     {
       "id": 1,
-      "name": "Escena (vista previa)",
+      "name": "Scene (preview)",
       "kind": "Image",
       "x": 0,
       "y": 0,
@@ -112,7 +112,7 @@
     },
     {
       "id": 2,
-      "name": "Barra superior",
+      "name": "Top bar",
       "kind": "Empty",
       "x": 0,
       "y": 0,
@@ -213,7 +213,7 @@
     },
     {
       "id": 3,
-      "name": "Marco vida",
+      "name": "Health frame",
       "kind": "Panel",
       "x": 40,
       "y": 40,
@@ -314,7 +314,7 @@
     },
     {
       "id": 4,
-      "name": "Etiqueta vida",
+      "name": "Health label",
       "kind": "Text",
       "x": 70,
       "y": 50,
@@ -342,7 +342,7 @@
       "stroke_w": 0,
       "radius": 0,
       "opacity": 1,
-      "text": "VIDA 72/100",
+      "text": "HEALTH 72/100",
       "font_size": 28,
       "text_color": [
         255,
@@ -415,7 +415,7 @@
     },
     {
       "id": 5,
-      "name": "Barra de vida",
+      "name": "Health bar",
       "kind": "Slider",
       "x": 70,
       "y": 95,
@@ -516,7 +516,7 @@
     },
     {
       "id": 6,
-      "name": "Puntos",
+      "name": "Score",
       "kind": "Text",
       "x": 1480,
       "y": 50,
@@ -617,7 +617,7 @@
     },
     {
       "id": 7,
-      "name": "Barra de acciones",
+      "name": "Action bar",
       "kind": "Panel",
       "x": 670,
       "y": 910,
@@ -718,7 +718,7 @@
     },
     {
       "id": 8,
-      "name": "Ranura 1",
+      "name": "Slot 1",
       "kind": "Panel",
       "x": 712,
       "y": 924,
@@ -819,7 +819,7 @@
     },
     {
       "id": 13,
-      "name": "Icono espada",
+      "name": "Sword icon",
       "kind": "Image",
       "x": 736,
       "y": 948,
@@ -862,7 +862,7 @@
       "valign": 1,
       "font": "",
       "on_click": "",
-      "image": "pixel/espada.png",
+      "image": "pixel/sword.png",
       "value": 0.5,
       "visible": true,
       "locked": false,
@@ -921,7 +921,7 @@
     },
     {
       "id": 9,
-      "name": "Ranura 2",
+      "name": "Slot 2",
       "kind": "Panel",
       "x": 840,
       "y": 924,
@@ -1022,7 +1022,7 @@
     },
     {
       "id": 14,
-      "name": "Icono poción",
+      "name": "Potion icon",
       "kind": "Image",
       "x": 864,
       "y": 948,
@@ -1065,7 +1065,7 @@
       "valign": 1,
       "font": "",
       "on_click": "",
-      "image": "pixel/pocion.png",
+      "image": "pixel/potion.png",
       "value": 0.5,
       "visible": true,
       "locked": false,
@@ -1124,7 +1124,7 @@
     },
     {
       "id": 10,
-      "name": "Ranura 3",
+      "name": "Slot 3",
       "kind": "Panel",
       "x": 968,
       "y": 924,
@@ -1225,7 +1225,7 @@
     },
     {
       "id": 15,
-      "name": "Icono escudo",
+      "name": "Shield icon",
       "kind": "Image",
       "x": 992,
       "y": 948,
@@ -1268,7 +1268,7 @@
       "valign": 1,
       "font": "",
       "on_click": "",
-      "image": "pixel/escudo.png",
+      "image": "pixel/shield.png",
       "value": 0.5,
       "visible": true,
       "locked": false,
@@ -1327,7 +1327,7 @@
     },
     {
       "id": 11,
-      "name": "Ranura 4",
+      "name": "Slot 4",
       "kind": "Panel",
       "x": 1096,
       "y": 924,
@@ -1428,7 +1428,7 @@
     },
     {
       "id": 16,
-      "name": "Icono moneda",
+      "name": "Coin icon",
       "kind": "Image",
       "x": 1120,
       "y": 948,
@@ -1471,7 +1471,7 @@
       "valign": 1,
       "font": "",
       "on_click": "",
-      "image": "pixel/moneda.png",
+      "image": "pixel/coin.png",
       "value": 0.5,
       "visible": true,
       "locked": false,
@@ -1530,7 +1530,7 @@
     },
     {
       "id": 12,
-      "name": "Minimapa",
+      "name": "Minimap",
       "kind": "Ellipse",
       "x": 1620,
       "y": 780,
@@ -1631,7 +1631,7 @@
     },
     {
       "id": 17,
-      "name": "Moneda puntos",
+      "name": "Score coin",
       "kind": "Image",
       "x": 1560,
       "y": 40,
@@ -1674,7 +1674,7 @@
       "valign": 1,
       "font": "",
       "on_click": "",
-      "image": "pixel/moneda.png",
+      "image": "pixel/coin.png",
       "value": 0.5,
       "visible": true,
       "locked": false,

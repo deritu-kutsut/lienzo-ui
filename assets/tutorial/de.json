@@ -1,62 +1,62 @@
 {
-  "novato": [
+  "beginner": [
     {
-      "titulo": "Willkommen bei Lienzo UI",
-      "texto": "Lienzo UI ist ein visueller Editor, um die Oberflächen deines Spiels zu gestalten (Menüs, HUDs, Fenster, Inventare) wie in einem Design-Werkzeug, und sie mit einem Klick nach Unity zu bringen.\n\nBeim Exportieren erhältst du dieselbe Oberfläche in uGUI mit TextMeshPro, in UI Toolkit (UXML + USS) und in IMGUI.\n\nNach dem Ende dieses Tutorials öffnet sich der Editor. Du kannst jederzeit hierher zurückkehren: mit der Schaltfläche „Tutorial“ in der oberen Leiste oder mit F1."
+      "title": "Willkommen bei Lienzo UI",
+      "text": "Lienzo UI ist ein visueller Editor, um die Oberflächen deines Spiels zu gestalten (Menüs, HUDs, Fenster, Inventare) wie in einem Design-Werkzeug, und sie mit einem Klick nach Unity zu bringen.\n\nBeim Exportieren erhältst du dieselbe Oberfläche in uGUI mit TextMeshPro, in UI Toolkit (UXML + USS) und in IMGUI.\n\nNach dem Ende dieses Tutorials öffnet sich der Editor. Du kannst jederzeit hierher zurückkehren: mit der Schaltfläche „Tutorial“ in der oberen Leiste oder mit F1."
     },
     {
-      "titulo": "Der Editor-Bildschirm",
-      "texto": "• Oben: die Menüs Datei, Bearbeiten, Ansicht und Arbeitsfläche, die Schaltfläche Testen, der Name des Entwurfs, Barrierefreiheit, Prüfen, Themes, Tutorial, Speichern, Code… und In Unity exportieren.\n• Links: die Leiste mit Hierarchie (den Ebenen), Elemente, Vorlagen, Text, Bilder, Plugins und Community.\n• In der Mitte: die Arbeitsfläche, also der Bildschirm deines Spiels in der Referenzauflösung (standardmäßig 1920 × 1080).\n• Rechts: der Inspektor mit den Eigenschaften des ausgewählten Elements (Position, Anker, Farben, Text…)."
+      "title": "Der Editor-Bildschirm",
+      "text": "• Oben: die Menüs Datei, Bearbeiten, Ansicht und Arbeitsfläche, die Schaltfläche Testen, der Name des Entwurfs, Barrierefreiheit, Prüfen, Themes, Tutorial, Speichern, Code… und In Unity exportieren.\n• Links: die Leiste mit Hierarchie (den Ebenen), Elemente, Vorlagen, Text, Bilder, Plugins und Community.\n• In der Mitte: die Arbeitsfläche, also der Bildschirm deines Spiels in der Referenzauflösung (standardmäßig 1920 × 1080).\n• Rechts: der Inspektor mit den Eigenschaften des ausgewählten Elements (Position, Anker, Farben, Text…)."
     },
     {
-      "titulo": "Mit einer Vorlage beginnen",
-      "texto": "Öffne Vorlagen in der linken Leiste und wähle eine der 12: Hauptmenü, HUD, Pausenmenü, Spielende, Levelauswahl, Inventar, Charakterdialog, Rangliste…\n\nSo siehst du am schnellsten, wie eine komplette Oberfläche aufgebaut ist. Alles darin lässt sich ändern.\n\nWenn du lieber bei null anfangen willst, wähle „Leer“ oder Datei › Neuer leerer Entwurf."
+      "title": "Mit einer Vorlage beginnen",
+      "text": "Öffne Vorlagen in der linken Leiste und wähle eine der 12: Hauptmenü, HUD, Pausenmenü, Spielende, Levelauswahl, Inventar, Charakterdialog, Rangliste…\n\nSo siehst du am schnellsten, wie eine komplette Oberfläche aufgebaut ist. Alles darin lässt sich ändern.\n\nWenn du lieber bei null anfangen willst, wähle „Leer“ oder Datei › Neuer leerer Entwurf."
     },
     {
-      "titulo": "Elemente hinzufügen und bearbeiten",
-      "texto": "• Ziehe Elemente aus der Leiste Elemente auf die Arbeitsfläche: Panels, Texte, Schaltflächen, Kästchen, Slider, Textfelder, Dropdowns, Scroll-Listen und Bilder. Unter „Fertige Komponenten“ findest du Schaltflächen, Lebens- und Manabalken, Karten und Abzeichen; unter Text Bausteine fürs HUD wie Timer, Münzen oder Schaden.\n• Klick wählt aus, Ziehen verschiebt, die Ecken ändern die Größe und der obere Griff dreht.\n• Doppelklick auf einen Text, um darin zu schreiben.\n• Strg+Z / Strg+Y machen rückgängig und wiederholen; Strg+D dupliziert; Entf löscht; Strg+G gruppiert; die Pfeiltasten verschieben um 1 px (Umschalt: 10).\n• Im Inspektor änderst du Farben, Rahmen, Schatten, Schriften und die Anker (wie sich das Element an andere Bildschirme anpasst)."
+      "title": "Elemente hinzufügen und bearbeiten",
+      "text": "• Ziehe Elemente aus der Leiste Elemente auf die Arbeitsfläche: Panels, Texte, Schaltflächen, Kästchen, Slider, Textfelder, Dropdowns, Scroll-Listen und Bilder. Unter „Fertige Komponenten“ findest du Schaltflächen, Lebens- und Manabalken, Karten und Abzeichen; unter Text Bausteine fürs HUD wie Timer, Münzen oder Schaden.\n• Klick wählt aus, Ziehen verschiebt, die Ecken ändern die Größe und der obere Griff dreht.\n• Doppelklick auf einen Text, um darin zu schreiben.\n• Strg+Z / Strg+Y machen rückgängig und wiederholen; Strg+D dupliziert; Entf löscht; Strg+G gruppiert; die Pfeiltasten verschieben um 1 px (Umschalt: 10).\n• Im Inspektor änderst du Farben, Rahmen, Schatten, Schriften und die Anker (wie sich das Element an andere Bildschirme anpasst)."
     },
     {
-      "titulo": "Testen und nach Unity exportieren",
-      "texto": "• Testen (F5): Der Entwurf wird interaktiv, und du kannst andere Bildschirme simulieren (Handy, 4:3, Ultrawide), um zu sehen, wie er sich anpasst.\n• Speichern (Strg+S): speichert das Projekt .editorgui.json, damit du später weitermachen kannst.\n• Prüfen: warnt vor kleiner Schrift, schwachem Kontrast, zu kleinen Schaltflächen zum Antippen, Elementen außerhalb der Seite und fehlenden Bildern.\n• In Unity exportieren (Strg+E): Beim ersten Mal wählst du den Ordner deines Projekts (den, der Assets enthält).\n\nWenn du in Unity zum Fenster zurückkehrst, erscheint der Entwurf als Prefab in Assets/EditorGUI/Prefabs. Außerdem gibt es das Menü Tools › Lienzo UI › Importar diseño en la escena."
+      "title": "Testen und nach Unity exportieren",
+      "text": "• Testen (F5): Der Entwurf wird interaktiv, und du kannst andere Bildschirme simulieren (Handy, 4:3, Ultrawide), um zu sehen, wie er sich anpasst.\n• Speichern (Strg+S): speichert das Projekt .editorgui.json, damit du später weitermachen kannst.\n• Prüfen: warnt vor kleiner Schrift, schwachem Kontrast, zu kleinen Schaltflächen zum Antippen, Elementen außerhalb der Seite und fehlenden Bildern.\n• In Unity exportieren (Strg+E): Beim ersten Mal wählst du den Ordner deines Projekts (den, der Assets enthält).\n\nWenn du in Unity zum Fenster zurückkehrst, erscheint der Entwurf als Prefab in Assets/EditorGUI/Prefabs. Außerdem gibt es das Menü Tools › Lienzo UI › Importar diseño en la escena."
     }
   ],
-  "profesional": [
+  "pro": [
     {
-      "titulo": "Was der Export erzeugt",
-      "texto": "Alles landet in Assets/EditorGUI deines Projekts:\n\n• Designs/<Diseño>.json: der Entwurf; der Importer baut das Prefab neu, sobald er sich ändert.\n• Editor/EditorGuiImporter.cs: baut das Prefab mit uGUI + TextMeshPro.\n• Prefabs/<Diseño>.prefab: fertig zum Ziehen in die Szene.\n• UI Toolkit/<Diseño>.uxml und .uss: die Version für UIDocument.\n• Scripts/<Diseño>OnGUI.cs: die IMGUI-Version.\n• Scripts/<Diseño>ViewBase.cs (wird neu erzeugt) und <Diseño>View.cs (gehört dir: wird einmal erstellt und nie überschrieben)."
+      "title": "Was der Export erzeugt",
+      "text": "Alles landet in Assets/EditorGUI deines Projekts:\n\n• Designs/<Diseño>.json: der Entwurf; der Importer baut das Prefab neu, sobald er sich ändert.\n• Editor/EditorGuiImporter.cs: baut das Prefab mit uGUI + TextMeshPro.\n• Prefabs/<Diseño>.prefab: fertig zum Ziehen in die Szene.\n• UI Toolkit/<Diseño>.uxml und .uss: die Version für UIDocument.\n• Scripts/<Diseño>OnGUI.cs: die IMGUI-Version.\n• Scripts/<Diseño>ViewBase.cs (wird neu erzeugt) und <Diseño>View.cs (gehört dir: wird einmal erstellt und nie überschrieben)."
     },
     {
-      "titulo": "Anker und Skalierung",
-      "texto": "Die Arbeitsfläche funktioniert wie ein Canvas mit Canvas Scaler im Modus Scale With Screen Size: Referenzauflösung, Match Breite/Höhe und Hintergrund werden im Inspektor eingestellt, wenn nichts ausgewählt ist.\n\nJedes Element hat Anker, Pivot und Versätze wie ein RectTransform. Wenn du die Referenzauflösung änderst, folgen die Elemente ihren Ankern, genau wie in Unity.\n\nNutze Testen (F5) mit mehreren Bildschirmen, um das vor dem Export zu prüfen."
+      "title": "Anker und Skalierung",
+      "text": "Die Arbeitsfläche funktioniert wie ein Canvas mit Canvas Scaler im Modus Scale With Screen Size: Referenzauflösung, Match Breite/Höhe und Hintergrund werden im Inspektor eingestellt, wenn nichts ausgewählt ist.\n\nJedes Element hat Anker, Pivot und Versätze wie ein RectTransform. Wenn du die Referenzauflösung änderst, folgen die Elemente ihren Ankern, genau wie in Unity.\n\nNutze Testen (F5) mit mehreren Bildschirmen, um das vor dem Export zu prüfen."
     },
     {
-      "titulo": "Layouts, Gruppen und Listen",
-      "texto": "Ein Container kann seine Untergeordneten horizontal, vertikal oder im Raster anordnen (wie Horizontal/Vertical/Grid Layout Group), mit Abstand und Innenabstand.\n\nScroll-Listen (ScrollView) berechnen ihren Inhalt automatisch.\n\nGruppiere (Strg+G), um ganze Teile zu verschieben, und nutze die Hierarchie, um Ebenen neu zu ordnen: Die Reihenfolge in der Liste ist die Zeichenreihenfolge in Unity."
+      "title": "Layouts, Gruppen und Listen",
+      "text": "Ein Container kann seine Untergeordneten horizontal, vertikal oder im Raster anordnen (wie Horizontal/Vertical/Grid Layout Group), mit Abstand und Innenabstand.\n\nScroll-Listen (ScrollView) berechnen ihren Inhalt automatisch.\n\nGruppiere (Strg+G), um ganze Teile zu verschieben, und nutze die Hierarchie, um Ebenen neu zu ordnen: Die Reihenfolge in der Liste ist die Zeichenreihenfolge in Unity."
     },
     {
-      "titulo": "Logik: Klick-Code und Views",
-      "texto": "Im Testmodus kann jedes Element beim Klick ein kleines Skript (Rhai) ausführen: mostrar(\"Nombre\"), ocultar, alternar, texto, color, mover… Damit kannst du Abläufe ohne Unity prototypen.\n\nIn Unity erbt <Diseño>View.cs von <Diseño>ViewBase, mit typisierten Referenzen auf jede Schaltfläche, jeden Slider und jedes Feld sowie auf Klick- und Wertereignisse. Lege dort die Spiellogik ab: Die Neuexporte berühren sie nicht."
+      "title": "Logik: Klick-Code und Views",
+      "text": "Im Testmodus kann jedes Element beim Klick ein kleines Skript (Rhai) ausführen: mostrar(\"Nombre\"), ocultar, alternar, texto, color, mover… Damit kannst du Abläufe ohne Unity prototypen.\n\nIn Unity erbt <Diseño>View.cs von <Diseño>ViewBase, mit typisierten Referenzen auf jede Schaltfläche, jeden Slider und jedes Feld sowie auf Klick- und Wertereignisse. Lege dort die Spiellogik ab: Die Neuexporte berühren sie nicht."
     },
     {
-      "titulo": "Kommandozeile und Automatisierung",
-      "texto": "lienzo-ui --plantillas                         listet die Vorlagen auf\nlienzo-ui --plantilla 0 --guardar menu.editorgui.json\nlienzo-ui --abrir menu.editorgui.json --revisar        prüft den Entwurf (Code 1 bei Fehlern)\nlienzo-ui --abrir menu.editorgui.json --exportar <proyecto Unity>\nlienzo-ui --abrir menu.editorgui.json --screenshot captura.png\nlienzo-ui --probar 1080x2400                    öffnet im Testmodus mit diesem Bildschirm\n\nMit --exportar, --guardar und --revisar wird kein Fenster geöffnet: Das eignet sich für Skripte, CI und den MCP-Server."
+      "title": "Kommandozeile und Automatisierung",
+      "text": "lienzo-ui --templates                         listet die Vorlagen auf\nlienzo-ui --template 0 --save menu.editorgui.json\nlienzo-ui --open menu.editorgui.json --review        prüft den Entwurf (Code 1 bei Fehlern)\nlienzo-ui --open menu.editorgui.json --export <proyecto Unity>\nlienzo-ui --open menu.editorgui.json --screenshot captura.png\nlienzo-ui --test 1080x2400                    öffnet im Testmodus mit diesem Bildschirm\n\nMit --export, --save und --review wird kein Fenster geöffnet: Das eignet sich für Skripte, CI und den MCP-Server."
     },
     {
-      "titulo": "MCP-Server und Mitwirken",
-      "texto": "Der Ordner mcp/ enthält einen MCP-Server ohne Abhängigkeiten (Node 18+): Jede kompatible KI (Claude, Cursor, VS Code…) kann Vorlagen auflisten, Entwürfe erstellen und bearbeiten, sie nach Unity exportieren und Screenshots machen.\n\nLienzo UI ist Open Source (MIT). Der Code ist in Rust mit egui geschrieben: src/model.rs (Daten), src/canvas.rs (Arbeitsfläche), src/panels.rs (Panels), src/export/ (Unity).\n\nLies docs/EXTENDER.md, um Elemente, Vorlagen oder Exporter hinzuzufügen, und CONTRIBUTING.md, um Änderungen einzureichen."
+      "title": "MCP-Server und Mitwirken",
+      "text": "Der Ordner mcp/ enthält einen MCP-Server ohne Abhängigkeiten (Node 18+): Jede kompatible KI (Claude, Cursor, VS Code…) kann Vorlagen auflisten, Entwürfe erstellen und bearbeiten, sie nach Unity exportieren und Screenshots machen.\n\nLienzo UI ist Open Source (MIT). Der Code ist in Rust mit egui geschrieben: src/model.rs (Daten), src/canvas.rs (Arbeitsfläche), src/panels.rs (Panels), src/export/ (Unity).\n\nLies docs/EXTENDER.md, um Elemente, Vorlagen oder Exporter hinzuzufügen, und CONTRIBUTING.md, um Änderungen einzureichen."
     },
     {
-      "titulo": "Pixel-Art",
-      "texto": "Wähle bei nichts ausgewähltem im Inspektor der Arbeitsfläche „Pixel-Art“ an:\n\n• Bilder werden ohne Glättung gezeichnet (Nearest-Neighbor-Filter).\n• Positionen und Größen rasten beim Loslassen auf ganze Pixel ein.\n• In Unity: Canvas „Pixel Perfect“ und Sprites mit Point-Filter, ohne Komprimierung und ohne Mipmaps.\n\nTipp: Nutze exakte Vielfache der Größe deiner Sprites (16 px → 32, 48, 64…), damit jedes Pixel gleich aussieht."
+      "title": "Pixel-Art",
+      "text": "Wähle bei nichts ausgewähltem im Inspektor der Arbeitsfläche „Pixel-Art“ an:\n\n• Bilder werden ohne Glättung gezeichnet (Nearest-Neighbor-Filter).\n• Positionen und Größen rasten beim Loslassen auf ganze Pixel ein.\n• In Unity: Canvas „Pixel Perfect“ und Sprites mit Point-Filter, ohne Komprimierung und ohne Mipmaps.\n\nTipp: Nutze exakte Vielfache der Größe deiner Sprites (16 px → 32, 48, 64…), damit jedes Pixel gleich aussieht."
     },
     {
-      "titulo": "Plugins",
-      "texto": "Der Reiter Plugins in der linken Leiste zeigt die installierten Erweiterungen. Ein Plugin ist ein Ordner mit einer plugin.json, die Folgendes hinzufügen kann:\n\n• Befehle: Rhai-Skripte, die den Entwurf erhalten und verändert zurückgeben (rückgängig mit Strg+Z).\n• Exporter: Skripte, die neue Dateien erzeugen (zum Beispiel eine CSV mit allen Texten).\n• Vorlagen: fertige Entwürfe.\n\nDie Skripte laufen isoliert, ohne Zugriff auf Dateien oder Netzwerk. „Ordner öffnen“ führt zu deinem Plugin-Ordner; die Anleitung steht in docs/PLUGINS.md."
+      "title": "Plugins",
+      "text": "Der Reiter Plugins in der linken Leiste zeigt die installierten Erweiterungen. Ein Plugin ist ein Ordner mit einer plugin.json, die Folgendes hinzufügen kann:\n\n• Befehle: Rhai-Skripte, die den Entwurf erhalten und verändert zurückgeben (rückgängig mit Strg+Z).\n• Exporter: Skripte, die neue Dateien erzeugen (zum Beispiel eine CSV mit allen Texten).\n• Vorlagen: fertige Entwürfe.\n\nDie Skripte laufen isoliert, ohne Zugriff auf Dateien oder Netzwerk. „Ordner öffnen“ führt zu deinem Plugin-Ordner; die Anleitung steht in docs/PLUGINS.md."
     },
     {
-      "titulo": "Barrierefreiheit und Sprachen",
-      "texto": "Die Schaltfläche „Barrierefreiheit“ in der oberen Leiste erlaubt dir:\n\n• Die Sprache der Oberfläche zu ändern (Spanisch, Englisch, Portugiesisch, Französisch, Deutsch, Italienisch oder Russisch).\n• Die Oberfläche bis auf 200 % zu vergrößern (auch mit Strg+Alt+= und Strg+Alt+-).\n• Hohen Kontrast zu aktivieren: weißer Text und kräftige Rahmen.\n• Bewegung zu reduzieren: keine Animationen.\n\nDie Sprachen sind Dateien assets/i18n/<código>.tsv: Um eine hinzuzufügen, übersetze einfach en.tsv."
+      "title": "Barrierefreiheit und Sprachen",
+      "text": "Die Schaltfläche „Barrierefreiheit“ in der oberen Leiste erlaubt dir:\n\n• Die Sprache der Oberfläche zu ändern (Spanisch, Englisch, Portugiesisch, Französisch, Deutsch, Italienisch oder Russisch).\n• Die Oberfläche bis auf 200 % zu vergrößern (auch mit Strg+Alt+= und Strg+Alt+-).\n• Hohen Kontrast zu aktivieren: weißer Text und kräftige Rahmen.\n• Bewegung zu reduzieren: keine Animationen.\n\nDie Sprachen sind Dateien assets/i18n/<código>.tsv: Um eine hinzuzufügen, übersetze einfach en.tsv."
     }
   ]
 }

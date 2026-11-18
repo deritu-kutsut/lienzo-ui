@@ -1,62 +1,62 @@
 {
-  "novato": [
+  "beginner": [
     {
-      "titulo": "Bem-vindo ao Lienzo UI",
-      "texto": "O Lienzo UI é um editor visual para criar as interfaces do seu jogo (menus, HUD, janelas, inventários) como em uma ferramenta de design, e levá-las para o Unity com um clique.\n\nAo exportar, você obtém a mesma interface em uGUI com TextMeshPro, em UI Toolkit (UXML + USS) e em IMGUI.\n\nAo terminar este tutorial, o editor será aberto. Você pode voltar aqui quando quiser com o botão «Tutorial» da barra superior ou com F1."
+      "title": "Bem-vindo ao Lienzo UI",
+      "text": "O Lienzo UI é um editor visual para criar as interfaces do seu jogo (menus, HUD, janelas, inventários) como em uma ferramenta de design, e levá-las para o Unity com um clique.\n\nAo exportar, você obtém a mesma interface em uGUI com TextMeshPro, em UI Toolkit (UXML + USS) e em IMGUI.\n\nAo terminar este tutorial, o editor será aberto. Você pode voltar aqui quando quiser com o botão «Tutorial» da barra superior ou com F1."
     },
     {
-      "titulo": "A tela do editor",
-      "texto": "• No topo: os menus Arquivo, Editar, Ver e Tela, o botão Testar, o nome do design, Acessibilidade, Revisar, Temas, Tutorial, Salvar, Código… e Exportar para Unity.\n• À esquerda, a barra com Hierarquia (as camadas), Elementos, Modelos, Texto, Imagens, Plugins e Comunidade.\n• No centro, a tela: a tela do seu jogo na resolução de referência (1920 × 1080 por padrão).\n• À direita, o Inspetor: as propriedades do elemento selecionado (posição, âncoras, cores, texto…)."
+      "title": "A tela do editor",
+      "text": "• No topo: os menus Arquivo, Editar, Ver e Tela, o botão Testar, o nome do design, Acessibilidade, Revisar, Temas, Tutorial, Salvar, Código… e Exportar para Unity.\n• À esquerda, a barra com Hierarquia (as camadas), Elementos, Modelos, Texto, Imagens, Plugins e Comunidade.\n• No centro, a tela: a tela do seu jogo na resolução de referência (1920 × 1080 por padrão).\n• À direita, o Inspetor: as propriedades do elemento selecionado (posição, âncoras, cores, texto…)."
     },
     {
-      "titulo": "Comece com um modelo",
-      "texto": "Abra Modelos na barra à esquerda e escolha um dos 12: menu principal, HUD, pausa, fim de jogo, seleção de fase, inventário, diálogo de personagem, classificação…\n\nÉ a forma mais rápida de ver como uma interface completa é construída. Tudo o que vem nele pode ser alterado.\n\nSe preferir começar do zero, escolha «Em branco» ou Arquivo › Novo design em branco."
+      "title": "Comece com um modelo",
+      "text": "Abra Modelos na barra à esquerda e escolha um dos 12: menu principal, HUD, pausa, fim de jogo, seleção de fase, inventário, diálogo de personagem, classificação…\n\nÉ a forma mais rápida de ver como uma interface completa é construída. Tudo o que vem nele pode ser alterado.\n\nSe preferir começar do zero, escolha «Em branco» ou Arquivo › Novo design em branco."
     },
     {
-      "titulo": "Adicionar e editar elementos",
-      "texto": "• Arraste elementos de Elementos para a tela: painéis, textos, botões, caixas de seleção, sliders, campos de texto, menus suspensos, listas com rolagem e imagens. Em «Componentes prontos» há botões, barras de vida e mana, cartões e insígnias; em Texto, peças de HUD como temporizador, moedas ou dano.\n• Clique seleciona, arrastar move, os cantos mudam o tamanho e a alça superior gira.\n• Clique duas vezes em um texto para escrever nele.\n• Ctrl+Z / Ctrl+Y desfazem e refazem; Ctrl+D duplica; Del exclui; Ctrl+G agrupa; as setas movem 1 px (Shift: 10).\n• No Inspetor você muda cores, bordas, sombras, fontes e as âncoras (como o elemento se adapta a outras telas)."
+      "title": "Adicionar e editar elementos",
+      "text": "• Arraste elementos de Elementos para a tela: painéis, textos, botões, caixas de seleção, sliders, campos de texto, menus suspensos, listas com rolagem e imagens. Em «Componentes prontos» há botões, barras de vida e mana, cartões e insígnias; em Texto, peças de HUD como temporizador, moedas ou dano.\n• Clique seleciona, arrastar move, os cantos mudam o tamanho e a alça superior gira.\n• Clique duas vezes em um texto para escrever nele.\n• Ctrl+Z / Ctrl+Y desfazem e refazem; Ctrl+D duplica; Del exclui; Ctrl+G agrupa; as setas movem 1 px (Shift: 10).\n• No Inspetor você muda cores, bordas, sombras, fontes e as âncoras (como o elemento se adapta a outras telas)."
     },
     {
-      "titulo": "Testar e exportar para Unity",
-      "texto": "• Testar (F5): o design fica interativo e você pode simular outras telas (celular, 4:3, ultrawide) para ver como ele se adapta.\n• Salvar (Ctrl+S): salva o projeto .editorgui.json para continuar outro dia.\n• Revisar: avisa sobre fonte pequena, pouco contraste, botões pequenos para tocar, elementos fora da página e imagens ausentes.\n• Exportar para Unity (Ctrl+E): na primeira vez, escolha a pasta do seu projeto (a que contém Assets).\n\nNo Unity, ao voltar para a janela, o design aparece como prefab em Assets/EditorGUI/Prefabs. Você também tem o menu Tools › Lienzo UI › Importar diseño en la escena."
+      "title": "Testar e exportar para Unity",
+      "text": "• Testar (F5): o design fica interativo e você pode simular outras telas (celular, 4:3, ultrawide) para ver como ele se adapta.\n• Salvar (Ctrl+S): salva o projeto .editorgui.json para continuar outro dia.\n• Revisar: avisa sobre fonte pequena, pouco contraste, botões pequenos para tocar, elementos fora da página e imagens ausentes.\n• Exportar para Unity (Ctrl+E): na primeira vez, escolha a pasta do seu projeto (a que contém Assets).\n\nNo Unity, ao voltar para a janela, o design aparece como prefab em Assets/EditorGUI/Prefabs. Você também tem o menu Tools › Lienzo UI › Importar diseño en la escena."
     }
   ],
-  "profesional": [
+  "pro": [
     {
-      "titulo": "O que a exportação gera",
-      "texto": "Tudo vai para Assets/EditorGUI do seu projeto:\n\n• Designs/<Design>.json: o design; o importador refaz o prefab sempre que ele muda.\n• Editor/EditorGuiImporter.cs: constrói o prefab com uGUI + TextMeshPro.\n• Prefabs/<Design>.prefab: pronto para arrastar para a cena.\n• UI Toolkit/<Design>.uxml e .uss: a versão para UIDocument.\n• Scripts/<Design>OnGUI.cs: a versão IMGUI.\n• Scripts/<Design>ViewBase.cs (é regenerado) e <Design>View.cs (seu: é criado uma vez e nunca é sobrescrito)."
+      "title": "O que a exportação gera",
+      "text": "Tudo vai para Assets/EditorGUI do seu projeto:\n\n• Designs/<Design>.json: o design; o importador refaz o prefab sempre que ele muda.\n• Editor/EditorGuiImporter.cs: constrói o prefab com uGUI + TextMeshPro.\n• Prefabs/<Design>.prefab: pronto para arrastar para a cena.\n• UI Toolkit/<Design>.uxml e .uss: a versão para UIDocument.\n• Scripts/<Design>OnGUI.cs: a versão IMGUI.\n• Scripts/<Design>ViewBase.cs (é regenerado) e <Design>View.cs (seu: é criado uma vez e nunca é sobrescrito)."
     },
     {
-      "titulo": "Âncoras e escala",
-      "texto": "A tela funciona como um Canvas com Canvas Scaler no modo Scale With Screen Size: resolução de referência, match largura/altura e fundo são ajustados no Inspetor sem nada selecionado.\n\nCada elemento tem âncoras, pivô e deslocamentos como um RectTransform. Ao mudar a resolução de referência, os elementos seguem suas âncoras, igual ao Unity.\n\nUse Testar (F5) com várias telas para conferir antes de exportar."
+      "title": "Âncoras e escala",
+      "text": "A tela funciona como um Canvas com Canvas Scaler no modo Scale With Screen Size: resolução de referência, match largura/altura e fundo são ajustados no Inspetor sem nada selecionado.\n\nCada elemento tem âncoras, pivô e deslocamentos como um RectTransform. Ao mudar a resolução de referência, os elementos seguem suas âncoras, igual ao Unity.\n\nUse Testar (F5) com várias telas para conferir antes de exportar."
     },
     {
-      "titulo": "Layouts, grupos e listas",
-      "texto": "Um contêiner pode organizar seus filhos na horizontal, vertical ou em grade (como Horizontal/Vertical/Grid Layout Group), com espaçamento e preenchimento.\n\nAs listas com rolagem (ScrollView) calculam seu conteúdo sozinhas.\n\nAgrupe (Ctrl+G) para mover partes inteiras e use a Hierarquia para reordenar camadas: a ordem da lista é a ordem de desenho no Unity."
+      "title": "Layouts, grupos e listas",
+      "text": "Um contêiner pode organizar seus filhos na horizontal, vertical ou em grade (como Horizontal/Vertical/Grid Layout Group), com espaçamento e preenchimento.\n\nAs listas com rolagem (ScrollView) calculam seu conteúdo sozinhas.\n\nAgrupe (Ctrl+G) para mover partes inteiras e use a Hierarquia para reordenar camadas: a ordem da lista é a ordem de desenho no Unity."
     },
     {
-      "titulo": "Lógica: código ao clicar e views",
-      "texto": "Em Testar, cada elemento pode executar um pequeno script (Rhai) ao clicar: mostrar(\"Nombre\"), ocultar, alternar, texto, color, mover… Serve para prototipar fluxos sem o Unity.\n\nNo Unity, <Design>View.cs herda de <Design>ViewBase com referências tipadas para cada botão, slider ou campo, e eventos de clique e de valor. Coloque aí a lógica do jogo: as reexportações não mexem nele."
+      "title": "Lógica: código ao clicar e views",
+      "text": "Em Testar, cada elemento pode executar um pequeno script (Rhai) ao clicar: mostrar(\"Nombre\"), ocultar, alternar, texto, color, mover… Serve para prototipar fluxos sem o Unity.\n\nNo Unity, <Design>View.cs herda de <Design>ViewBase com referências tipadas para cada botão, slider ou campo, e eventos de clique e de valor. Coloque aí a lógica do jogo: as reexportações não mexem nele."
     },
     {
-      "titulo": "Linha de comando e automação",
-      "texto": "lienzo-ui --plantillas                         lista os modelos\nlienzo-ui --plantilla 0 --guardar menu.editorgui.json\nlienzo-ui --abrir menu.editorgui.json --revisar        revisa o design (código 1 se houver erros)\nlienzo-ui --abrir menu.editorgui.json --exportar <proyecto Unity>\nlienzo-ui --abrir menu.editorgui.json --screenshot captura.png\nlienzo-ui --probar 1080x2400                    abre em Testar com essa tela\n\nCom --exportar, --guardar e --revisar nenhuma janela é aberta: serve para scripts, CI e o servidor MCP."
+      "title": "Linha de comando e automação",
+      "text": "lienzo-ui --templates                         lista os modelos\nlienzo-ui --template 0 --save menu.editorgui.json\nlienzo-ui --open menu.editorgui.json --review        revisa o design (código 1 se houver erros)\nlienzo-ui --open menu.editorgui.json --export <proyecto Unity>\nlienzo-ui --open menu.editorgui.json --screenshot captura.png\nlienzo-ui --test 1080x2400                    abre em Testar com essa tela\n\nCom --export, --save e --review nenhuma janela é aberta: serve para scripts, CI e o servidor MCP."
     },
     {
-      "titulo": "Servidor MCP e como contribuir",
-      "texto": "A pasta mcp/ traz um servidor MCP sem dependências (Node 18+): qualquer IA compatível (Claude, Cursor, VS Code…) pode listar modelos, criar e editar designs, exportá-los para o Unity e tirar capturas de tela.\n\nO Lienzo UI é de código aberto (MIT). O código é escrito em Rust com egui: src/model.rs (dados), src/canvas.rs (tela), src/panels.rs (painéis), src/export/ (Unity).\n\nLeia docs/EXTENDER.md para adicionar elementos, modelos ou exportadores, e CONTRIBUTING.md para enviar alterações."
+      "title": "Servidor MCP e como contribuir",
+      "text": "A pasta mcp/ traz um servidor MCP sem dependências (Node 18+): qualquer IA compatível (Claude, Cursor, VS Code…) pode listar modelos, criar e editar designs, exportá-los para o Unity e tirar capturas de tela.\n\nO Lienzo UI é de código aberto (MIT). O código é escrito em Rust com egui: src/model.rs (dados), src/canvas.rs (tela), src/panels.rs (painéis), src/export/ (Unity).\n\nLeia docs/EXTENDER.md para adicionar elementos, modelos ou exportadores, e CONTRIBUTING.md para enviar alterações."
     },
     {
-      "titulo": "Pixel art",
-      "texto": "Sem nada selecionado, marque «Pixel art» no Inspetor da tela:\n\n• As imagens são desenhadas sem suavização (vizinho mais próximo).\n• Posições e tamanhos se ajustam a pixels inteiros ao soltar.\n• No Unity: Canvas «Pixel Perfect» e sprites com filtro Point, sem compressão nem mipmaps.\n\nDica: use tamanhos múltiplos exatos dos seus sprites (16 px → 32, 48, 64…) para que cada pixel fique igual."
+      "title": "Pixel art",
+      "text": "Sem nada selecionado, marque «Pixel art» no Inspetor da tela:\n\n• As imagens são desenhadas sem suavização (vizinho mais próximo).\n• Posições e tamanhos se ajustam a pixels inteiros ao soltar.\n• No Unity: Canvas «Pixel Perfect» e sprites com filtro Point, sem compressão nem mipmaps.\n\nDica: use tamanhos múltiplos exatos dos seus sprites (16 px → 32, 48, 64…) para que cada pixel fique igual."
     },
     {
-      "titulo": "Plugins",
-      "texto": "A aba Plugins da barra à esquerda lista os complementos instalados. Um plugin é uma pasta com plugin.json que pode adicionar:\n\n• Comandos: scripts Rhai que recebem o design e o devolvem modificado (podem ser desfeitos com Ctrl+Z).\n• Exportadores: scripts que geram novos arquivos (por exemplo, um CSV com todos os textos).\n• Modelos: designs prontos para usar.\n\nOs scripts rodam isolados, sem acesso a arquivos nem rede. «Abrir pasta» leva à sua pasta de plugins; o guia está em docs/PLUGINS.md."
+      "title": "Plugins",
+      "text": "A aba Plugins da barra à esquerda lista os complementos instalados. Um plugin é uma pasta com plugin.json que pode adicionar:\n\n• Comandos: scripts Rhai que recebem o design e o devolvem modificado (podem ser desfeitos com Ctrl+Z).\n• Exportadores: scripts que geram novos arquivos (por exemplo, um CSV com todos os textos).\n• Modelos: designs prontos para usar.\n\nOs scripts rodam isolados, sem acesso a arquivos nem rede. «Abrir pasta» leva à sua pasta de plugins; o guia está em docs/PLUGINS.md."
     },
     {
-      "titulo": "Acessibilidade e idiomas",
-      "texto": "O botão «Acessibilidade» da barra superior permite:\n\n• Mudar o idioma da interface (espanhol, inglês, português, francês, alemão, italiano ou russo).\n• Aumentar a interface até 200 % (também com Ctrl+Alt+= e Ctrl+Alt+-).\n• Ativar alto contraste: texto branco e bordas marcadas.\n• Reduzir movimento: sem animações.\n\nOs idiomas são arquivos assets/i18n/<código>.tsv: para adicionar um, basta traduzir en.tsv."
+      "title": "Acessibilidade e idiomas",
+      "text": "O botão «Acessibilidade» da barra superior permite:\n\n• Mudar o idioma da interface (espanhol, inglês, português, francês, alemão, italiano ou russo).\n• Aumentar a interface até 200 % (também com Ctrl+Alt+= e Ctrl+Alt+-).\n• Ativar alto contraste: texto branco e bordas marcadas.\n• Reduzir movimento: sem animações.\n\nOs idiomas são arquivos assets/i18n/<código>.tsv: para adicionar um, basta traduzir en.tsv."
     }
   ]
 }

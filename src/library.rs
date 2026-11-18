@@ -62,25 +62,25 @@ fn templates_dir() -> PathBuf {
 
 /// Folder of the open design: images with a relative path are looked up there (portable designs,
 /// no personal machine paths).
-pub static CARPETA_DISENO: std::sync::Mutex<Option<PathBuf>> = std::sync::Mutex::new(None);
+pub static DESIGN_FOLDER: std::sync::Mutex<Option<PathBuf>> = std::sync::Mutex::new(None);
 
-pub fn set_carpeta_diseno(archivo: &Path) {
-    if let Ok(mut g) = CARPETA_DISENO.lock() {
-        *g = archivo.parent().map(|p| std::fs::canonicalize(p).unwrap_or_else(|_| p.to_path_buf()));
+pub fn set_design_folder(file: &Path) {
+    if let Ok(mut g) = DESIGN_FOLDER.lock() {
+        *g = file.parent().map(|p| std::fs::canonicalize(p).unwrap_or_else(|_| p.to_path_buf()));
     }
 }
 
 /// Path of an element's image: absolute, relative to the open design's folder
-/// (e.g. «pixel/espada.png») or a file in the user's library.
+/// (e.g. «pixel/sword.png») or a file in the user's library.
 pub fn resolve_image(name: &str) -> PathBuf {
     let p = Path::new(name);
     if p.is_absolute() {
         return p.to_path_buf();
     }
-    if let Some(base) = CARPETA_DISENO.lock().ok().and_then(|g| g.clone()) {
-        let candidata = base.join(name);
-        if candidata.exists() {
-            return candidata;
+    if let Some(base) = DESIGN_FOLDER.lock().ok().and_then(|g| g.clone()) {
+        let candidate = base.join(name);
+        if candidate.exists() {
+            return candidate;
         }
     }
     images_dir().join(name)
@@ -262,7 +262,7 @@ pub fn library_fonts() -> Vec<(String, PathBuf, Vec<u8>)> {
         .collect()
 }
 
-/// Editor preferences kept between sessions.
+/// Editor preferences kept between sessions (`ajustes.json`; files written by older versions, with Spanish keys, still load through the aliases).
 #[derive(Clone, Debug, Default, serde::Serialize, serde::Deserialize)]
 #[serde(default)]
 pub struct Settings {
@@ -270,20 +270,28 @@ pub struct Settings {
     pub unity_project: String,
     pub last_project_file: String,
     /// The tutorial has already been shown (it does not open by itself on startup).
-    pub tutorial_visto: bool,
+    #[serde(alias = "tutorial_visto")]
+    pub tutorial_seen: bool,
     /// Accessibility: interface language («es», «en»…), size (1.0 = 100 %), high contrast and reduced motion.
-    pub idioma: String,
-    pub escala_ui: f32,
-    pub alto_contraste: bool,
-    pub reducir_movimiento: bool,
+    #[serde(alias = "idioma")]
+    pub language: String,
+    #[serde(alias = "escala_ui")]
+    pub ui_scale: f32,
+    #[serde(alias = "alto_contraste")]
+    pub high_contrast: bool,
+    #[serde(alias = "reducir_movimiento")]
+    pub reduce_motion: bool,
     /// Updates: do not check on startup, and the version the user chose to skip.
-    pub no_buscar_actualizaciones: bool,
-    pub version_omitida: String,
+    #[serde(alias = "no_buscar_actualizaciones")]
+    pub skip_update_check: bool,
+    #[serde(alias = "version_omitida")]
+    pub skipped_version: String,
     /// Interface theme (None = the default one).
-    pub tema: Option<crate::theme::Tema>,
+    #[serde(alias = "tema")]
+    pub theme: Option<crate::theme::Theme>,
     /// Automated session (screenshots, tests): nothing is written to disk.
     #[serde(skip)]
-    pub solo_lectura: bool,
+    pub read_only: bool,
 }
 
 fn settings_path() -> PathBuf {
@@ -292,10 +300,14 @@ fn settings_path() -> PathBuf {
 
 impl Settings {
     pub fn load() -> Self {
-        std::fs::read_to_string(settings_path()).ok().and_then(|s| serde_json::from_str(&s).ok()).unwrap_or_default()
+        let mut s: Self = std::fs::read_to_string(settings_path()).ok().and_then(|s| serde_json::from_str(&s).ok()).unwrap_or_default();
+        if let Some(t) = &mut s.theme {
+            t.name = crate::theme::canonical_name(&t.name).to_string(); // old Spanish names of the bundled themes
+        }
+        s
     }
     pub fn save(&self) {
-        if self.solo_lectura {
+        if self.read_only {
             return;
         }
         let p = settings_path();
@@ -368,5 +380,20 @@ mod tests {
         lib.remove(&tpl_path);
         assert_eq!(lib.templates.len(), 1);
         let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn old_spanish_settings_keys_still_load() {
+        let old = r#"{ "unity_project": "C:/u", "tutorial_visto": true, "idioma": "en", "escala_ui": 1.5, "alto_contraste": true,
+                       "reducir_movimiento": true, "no_buscar_actualizaciones": true, "version_omitida": "1.2.0",
+                       "tema": { "nombre": "Mi tema", "claro": true } }"#;
+        let s: Settings = serde_json::from_str(old).expect("settings with Spanish keys must load");
+        assert_eq!((s.tutorial_seen, s.language.as_str(), s.ui_scale, s.high_contrast, s.reduce_motion), (true, "en", 1.5, true, true));
+        assert_eq!((s.skip_update_check, s.skipped_version.as_str()), (true, "1.2.0"));
+        let t = s.theme.expect("the old `tema` key");
+        assert_eq!((t.name.as_str(), t.light), ("Mi tema", true));
+        // what is saved now uses the English keys
+        let out = serde_json::to_string(&Settings::default()).unwrap();
+        assert!(out.contains("\"language\"") && !out.contains("idioma"));
     }
 }

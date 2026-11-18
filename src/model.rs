@@ -964,7 +964,7 @@ impl Doc {
     /// Fixes what a hand-edited or foreign file may bring broken: duplicate ids, `next_id` below
     /// some id, cyclic parents (or self-parents) and non-numeric coordinates.
     pub fn sanitize(&mut self) {
-        let mut vistos = std::collections::HashSet::new();
+        let mut seen = std::collections::HashSet::new();
         let mut max_id = 0u64;
         for e in &self.elements {
             max_id = max_id.max(e.id);
@@ -972,16 +972,16 @@ impl Doc {
         self.next_id = self.next_id.max(max_id + 1);
         for i in 0..self.elements.len() {
             let id = self.elements[i].id;
-            if id == 0 || !vistos.insert(id) {
-                let nuevo = self.next_id;
+            if id == 0 || !seen.insert(id) {
+                let new = self.next_id;
                 self.next_id += 1;
-                self.elements[i].id = nuevo;
-                vistos.insert(nuevo);
+                self.elements[i].id = new;
+                seen.insert(new);
             }
         }
-        let limpiar = |t: &mut String, saltos: bool| {
-            if t.chars().any(|c| c.is_control() && !(saltos && (c == '\n' || c == '\t'))) {
-                *t = t.chars().filter(|c| !c.is_control() || (saltos && (*c == '\n' || *c == '\t'))).collect();
+        let clear = |t: &mut String, jumps: bool| {
+            if t.chars().any(|c| c.is_control() && !(jumps && (c == '\n' || c == '\t'))) {
+                *t = t.chars().filter(|c| !c.is_control() || (jumps && (*c == '\n' || *c == '\t'))).collect();
             }
         };
         for e in self.elements.iter_mut() {
@@ -999,15 +999,15 @@ impl Doc {
             // A 1e9 px letter would make egui try to draw a giant glyph.
             e.font_size = if e.font_size.is_finite() { e.font_size.clamp(1.0, 1000.0) } else { 32.0 };
             // Control characters (NUL…) break the UXML and the exported scripts.
-            limpiar(&mut e.name, false);
-            limpiar(&mut e.text, true);
-            limpiar(&mut e.font, false);
-            limpiar(&mut e.image, false);
+            clear(&mut e.name, false);
+            clear(&mut e.text, true);
+            clear(&mut e.font, false);
+            clear(&mut e.image, false);
             for o in e.options.iter_mut() {
-                limpiar(o, false);
+                clear(o, false);
             }
         }
-        limpiar(&mut self.title, false);
+        clear(&mut self.title, false);
         for e in self.elements.iter_mut() {
             for v in e.anchor_min.iter_mut().chain(e.anchor_max.iter_mut()).chain(e.pivot.iter_mut()).chain(e.shadow.offset.iter_mut()) {
                 if !v.is_finite() {
@@ -1033,17 +1033,17 @@ impl Doc {
         self.height = self.height.min(16_384.0);
         for i in 0..self.elements.len() {
             let mut cur = self.elements[i].parent;
-            let mut pasos = 0usize;
-            let mut roto = false;
+            let mut steps = 0usize;
+            let mut broken = false;
             while let Some(p) = cur {
-                if p == self.elements[i].id || pasos > self.elements.len() {
-                    roto = true;
+                if p == self.elements[i].id || steps > self.elements.len() {
+                    broken = true;
                     break;
                 }
                 cur = self.get(p).and_then(|e| e.parent);
-                pasos += 1;
+                steps += 1;
             }
-            if roto {
+            if broken {
                 self.elements[i].parent = None;
             }
         }
@@ -1325,9 +1325,9 @@ fn template_at(index: usize, width: f32, height: f32) -> Doc {
                         e.shadow.on = true;
                     }
                     e.on_click = match i {
-                        0 => "texto(\"Subtitle\", \"Loading level 1...!\");\ncolor(yo, \"#46BE78\");\nmensaje(\"Click on \" + yo);".into(),
-                        3 => "alternar(\"Moon\");\nmensaje(\"The moon changed visibility\");".into(),
-                        _ => format!("mensaje(\"Open menu: {}\");", l),
+                        0 => "set_text(\"Subtitle\", \"Loading level 1...!\");\nset_color(me, \"#46BE78\");\nmessage(\"Click on \" + me);".into(),
+                        3 => "toggle(\"Moon\");\nmessage(\"The moon changed visibility\");".into(),
+                        _ => format!("message(\"Open menu: {}\");", l),
                     };
                 });
             }
@@ -1455,11 +1455,11 @@ fn template_at(index: usize, width: f32, height: f32) -> Doc {
                 e.text = "Cancel".into();
                 e.fill = [235, 235, 242, 255];
                 e.text_color = [40, 40, 50, 255];
-                e.on_click = "ocultar(\"Window\");\nocultar(\"Dim\");".into();
+                e.on_click = "hide(\"Window\");\nhide(\"Dim\");".into();
             });
             put(&mut d, Some(row), Kind::Button, "Accept button", [0.0, 0.0, 360.0, 90.0], |e| {
                 e.text = "Save".into();
-                e.on_click = "texto(\"Message\", \"Game saved!\");".into();
+                e.on_click = "set_text(\"Message\", \"Game saved!\");".into();
             });
         }
         3 => {
@@ -1516,7 +1516,7 @@ fn template_at(index: usize, width: f32, height: f32) -> Doc {
             put(&mut d, None, Kind::Button, "Back button", [120.0, h - 170.0, 300.0, 84.0], |e| {
                 e.text = "Back".into();
                 anchor(e, [0.0, 0.0], [0.0, 0.0]);
-                e.on_click = "mensaje(\"Back to the menu\");".into();
+                e.on_click = "message(\"Back to the menu\");".into();
             });
         }
         4 => {
@@ -1545,7 +1545,7 @@ fn template_at(index: usize, width: f32, height: f32) -> Doc {
                 e.fill = [235, 70, 90, 255];
                 anchor(e, [1.0, 1.0], [1.0, 1.0]);
                 e.pivot = [1.0, 1.0];
-                e.on_click = "ocultar(\"Inventory\");".into();
+                e.on_click = "hide(\"Inventory\");".into();
             });
             let grid = put(&mut d, Some(win), Kind::Panel, "Grid", [w / 2.0 - 380.0, h / 2.0 - 250.0, 760.0, 600.0], |e| {
                 e.fill = [30, 32, 44, 255];
@@ -1606,8 +1606,8 @@ fn template_at(index: usize, width: f32, height: f32) -> Doc {
                     e.radius = 42.0;
                     e.fill = if i == 0 { [35, 140, 85, 255] } else if i == 3 { [235, 70, 90, 255] } else { [124, 92, 255, 255] };
                     e.on_click = match i {
-                        0 => "ocultar(\"Pause\");\nocultar(\"Dim\");".into(),
-                        _ => format!("mensaje(\"{}\");", l),
+                        0 => "hide(\"Pause\");\nhide(\"Dim\");".into(),
+                        _ => format!("message(\"{}\");", l),
                     };
                 });
             }
@@ -1662,13 +1662,13 @@ fn template_at(index: usize, width: f32, height: f32) -> Doc {
                 e.fill = [225, 95, 30, 255];
                 e.radius = 50.0;
                 e.shadow.on = true;
-                e.on_click = "texto(\"Title\", \"ONE MORE TIME!\");".into();
+                e.on_click = "set_text(\"Title\", \"ONE MORE TIME!\");".into();
             });
             put(&mut d, Some(row), Kind::Button, "Menu button", [0.0, 0.0, 400.0, 100.0], |e| {
                 e.text = "Main menu".into();
                 e.fill = [60, 60, 80, 255];
                 e.radius = 50.0;
-                e.on_click = "mensaje(\"Back to the menu\");".into();
+                e.on_click = "message(\"Back to the menu\");".into();
             });
         }
         8 => {
@@ -1711,7 +1711,7 @@ fn template_at(index: usize, width: f32, height: f32) -> Doc {
                     e.text_color = if open { [255, 255, 255, 255] } else { [120, 126, 150, 255] };
                     e.interactable = open;
                     if open {
-                        e.on_click = format!("mensaje(\"Load level {}\");", i + 1);
+                        e.on_click = format!("message(\"Load level {}\");", i + 1);
                     }
                 });
             }
@@ -1776,7 +1776,7 @@ fn template_at(index: usize, width: f32, height: f32) -> Doc {
                 e.raycast = false;
                 anchor(e, [0.0, 0.0], [1.0, 1.0]);
             });
-            let caja = put(&mut d, None, Kind::Panel, "Dialogue box", [60.0, h - 360.0, w - 120.0, 300.0], |e| {
+            let dialog_box = put(&mut d, None, Kind::Panel, "Dialogue box", [60.0, h - 360.0, w - 120.0, 300.0], |e| {
                 e.fill = [16, 16, 28, 230];
                 e.stroke = [255, 255, 255, 200];
                 e.stroke_w = 3.0;
@@ -1784,7 +1784,7 @@ fn template_at(index: usize, width: f32, height: f32) -> Doc {
                 anchor(e, [0.0, 0.0], [1.0, 0.0]);
                 e.pivot = [0.5, 0.0];
             });
-            put(&mut d, Some(caja), Kind::Panel, "Portrait", [100.0, h - 330.0, 240.0, 240.0], |e| {
+            put(&mut d, Some(dialog_box), Kind::Panel, "Portrait", [100.0, h - 330.0, 240.0, 240.0], |e| {
                 e.fill = [124, 92, 255, 255];
                 e.fill2 = [0, 196, 204, 255];
                 e.radius = 120.0;
@@ -1792,7 +1792,7 @@ fn template_at(index: usize, width: f32, height: f32) -> Doc {
                 e.stroke_w = 4.0;
                 anchor(e, [0.0, 0.5], [0.0, 0.5]);
             });
-            put(&mut d, Some(caja), Kind::Text, "Name", [380.0, h - 335.0, 600.0, 60.0], |e| {
+            put(&mut d, Some(dialog_box), Kind::Text, "Name", [380.0, h - 335.0, 600.0, 60.0], |e| {
                 e.text = "Old woman of the forest".into();
                 e.font_size = 40.0;
                 e.bold = true;
@@ -1801,7 +1801,7 @@ fn template_at(index: usize, width: f32, height: f32) -> Doc {
                 anchor(e, [0.0, 1.0], [0.0, 1.0]);
                 e.pivot = [0.0, 1.0];
             });
-            put(&mut d, Some(caja), Kind::Text, "Line", [380.0, h - 265.0, w - 560.0, 130.0], |e| {
+            put(&mut d, Some(dialog_box), Kind::Text, "Line", [380.0, h - 265.0, w - 560.0, 130.0], |e| {
                 e.text = "Traveler, the north bridge fell last night. If you are looking for the temple, you will have to cross through the caves.".into();
                 e.font_size = 34.0;
                 e.align = 0;
@@ -1809,12 +1809,12 @@ fn template_at(index: usize, width: f32, height: f32) -> Doc {
                 e.text_color = [240, 240, 250, 255];
                 anchor(e, [0.0, 0.0], [1.0, 1.0]);
             });
-            put(&mut d, Some(caja), Kind::Button, "Continue button", [w - 340.0, h - 140.0, 230.0, 72.0], |e| {
+            put(&mut d, Some(dialog_box), Kind::Button, "Continue button", [w - 340.0, h - 140.0, 230.0, 72.0], |e| {
                 e.text = "Continue".into();
                 e.font_size = 28.0;
                 e.radius = 30.0;
                 anchor(e, [1.0, 0.0], [1.0, 0.0]);
-                e.on_click = "texto(\"Line\", \"Be careful with the bats. And don't forget your torch.\");".into();
+                e.on_click = "set_text(\"Line\", \"Be careful with the bats. And don't forget your torch.\");".into();
             });
         }
         11 => {
@@ -1913,7 +1913,7 @@ fn template_at(index: usize, width: f32, height: f32) -> Doc {
                 e.radius = 50.0;
                 e.shadow.on = true;
                 anchor(e, [0.5, 0.0], [0.5, 0.0]);
-                e.on_click = "mensaje(\"Character chosen: Mage\");".into();
+                e.on_click = "message(\"Character chosen: Mage\");".into();
             });
         }
         _ => {}
@@ -2075,15 +2075,15 @@ mod tests {
 mod sanitize_tests {
     use super::*;
 
-    fn doc_con(n: usize) -> (Doc, Vec<u64>) {
+    fn doc_with(n: usize) -> (Doc, Vec<u64>) {
         let mut d = Doc::empty(100.0, 100.0);
         let ids = (0..n).map(|_| d.add(Element::new(0, Kind::Panel))).collect();
         (d, ids)
     }
 
     #[test]
-    fn padres_en_ciclo_o_propios_no_cuelgan() {
-        let (mut d, ids) = doc_con(3);
+    fn cyclic_or_self_parents_do_not_hang() {
+        let (mut d, ids) = doc_with(3);
         d.get_mut(ids[0]).unwrap().parent = Some(ids[1]);
         d.get_mut(ids[1]).unwrap().parent = Some(ids[0]);
         d.get_mut(ids[2]).unwrap().parent = Some(ids[2]);
@@ -2096,16 +2096,16 @@ mod sanitize_tests {
     }
 
     #[test]
-    fn descendants_con_ciclo_termina_aunque_no_se_sanee() {
-        let (mut d, ids) = doc_con(2);
+    fn descendants_with_cycle_terminates_even_if_not_sanitized() {
+        let (mut d, ids) = doc_with(2);
         d.get_mut(ids[0]).unwrap().parent = Some(ids[1]);
         d.get_mut(ids[1]).unwrap().parent = Some(ids[0]);
         assert!(d.descendants(ids[0]).len() <= 2);
     }
 
     #[test]
-    fn ids_repetidos_y_next_id_bajo() {
-        let (mut d, ids) = doc_con(3);
+    fn duplicate_ids_and_low_next_id() {
+        let (mut d, ids) = doc_with(3);
         d.get_mut(ids[2]).unwrap().id = ids[1];
         d.next_id = 1;
         d.migrate_groups();
@@ -2114,13 +2114,13 @@ mod sanitize_tests {
         v.dedup();
         assert_eq!(v.len(), 3);
         assert!(d.next_id > *v.last().unwrap());
-        let nuevo = d.add(Element::new(0, Kind::Panel));
-        assert_eq!(d.elements.iter().filter(|e| e.id == nuevo).count(), 1);
+        let new = d.add(Element::new(0, Kind::Panel));
+        assert_eq!(d.elements.iter().filter(|e| e.id == new).count(), 1);
     }
 
     #[test]
-    fn coordenadas_no_numericas_se_corrigen() {
-        let (mut d, ids) = doc_con(1);
+    fn non_numeric_coords_are_fixed() {
+        let (mut d, ids) = doc_with(1);
         d.get_mut(ids[0]).unwrap().x = f32::NAN;
         d.get_mut(ids[0]).unwrap().w = f32::INFINITY;
         d.migrate_groups();
@@ -2134,7 +2134,7 @@ mod sanitize_extra_tests {
     use super::*;
 
     #[test]
-    fn valores_absurdos_y_caracteres_de_control() {
+    fn absurd_values_and_control_chars() {
         let mut d = Doc::empty(1920.0, 1080.0);
         let mut e = Element::new(0, Kind::Text);
         e.name = "a\u{0}b\u{7}".into();
@@ -2186,10 +2186,10 @@ mod template_tests {
                 assert_eq!(d.title, TEMPLATES[i], "the title matches the name");
                 let mut ids = std::collections::HashSet::new();
                 for e in &d.elements {
-                    assert!(ids.insert(e.id), "{}: id repetido", TEMPLATES[i]);
+                    assert!(ids.insert(e.id), "{}: duplicate id", TEMPLATES[i]);
                     assert!(e.w > 0.0 && e.h > 0.0 && e.w.is_finite() && e.h.is_finite(), "{}: {} has no size", TEMPLATES[i], e.name);
                     if let Some(p) = e.parent {
-                        assert!(d.get(p).is_some(), "{}: padre perdido", TEMPLATES[i]);
+                        assert!(d.get(p).is_some(), "{}: missing parent", TEMPLATES[i]);
                     }
                     // Nothing goes outside the page (margin for shadows/borders).
                     assert!(e.x >= -1.0 && e.y >= -1.0 && e.x + e.w <= w + 1.0 && e.y + e.h <= h + 1.0, "{} @{}x{}: “{}” outside the page {:?}", TEMPLATES[i], w, h, e.name, [e.x, e.y, e.w, e.h]);

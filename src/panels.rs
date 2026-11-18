@@ -108,7 +108,7 @@ impl EditorApp {
             .frame(egui::Frame::new().fill(PANEL_DARK()).inner_margin(Margin::symmetric(10, 6)).stroke(Stroke::new(1.0, BORDER())))
             .show(ui, |ui| {
                 ui.horizontal_centered(|ui| {
-                    ui.add(egui::Image::new(egui::include_image!("../assets/marca/icono.svg")).fit_to_exact_size(Vec2::splat(22.0)));
+                    ui.add(egui::Image::new(egui::include_image!("../assets/brand/icon.svg")).fit_to_exact_size(Vec2::splat(22.0)));
                     ui.label(RichText::new(crate::i18n::t("Lienzo UI")).strong().size(14.5).color(TEXT()));
                     ui.label(RichText::new(crate::i18n::t("for Unity")).size(11.5).color(MUTED()));
                     ui.add_space(8.0);
@@ -138,8 +138,8 @@ impl EditorApp {
                         ui.separator();
                         if ui.button(crate::i18n::t("Check for updates…")).clicked() {
                             ui.close();
-                            self.actualizador.abierta = true;
-                            self.actualizador_buscar();
+                            self.updater.open = true;
+                            self.updater_search();
                         }
                         ui.separator();
                         if ui.button(crate::i18n::t("Upload images…")).clicked() {
@@ -289,8 +289,8 @@ impl EditorApp {
                     }
                     ui.add_space(4.0);
                     let play = crate::i18n::t(if self.preview { "Stop" } else { "Test" });
-                    let tinta = if self.preview { Color32::WHITE } else { TEXT() };
-                    let play_btn = crate::icons::btn_tint(if self.preview { "stop" } else { "play" }, RichText::new(play).strong().color(tinta), tinta).fill(if self.preview { theme::OK() } else { FIELD() });
+                    let ink = if self.preview { Color32::WHITE } else { TEXT() };
+                    let play_btn = crate::icons::btn_tint(if self.preview { "stop" } else { "play" }, RichText::new(play).strong().color(ink), ink).fill(if self.preview { theme::OK() } else { FIELD() });
                     if ui.add(play_btn).on_hover_text(crate::i18n::t("Test mode: click runs the code and you can simulate other screens (F5)")).clicked() {
                         self.set_preview(!self.preview);
                     }
@@ -307,9 +307,9 @@ impl EditorApp {
                         });
                     }
                     ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
-                        self.comunidad_boton_perfil(ui);
+                        self.community_button_profile(ui);
                         ui.add_space(4.0);
-                        self.actualizador_boton(ui);
+                        self.updater_button(ui);
                         let export = crate::icons::btn_tint("export", RichText::new(crate::i18n::t("Export to Unity")).strong().color(Color32::WHITE), Color32::WHITE).fill(ACCENT()).corner_radius(6.0);
                         let tip = if self.settings.unity_project.is_empty() { "Choose your Unity project folder (Ctrl+E)".to_string() } else { format!("Exporta a {} (Ctrl+E)", self.settings.unity_project) };
                         if ui.add(export).on_hover_text(tip).clicked() {
@@ -322,16 +322,16 @@ impl EditorApp {
                             self.save_open = true;
                         }
                         if ui.button(crate::i18n::t("Tutorial")).on_hover_text(crate::i18n::t("Open the beginner and pro tutorial (F1)")).clicked() {
-                            self.abrir_tutorial(crate::tutorial::Pista::Novato);
+                            self.open_tutorial(crate::tutorial::Track::Beginner);
                         }
                         if ui.button(crate::i18n::t("Themes")).on_hover_text(crate::i18n::t("App colours, corners and font; community themes")).clicked() {
-                            self.temas_abierto = true;
+                            self.themes_open = true;
                         }
                         if ui.add(crate::icons::btn("check", crate::i18n::t("Review"))).on_hover_text(crate::i18n::t("Checks readability, contrast, touch size and missing images before exporting")).clicked() {
-                            self.revision_abierta = true;
+                            self.review_open = true;
                         }
                         if ui.button(crate::i18n::t("Accessibility")).on_hover_text(crate::i18n::t("Language, interface size, high contrast and reduced motion")).clicked() {
-                            self.accesibilidad_abierta = true;
+                            self.accessibility_open = true;
                         }
                         ui.add_space(6.0);
                         ui.label(RichText::new(format!("{} × {}", self.doc.width, self.doc.height)).size(11.5).color(MUTED()));
@@ -348,7 +348,7 @@ impl EditorApp {
             .resizable(false)
             .frame(egui::Frame::new().fill(PANEL_DARK()).inner_margin(Margin::symmetric(4, 8)).stroke(Stroke::new(1.0, BORDER())))
             .show(ui, |ui| {
-                let tabs = [(Tab::Layers, "Hierarchy"), (Tab::Elements, "Elements"), (Tab::Templates, "Templates"), (Tab::Text, "Text"), (Tab::Images, "Images"), (Tab::Plugins, "Plugins"), (Tab::Comunidad, "Community")];
+                let tabs = [(Tab::Layers, "Hierarchy"), (Tab::Elements, "Elements"), (Tab::Templates, "Templates"), (Tab::Text, "Text"), (Tab::Images, "Images"), (Tab::Plugins, "Plugins"), (Tab::Community, "Community")];
                 ui.vertical_centered(|ui| {
                     for (t, label) in tabs {
                         let active = self.tab == t && self.drawer_open;
@@ -401,7 +401,7 @@ impl EditorApp {
                     Tab::Images => self.tab_images(ui),
                     Tab::Layers => self.tab_layers(ui),
                     Tab::Plugins => self.tab_plugins(ui),
-                    Tab::Comunidad => self.tab_comunidad(ui),
+                    Tab::Community => self.tab_community(ui),
                 });
             });
     }
@@ -1422,7 +1422,7 @@ impl EditorApp {
     }
 
     fn arrange(&mut self, ui: &mut egui::Ui, multi: bool) {
-        component(ui, "arrange", if multi { "Alinear y ordenar" } else { "Alinear al padre y ordenar" }, true, |ui| {
+        component(ui, "arrange", if multi { "Align and order" } else { "Align to parent and order" }, true, |ui| {
             ui.columns(3, |c| {
                 let b = |ui: &mut egui::Ui, t: &str| ui.add_sized([ui.available_width(), 22.0], egui::Button::new(t)).clicked();
                 if b(&mut c[0], "Left") {
@@ -1607,16 +1607,16 @@ impl EditorApp {
                     }
                     ui.end_row();
                     let (mut w, mut h) = (world.w, world.h);
-                    if drag_f(ui, "Ancho", &mut w, 1.0) {
+                    if drag_f(ui, "Width", &mut w, 1.0) {
                         world.cx += (w.max(1.0) - world.w) / 2.0;
                         world.w = w.max(1.0);
                     }
-                    if drag_f(ui, "Alto", &mut h, 1.0) {
+                    if drag_f(ui, "Height", &mut h, 1.0) {
                         world.cy += (h.max(1.0) - world.h) / 2.0;
                         world.h = h.max(1.0);
                     }
                     ui.end_row();
-                    drag_f(ui, "Girar", &mut world.rot, 0.5);
+                    drag_f(ui, "Rotation", &mut world.rot, 0.5);
                     ui.end_row();
                 });
             });
@@ -1849,7 +1849,7 @@ impl EditorApp {
         let mut go_test = false;
         component(ui, "code", &crate::i18n::t("On click (test code)"), !e.on_click.trim().is_empty(), |ui| {
             hint(ui, &crate::i18n::t("Runs in Test. When exported, it becomes a comment in the OnClick method of the View script."));
-            ui.add(egui::TextEdit::multiline(&mut e.on_click).code_editor().desired_rows(4).desired_width(f32::INFINITY).hint_text(crate::i18n::t("mensaje(\"Hello!\");\nocultar(\"Window\");")));
+            ui.add(egui::TextEdit::multiline(&mut e.on_click).code_editor().desired_rows(4).desired_width(f32::INFINITY).hint_text(crate::i18n::t("message(\"Hello!\");\nhide(\"Window\");")));
             ui.horizontal(|ui| {
                 if ui.add_enabled(!e.on_click.trim().is_empty(), crate::icons::btn("play", crate::i18n::t("Run now"))).clicked() {
                     run_now = true;
@@ -2174,7 +2174,7 @@ fn rail_icon(p: &egui::Painter, t: Tab, r: Rect, c: Color32) {
             p.circle_stroke(Pos2::new(r.center().x - 1.5, r.top() + 4.0), 3.0, s);
             p.circle_stroke(Pos2::new(r.right() - 3.5, r.center().y + 1.5), 3.0, s);
         }
-        Tab::Comunidad => {
+        Tab::Community => {
             // two people
             for dx in [-4.0f32, 4.0] {
                 let c = Pos2::new(r.center().x + dx, r.top() + 6.0);

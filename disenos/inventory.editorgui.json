@@ -1,5 +1,5 @@
 {
-  "title": "Inventario",
+  "title": "Inventory",
   "width": 1920.0,
   "height": 1080.0,
   "background": [
@@ -11,7 +11,7 @@
   "elements": [
     {
       "id": 1,
-      "name": "Inventario",
+      "name": "Inventory",
       "kind": "Panel",
       "x": 540.0,
       "y": 160.0,
@@ -112,7 +112,7 @@
     },
     {
       "id": 2,
-      "name": "Título",
+      "name": "Title",
       "kind": "Text",
       "x": 580.0,
       "y": 190.0,
@@ -140,7 +140,7 @@
       "stroke_w": 0.0,
       "radius": 0.0,
       "opacity": 1.0,
-      "text": "Inventario",
+      "text": "Inventory",
       "font_size": 52.0,
       "text_color": [
         255,
@@ -213,7 +213,7 @@
     },
     {
       "id": 3,
-      "name": "Cerrar",
+      "name": "Close",
       "kind": "Button",
       "x": 1280.0,
       "y": 190.0,
@@ -255,7 +255,7 @@
       "align": 1,
       "valign": 1,
       "font": "",
-      "on_click": "ocultar(\"Inventario\");",
+      "on_click": "hide(\"Inventory\");",
       "image": "",
       "value": 0.5,
       "visible": true,
@@ -314,7 +314,7 @@
     },
     {
       "id": 4,
-      "name": "Rejilla",
+      "name": "Grid",
       "kind": "Panel",
       "x": 580.0,
       "y": 290.0,
@@ -415,7 +415,7 @@
     },
     {
       "id": 5,
-      "name": "Casilla 1",
+      "name": "Cell 1",
       "kind": "Panel",
       "x": 604.0,
       "y": 314.0,
@@ -516,7 +516,7 @@
     },
     {
       "id": 6,
-      "name": "Casilla 2",
+      "name": "Cell 2",
       "kind": "Panel",
       "x": 788.0,
       "y": 314.0,
@@ -617,7 +617,7 @@
     },
     {
       "id": 7,
-      "name": "Casilla 3",
+      "name": "Cell 3",
       "kind": "Panel",
       "x": 972.0,
       "y": 314.0,
@@ -718,7 +718,7 @@
     },
     {
       "id": 8,
-      "name": "Casilla 4",
+      "name": "Cell 4",
       "kind": "Panel",
       "x": 1156.0,
       "y": 314.0,
@@ -819,7 +819,7 @@
     },
     {
       "id": 9,
-      "name": "Casilla 5",
+      "name": "Cell 5",
       "kind": "Panel",
       "x": 604.0,
       "y": 498.0,
@@ -920,7 +920,7 @@
     },
     {
       "id": 10,
-      "name": "Casilla 6",
+      "name": "Cell 6",
       "kind": "Panel",
       "x": 788.0,
       "y": 498.0,
@@ -1021,7 +1021,7 @@
     },
     {
       "id": 11,
-      "name": "Casilla 7",
+      "name": "Cell 7",
       "kind": "Panel",
       "x": 972.0,
       "y": 498.0,
@@ -1122,7 +1122,7 @@
     },
     {
       "id": 12,
-      "name": "Casilla 8",
+      "name": "Cell 8",
       "kind": "Panel",
       "x": 1156.0,
       "y": 498.0,
@@ -1223,7 +1223,7 @@
     },
     {
       "id": 13,
-      "name": "Casilla 9",
+      "name": "Cell 9",
       "kind": "Panel",
       "x": 604.0,
       "y": 682.0,
@@ -1324,7 +1324,7 @@
     },
     {
       "id": 14,
-      "name": "Casilla 10",
+      "name": "Cell 10",
       "kind": "Panel",
       "x": 788.0,
       "y": 682.0,
@@ -1425,7 +1425,7 @@
     },
     {
       "id": 15,
-      "name": "Casilla 11",
+      "name": "Cell 11",
       "kind": "Panel",
       "x": 972.0,
       "y": 682.0,
@@ -1526,7 +1526,7 @@
     },
     {
       "id": 16,
-      "name": "Casilla 12",
+      "name": "Cell 12",
       "kind": "Panel",
       "x": 1156.0,
       "y": 682.0,

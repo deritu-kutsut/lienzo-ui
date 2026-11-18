@@ -122,9 +122,9 @@ struct FontState {
     pending: Vec<String>,
     paths: std::collections::HashMap<String, std::path::PathBuf>,
     /// Fallback font for the interface language (Chinese, Japanese, Korean), at the end of the lists.
-    respaldo: Option<String>,
+    backup: Option<String>,
     /// Interface font chosen in the theme ("" = the default one).
-    interfaz: String,
+    interface: String,
 }
 
 /// File of a font family known to the editor (system or library), for exporting to Unity.
@@ -182,47 +182,47 @@ pub fn load_system_fonts(ctx: &egui::Context) {
     }
     ctx.set_fonts(defs.clone());
     if let Ok(mut g) = FONTS.lock() {
-        *g = Some(FontState { defs, available: found, pending: Vec::new(), paths, respaldo: None, interfaz: String::new() });
+        *g = Some(FontState { defs, available: found, pending: Vec::new(), paths, backup: None, interface: String::new() });
     }
 }
 
-/// The app's interface font (themes): `nombre` goes in front of the defaults; "" or one that is missing = the default.
-pub fn fuente_interfaz(ctx: &egui::Context, nombre: &str) {
+/// The app's interface font (themes): `name` goes in front of the defaults; "" or one that is missing = the default.
+pub fn interface_font(ctx: &egui::Context, name: &str) {
     if let Ok(mut g) = FONTS.lock() {
         if let Some(s) = g.as_mut() {
-            s.interfaz = nombre.to_string();
-            aplicar_familias(ctx, s);
+            s.interface = name.to_string();
+            apply_families(ctx, s);
         }
     }
 }
 
 /// Rebuilds the Proportional and Monospace families: theme font in front, language fallback at the end.
-fn aplicar_familias(ctx: &egui::Context, s: &mut FontState) {
+fn apply_families(ctx: &egui::Context, s: &mut FontState) {
     let base = egui::FontDefinitions::default();
-    let mut cambio = false;
+    let mut change = false;
     for fam in [egui::FontFamily::Proportional, egui::FontFamily::Monospace] {
-        let mut lista = base.families.get(&fam).cloned().unwrap_or_default();
-        if fam == egui::FontFamily::Proportional && !s.interfaz.is_empty() && s.defs.font_data.contains_key(&s.interfaz) {
-            lista.insert(0, s.interfaz.clone());
+        let mut list = base.families.get(&fam).cloned().unwrap_or_default();
+        if fam == egui::FontFamily::Proportional && !s.interface.is_empty() && s.defs.font_data.contains_key(&s.interface) {
+            list.insert(0, s.interface.clone());
         }
-        if let Some(r) = &s.respaldo {
-            lista.push(r.clone());
+        if let Some(r) = &s.backup {
+            list.push(r.clone());
         }
-        if s.defs.families.get(&fam) != Some(&lista) {
-            s.defs.families.insert(fam, lista);
-            cambio = true;
+        if s.defs.families.get(&fam) != Some(&list) {
+            s.defs.families.insert(fam, list);
+            change = true;
         }
     }
-    if cambio {
+    if change {
         ctx.set_fonts(s.defs.clone());
     }
 }
 
 /// System fonts with the characters of each language that egui's fonts do not cover (the first one that exists is used).
-pub fn fuentes_de_idioma(codigo: &str) -> &'static [&'static str] {
+pub fn language_fonts(code: &str) -> &'static [&'static str] {
     const NOTO: &str = "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc";
     const NOTO2: &str = "/usr/share/fonts/noto-cjk/NotoSansCJK-Regular.ttc";
-    match codigo {
+    match code {
         "zh" => &["C:/Windows/Fonts/msyh.ttc", "C:/Windows/Fonts/simsun.ttc", "/System/Library/Fonts/PingFang.ttc", "/System/Library/Fonts/STHeiti Light.ttc", NOTO, NOTO2],
         "ja" => &["C:/Windows/Fonts/YuGothM.ttc", "C:/Windows/Fonts/meiryo.ttc", "C:/Windows/Fonts/msgothic.ttc", "/System/Library/Fonts/ヒラギノ角ゴシック W3.ttc", "/System/Library/Fonts/Hiragino Sans GB.ttc", NOTO, NOTO2],
         "ko" => &["C:/Windows/Fonts/malgun.ttf", "/System/Library/Fonts/AppleSDGothicNeo.ttc", NOTO, NOTO2],
@@ -232,27 +232,27 @@ pub fn fuentes_de_idioma(codigo: &str) -> &'static [&'static str] {
 
 /// Loads (once) the fallback font for the interface language. Returns false if the language needs it
 /// and the system has none (the text would show as boxes).
-pub fn fuente_idioma(ctx: &egui::Context, codigo: &str) -> bool {
-    let rutas = fuentes_de_idioma(codigo);
+pub fn language_font(ctx: &egui::Context, code: &str) -> bool {
+    let paths = language_fonts(code);
     let Ok(mut g) = FONTS.lock() else { return true };
     let Some(s) = g.as_mut() else { return true };
-    let clave = format!("idioma-{}", codigo);
+    let key = format!("language-{}", code);
     let mut ok = true;
-    s.respaldo = if rutas.is_empty() {
+    s.backup = if paths.is_empty() {
         None
-    } else if s.defs.font_data.contains_key(&clave) {
-        Some(clave)
-    } else if let Some((ruta, bytes)) = rutas.iter().find_map(|p| std::fs::read(p).ok().map(|b| (*p, b))) {
+    } else if s.defs.font_data.contains_key(&key) {
+        Some(key)
+    } else if let Some((path, bytes)) = paths.iter().find_map(|p| std::fs::read(p).ok().map(|b| (*p, b))) {
         // Yu Gothic and Meiryo draw glyphs higher than egui's Latin font: they are lowered a bit.
-        let bajar = if ruta.contains("YuGoth") || ruta.contains("meiryo") { 0.2 } else { 0.0 };
-        let tweak = egui::FontTweak { y_offset_factor: bajar, ..Default::default() };
-        s.defs.font_data.insert(clave.clone(), Arc::new(egui::FontData::from_owned(bytes).tweak(tweak)));
-        Some(clave)
+        let down = if path.contains("YuGoth") || path.contains("meiryo") { 0.2 } else { 0.0 };
+        let tweak = egui::FontTweak { y_offset_factor: down, ..Default::default() };
+        s.defs.font_data.insert(key.clone(), Arc::new(egui::FontData::from_owned(bytes).tweak(tweak)));
+        Some(key)
     } else {
         ok = false;
         None
     };
-    aplicar_familias(ctx, s);
+    apply_families(ctx, s);
     ok
 }
 
@@ -310,8 +310,8 @@ pub fn texture(ctx: &egui::Context, name: &str) -> Option<egui::TextureHandle> {
     }
     let path = crate::library::resolve_image(name);
     let tex = image::open(&path).ok().map(|img| {
-        let filtro = if nearest { image::imageops::FilterType::Nearest } else { image::imageops::FilterType::Triangle };
-        let img = if img.width().max(img.height()) > 2048 { img.resize(2048, 2048, filtro) } else { img };
+        let filter = if nearest { image::imageops::FilterType::Nearest } else { image::imageops::FilterType::Triangle };
+        let img = if img.width().max(img.height()) > 2048 { img.resize(2048, 2048, filter) } else { img };
         let rgba = img.to_rgba8();
         let ci = egui::ColorImage::from_rgba_unmultiplied([rgba.width() as usize, rgba.height() as usize], rgba.as_raw());
         ctx.load_texture(format!("img:{}", key), ci, if nearest { egui::TextureOptions::NEAREST } else { egui::TextureOptions::LINEAR })

@@ -182,14 +182,14 @@ fn rule(doc: &Doc, e: &Element) -> String {
         let mut omax = rt.offset_max();
         // In UI Toolkit an absolute child is placed inside the parent's border; in uGUI the outline does not
         // take up space. The border is compensated so sizes and positions match Unity uGUI.
-        let borde = e
+        let border = e
             .parent
             .and_then(|p| doc.elements.iter().find(|x| x.id == p))
             .filter(|p| p.kind.has_fill() && !matches!(p.kind, Kind::Toggle | Kind::Slider))
             .map(|p| p.stroke_w.max(0.0))
             .unwrap_or(0.0);
-        omin = [omin[0] - borde, omin[1] - borde];
-        omax = [omax[0] + borde, omax[1] + borde];
+        omin = [omin[0] - border, omin[1] - border];
+        omax = [omax[0] + border, omax[1] + border];
         if rt.stretch_x() {
             s.push(format!("left: {}%", f(rt.anchor_min[0] * 100.0)));
             s.push(format!("right: {}%", f((1.0 - rt.anchor_max[0]) * 100.0)));

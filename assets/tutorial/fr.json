@@ -1,62 +1,62 @@
 {
-  "novato": [
+  "beginner": [
     {
-      "titulo": "Bienvenue dans Lienzo UI",
-      "texto": "Lienzo UI est un éditeur visuel pour concevoir les interfaces de ton jeu (menus, HUD, fenêtres, inventaires) comme dans un outil de design, puis les amener dans Unity en un clic.\n\nÀ l'exportation, tu obtiens la même interface en uGUI avec TextMeshPro, en UI Toolkit (UXML + USS) et en IMGUI.\n\nÀ la fin de ce tutoriel, l'éditeur s'ouvre. Tu peux revenir ici quand tu veux avec le bouton « Tutoriel » de la barre supérieure ou avec F1."
+      "title": "Bienvenue dans Lienzo UI",
+      "text": "Lienzo UI est un éditeur visuel pour concevoir les interfaces de ton jeu (menus, HUD, fenêtres, inventaires) comme dans un outil de design, puis les amener dans Unity en un clic.\n\nÀ l'exportation, tu obtiens la même interface en uGUI avec TextMeshPro, en UI Toolkit (UXML + USS) et en IMGUI.\n\nÀ la fin de ce tutoriel, l'éditeur s'ouvre. Tu peux revenir ici quand tu veux avec le bouton « Tutoriel » de la barre supérieure ou avec F1."
     },
     {
-      "titulo": "L'écran de l'éditeur",
-      "texto": "• En haut : les menus Fichier, Modifier, Affichage et Toile, le bouton Tester, le nom du design, Accessibilité, Vérifier, Thèmes, Tutoriel, Enregistrer, Code… et Exporter vers Unity.\n• À gauche, la barre avec Hiérarchie (les calques), Éléments, Modèles, Texte, Images, Plugins et Communauté.\n• Au centre, la toile : l'écran de ton jeu à la résolution de référence (1920 × 1080 par défaut).\n• À droite, l'Inspector : les propriétés de l'élément sélectionné (position, ancrages, couleurs, texte…)."
+      "title": "L'écran de l'éditeur",
+      "text": "• En haut : les menus Fichier, Modifier, Affichage et Toile, le bouton Tester, le nom du design, Accessibilité, Vérifier, Thèmes, Tutoriel, Enregistrer, Code… et Exporter vers Unity.\n• À gauche, la barre avec Hiérarchie (les calques), Éléments, Modèles, Texte, Images, Plugins et Communauté.\n• Au centre, la toile : l'écran de ton jeu à la résolution de référence (1920 × 1080 par défaut).\n• À droite, l'Inspector : les propriétés de l'élément sélectionné (position, ancrages, couleurs, texte…)."
     },
     {
-      "titulo": "Commence avec un modèle",
-      "texto": "Ouvre Modèles dans la barre de gauche et choisis l'un des 12 : menu principal, HUD, menu pause, fin de partie, sélection de niveau, inventaire, dialogue de personnage, classement…\n\nC'est le moyen le plus rapide de voir comment se construit une interface complète. Tout ce qu'il contient peut être modifié.\n\nSi tu préfères partir de zéro, choisis « Vierge » ou Fichier › Nouveau design vierge."
+      "title": "Commence avec un modèle",
+      "text": "Ouvre Modèles dans la barre de gauche et choisis l'un des 12 : menu principal, HUD, menu pause, fin de partie, sélection de niveau, inventaire, dialogue de personnage, classement…\n\nC'est le moyen le plus rapide de voir comment se construit une interface complète. Tout ce qu'il contient peut être modifié.\n\nSi tu préfères partir de zéro, choisis « Vierge » ou Fichier › Nouveau design vierge."
     },
     {
-      "titulo": "Ajouter et modifier des éléments",
-      "texto": "• Glisse des éléments depuis Éléments vers la toile : panneaux, textes, boutons, cases à cocher, sliders, champs de texte, listes déroulantes, listes avec défilement et images. Dans « Composants prêts à l'emploi » il y a des boutons, des barres de vie et de mana, des cartes et des badges ; dans Texte, des pièces de HUD comme un minuteur, des pièces ou des dégâts.\n• Un clic sélectionne, glisser déplace, les coins changent la taille et la poignée du haut fait tourner.\n• Double-clic sur un texte pour y écrire.\n• Ctrl+Z / Ctrl+Y annulent et rétablissent ; Ctrl+D duplique ; Suppr supprime ; Ctrl+G regroupe ; les flèches déplacent de 1 px (Maj : 10).\n• Dans l'Inspector tu changes les couleurs, les bordures, les ombres, les polices et les ancrages (comment l'élément s'adapte aux autres écrans)."
+      "title": "Ajouter et modifier des éléments",
+      "text": "• Glisse des éléments depuis Éléments vers la toile : panneaux, textes, boutons, cases à cocher, sliders, champs de texte, listes déroulantes, listes avec défilement et images. Dans « Composants prêts à l'emploi » il y a des boutons, des barres de vie et de mana, des cartes et des badges ; dans Texte, des pièces de HUD comme un minuteur, des pièces ou des dégâts.\n• Un clic sélectionne, glisser déplace, les coins changent la taille et la poignée du haut fait tourner.\n• Double-clic sur un texte pour y écrire.\n• Ctrl+Z / Ctrl+Y annulent et rétablissent ; Ctrl+D duplique ; Suppr supprime ; Ctrl+G regroupe ; les flèches déplacent de 1 px (Maj : 10).\n• Dans l'Inspector tu changes les couleurs, les bordures, les ombres, les polices et les ancrages (comment l'élément s'adapte aux autres écrans)."
     },
     {
-      "titulo": "Tester et exporter vers Unity",
-      "texto": "• Tester (F5) : le design devient interactif et tu peux simuler d'autres écrans (mobile, 4:3, ultra-large) pour voir comment il s'adapte.\n• Enregistrer (Ctrl+S) : enregistre le projet .editorgui.json pour continuer un autre jour.\n• Vérifier : signale le texte trop petit, le contraste faible, les boutons trop petits pour être touchés, les éléments hors de la page et les images manquantes.\n• Exporter vers Unity (Ctrl+E) : la première fois, choisis le dossier de ton projet (celui qui contient Assets).\n\nDans Unity, en revenant à la fenêtre, le design apparaît comme prefab dans Assets/EditorGUI/Prefabs. Tu as aussi le menu Tools › Lienzo UI › Importar diseño en la escena."
+      "title": "Tester et exporter vers Unity",
+      "text": "• Tester (F5) : le design devient interactif et tu peux simuler d'autres écrans (mobile, 4:3, ultra-large) pour voir comment il s'adapte.\n• Enregistrer (Ctrl+S) : enregistre le projet .editorgui.json pour continuer un autre jour.\n• Vérifier : signale le texte trop petit, le contraste faible, les boutons trop petits pour être touchés, les éléments hors de la page et les images manquantes.\n• Exporter vers Unity (Ctrl+E) : la première fois, choisis le dossier de ton projet (celui qui contient Assets).\n\nDans Unity, en revenant à la fenêtre, le design apparaît comme prefab dans Assets/EditorGUI/Prefabs. Tu as aussi le menu Tools › Lienzo UI › Importar diseño en la escena."
     }
   ],
-  "profesional": [
+  "pro": [
     {
-      "titulo": "Ce que génère l'exportation",
-      "texto": "Tout va dans Assets/EditorGUI de ton projet :\n\n• Designs/<Design>.json : le design ; l'importateur refait le prefab chaque fois qu'il change.\n• Editor/EditorGuiImporter.cs : construit le prefab avec uGUI + TextMeshPro.\n• Prefabs/<Design>.prefab : prêt à glisser dans la scène.\n• UI Toolkit/<Design>.uxml et .uss : la version pour UIDocument.\n• Scripts/<Design>OnGUI.cs : la version IMGUI.\n• Scripts/<Design>ViewBase.cs (régénéré) et <Design>View.cs (le tien : créé une fois et jamais écrasé)."
+      "title": "Ce que génère l'exportation",
+      "text": "Tout va dans Assets/EditorGUI de ton projet :\n\n• Designs/<Design>.json : le design ; l'importateur refait le prefab chaque fois qu'il change.\n• Editor/EditorGuiImporter.cs : construit le prefab avec uGUI + TextMeshPro.\n• Prefabs/<Design>.prefab : prêt à glisser dans la scène.\n• UI Toolkit/<Design>.uxml et .uss : la version pour UIDocument.\n• Scripts/<Design>OnGUI.cs : la version IMGUI.\n• Scripts/<Design>ViewBase.cs (régénéré) et <Design>View.cs (le tien : créé une fois et jamais écrasé)."
     },
     {
-      "titulo": "Ancrages et mise à l'échelle",
-      "texto": "La toile fonctionne comme un Canvas avec un Canvas Scaler en mode Scale With Screen Size : la résolution de référence, le match largeur/hauteur et le fond se règlent dans l'Inspector sans rien sélectionner.\n\nChaque élément a des ancrages, un pivot et des décalages comme un RectTransform. Quand la résolution de référence change, les éléments suivent leurs ancrages, comme dans Unity.\n\nUtilise Tester (F5) avec plusieurs écrans pour le vérifier avant d'exporter."
+      "title": "Ancrages et mise à l'échelle",
+      "text": "La toile fonctionne comme un Canvas avec un Canvas Scaler en mode Scale With Screen Size : la résolution de référence, le match largeur/hauteur et le fond se règlent dans l'Inspector sans rien sélectionner.\n\nChaque élément a des ancrages, un pivot et des décalages comme un RectTransform. Quand la résolution de référence change, les éléments suivent leurs ancrages, comme dans Unity.\n\nUtilise Tester (F5) avec plusieurs écrans pour le vérifier avant d'exporter."
     },
     {
-      "titulo": "Mises en page, groupes et listes",
-      "texto": "Un conteneur peut ranger ses enfants en horizontal, en vertical ou en grille (comme Horizontal/Vertical/Grid Layout Group), avec espacement et marge intérieure.\n\nLes listes avec défilement (ScrollView) calculent leur contenu toutes seules.\n\nRegroupe (Ctrl+G) pour déplacer des parties entières et utilise la Hiérarchie pour réordonner les calques : l'ordre de la liste est l'ordre d'affichage dans Unity."
+      "title": "Mises en page, groupes et listes",
+      "text": "Un conteneur peut ranger ses enfants en horizontal, en vertical ou en grille (comme Horizontal/Vertical/Grid Layout Group), avec espacement et marge intérieure.\n\nLes listes avec défilement (ScrollView) calculent leur contenu toutes seules.\n\nRegroupe (Ctrl+G) pour déplacer des parties entières et utilise la Hiérarchie pour réordonner les calques : l'ordre de la liste est l'ordre d'affichage dans Unity."
     },
     {
-      "titulo": "Logique : script au clic et vues",
-      "texto": "Dans Tester, chaque élément peut exécuter un petit script (Rhai) au clic : mostrar(\"Nombre\"), ocultar, alternar, texto, color, mover… Ça sert à prototyper des parcours sans Unity.\n\nDans Unity, <Design>View.cs hérite de <Design>ViewBase avec des références typées vers chaque bouton, slider ou champ, et des événements de clic et de valeur. Mets-y la logique de ton jeu : les réexportations n'y touchent pas."
+      "title": "Logique : script au clic et vues",
+      "text": "Dans Tester, chaque élément peut exécuter un petit script (Rhai) au clic : mostrar(\"Nombre\"), ocultar, alternar, texto, color, mover… Ça sert à prototyper des parcours sans Unity.\n\nDans Unity, <Design>View.cs hérite de <Design>ViewBase avec des références typées vers chaque bouton, slider ou champ, et des événements de clic et de valeur. Mets-y la logique de ton jeu : les réexportations n'y touchent pas."
     },
     {
-      "titulo": "Ligne de commande et automatisation",
-      "texto": "lienzo-ui --plantillas                         liste les modèles\nlienzo-ui --plantilla 0 --guardar menu.editorgui.json\nlienzo-ui --abrir menu.editorgui.json --revisar        vérifie le design (code 1 s'il y a des erreurs)\nlienzo-ui --abrir menu.editorgui.json --exportar <proyecto Unity>\nlienzo-ui --abrir menu.editorgui.json --screenshot captura.png\nlienzo-ui --probar 1080x2400                    ouvre dans Tester avec cet écran\n\nAvec --exportar, --guardar et --revisar, aucune fenêtre ne s'ouvre : c'est fait pour les scripts, la CI et le serveur MCP."
+      "title": "Ligne de commande et automatisation",
+      "text": "lienzo-ui --templates                         liste les modèles\nlienzo-ui --template 0 --save menu.editorgui.json\nlienzo-ui --open menu.editorgui.json --review        vérifie le design (code 1 s'il y a des erreurs)\nlienzo-ui --open menu.editorgui.json --export <proyecto Unity>\nlienzo-ui --open menu.editorgui.json --screenshot captura.png\nlienzo-ui --test 1080x2400                    ouvre dans Tester avec cet écran\n\nAvec --export, --save et --review, aucune fenêtre ne s'ouvre : c'est fait pour les scripts, la CI et le serveur MCP."
     },
     {
-      "titulo": "Serveur MCP et contribution",
-      "texto": "Le dossier mcp/ contient un serveur MCP sans dépendances (Node 18+) : toute IA compatible (Claude, Cursor, VS Code…) peut lister les modèles, créer et modifier des designs, les exporter vers Unity et faire des captures.\n\nLienzo UI est open source (MIT). Le code est en Rust avec egui : src/model.rs (données), src/canvas.rs (toile), src/panels.rs (panneaux), src/export/ (Unity).\n\nLis docs/EXTENDER.md pour ajouter des éléments, des modèles ou des exportateurs, et CONTRIBUTING.md pour envoyer des changements."
+      "title": "Serveur MCP et contribution",
+      "text": "Le dossier mcp/ contient un serveur MCP sans dépendances (Node 18+) : toute IA compatible (Claude, Cursor, VS Code…) peut lister les modèles, créer et modifier des designs, les exporter vers Unity et faire des captures.\n\nLienzo UI est open source (MIT). Le code est en Rust avec egui : src/model.rs (données), src/canvas.rs (toile), src/panels.rs (panneaux), src/export/ (Unity).\n\nLis docs/EXTENDER.md pour ajouter des éléments, des modèles ou des exportateurs, et CONTRIBUTING.md pour envoyer des changements."
     },
     {
-      "titulo": "Pixel art",
-      "texto": "Sans rien sélectionner, coche « Pixel art » dans l'Inspector de la toile :\n\n• Les images sont dessinées sans lissage (plus proche voisin).\n• Les positions et les tailles s'alignent sur des pixels entiers au relâchement.\n• Dans Unity : Canvas « Pixel Perfect » et sprites avec filtre Point, sans compression ni mipmaps.\n\nConseil : utilise des tailles multiples exacts de tes sprites (16 px → 32, 48, 64…) pour que chaque pixel reste identique."
+      "title": "Pixel art",
+      "text": "Sans rien sélectionner, coche « Pixel art » dans l'Inspector de la toile :\n\n• Les images sont dessinées sans lissage (plus proche voisin).\n• Les positions et les tailles s'alignent sur des pixels entiers au relâchement.\n• Dans Unity : Canvas « Pixel Perfect » et sprites avec filtre Point, sans compression ni mipmaps.\n\nConseil : utilise des tailles multiples exacts de tes sprites (16 px → 32, 48, 64…) pour que chaque pixel reste identique."
     },
     {
-      "titulo": "Plugins",
-      "texto": "L'onglet Plugins de la barre de gauche liste les compléments installés. Un plugin est un dossier avec un plugin.json qui peut ajouter :\n\n• Des commandes : scripts Rhai qui reçoivent le design et le renvoient modifié (annulables avec Ctrl+Z).\n• Des exportateurs : scripts qui génèrent de nouveaux fichiers (par exemple, un CSV avec tous les textes).\n• Des modèles : des designs prêts à l'emploi.\n\nLes scripts s'exécutent isolés, sans accès aux fichiers ni au réseau. « Ouvrir le dossier » t'amène dans ton dossier de plugins ; le guide est dans docs/PLUGINS.md."
+      "title": "Plugins",
+      "text": "L'onglet Plugins de la barre de gauche liste les compléments installés. Un plugin est un dossier avec un plugin.json qui peut ajouter :\n\n• Des commandes : scripts Rhai qui reçoivent le design et le renvoient modifié (annulables avec Ctrl+Z).\n• Des exportateurs : scripts qui génèrent de nouveaux fichiers (par exemple, un CSV avec tous les textes).\n• Des modèles : des designs prêts à l'emploi.\n\nLes scripts s'exécutent isolés, sans accès aux fichiers ni au réseau. « Ouvrir le dossier » t'amène dans ton dossier de plugins ; le guide est dans docs/PLUGINS.md."
     },
     {
-      "titulo": "Accessibilité et langues",
-      "texto": "Le bouton « Accessibilité » de la barre supérieure permet de :\n\n• Changer la langue de l'interface (espagnol, anglais, portugais, français, allemand, italien ou russe).\n• Agrandir l'interface jusqu'à 200 % (aussi avec Ctrl+Alt+= et Ctrl+Alt+-).\n• Activer le contraste élevé : texte blanc et bordures marquées.\n• Réduire les animations : sans animations.\n\nLes langues sont des fichiers assets/i18n/<code>.tsv : pour en ajouter une, il suffit de traduire en.tsv."
+      "title": "Accessibilité et langues",
+      "text": "Le bouton « Accessibilité » de la barre supérieure permet de :\n\n• Changer la langue de l'interface (espagnol, anglais, portugais, français, allemand, italien ou russe).\n• Agrandir l'interface jusqu'à 200 % (aussi avec Ctrl+Alt+= et Ctrl+Alt+-).\n• Activer le contraste élevé : texte blanc et bordures marquées.\n• Réduire les animations : sans animations.\n\nLes langues sont des fichiers assets/i18n/<code>.tsv : pour en ajouter une, il suffit de traduire en.tsv."
     }
   ]
 }

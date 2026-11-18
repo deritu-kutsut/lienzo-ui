@@ -11,7 +11,7 @@ pub enum Tab {
     Images,
     Layers,
     Plugins,
-    Comunidad,
+    Community,
 }
 
 #[derive(Clone, Copy, PartialEq, Debug)]
@@ -115,13 +115,13 @@ pub struct EditorApp {
     pub tree_drag: Option<u64>,
     pub tutorial: Option<crate::tutorial::Tutorial>,
     pub plugins: Vec<crate::plugins::Plugin>,
-    pub comunidad: crate::comunidad::Comunidad,
-    pub accesibilidad_abierta: bool,
-    pub revision_abierta: bool,
-    pub temas_abierto: bool,
-    pub actualizador: crate::actualizador::Actualizador,
-    pub captura_larga: bool,
-    pub tema_nombre: String,
+    pub community: crate::community::Community,
+    pub accessibility_open: bool,
+    pub review_open: bool,
+    pub themes_open: bool,
+    pub updater: crate::updater::Updater,
+    pub long_screenshot: bool,
+    pub theme_name: String,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -206,14 +206,14 @@ impl EditorApp {
             template_thumbs: None,
             tree_drag: None,
             tutorial: None,
-            plugins: crate::plugins::cargar_todos(),
-            comunidad: crate::comunidad::Comunidad::new(),
-            accesibilidad_abierta: false,
-            revision_abierta: false,
-            temas_abierto: false,
-            actualizador: crate::actualizador::Actualizador::new(),
-            captura_larga: false,
-            tema_nombre: String::new(),
+            plugins: crate::plugins::load_all(),
+            community: crate::community::Community::new(),
+            accessibility_open: false,
+            review_open: false,
+            themes_open: false,
+            updater: crate::updater::Updater::new(),
+            long_screenshot: false,
+            theme_name: String::new(),
         }
     }
 
@@ -295,7 +295,7 @@ impl EditorApp {
         self.sel.contains(&id)
     }
 
-    /// What a click on `id` selects: the outermost unselected "Contenedor" (Empty)
+    /// What a click on `id` selects: the outermost unselected "Container" (Empty)
     /// around it, unless `deep` (Ctrl) is held — like groups in a design editor.
     pub fn click_target(&self, id: u64, deep: bool) -> u64 {
         if deep {
@@ -351,7 +351,7 @@ impl EditorApp {
         }
     }
 
-    /// Container new elements go into: a single selected Panel / Contenedor / ScrollView.
+    /// Container new elements go into: a single selected Panel / Container / ScrollView.
     pub fn insert_parent(&self) -> Option<u64> {
         if self.sel.len() != 1 {
             return None;
@@ -401,7 +401,7 @@ impl EditorApp {
         self.status = crate::i18n::tf("Added: {}{}", &[&crate::i18n::t(kind.label()), &pname]);
     }
 
-    /// Topmost Panel / Contenedor / ScrollView under a page point (drop target).
+    /// Topmost Panel / Container / ScrollView under a page point (drop target).
     pub fn container_at(&self, p: [f32; 2]) -> Option<u64> {
         self.doc
             .elements
@@ -415,9 +415,9 @@ impl EditorApp {
         if self.sel.is_empty() {
             return;
         }
-        let del: Vec<u64> = self.sel_top().into_iter().filter(|id| !self.doc.get(*id).map(|e| e.locked).unwrap_or(true)).collect();
-        let n = del.len();
-        self.doc.remove_subtrees(&del);
+        let of: Vec<u64> = self.sel_top().into_iter().filter(|id| !self.doc.get(*id).map(|e| e.locked).unwrap_or(true)).collect();
+        let n = of.len();
+        self.doc.remove_subtrees(&of);
         self.sel.retain(|id| self.doc.get(*id).is_some());
         self.sel.clear();
         self.editing = None;
@@ -482,9 +482,9 @@ impl EditorApp {
         self.status = crate::i18n::t("Pasted");
     }
 
-    /// Wrap the selection in a new "Contenedor" (an empty RectTransform), like grouping in Unity.
+    /// Wrap the selection in a new "Container" (an empty RectTransform), like grouping in Unity.
     pub fn group_selection(&mut self) {
-        // A locked element inside a new (unlocked) Contenedor could be moved or deleted along with it.
+        // A locked element inside a new (unlocked) Container could be moved or deleted along with it.
         let tops: Vec<u64> = self.sel_top().into_iter().filter(|i| !self.doc.get(*i).map(|e| e.locked).unwrap_or(true)).collect();
         if tops.is_empty() {
             return;
@@ -514,7 +514,7 @@ impl EditorApp {
         self.status = crate::i18n::t("Grouped into a Container (empty RectTransform in Unity)");
     }
 
-    /// Remove selected "Contenedores", keeping their children where they are.
+    /// Remove selected "Containers", keeping their children where they are.
     pub fn ungroup_selection(&mut self) {
         let mut freed = Vec::new();
         for id in self.sel.clone() {
@@ -733,7 +733,7 @@ impl EditorApp {
         match std::fs::read_to_string(&self.project_path).map_err(|e| e.to_string()).and_then(|s| serde_json::from_str::<Doc>(&s).map_err(|e| e.to_string())) {
             Ok(mut d) => {
                 self.set_preview(false);
-                crate::library::set_carpeta_diseno(std::path::Path::new(&self.project_path));
+                crate::library::set_design_folder(std::path::Path::new(&self.project_path));
                 d.migrate_groups();
                 self.doc = d;
                 self.sel.clear();
@@ -832,7 +832,7 @@ impl EditorApp {
             e.y = cy - bh / 2.0 + (e.y - b[1]);
             e.locked = false;
         }
-        // several loose elements arrive wrapped in a Contenedor
+        // several loose elements arrive wrapped in a Container
         let ids: Vec<u64> = items.iter().map(|e| e.id).collect();
         let loose = items.iter().filter(|e| e.parent.map(|p| !ids.contains(&p)).unwrap_or(true)).count();
         if loose > 1 {
@@ -986,7 +986,7 @@ impl EditorApp {
             return; // the tutorial handles its own keys
         }
         if ctx.input_mut(|i| i.consume_key(Modifiers::NONE, Key::F1)) {
-            self.abrir_tutorial(crate::tutorial::Pista::Novato);
+            self.open_tutorial(crate::tutorial::Track::Beginner);
             return;
         }
         if ctx.input_mut(|i| i.consume_key(Modifiers::NONE, Key::F5)) {
@@ -1146,9 +1146,9 @@ pub fn layout_texts(ctx: &egui::Context, doc: &mut Doc) {
 mod tests {
     use super::*;
 
-    fn app_con(plantilla: usize) -> EditorApp {
+    fn app_with(template: usize) -> EditorApp {
         let mut a = EditorApp::new(None);
-        a.doc = model::template(plantilla, 1920.0, 1080.0);
+        a.doc = model::template(template, 1920.0, 1080.0);
         a.committed = a.doc.clone();
         a.sel.clear();
         a
@@ -1159,22 +1159,22 @@ mod tests {
     }
 
     #[test]
-    fn reordenar_varios_hermanos_no_se_anula() {
-        let mut a = app_con(0);
+    fn reordering_several_siblings_is_not_undone() {
+        let mut a = app_with(0);
         let (j, o) = (id(&a, "Play button"), id(&a, "Options button"));
         let menu = a.doc.parent_of(j);
         a.sel = vec![j, o];
         a.reorder(None, 1);
-        let orden: Vec<String> = a.doc.children(menu).iter().map(|c| a.doc.get(*c).unwrap().name.clone()).collect();
-        assert_eq!(orden, ["Credits button", "Play button", "Options button", "Exit button"]);
+        let order: Vec<String> = a.doc.children(menu).iter().map(|c| a.doc.get(*c).unwrap().name.clone()).collect();
+        assert_eq!(order, ["Credits button", "Play button", "Options button", "Exit button"]);
         a.reorder(Some(false), 0);
-        let orden: Vec<String> = a.doc.children(menu).iter().map(|c| a.doc.get(*c).unwrap().name.clone()).collect();
-        assert_eq!(&orden[..2], ["Play button", "Options button"], "the background keeps its order");
+        let order: Vec<String> = a.doc.children(menu).iter().map(|c| a.doc.get(*c).unwrap().name.clone()).collect();
+        assert_eq!(&order[..2], ["Play button", "Options button"], "the background keeps its order");
     }
 
     #[test]
-    fn desagrupar_anidados_no_deja_ids_borrados() {
-        let mut a = app_con(0);
+    fn ungroup_nested_no_leaves_ids_deleted() {
+        let mut a = app_with(0);
         let menu = id(&a, "Menu");
         let head = id(&a, "Header");
         a.sel = vec![head, menu];
@@ -1186,36 +1186,36 @@ mod tests {
     }
 
     #[test]
-    fn bloqueados_no_se_agrupan_ni_desagrupan() {
-        let mut a = app_con(0);
-        let fondo = id(&a, "Background");
-        let luna = id(&a, "Moon");
-        a.doc.get_mut(fondo).unwrap().locked = true;
-        a.sel = vec![fondo, luna];
+    fn locked_are_not_grouped_or_ungrouped() {
+        let mut a = app_with(0);
+        let background = id(&a, "Background");
+        let moon = id(&a, "Moon");
+        a.doc.get_mut(background).unwrap().locked = true;
+        a.sel = vec![background, moon];
         a.group_selection();
-        assert_eq!(a.doc.parent_of(fondo), None, "the locked background does not enter the group");
+        assert_eq!(a.doc.parent_of(background), None, "the locked background does not enter the group");
         let menu = id(&a, "Menu");
         a.doc.get_mut(menu).unwrap().locked = true;
         a.sel = vec![menu];
         a.ungroup_selection();
-        assert!(a.doc.get(menu).is_some(), "un Contenedor bloqueado no se deshace");
+        assert!(a.doc.get(menu).is_some(), "a locked Container is not undone");
     }
 
     #[test]
-    fn pegar_un_contenedor_lo_pone_a_su_lado() {
-        let mut a = app_con(4);
+    fn pasting_a_container_puts_it_beside_itself() {
+        let mut a = app_with(4);
         let win = id(&a, "Inventory");
         a.sel = vec![win];
         a.copy();
         a.paste();
-        let nuevo = a.sel[0];
-        assert_ne!(nuevo, win);
-        assert_eq!(a.doc.parent_of(nuevo), a.doc.parent_of(win), "hermano, no hijo");
+        let new = a.sel[0];
+        assert_ne!(new, win);
+        assert_eq!(a.doc.parent_of(new), a.doc.parent_of(win), "hermano, no hijo");
     }
 
     #[test]
-    fn insertar_conserva_rotacion_y_nombre() {
-        let mut a = app_con(5);
+    fn insert_keeps_rotation_and_name() {
+        let mut a = app_with(5);
         let mut e = Element::new(0, Kind::Button);
         e.name = "Pill button".into();
         e.rot = -8.0;

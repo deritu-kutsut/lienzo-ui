@@ -21,8 +21,8 @@ def cubrir(im, w, h):
     return ImageOps.fit(im.convert("RGB"), (w, h), Image.LANCZOS, centering=(0.5, 0.5))
 
 
-portada = Image.open(R + "assets/marca/portada.png")
-icono = Image.open(R + "assets/marca/icono.png").convert("RGBA")
+portada = Image.open(R + "assets/brand/cover.png")
+icono = Image.open(R + "assets/brand/icon.png").convert("RGBA")
 cubrir(portada, 1950, 1300).save(O + "cover_1950x1300.png", optimize=True)
 cubrir(portada, 420, 280).save(O + "card_420x280.png", optimize=True)
 fondo = Image.new("RGBA", icono.size, (255, 255, 255, 255))

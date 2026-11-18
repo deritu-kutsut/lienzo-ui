@@ -1,9 +1,0 @@
-{
-  "nombre": "Textos a CSV",
-  "version": "1.0.0",
-  "autor": "Lienzo UI",
-  "descripcion": "Exporta todos los textos del diseño a un CSV para traducirlos o revisarlos.",
-  "exportadores": [
-    { "nombre": "Textos para traducir", "extension": "csv", "script": "csv.rhai" }
-  ]
-}

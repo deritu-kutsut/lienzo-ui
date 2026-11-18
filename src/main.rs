@@ -13,15 +13,15 @@ mod panels;
 mod render;
 mod script;
 mod theme;
-mod accesibilidad;
+mod accessibility;
 mod i18n;
 mod plugins;
-mod comunidad;
-mod comunidad_validar;
+mod community;
+mod community_validate;
 mod tutorial;
-mod temas;
-mod actualizador;
-mod revision;
+mod themes;
+mod updater;
+mod review;
 
 use eframe::egui;
 use std::sync::{
@@ -36,8 +36,8 @@ pub struct Shot {
 }
 
 const SHOT_FRAME: u64 = 120;
-/// With `--espera-capturas` the screenshot waits more frames (e.g. for the community catalog to download).
-const SHOT_FRAME_LARGA: u64 = 420;
+/// With `--screenshot-wait` the screenshot waits more frames (e.g. for the community catalog to download).
+const SHOT_FRAME_LONG: u64 = 420;
 
 impl eframe::App for app::EditorApp {
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
@@ -46,7 +46,7 @@ impl eframe::App for app::EditorApp {
         render::promote_pending_fonts();
         render::PIXEL_ART.store(self.doc.pixel_art, Ordering::Relaxed);
 
-        self.atajos_accesibilidad(&ctx);
+        self.accessibility_shortcuts(&ctx);
         self.keyboard(&ctx);
         self.header(ui);
         self.rail(ui);
@@ -59,19 +59,19 @@ impl eframe::App for app::EditorApp {
         });
         self.export_window(&ctx);
         self.save_window(&ctx);
-        self.comunidad_poll(&ctx);
-        self.comunidad_ventanas(&ctx);
+        self.community_poll(&ctx);
+        self.community_windows(&ctx);
         self.tutorial_window(&ctx);
-        self.accesibilidad_window(&ctx);
-        self.revision_window(&ctx);
-        self.temas_window(&ctx);
-        self.actualizador_window(&ctx);
+        self.accessibility_window(&ctx);
+        self.review_window(&ctx);
+        self.themes_window(&ctx);
+        self.updater_window(&ctx);
         self.commit(&ctx);
 
         if let Some(shot) = &self.screenshot {
             ctx.request_repaint();
             match shot.state.load(Ordering::SeqCst) {
-                0 if self.frame_no >= if self.captura_larga { SHOT_FRAME_LARGA } else { SHOT_FRAME } => {
+                0 if self.frame_no >= if self.long_screenshot { SHOT_FRAME_LONG } else { SHOT_FRAME } => {
                     shot.state.store(1, Ordering::SeqCst);
                     let path = shot.path.clone();
                     let state = shot.state.clone();
@@ -96,20 +96,68 @@ impl eframe::App for app::EditorApp {
     }
 }
 
+/// Command-line flags that used to have Spanish names. They still work: `normalize_args` rewrites them to the English ones,
+/// so the rest of the code only knows the English flags (and the help text only shows those).
+const LEGACY_FLAGS: &[(&str, &str)] = &[
+    ("--abrir", "--open"),
+    ("--exportar", "--export"),
+    ("--guardar", "--save"),
+    ("--plantilla", "--template"),
+    ("--plantillas", "--templates"),
+    ("--revisar", "--review"),
+    ("--idioma", "--language"),
+    ("--escala", "--scale"),
+    ("--tema", "--theme"),
+    ("--pestana", "--tab"),
+    ("--alto-contraste", "--high-contrast"),
+    ("--sin-tutorial", "--no-tutorial"),
+    ("--probar", "--test"),
+    ("--profesional", "--pro"),
+    ("--comunidad-subir", "--community-upload"),
+    ("--comunidad-corazon", "--community-heart"),
+    ("--comunidad-seguir", "--community-follow"),
+    ("--comunidad-yo", "--community-me"),
+    ("--comunidad-revisar", "--community-review"),
+    ("--comunidad-reintentar", "--community-retry"),
+    ("--abrir-revision", "--open-review"),
+    ("--abrir-actualizacion", "--open-update"),
+    ("--abrir-perfil", "--open-profile"),
+    ("--abrir-temas", "--open-themes"),
+    ("--abrir-subida", "--open-upload"),
+    ("--demo-actualizacion", "--demo-update"),
+    ("--demo-comunidad", "--demo-community"),
+    ("--espera-capturas", "--screenshot-wait"),
+    ("--titulo", "--title"),
+    ("--etiquetas", "--labels"),
+    ("--descripcion", "--description"),
+    ("--icono", "--icon"),
+    ("--vista", "--preview"),
+];
+
+/// Replaces the old Spanish flags with their English names (the arguments after a flag are left alone).
+fn normalize_args(args: Vec<String>) -> Vec<String> {
+    args.into_iter()
+        .map(|a| match LEGACY_FLAGS.iter().find(|(old, _)| *old == a) {
+            Some((_, new)) => new.to_string(),
+            None => a,
+        })
+        .collect()
+}
+
 fn arg_after<'a>(args: &'a [String], flag: &str) -> Option<&'a String> {
     args.iter().position(|a| a == flag).and_then(|i| args.get(i + 1))
 }
 
-/// Design given on the command line: `--abrir <file>` or `--plantilla <n>`.
+/// Design given on the command line: `--open <file>` or `--template <n>`.
 fn doc_from_args(args: &[String]) -> Result<Option<model::Doc>, String> {
-    if let Some(file) = arg_after(args, "--abrir") {
-        library::set_carpeta_diseno(std::path::Path::new(file));
+    if let Some(file) = arg_after(args, "--open") {
+        library::set_design_folder(std::path::Path::new(file));
         let text = std::fs::read_to_string(file).map_err(|e| format!("{}: {}", file, e))?;
         let mut doc: model::Doc = serde_json::from_str(&text).map_err(|e| format!("{}: {}", file, e))?;
         doc.migrate_groups();
         return Ok(Some(doc));
     }
-    if let Some(t) = arg_after(args, "--plantilla").and_then(|v| v.parse::<usize>().ok()) {
+    if let Some(t) = arg_after(args, "--template").and_then(|v| v.parse::<usize>().ok()) {
         if t >= model::TEMPLATES.len() {
             return Err(format!("template {} does not exist (0-{})", t, model::TEMPLATES.len() - 1));
         }
@@ -119,44 +167,45 @@ fn doc_from_args(args: &[String]) -> Result<Option<model::Doc>, String> {
 }
 
 /// Windowless mode (automation, MCP, CI). Returns Some(exit code) if it was used.
-///   --plantillas                 lists the templates
-///   --revisar                    reviews the design (--abrir or --plantilla): legibility, contrast, touch size
-///   --guardar <file>             saves the design (--abrir or --plantilla) as a project and exits
-///   --exportar <Unity project>   exports the design to Unity and exits
-///   --comunidad-subir <type> <file> --titulo "…"  uploads content to the community with your saved session
+///   --templates                lists the templates
+///   --review                   reviews the design (--open or --template): legibility, contrast, touch size
+///   --save <file>              saves the design (--open or --template) as a project and exits
+///   --export <Unity project>   exports the design to Unity and exits
+/// (The old Spanish flags, like --abrir or --exportar, are rewritten to these by `normalize_args`.)
+///   --community-upload <type> <file> --title "…"  uploads content to the community with your saved session
 fn headless(args: &[String]) -> Option<i32> {
-    if args.iter().any(|a| a == "--plantillas") {
+    if args.iter().any(|a| a == "--templates") {
         for (i, t) in model::TEMPLATES.iter().enumerate() {
             println!("{}\t{}", i, t);
         }
         return Some(0);
     }
-    if let Some(i) = args.iter().position(|a| a == "--comunidad-subir") {
-        return Some(comunidad::subir_cli(&args[i + 1..]));
+    if let Some(i) = args.iter().position(|a| a == "--community-upload") {
+        return Some(community::upload_cli(&args[i + 1..]));
     }
-    for (flag, que) in [("--comunidad-corazon", "corazon"), ("--comunidad-seguir", "seguir")] {
+    for (flag, what) in [("--community-heart", "heart"), ("--community-follow", "follow")] {
         if let Some(i) = args.iter().position(|a| a == flag) {
-            return Some(comunidad::social_cli(que, args.get(i + 1).map(|s| s.as_str()).unwrap_or("")));
+            return Some(community::social_cli(what, args.get(i + 1).map(|s| s.as_str()).unwrap_or("")));
         }
     }
-    if args.iter().any(|a| a == "--comunidad-yo") {
-        return Some(comunidad::yo_cli());
+    if args.iter().any(|a| a == "--community-me") {
+        return Some(community::me_cli());
     }
-    if let Some(i) = args.iter().position(|a| a == "--comunidad-revisar") {
-        return Some(comunidad::revisar_cli(&args[i + 1..]));
+    if let Some(i) = args.iter().position(|a| a == "--community-review") {
+        return Some(community::review_cli(&args[i + 1..]));
     }
-    if args.iter().any(|a| a == "--comunidad-reintentar") {
-        return Some(comunidad::reintentar_cli());
+    if args.iter().any(|a| a == "--community-retry") {
+        return Some(community::retry_cli());
     }
-    if args.iter().any(|a| a == "--revisar") {
+    if args.iter().any(|a| a == "--review") {
         return Some(match doc_from_args(args) {
             Ok(Some(d)) => {
-                let (texto, errores) = revision::informe(&d);
-                println!("{}", texto);
-                if errores { 1 } else { 0 }
+                let (text, errors) = review::report(&d);
+                println!("{}", text);
+                if errors { 1 } else { 0 }
             }
             Ok(None) => {
-                eprintln!("Specify the design with --abrir <file> or --plantilla <n>");
+                eprintln!("Specify the design with --open <file> or --template <n>");
                 2
             }
             Err(e) => {
@@ -165,15 +214,15 @@ fn headless(args: &[String]) -> Option<i32> {
             }
         });
     }
-    let exportar = arg_after(args, "--exportar");
-    let guardar = arg_after(args, "--guardar");
-    if exportar.is_none() && guardar.is_none() {
+    let export = arg_after(args, "--export");
+    let save = arg_after(args, "--save");
+    if export.is_none() && save.is_none() {
         return None;
     }
     let doc = match doc_from_args(args) {
         Ok(Some(d)) => d,
         Ok(None) => {
-            eprintln!("Specify the design with --abrir <file> or --plantilla <n>");
+            eprintln!("Specify the design with --open <file> or --template <n>");
             return Some(2);
         }
         Err(e) => {
@@ -181,7 +230,7 @@ fn headless(args: &[String]) -> Option<i32> {
             return Some(1);
         }
     };
-    if let Some(file) = guardar {
+    if let Some(file) = save {
         let r = serde_json::to_string_pretty(&doc).map_err(|e| e.to_string()).and_then(|s| std::fs::write(file, s).map_err(|e| e.to_string()));
         match r {
             Ok(()) => println!("Saved: {}", file),
@@ -191,7 +240,7 @@ fn headless(args: &[String]) -> Option<i32> {
             }
         }
     }
-    if let Some(dest) = exportar {
+    if let Some(dest) = export {
         match export::write_unity_package(&doc, std::path::Path::new(dest)) {
             Ok(files) => files.iter().for_each(|f| println!("{}", f)),
             Err(e) => {
@@ -204,7 +253,7 @@ fn headless(args: &[String]) -> Option<i32> {
 }
 
 fn main() -> eframe::Result<()> {
-    let args: Vec<String> = std::env::args().collect();
+    let args = normalize_args(std::env::args().collect());
     if let Some(code) = headless(&args) {
         std::process::exit(code);
     }
@@ -218,7 +267,7 @@ fn main() -> eframe::Result<()> {
     if shot_path.is_none() {
         viewport = viewport.with_maximized(true);
     }
-    if let Ok(img) = image::load_from_memory(include_bytes!("../assets/marca/icono.png")) {
+    if let Ok(img) = image::load_from_memory(include_bytes!("../assets/brand/icon.png")) {
         let rgba = img.to_rgba8();
         let (width, height) = rgba.dimensions();
         viewport = viewport.with_icon(egui::IconData { rgba: rgba.into_raw(), width, height });
@@ -257,65 +306,65 @@ fn main() -> eframe::Result<()> {
         Box::new(move |cc| {
             setup_style(&cc.egui_ctx);
             let mut app = app::EditorApp::new(shot);
-            if let Some(p) = arg_after(&args, "--pestana") {
+            if let Some(p) = arg_after(&args, "--tab") {
                 app.tab = match p.as_str() {
-                    "plantillas" => app::Tab::Templates,
+                    "templates" | "plantillas" => app::Tab::Templates,
                     "elements" => app::Tab::Elements,
-                    "texto" => app::Tab::Text,
-                    "imagenes" => app::Tab::Images,
+                    "text" | "texto" => app::Tab::Text,
+                    "images" | "imagenes" => app::Tab::Images,
                     "plugins" => app::Tab::Plugins,
-                    "comunidad" => app::Tab::Comunidad,
+                    "community" | "comunidad" => app::Tab::Community,
                     _ => app::Tab::Layers,
                 };
             }
-            // --abrir-revision: opens the "Review design" window (screenshots).
-            app.revision_abierta = args.iter().any(|a| a == "--abrir-revision");
+            // --open-review: opens the "Review design" window (screenshots).
+            app.review_open = args.iter().any(|a| a == "--open-review");
             // Automatic screenshots do not save settings.
             if app.screenshot.is_some() {
-                app.settings.solo_lectura = true;
+                app.settings.read_only = true;
             }
             // Accessibility options for this session only (applied to a copy and not saved):
-            // --idioma en, --escala 1.5, --alto-contraste
-            app.actualizador_inicio();
-            // --demo-actualizacion [--abrir-actualizacion]: simulates a new version (screenshots); does not query GitHub.
-            if args.iter().any(|a| a == "--demo-actualizacion") {
-                app.actualizador.estado = actualizador::Estado::Disponible(actualizador::Novedad {
+            // --language en, --scale 1.5, --high-contrast
+            app.updater_start();
+            // --demo-update [--open-update]: simulates a new version (screenshots); does not query GitHub.
+            if args.iter().any(|a| a == "--demo-update") {
+                app.updater.state = updater::State::Available(updater::Release {
                     version: "1.2.0".into(),
-                    notas: "In-app updates: a button appears in the header when there is a new version.".into(),
+                    notes: "In-app updates: a button appears in the header when there is a new version.".into(),
                     url_zip: "demo".into(),
                     sha256: "demo".into(),
                 });
-                app.actualizador.abierta = args.iter().any(|a| a == "--abrir-actualizacion");
+                app.updater.open = args.iter().any(|a| a == "--open-update");
             }
-            let mut sesion = app.settings.clone();
-            if let Some(i) = arg_after(&args, "--idioma") {
-                sesion.idioma = i.clone();
+            let mut session = app.settings.clone();
+            if let Some(i) = arg_after(&args, "--language") {
+                session.language = i.clone();
             }
-            if let Some(e) = arg_after(&args, "--escala").and_then(|v| v.parse::<f32>().ok()) {
-                sesion.escala_ui = e;
+            if let Some(e) = arg_after(&args, "--scale").and_then(|v| v.parse::<f32>().ok()) {
+                session.ui_scale = e;
             }
-            if args.iter().any(|a| a == "--alto-contraste") {
-                sesion.alto_contraste = true;
+            if args.iter().any(|a| a == "--high-contrast") {
+                session.high_contrast = true;
             }
-            // --tema "Lienzo claro": an app theme for this session only (screenshots, tests)
-            if let Some(n) = arg_after(&args, "--tema") {
-                if let Some(t) = theme::predeterminados().into_iter().find(|t| t.nombre == *n) {
-                    app.settings.tema = Some(t.clone()); // in memory only: settings are not saved in this session
-                    sesion.tema = Some(t);
+            // --theme "Lienzo Light": an app theme for this session only (screenshots, tests)
+            if let Some(n) = arg_after(&args, "--theme") {
+                if let Some(t) = theme::find_default(n) {
+                    app.settings.theme = Some(t.clone()); // in memory only: settings are not saved in this session
+                    session.theme = Some(t);
                 }
             }
-            accesibilidad::aplicar(&cc.egui_ctx, &sesion);
+            accessibility::apply(&cc.egui_ctx, &session);
             // Documentation only (README screenshots): a FAKE, offline session, plus the real anonymous catalog.
-            //   --demo-comunidad [--abrir-perfil] [--abrir-temas] [--espera-capturas]
-            if args.iter().any(|a| a == "--demo-comunidad") {
-                app.comunidad_demo(&cc.egui_ctx, args.iter().any(|a| a == "--abrir-perfil"), args.iter().any(|a| a == "--abrir-subida"));
+            //   --demo-community [--open-profile] [--open-themes] [--screenshot-wait]
+            if args.iter().any(|a| a == "--demo-community") {
+                app.community_demo(&cc.egui_ctx, args.iter().any(|a| a == "--open-profile"), args.iter().any(|a| a == "--open-upload"));
             }
-            if args.iter().any(|a| a == "--abrir-temas") {
-                app.temas_abierto = true;
+            if args.iter().any(|a| a == "--open-themes") {
+                app.themes_open = true;
             }
-            app.captura_larga = args.iter().any(|a| a == "--espera-capturas");
-            // --probar 1080x2400 : start in test mode simulating that screen
-            if let Some(spec) = args.iter().position(|a| a == "--probar").and_then(|i| args.get(i + 1)) {
+            app.long_screenshot = args.iter().any(|a| a == "--screenshot-wait");
+            // --test 1080x2400 : start in test mode simulating that screen
+            if let Some(spec) = args.iter().position(|a| a == "--test").and_then(|i| args.get(i + 1)) {
                 app.set_preview(true);
                 let wh: Vec<f32> = spec.split('x').filter_map(|v| v.trim().parse().ok()).collect();
                 if wh.len() == 2 {
@@ -323,16 +372,16 @@ fn main() -> eframe::Result<()> {
                 }
             }
             // The tutorial opens by itself the first time (never in automatic screenshots, except --tutorial).
-            let forzar = args.iter().any(|a| a == "--tutorial");
-            let sin = args.iter().any(|a| a == "--sin-tutorial");
-            if forzar || (!sin && app.screenshot.is_none() && !app.settings.tutorial_visto) {
-                let pista = if args.iter().any(|a| a == "--profesional") { tutorial::Pista::Profesional } else { tutorial::Pista::Novato };
-                app.abrir_tutorial(pista);
+            let force = args.iter().any(|a| a == "--tutorial");
+            let skip = args.iter().any(|a| a == "--no-tutorial");
+            if force || (!skip && app.screenshot.is_none() && !app.settings.tutorial_seen) {
+                let track = if args.iter().any(|a| a == "--pro") { tutorial::Track::Pro } else { tutorial::Track::Beginner };
+                app.open_tutorial(track);
             }
-            if let Some(path) = arg_after(&args, "--abrir") {
+            if let Some(path) = arg_after(&args, "--open") {
                 app.project_path = path.clone();
                 app.open_project();
-            } else if let Some(t) = arg_after(&args, "--plantilla").and_then(|v| v.parse::<usize>().ok()) {
+            } else if let Some(t) = arg_after(&args, "--template").and_then(|v| v.parse::<usize>().ok()) {
                 if t < model_templates() {
                     app.load_template(t);
                 }
@@ -358,4 +407,38 @@ fn setup_style(ctx: &egui::Context) {
     render::load_system_fonts(ctx);
     ctx.options_mut(|o| o.zoom_with_keyboard = false);
     theme::apply(ctx, false);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn args(v: &[&str]) -> Vec<String> {
+        v.iter().map(|s| s.to_string()).collect()
+    }
+
+    #[test]
+    fn old_spanish_flags_are_rewritten_to_the_english_ones() {
+        let old = normalize_args(args(&["lienzo-ui", "--abrir", "a.editorgui.json", "--exportar", "Proyecto", "--guardar", "b.json", "--plantilla", "3", "--idioma", "en", "--escala", "1.5",
+            "--tema", "Lienzo claro", "--pestana", "plantillas", "--alto-contraste", "--sin-tutorial", "--probar", "1080x2400", "--profesional", "--comunidad-subir", "--titulo", "T",
+            "--espera-capturas", "--abrir-revision", "--demo-comunidad", "--comunidad-yo"]));
+        let new = args(&["lienzo-ui", "--open", "a.editorgui.json", "--export", "Proyecto", "--save", "b.json", "--template", "3", "--language", "en", "--scale", "1.5",
+            "--theme", "Lienzo claro", "--tab", "plantillas", "--high-contrast", "--no-tutorial", "--test", "1080x2400", "--pro", "--community-upload", "--title", "T",
+            "--screenshot-wait", "--open-review", "--demo-community", "--community-me"]);
+        assert_eq!(old, new, "values (including Spanish ones like the tab name or theme name) are left alone");
+        // English flags pass through untouched
+        assert_eq!(normalize_args(new.clone()), new);
+        // every old flag maps to a distinct English one
+        let mut seen = std::collections::HashSet::new();
+        assert!(LEGACY_FLAGS.iter().all(|(old, new)| old != new && old.starts_with("--") && new.starts_with("--") && seen.insert(*new)));
+    }
+
+    #[test]
+    fn headless_accepts_old_flags() {
+        // --plantillas (old) lists the templates and exits with 0, exactly like --templates
+        assert_eq!(headless(&normalize_args(args(&["lienzo-ui", "--plantillas"]))), Some(0));
+        assert_eq!(headless(&normalize_args(args(&["lienzo-ui", "--templates"]))), Some(0));
+        // --revisar --plantilla 0 (old) reviews the first template
+        assert_eq!(headless(&normalize_args(args(&["lienzo-ui", "--revisar", "--plantilla", "0"]))).map(|c| c < 2), Some(true));
+    }
 }

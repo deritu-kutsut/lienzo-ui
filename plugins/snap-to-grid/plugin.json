@@ -1,0 +1,9 @@
+{
+  "name": "Snap to grid",
+  "version": "1.0.0",
+  "author": "Lienzo UI",
+  "description": "Places every element on an 8 px grid (position and size).",
+  "commands": [
+    { "name": "Snap to 8 px", "description": "Rounds x, y, width and height of every element to multiples of 8.", "script": "snap.rhai" }
+  ]
+}

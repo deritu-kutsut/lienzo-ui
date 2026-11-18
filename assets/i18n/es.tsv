@@ -713,7 +713,7 @@ use a .ttf or .otf font file	usa un archivo de fuente .ttf o .otf
 invalid name	nombre no válido
 unnamed	sin nombre
 template {} does not exist (0-{})	la plantilla {} no existe (0-{})
-Specify the design with --abrir <file> or --plantilla <n>	Indica el diseño con --abrir <archivo> o --plantilla <n>
+Specify the design with --open <file> or --template <n>	Indica el diseño con --open <archivo> o --template <n>
 Could not load the design: {}	No se pudo cargar el diseño: {}
 Could not save {}: {}	No se pudo guardar {}: {}
 Lienzo UI · design interfaces for Unity	Lienzo UI · diseña interfaces para Unity
@@ -848,3 +848,5 @@ The theme author is too long.	El autor del tema es demasiado largo.
 Invalid color in “{}”: use #RRGGBB.	Color no válido en «{}»: usa #RRGGBB.
 Corners must be between 0 and 16.	Las esquinas deben estar entre 0 y 16.
 Invalid font name.	Nombre de fuente no válido.
+Align and order	Alinear y ordenar
+Align to parent and order	Alinear al padre y ordenar

@@ -1,0 +1,7 @@
+{
+  "name": "Extra templates",
+  "version": "1.0.0",
+  "author": "Lienzo UI",
+  "description": "Additional templates made with Lienzo UI.",
+  "templates": ["shop.editorgui.json"]
+}

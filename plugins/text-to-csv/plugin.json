@@ -1,0 +1,9 @@
+{
+  "name": "Text to CSV",
+  "version": "1.0.0",
+  "author": "Lienzo UI",
+  "description": "Exports every text of the design to a CSV so they can be translated or reviewed.",
+  "exporters": [
+    { "name": "Texts to translate", "extension": "csv", "script": "csv.rhai" }
+  ]
+}

@@ -2,7 +2,7 @@
 /shots/
 /dist/
 *.log
-/disenos/capturas/
+/disenos/screenshots/
 
 # Secretos de Supabase
 .env

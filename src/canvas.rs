@@ -95,7 +95,7 @@ fn paint_doc(painter: &egui::Painter, doc: &Doc, v: &View, page: Rect, hide_text
     }
 }
 
-/// Topmost element under a page point (Contenedores only when nothing else is there).
+/// Topmost element under a page point (Containers only when nothing else is there).
 fn hit_doc(doc: &Doc, p: [f32; 2], tol: f32, filter: impl Fn(&Element) -> bool) -> Option<u64> {
     let ok = |e: &Element| {
         doc.shown(e.id)
@@ -194,7 +194,7 @@ impl EditorApp {
                 render::paint_element(&painter, &ghost, &v, false);
             }
         }
-        // Contenedores (empty RectTransforms) as faint dashed boxes
+        // Containers (empty RectTransforms) as faint dashed boxes
         for e in self.doc.elements.iter().filter(|e| e.kind == Kind::Empty && self.doc.shown(e.id) && !self.sel.contains(&e.id)) {
             dashed_outline(&painter, e, &v, Stroke::new(1.0, Color32::from_rgba_unmultiplied(120, 170, 255, 90)));
         }
@@ -270,7 +270,7 @@ impl EditorApp {
             }
         }
 
-        // double click: edit text, or enter a Contenedor
+        // double click: edit text, or enter a Container
         let double_handled = double && over && self.drag.is_none();
         if double_handled {
             if let Some(m) = pointer {
@@ -353,7 +353,7 @@ impl EditorApp {
                             }
                         }
                     }
-                    // The second click of a double click must not return the selection to the Contenedor on release.
+                    // The second click of a double click must not return the selection to the Container on release.
                     if double_handled {
                         d.click_select = None;
                     }
@@ -940,7 +940,7 @@ impl EditorApp {
                 }
             }
         }
-        self.drag_label = Some(format!("An {:.0} × Al {:.0}", nw, nh));
+        self.drag_label = Some(format!("W {:.0} × H {:.0}", nw, nh));
     }
 
     fn drag_rotate(&mut self, d: &Drag, pg: [f32; 2], fine: bool) {

@@ -1,7 +1,0 @@
-{
-  "nombre": "Plantillas extra",
-  "version": "1.0.0",
-  "autor": "Lienzo UI",
-  "descripcion": "Plantillas adicionales creadas con Lienzo UI.",
-  "plantillas": ["tienda.editorgui.json"]
-}

@@ -57,7 +57,7 @@ pub fn class_name(s: &str) -> String {
         })
         .collect();
     if out.is_empty() {
-        out = "Diseno".into();
+        out = "Design".into();
     }
     if out.chars().next().map(|c| c.is_ascii_digit()).unwrap_or(false) {
         out = format!("Ui{}", out);
@@ -66,9 +66,9 @@ pub fn class_name(s: &str) -> String {
     let out: String = out.chars().take(64).collect();
     // CON, PRN, AUX, NUL, COM1… and LPT1… cannot be file names on Windows.
     let up = out.to_ascii_uppercase();
-    let reservado = ["CON", "PRN", "AUX", "NUL"].contains(&up.as_str())
+    let reserved = ["CON", "PRN", "AUX", "NUL"].contains(&up.as_str())
         || ((up.starts_with("COM") || up.starts_with("LPT")) && up.len() == 4 && up.as_bytes()[3].is_ascii_digit());
-    if reservado { format!("{}Ui", out) } else { out }
+    if reserved { format!("{}Ui", out) } else { out }
 }
 
 /// camelCase C# identifier.
@@ -78,7 +78,7 @@ pub fn ident(s: &str) -> String {
     let mut c = p.chars();
     match c.next() {
         Some(f) => f.to_ascii_lowercase().to_string() + c.as_str(),
-        None => "elemento".into(),
+        None => "element".into(),
     }
 }
 
@@ -242,7 +242,7 @@ pub fn find_unity_root(dir: &Path) -> Option<PathBuf> {
 
 /// Write everything into `<project>/Assets/EditorGUI`. Returns the written paths (relative to the project).
 pub fn write_unity_package(doc: &Doc, project: &Path) -> Result<Vec<String>, String> {
-    let root = find_unity_root(project).ok_or("esa carpeta no parece un proyecto de Unity (no tiene carpeta Assets)")?;
+    let root = find_unity_root(project).ok_or("that folder does not look like a Unity project (it has no Assets folder)")?;
     let base = root.join(UNITY_ROOT);
     let cls = class_name(&doc.title);
     // Images are read before writing anything: if one is missing, the Unity project is not left half-written.
@@ -331,7 +331,7 @@ mod tests {
 
 #[cfg(test)]
 mod dump {
-    /// `EDITORGUI_DUMP=<carpeta> cargo test dump_templates -- --ignored` writes the
+    /// `EDITORGUI_DUMP=<folder> cargo test dump_templates -- --ignored` writes the
     /// Unity package of every template (used to compile the generated C#).
     #[test]
     #[ignore]
@@ -347,11 +347,11 @@ mod dump {
 }
 
 #[cfg(test)]
-mod robustez_tests {
+mod robustness_tests {
     use super::*;
 
     #[test]
-    fn radio_con_tamanos_raros_no_entra_en_panico() {
+    fn radius_with_odd_sizes_does_not_panic() {
         let mut e = Element::new(1, crate::model::Kind::Panel);
         e.radius = 10.0;
         for (w, h) in [(-5.0, 10.0), (10.0, -5.0), (f32::NAN, 4.0), (0.0, 0.0), (f32::INFINITY, f32::INFINITY)] {
@@ -365,7 +365,7 @@ mod robustez_tests {
     }
 
     #[test]
-    fn nombre_de_clase_largo_se_acorta() {
+    fn long_kind_name_is_shortened() {
         assert!(class_name(&"x".repeat(500)).chars().count() <= 64);
         assert_eq!(class_name("Main menu"), "MainMenu");
     }

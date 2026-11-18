@@ -87,22 +87,22 @@ pub fn btn_tint<'a>(name: &str, text: impl Into<egui::WidgetText>, tint: Color32
 }
 
 /// Icon (no text) as a round button over an image, e.g. the cameras in the profile editor.
-pub fn redondo<'a>(name: &str, lado: f32, tint: Color32) -> egui::Button<'a> {
-    let b = match image(name, lado * 0.42, tint) {
+pub fn round<'a>(name: &str, side: f32, tint: Color32) -> egui::Button<'a> {
+    let b = match image(name, side * 0.42, tint) {
         Some(img) => egui::Button::image(img),
         None => egui::Button::new(""),
     };
-    b.fill(Color32::from_black_alpha(150)).corner_radius(lado / 2.0).min_size(Vec2::splat(lado))
+    b.fill(Color32::from_black_alpha(150)).corner_radius(side / 2.0).min_size(Vec2::splat(side))
 }
 
 /// Small icon followed by text (counters): image + text on the same line.
-pub fn con_texto(ui: &mut Ui, name: &str, texto: impl Into<egui::RichText>, tint: Color32) {
+pub fn with_text(ui: &mut Ui, name: &str, text: impl Into<egui::RichText>, tint: Color32) {
     ui.horizontal(|ui| {
         ui.spacing_mut().item_spacing.x = 3.0;
         if let Some(img) = image(name, 12.0, tint) {
             ui.add(img);
         }
-        ui.label(texto.into());
+        ui.label(text.into());
     });
 }
 
@@ -116,7 +116,7 @@ pub fn tab_name(t: crate::app::Tab) -> &'static str {
         Text => "tab_text",
         Images => "tab_images",
         Plugins => "tab_plugins",
-        Comunidad => "tab_comunidad",
+        Community => "tab_community",
     }
 }
 
@@ -145,7 +145,7 @@ mod tests {
         for (name, bytes) in super::set().iter() {
             let s = std::str::from_utf8(bytes).unwrap();
             assert!(s.trim_start().starts_with("<svg") && s.contains("viewBox"), "{}", name);
-            assert!(usvg_ok(bytes), "{} no se puede leer", name);
+            assert!(usvg_ok(bytes), "{} cannot be read", name);
         }
     }
 
