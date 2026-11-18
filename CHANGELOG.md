@@ -2,7 +2,9 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); versiones con [SemVer](https://semver.org/lang/es/).
 
-## [Sin publicar]
+## [1.3.3] - 2026-11-18
+
+Corrección de bugs: lienzo, modo prueba, plugins y archivos dañados.
 
 ### Corregido
 - Modo prueba: `mover`, `posicion` y `girar` mueven también los hijos del elemento; `valor` en un desplegable elige la opción (antes se limitaba a 0–1); `leer_texto` y `leer_valor` avisan si el elemento no existe; números infinitos ya no dejan coordenadas rotas.
