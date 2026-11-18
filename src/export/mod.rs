@@ -44,7 +44,7 @@ fn words(s: &str) -> Vec<String> {
     ascii_fold(s).split(|c: char| !c.is_ascii_alphanumeric()).filter(|w| !w.is_empty()).map(|w| w.to_string()).collect()
 }
 
-/// PascalCase C# identifier ("Menú principal" → "MenuPrincipal").
+/// PascalCase C# identifier ("Main menu" → "MainMenu").
 pub fn class_name(s: &str) -> String {
     let mut out: String = words(s)
         .iter()
@@ -218,7 +218,7 @@ pub fn image_asset_path(image: &str) -> String {
 pub fn used_fonts(doc: &Doc) -> Vec<String> {
     let mut v: Vec<String> = Vec::new();
     for e in &doc.elements {
-        if !e.font.is_empty() && e.font != "Monoespaciada" && !v.contains(&e.font) {
+        if !e.font.is_empty() && e.font != "Monospace" && !v.contains(&e.font) {
             v.push(e.font.clone());
         }
     }
@@ -251,7 +251,7 @@ pub fn write_unity_package(doc: &Doc, project: &Path) -> Result<Vec<String>, Str
     for e in &doc.elements {
         if !e.image.is_empty() && done.insert(e.image.clone()) {
             let src = crate::library::resolve_image(&e.image);
-            let b = std::fs::read(&src).map_err(|err| format!("no se pudo leer la imagen {}: {}", src.display(), err))?;
+            let b = std::fs::read(&src).map_err(|err| format!("could not read the image {}: {}", src.display(), err))?;
             pictures.push((image_asset_path(&e.image), b));
         }
     }
@@ -299,9 +299,9 @@ mod tests {
 
     #[test]
     fn identifiers() {
-        assert_eq!(class_name("Menú principal"), "MenuPrincipal");
+        assert_eq!(class_name("Main menu"), "MainMenu");
         assert_eq!(class_name("3 vidas"), "Ui3Vidas");
-        assert_eq!(ident("Botón Jugar"), "botonJugar");
+        assert_eq!(ident("Play button"), "playButton");
         assert_eq!(cs_str("a\"b\nc"), "\"a\\\"b\\nc\"");
     }
 
@@ -309,8 +309,8 @@ mod tests {
     fn names_and_paths() {
         let d = model::template(3, 1920.0, 1080.0);
         let names = unity_names(&d);
-        let slider = d.elements.iter().find(|e| e.name == "Slider Brillo").unwrap();
-        assert_eq!(unity_path(&d, &names, slider.id), "Tarjeta/Opciones/Viewport/Content/Slider Brillo");
+        let slider = d.elements.iter().find(|e| e.name == "Slider Brightness").unwrap();
+        assert_eq!(unity_path(&d, &names, slider.id), "Card/Options/Viewport/Content/Slider Brightness");
     }
 
     #[test]
@@ -320,11 +320,11 @@ mod tests {
         std::fs::create_dir_all(dir.join("ProjectSettings")).unwrap();
         let d = model::template(0, 1920.0, 1080.0);
         let files = write_unity_package(&d, &dir.join("Assets")).unwrap();
-        assert!(files.iter().any(|f| f.ends_with("Designs/MenuPrincipal.json")));
-        assert!(files.iter().any(|f| f.ends_with("Scripts/MenuPrincipalView.cs")));
+        assert!(files.iter().any(|f| f.ends_with("Designs/MainMenu.json")));
+        assert!(files.iter().any(|f| f.ends_with("Scripts/MainMenuView.cs")));
         // the user's View script is never overwritten
         let again = write_unity_package(&d, &dir).unwrap();
-        assert!(!again.iter().any(|f| f.ends_with("Scripts/MenuPrincipalView.cs")));
+        assert!(!again.iter().any(|f| f.ends_with("Scripts/MainMenuView.cs")));
         let _ = std::fs::remove_dir_all(&dir);
     }
 }
@@ -367,6 +367,6 @@ mod robustez_tests {
     #[test]
     fn nombre_de_clase_largo_se_acorta() {
         assert!(class_name(&"x".repeat(500)).chars().count() <= 64);
-        assert_eq!(class_name("Menú principal"), "MenuPrincipal");
+        assert_eq!(class_name("Main menu"), "MainMenu");
     }
 }

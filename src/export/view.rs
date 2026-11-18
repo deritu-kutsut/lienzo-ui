@@ -80,7 +80,7 @@ pub fn base_script(doc: &Doc) -> String {
         let _ = writeln!(off, "        if ({f}) {f}.{ev}.RemoveListener(On{m});", f = it.field, ev = ev, m = it.method);
         let mut body = String::new();
         if !it.code.trim().is_empty() {
-            body.push_str("        // Código «al hacer clic» del editor (tradúcelo a C#):\n");
+            body.push_str("        // Editor “on click” code (translate it to C#):\n");
             for l in it.code.lines() {
                 let _ = writeln!(body, "        // {}", l);
             }
@@ -138,7 +138,7 @@ pub fn user_script(doc: &Doc) -> String {
     let example = its
         .iter()
         .find(|i| i.kind == Kind::Button)
-        .map(|i| format!("    protected override void On{}()\n    {{\n        Debug.Log(\"Clic en {}\");\n    }}\n", i.method, i.name.replace('"', "'")))
+        .map(|i| format!("    protected override void On{}()\n    {{\n        Debug.Log(\"Click on {}\");\n    }}\n", i.method, i.name.replace('"', "'")))
         .unwrap_or_default();
     format!(
         r#"// Tu lógica para «{title}». Lienzo UI crea este archivo una sola vez y no lo vuelve a tocar.

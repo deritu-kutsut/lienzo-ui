@@ -1,593 +1,586 @@
-# Перевод интерфейса Lienzo UI на русский язык.
-# Формат: текст на испанском<TAB>перевод. Строки с # — комментарии.
-+ Añadir fuente…	+ Добавить шрифт…
-Abre el tutorial para novatos y profesionales (F1)	Открывает урок для новичков и профессионалов (F1)
-Abrir carpeta	Открыть папку
-Abrir proyecto…	Открыть проект…
-Accesibilidad	Доступность
-Activo / inactivo (SetActive en Unity)	Активен / неактивен (SetActive в Unity)
-Agregar un cuadro de texto	Добавить текстовое поле
-Agrupar	Сгруппировать
-Agrupar en Contenedor	Сгруппировать в контейнер
-Agrupar en Contenedor (Ctrl+G)	Сгруппировать в контейнер (Ctrl+G)
-Ajustar	Привязать
-Ajustar a la cuadrícula	Привязать к сетке
-Ajustar a la ventana	Вписать в окно
-Al hacer clic (código de prueba)	По нажатию (тестовый код)
-Alineación	Выравнивание
-Alt: + posición	Alt: + позиция
-Alto contraste	Высокий контраст
+# Russian translation of the Lienzo UI interface.
+# Format: English text<TAB>Russian translation. Lines starting with # are comments.
++ Add font…	+ Добавить шрифт…
+Open the beginner and pro tutorial (F1)	Открывает урок для новичков и профессионалов (F1)
+Open folder	Открыть папку
+Open project…	Открыть проект…
+Accessibility	Доступность
+Active / inactive (SetActive in Unity)	Активен / неактивен (SetActive в Unity)
+Add a text box	Добавить текстовое поле
+Group	Сгруппировать
+Group into Container	Сгруппировать в контейнер
+Group into Container (Ctrl+G)	Сгруппировать в контейнер (Ctrl+G)
+Snap	Привязать
+Snap to grid	Привязать к сетке
+Fit to window	Вписать в окно
+On click (test code)	По нажатию (тестовый код)
+Alignment	Выравнивание
+Alt: + position	Alt: + позиция
+High contrast	Высокий контраст
 Anchor Max	Anchor Max
 Anchor Min	Anchor Min
-Anterior	Назад
-Aparecerá en Plantillas › Mis plantillas para empezar nuevos diseños.	Появится в «Шаблоны › Мои шаблоны», чтобы начинать новые макеты.
-Archivo	Файл
-Archivos .json guardados con este editor	Файлы .json, сохранённые в этом редакторе
-Atajos	Горячие клавиши
-Atajos: Ctrl+Alt+= y Ctrl+Alt+- cambian el tamaño de la interfaz; F1 abre el tutorial.	Клавиши: Ctrl+Alt+= и Ctrl+Alt+- меняют размер интерфейса; F1 открывает урок.
-Añaden comandos, exportadores y plantillas. Guía: docs/PLUGINS.md	Добавляют команды, экспортёры и шаблоны. Руководство: docs/PLUGINS.md
-Añadir Contenedor hijo	Добавить дочерний контейнер
-Añadir fuentes…	Добавить шрифты…
-Aún no elegiste un proyecto. «Exportar a Unity» te pedirá la carpeta (la que contiene Assets).	Проект ещё не выбран. «Экспорт в Unity» спросит папку (ту, что содержит Assets).
-Aún no tienes plantillas propias. Guarda tu diseño como plantilla o sube una.	У вас пока нет своих шаблонов. Сохраните макет как шаблон или загрузите свой.
+Previous	Назад
+It will appear in Templates › My templates to start new designs.	Появится в «Шаблоны › Мои шаблоны», чтобы начинать новые макеты.
+File	Файл
+.json files saved with this editor	Файлы .json, сохранённые в этом редакторе
+Shortcuts	Горячие клавиши
+Shortcuts: Ctrl+Alt+= and Ctrl+Alt+- change the interface size; F1 opens the tutorial.	Клавиши: Ctrl+Alt+= и Ctrl+Alt+- меняют размер интерфейса; F1 открывает урок.
+They add commands, exporters and templates. Guide: docs/PLUGINS.md	Добавляют команды, экспортёры и шаблоны. Руководство: docs/PLUGINS.md
+Add child Container	Добавить дочерний контейнер
+Add fonts…	Добавить шрифты…
+No project selected yet. “Export to Unity” will ask for the folder (the one containing Assets).	Проект ещё не выбран. «Экспорт в Unity» спросит папку (ту, что содержит Assets).
+You don't have any templates yet. Save your design as a template or upload one.	У вас пока нет своих шаблонов. Сохраните макет как шаблон или загрузите свой.
 B	B
-Bloquear / desbloquear	Заблокировать / разблокировать
-Bloquear en el editor	Блокировать в редакторе
-Borde	Граница
-Buscar…	Поиск…
-Cambiar proyecto…	Сменить проект…
+Lock / unlock	Заблокировать / разблокировать
+Lock in editor	Блокировать в редакторе
+Border	Граница
+Search…	Поиск…
+Change project…	Сменить проект…
 Canvas · Canvas Scaler	Canvas · Canvas Scaler
-Celda (alto)	Ячейка (высота)
-Celda (ancho)	Ячейка (ширина)
+Cell (height)	Ячейка (высота)
+Cell (width)	Ячейка (ширина)
 Child Alignment	Child Alignment
-Clic agrega al centro (o dentro del panel/contenedor seleccionado). Arrastra para soltar donde quieras: si sueltas sobre un panel queda como hijo.	Щелчок добавляет в центр (или внутрь выбранной панели/контейнера). Перетащите, чтобы вставить в нужное место: если отпустить над панелью, элемент станет дочерним.
-Clic para reemplazar el diseño (Ctrl+Z deshace). Todas usan jerarquía, anclas y Layout Groups.	Щёлкните, чтобы заменить макет (Ctrl+Z отменяет). Все они используют иерархию, якоря и Layout Groups.
-Clic selecciona · Ctrl+clic entra en grupos · doble clic edita texto · Espacio+arrastrar mueve la vista	Щелчок выделяет · Ctrl+щелчок входит в группы · двойной щелчок правит текст · Пробел+перетаскивание сдвигает вид
-Clic: anclas	Щелчок: якоря
+Click adds to the center (or inside the selected panel/container). Drag to drop wherever you want: if you drop it on a panel, it becomes a child.	Щелчок добавляет в центр (или внутрь выбранной панели/контейнера). Перетащите, чтобы вставить в нужное место: если отпустить над панелью, элемент станет дочерним.
+Click to replace the design (Ctrl+Z undoes). All use hierarchy, anchors and Layout Groups.	Щёлкните, чтобы заменить макет (Ctrl+Z отменяет). Все они используют иерархию, якоря и Layout Groups.
+Click selects · Ctrl+click enters groups · double-click edits text · Space+drag pans the view	Щелчок выделяет · Ctrl+щелчок входит в группы · двойной щелчок правит текст · Пробел+перетаскивание сдвигает вид
+Click: anchors	Щелчок: якоря
 Color	Цвет
 Color (Image.color)	Цвет (Image.color)
-Color de la casilla	Цвет флажка
-Color del texto	Цвет текста
-Columnas	Столбцы
-Como plantilla	Как шаблон
-Como proyecto	Как проект
-Control + Expand alto	Control + Expand по высоте
-Control + Expand ancho	Control + Expand по ширине
-Copiar	Копировать
+Checkbox color	Цвет флажка
+Text color	Цвет текста
+Columns	Столбцы
+As template	Как шаблон
+As project	Как проект
+Control + Expand height	Control + Expand по высоте
+Control + Expand width	Control + Expand по ширине
+Copy	Копировать
 Ctrl+0	Ctrl+0
 Ctrl+]	Ctrl+]
-Cursiva	Курсив
-Degradado hasta	Градиент до
-Desactívalo para barras de vida o progreso	Отключите для полос здоровья или прогресса
-Desagrupar	Разгруппировать
-Deshacer	Отменить
-Desplazamiento vertical. Los hijos van al Content (Viewport/Content); su alto crece para que todos quepan.	Вертикальная прокрутка. Дочерние элементы идут в Content (Viewport/Content); его высота растёт, чтобы все поместились.
-Distancia	Расстояние
-Duplicar	Дублировать
-Editar	Изменить
-El diseño está vacío.	Макет пуст.
-Elementos	Элементы
-Eliminar	Удалить
-En Unity se crean con TextMeshPro (TextMeshProUGUI).	В Unity создаются через TextMeshPro (TextMeshProUGUI).
-En uGUI se exportan como un Sprite de degradado generado.	В uGUI экспортируются как сгенерированный Sprite градиента.
-Error del plugin:	Ошибка плагина:
-Esquinas	Углы
-Estilo	Стиль
-Exportar a Unity	Экспорт в Unity
-Exportar al proyecto de Unity	Экспорт в проект Unity
-Exportar todo al proyecto	Экспорт всего в проект
-Exportar… (código y opciones)	Экспорт… (код и параметры)
+Italic	Курсив
+Gradient to	Градиент до
+Turn it off for health or progress bars	Отключите для полос здоровья или прогресса
+Ungroup	Разгруппировать
+Undo	Отменить
+Vertical scrolling. Children go into Content (Viewport/Content); its height grows so they all fit.	Вертикальная прокрутка. Дочерние элементы идут в Content (Viewport/Content); его высота растёт, чтобы все поместились.
+Distance	Расстояние
+Duplicate	Дублировать
+Edit	Изменить
+The design is empty.	Макет пуст.
+Elements	Элементы
+Delete	Удалить
+In Unity they are created with TextMeshPro (TextMeshProUGUI).	В Unity создаются через TextMeshPro (TextMeshProUGUI).
+In uGUI they are exported as a generated gradient Sprite.	В uGUI экспортируются как сгенерированный Sprite градиента.
+Plugin error:	Ошибка плагина:
+Corners	Углы
+Style	Стиль
+Export to Unity	Экспорт в Unity
+Export to Unity project	Экспорт в проект Unity
+Export everything to project	Экспорт всего в проект
+Export… (code and options)	Экспорт… (код и параметры)
 F5	F5
-Filas	Строки
-Fondo	Фон
-Fuente	Шрифт
-Fuente (se exporta como TMP Font Asset)	Шрифт (экспортируется как TMP Font Asset)
-Funciones disponibles	Доступные функции
-Guarda lo seleccionado (con sus hijos) para reutilizarlo	Сохраняет выделение (с дочерними элементами) для повторного использования
-Guardar	Сохранить
-Guardar como plantilla…	Сохранить как шаблон…
-Guardar como proyecto o como plantilla	Сохранить как проект или как шаблон
-Guardar como…	Сохранить как…
-Guardar proyecto como…	Сохранить проект как…
-Guardar selección	Сохранить выделение
+Rows	Строки
+Background	Фон
+Font	Шрифт
+Font (exported as TMP Font Asset)	Шрифт (экспортируется как TMP Font Asset)
+Available functions	Доступные функции
+Saves the selection (with its children) for reuse	Сохраняет выделение (с дочерними элементами) для повторного использования
+Save	Сохранить
+Save as template…	Сохранить как шаблон…
+Save as project or as template	Сохранить как проект или как шаблон
+Save as…	Сохранить как…
+Save project as…	Сохранить проект как…
+Save selection	Сохранить выделение
 I	I
-Idioma	Язык
-Idioma, tamaño de la interfaz, alto contraste y movimiento reducido	Язык, размер интерфейса, высокий контраст и уменьшенное движение
-Igual que en Unity: lo de abajo se dibuja encima. Arrastra filas para reordenar o meter un elemento dentro de otro.	Как в Unity: нижние элементы рисуются сверху. Перетаскивайте строки, чтобы менять порядок или вкладывать один элемент в другой.
-Image	Image
-Imágenes	Изображения
-Imágenes PNG/JPG (íconos con transparencia) o elementos .json	Изображения PNG/JPG (иконки с прозрачностью) или элементы .json
-Imágenes con filtro de vecino más cercano, posiciones y tamaños en píxeles enteros. En Unity: Canvas Pixel Perfect y sprites con filtro Point sin compresión.	Изображения с фильтром ближайшего соседа, позиции и размеры в целых пикселях. В Unity: Canvas Pixel Perfect и спрайты с фильтром Point без сжатия.
+Language	Язык
+Language, interface size, high contrast and reduced motion	Язык, размер интерфейса, высокий контраст и уменьшенное движение
+As in Unity: items below are drawn on top. Drag rows to reorder or to nest an element inside another.	Как в Unity: нижние элементы рисуются сверху. Перетаскивайте строки, чтобы менять порядок или вкладывать один элемент в другой.
+Image	Изображение
+Images	Изображения
+PNG/JPG images (icons with transparency) or .json elements	Изображения PNG/JPG (иконки с прозрачностью) или элементы .json
+Images with nearest-neighbor filtering, positions and sizes in whole pixels. In Unity: Canvas Pixel Perfect and sprites with Point filter and no compression.	Изображения с фильтром ближайшего соседа, позиции и размеры в целых пикселях. В Unity: Canvas Pixel Perfect и спрайты с фильтром Point без сжатия.
 Inspector	Инспектор
 Interactable	Interactable
 Is On	Is On
-Jerarquía	Иерархия
-Las imágenes que subas aparecerán aquí y se guardan para tus próximos diseños.	Загруженные изображения появятся здесь и сохранятся для следующих макетов.
+Hierarchy	Иерархия
+The images you upload will appear here and are saved for your next designs.	Загруженные изображения появятся здесь и сохранятся для следующих макетов.
 Layout Group	Layout Group
-Lienzo	Canvas
+Canvas	Canvas
 Lienzo UI	Lienzo UI
-Limpiar consola	Очистить консоль
-Los cambios que hace el código se descartan al salir.	Изменения, сделанные кодом, отбрасываются при выходе.
+Clear console	Очистить консоль
+Changes made by the code are discarded when you exit.	Изменения, сделанные кодом, отбрасываются при выходе.
 Match	Match
-Medidas en el lienzo (px)	Размер холста (px)
-Modo prueba	Режим проверки
-Modo prueba: clic ejecuta el código y puedes simular otras pantallas (F5)	Режим проверки: щелчок запускает код, можно имитировать другие экраны (F5)
-Monoespaciada	Моноширинный
-Mostrar cuadrícula	Показать сетку
-Máscara y efectos	Маска и эффекты
-Negrita	Полужирный
-No hay plugins instalados. Copia una carpeta con plugin.json en la carpeta de plugins y pulsa Recargar.	Плагины не установлены. Скопируйте папку с plugin.json в папку плагинов и нажмите «Обновить».
-Nombre	Имя
-Nuevo diseño en blanco	Новый пустой макет
-Opacidad	Непрозрачность
-Organiza automáticamente a los hijos directos, como en Unity.	Автоматически упорядочивает прямых дочерних элементов, как в Unity.
-PASO	ШАГ
-PNG, JPG, BMP, GIF o WEBP — se exportan como Sprites	PNG, JPG, BMP, GIF или WEBP — экспортируются как Sprites
-Para añadir un idioma, traduce assets/i18n/en.tsv (ver docs/EXTENDER.md).	Чтобы добавить язык, переведите assets/i18n/en.tsv (см. docs/EXTENDER.md).
-Pegar	Вставить
-Pista	Подсказка
+Canvas size (px)	Размер холста (px)
+Test mode	Режим проверки
+Test mode: click runs the code and you can simulate other screens (F5)	Режим проверки: щелчок запускает код, можно имитировать другие экраны (F5)
+Monospace	Моноширинный
+Show grid	Показать сетку
+Mask and effects	Маска и эффекты
+Bold	Полужирный
+No plugins installed. Copy a folder with plugin.json into the plugins folder and press Reload.	Плагины не установлены. Скопируйте папку с plugin.json в папку плагинов и нажмите «Обновить».
+Name	Имя
+New blank design	Новый пустой макет
+Opacity	Непрозрачность
+Automatically arranges direct children, as in Unity.	Автоматически упорядочивает прямых дочерних элементов, как в Unity.
+STEP	ШАГ
+PNG, JPG, BMP, GIF or WEBP — exported as Sprites	PNG, JPG, BMP, GIF или WEBP — экспортируются как Sprites
+To add a language, translate assets/i18n/en.tsv (see docs/EXTENDER.md).	Чтобы добавить язык, переведите assets/i18n/en.tsv (см. docs/EXTENDER.md).
+Paste	Вставить
+Hint	Подсказка
 Pivot	Pivot
 Pixel art	Pixel art
-Plantilla del plugin aplicada (Ctrl+Z para deshacer):	Шаблон плагина применён (Ctrl+Z для отмены):
-Plantillas	Шаблоны
-Plugin ejecutado:	Плагин выполнен:
+Plugin template applied (Ctrl+Z to undo):	Шаблон плагина применён (Ctrl+Z для отмены):
+Templates	Шаблоны
+Plugin executed:	Плагин выполнен:
 Plugins	Плагины
-Plugins cargados	Загруженные плагины
-Probar diseño	Проверить макет
-Proyecto de Unity	Проект Unity
-Proyecto:	Проект:
-Quitar	Убрать
-Radio de esquinas	Радиус углов
+Loaded plugins	Загруженные плагины
+Test design	Проверить макет
+Unity project	Проект Unity
+Project:	Проект:
+Remove	Убрать
+Corner radius	Радиус углов
 Raycast Target	Raycast Target
-Recargar	Обновить
-Rect Mask 2D (recorta a los hijos)	Rect Mask 2D (обрезает дочерние элементы)
+Reload	Обновить
+Rect Mask 2D (clips children)	Rect Mask 2D (обрезает дочерние элементы)
 Rect Transform	Rect Transform
-RectTransform vacío (dentro de la selección si es un panel)	Пустой RectTransform (внутри выделения, если это панель)
-Reducir movimiento	Уменьшить движение
-Referencia X	Опорная точка X
-Referencia Y	Опорная точка Y
-Reglas	Линейки
-Rehacer	Повторить
-Relleno	Отступы
-Renombrar	Переименовать
-Resolución de referencia (CanvasScaler)	Опорное разрешение (CanvasScaler)
+Empty RectTransform (inside the selection if it is a panel)	Пустой RectTransform (внутри выделения, если это панель)
+Reduce motion	Уменьшить движение
+Reference X	Опорная точка X
+Reference Y	Опорная точка Y
+Rules	Линейки
+Redo	Повторить
+Padding	Отступы
+Rename	Переименовать
+Reference resolution (CanvasScaler)	Опорное разрешение (CanvasScaler)
 Rotation Z	Rotation Z
-Ruta dentro del Canvas en Unity	Путь внутри Canvas в Unity
-Sacar del padre	Вынести из родителя
-Saltar e ir al editor	Пропустить и перейти в редактор
+Path inside the Canvas in Unity	Путь внутри Canvas в Unity
+Unparent	Вынести из родителя
+Skip and go to editor	Пропустить и перейти в редактор
 Scroll Rect	Scroll Rect
-Se ejecuta en Probar. Al exportar queda como comentario en el método OnClick del script View.	Выполняется в «Проверить». При экспорте остаётся комментарием в методе OnClick скрипта View.
-Se exporta como Sprite 9-slice generado	Экспортируется как сгенерированный Sprite 9-slice
-Seleccionar todo	Выделить всё
+Runs in Test. When exported, it becomes a comment in the OnClick method of the View script.	Выполняется в «Проверить». При экспорте остаётся комментарием в методе OnClick скрипта View.
+Exported as a generated 9-slice Sprite	Экспортируется как сгенерированный Sprite 9-slice
+Select all	Выделить всё
 Selectable	Selectable
 Shadow	Shadow
-Shift: + pivote	Shift: + пивот
-Sin animaciones en la interfaz	Без анимаций в интерфейсе
-Sin suavizado, píxeles enteros	Без сглаживания, целые пиксели
+Shift: + pivot	Shift: + пивот
+No animations in the interface	Без анимаций в интерфейсе
+No smoothing, whole pixels	Без сглаживания, целые пиксели
 Slider	Slider
 Sprite	Sprite
-Sube imágenes o guarda una selección para tenerla aquí.	Загрузите изображения или сохраните выделение, чтобы они появились здесь.
-Subir elementos…	Загрузить элементы…
-Subir imágenes	Загрузить изображения
-Subir imágenes…	Загрузить изображения…
-Subir plantillas…	Загрузить шаблоны…
-Subrayado	Подчёркнутый
-Tamaño	Размер
-Tamaño de la interfaz	Размер интерфейса
-Tamaño de la interfaz:	Размер интерфейса:
-Tamaño de letra	Размер шрифта
-Texto	Текст
-Texto blanco y bordes marcados	Белый текст и чёткие границы
-Texto de ejemplo (Placeholder)	Текст-подсказка (Placeholder)
+Upload images or save a selection to have it here.	Загрузите изображения или сохраните выделение, чтобы они появились здесь.
+Upload elements…	Загрузить элементы…
+Upload images	Загрузить изображения
+Upload images…	Загрузить изображения…
+Upload templates…	Загрузить шаблоны…
+Underline	Подчёркнутый
+Size	Размер
+Interface size	Размер интерфейса
+Interface size:	Размер интерфейса:
+Font size	Размер шрифта
+Text	Текст
+White text and strong borders	Белый текст и чёткие границы
+Placeholder text	Текст-подсказка (Placeholder)
 Toggle	Toggle
 Tutorial	Обучение
-Tutorial para novatos	Обучение для новичков
-Tutorial para profesionales	Обучение для профессионалов
+Beginner tutorial	Обучение для новичков
+Pro tutorial	Обучение для профессионалов
 U	U
 UI Scale Mode: Scale With Screen Size	UI Scale Mode: Scale With Screen Size
-Un archivo que puedes volver a abrir y seguir editando.	Файл, который можно снова открыть и продолжить редактировать.
-Un lugar antes entre hermanos (Ctrl+[)	На одну позицию раньше среди соседей (Ctrl+[)
-Una opción por línea	По одному варианту в строке
-Usar plantilla	Использовать шаблон
-Ver	Вид
-Ver y copiar JSON, UXML/USS, IMGUI y scripts (Ctrl+Shift+E)	Смотреть и копировать JSON, UXML/USS, IMGUI и скрипты (Ctrl+Shift+E)
-para Unity	для Unity
-por	на
+A file you can reopen and keep editing.	Файл, который можно снова открыть и продолжить редактировать.
+One place earlier among siblings (Ctrl+[)	На одну позицию раньше среди соседей (Ctrl+[)
+One option per line	По одному варианту в строке
+Use template	Использовать шаблон
+View	Вид
+View and copy JSON, UXML/USS, IMGUI and scripts (Ctrl+Shift+E)	Смотреть и копировать JSON, UXML/USS, IMGUI и скрипты (Ctrl+Shift+E)
+for Unity	для Unity
+by	на
 −	−
-Ancho / Alto	Ширина / Высота
-Contenedor	Контейнер
-Código…	Код…
-Ejecutar ahora	Запустить сейчас
-Elegir proyecto…	Выбрать проект…
-Eliminar de mi biblioteca	Убрать из моей библиотеки
-Guardar archivo…	Сохранить файл…
-Guardar como plantilla	Сохранить как шаблон
-Guardar diseño actual	Сохранить текущий макет
-Guardar proyecto	Сохранить проект
-Proyecto abierto:	Проект открыт:
-Resoluciones comunes…	Частые разрешения…
-Sacar	Вынести
-Subir elemento	Загрузить элемент
-Subir plantilla	Загрузить шаблон
+Width / Height	Ширина / Высота
+Container	Контейнер
+Code…	Код…
+Run now	Запустить сейчас
+Choose project…	Выбрать проект…
+Remove from my library	Убрать из моей библиотеки
+Save file…	Сохранить файл…
+Save as template	Сохранить как шаблон
+Save current design	Сохранить текущий макет
+Save project	Сохранить проект
+Project opened:	Проект открыт:
+Common resolutions…	Частые разрешения…
+Take out	Вынести
+Upload element	Загрузить элемент
+Upload template	Загрузить шаблон
 Value	Value
-Ver código…	Смотреть код…
-Volver a editar	Вернуться к редактированию
-elementos	элементов
-elementos seleccionados	элементов выделено
-seleccionados	выделено
-NOVATOS	НОВИЧКАМ
-PROFESIONALES	ПРОФЕССИОНАЛАМ
-Siguiente	Далее
-Abrir el editor	Открыть редактор
-Detener	Остановить
-Probar	Тест
-Acepto las reglas: nada de malware, odio, plagio ni contenido +18 sin marcar	Принимаю правила: без вредоносных программ, ненависти, плагиата и необозначенного контента 18+
-Actualizar	Обновить
-Borrar mi cuenta	Удалить мою учётную запись
-Buscar en la comunidad…	Поиск в сообществе…
-Cancelar	Отмена
-Cargando tu perfil…	Загрузка профиля…
-Cargando…	Загрузка…
-Cerrar sesión	Выйти
-Compartir con la comunidad	Поделиться с сообществом
-Comunidad	Сообщество
-Confirmo que tengo 18 años o más	Подтверждаю, что мне 18 лет или больше
-Contenido +18 sin marcar	Необозначенный контент 18+
-Contiene contenido +18	Содержит контент 18+
-Crear perfil	Создать профиль
-Derechos de autor	Авторские права
-Descargando y verificando…	Загрузка и проверка…
-Descripción (máx. 1000)	Описание (макс. 1000)
-Elegir archivo…	Выбрать файл…
-Elegir carpeta del plugin…	Выбрать папку плагина…
-Elemento instalado:	Элемент установлен:
-Elige tu nombre público	Выберите публичное имя
-Entrar con	Войти через
-Enviando…	Отправка…
-Enviar a revisión	Отправить на проверку
-Es lo único que verá la comunidad. 3-32 caracteres: letras, números, punto, guion y guion bajo.	Это единственное, что увидит сообщество. 3-32 символа: буквы, цифры, точка, дефис и подчёркивание.
-Etiquetas separadas por coma (máx. 8)	Теги через запятую (макс. 8)
-Fuente instalada:	Шрифт установлен:
-Fuentes	Шрифты
-Guardamos solo tu nombre público, tu preferencia +18 y lo que subes. Tu correo lo gestiona el proveedor de inicio de sesión y no se muestra a nadie.	Мы храним только ваше публичное имя, настройку 18+ и то, что вы загружаете. Почтой управляет провайдер входа, и она никому не показывается.
-Imagen instalada:	Изображение установлено:
-Inicia sesión para subir, reportar y activar el contenido +18. Explorar no necesita cuenta.	Войдите, чтобы загружать, жаловаться и включать контент 18+. Для просмотра учётная запись не нужна.
-Instalar	Установить
-Malware o virus	Вредоносные программы или вирусы
-Mi cuenta y mis datos	Моя учётная запись и данные
-Mostrar contenido +18	Показывать контент 18+
-No hay contenido que mostrar todavía.	Пока нечего показывать.
-Ocultar contenido +18	Скрывать контент 18+
-Odio o acoso	Ненависть или травля
-Otro	Другое
-Plantilla instalada:	Шаблон установлен:
-Plugin instalado:	Плагин установлен:
-Plugins, imágenes, fuentes, plantillas y elementos compartidos. Todo se revisa antes de publicarse.	Общие плагины, изображения, шрифты, шаблоны и элементы. Всё проверяется перед публикацией.
-Quiero borrar mi cuenta y todo lo que subí (no se puede deshacer)	Я хочу удалить свою учётную запись и всё, что загрузил (отменить нельзя)
-Reportar	Пожаловаться
-Reporte enviado. Gracias.	Жалоба отправлена. Спасибо.
-Se abrió tu navegador: termina el inicio de sesión allí.	Браузер открыт: завершите вход в нём.
-Se revisa antes de publicarse (formato, antivirus y moderación). Si es +18, márcalo.	Перед публикацией всё проверяется (формат, антивирус и модерация). Если это 18+, отметьте.
-Sesión cerrada.	Вы вышли.
-Sesión iniciada.	Вы вошли.
-Sesión:	Сеанс:
-Sin contraseñas: entras con tu cuenta de GitHub o Google. La app solo guarda un nombre público.	Без паролей: вход через учётную запись GitHub или Google. Приложение хранит только публичное имя.
-Todo	Все
-Tu cuenta y tu contenido se borraron.	Ваша учётная запись и контент удалены.
-Título (3-80 caracteres)	Название (3-80 символов)
-Usar el diseño abierto	Использовать открытый макет
-¿Qué problema tiene?	В чём проблема?
-Esperando el inicio de sesión en tu navegador…	Ждём входа в браузере…
+View code…	Смотреть код…
+Back to editing	Вернуться к редактированию
+elements	элементов
+elements selected	элементов выделено
+selected	выделено
+BEGINNERS	НОВИЧКАМ
+PROFESSIONALS	ПРОФЕССИОНАЛАМ
+Next	Далее
+Open the editor	Открыть редактор
+Stop	Остановить
+Test	Тест
+I accept the rules: no malware, hate, plagiarism or unmarked 18+ content	Принимаю правила: без вредоносных программ, ненависти, плагиата и необозначенного контента 18+
+Refresh	Обновить
+Delete my account	Удалить мою учётную запись
+Search the community…	Поиск в сообществе…
+Cancel	Отмена
+Loading your profile…	Загрузка профиля…
+Loading…	Загрузка…
+Sign out	Выйти
+Share with the community	Поделиться с сообществом
+Community	Сообщество
+I confirm I am 18 or older	Подтверждаю, что мне 18 лет или больше
+Unmarked 18+ content	Необозначенный контент 18+
+Contains 18+ content	Содержит контент 18+
+Create profile	Создать профиль
+Copyright	Авторские права
+Downloading and verifying…	Загрузка и проверка…
+Description (max. 1000)	Описание (макс. 1000)
+Choose file…	Выбрать файл…
+Choose plugin folder…	Выбрать папку плагина…
+Element installed:	Элемент установлен:
+Choose your public name	Выберите публичное имя
+Sign in with	Войти через
+Sending…	Отправка…
+Send for review	Отправить на проверку
+It is all the community will see. 3-32 characters: letters, numbers, dot, hyphen and underscore.	Это единственное, что увидит сообщество. 3-32 символа: буквы, цифры, точка, дефис и подчёркивание.
+Tags separated by commas (max. 8)	Теги через запятую (макс. 8)
+Font installed:	Шрифт установлен:
+Fonts	Шрифты
+We only keep your public name, your 18+ preference and what you upload. Your email is handled by the sign-in provider and is never shown to anyone.	Мы храним только ваше публичное имя, настройку 18+ и то, что вы загружаете. Почтой управляет провайдер входа, и она никому не показывается.
+Image installed:	Изображение установлено:
+Sign in to upload, report and enable 18+ content. Browsing needs no account.	Войдите, чтобы загружать, жаловаться и включать контент 18+. Для просмотра учётная запись не нужна.
+Install	Установить
+Malware or viruses	Вредоносные программы или вирусы
+My account and data	Моя учётная запись и данные
+Show 18+ content	Показывать контент 18+
+There is no content to show yet.	Пока нечего показывать.
+Hide 18+ content	Скрывать контент 18+
+Hate or harassment	Ненависть или травля
+Other	Другое
+Template installed:	Шаблон установлен:
+Plugin installed:	Плагин установлен:
+Shared plugins, images, fonts, templates and elements. Everything is reviewed before it is published.	Общие плагины, изображения, шрифты, шаблоны и элементы. Всё проверяется перед публикацией.
+I want to delete my account and everything I uploaded (cannot be undone)	Я хочу удалить свою учётную запись и всё, что загрузил (отменить нельзя)
+Report	Пожаловаться
+Report sent. Thank you.	Жалоба отправлена. Спасибо.
+Your browser opened: finish signing in there.	Браузер открыт: завершите вход в нём.
+It is reviewed before being published (format, antivirus and moderation). If it is 18+, mark it.	Перед публикацией всё проверяется (формат, антивирус и модерация). Если это 18+, отметьте.
+Signed out.	Вы вышли.
+Signed in.	Вы вошли.
+Session:	Сеанс:
+No passwords: you sign in with your GitHub or Google account. The app only keeps a public name.	Без паролей: вход через учётную запись GitHub или Google. Приложение хранит только публичное имя.
+All	Все
+Your account and content were deleted.	Ваша учётная запись и контент удалены.
+Title (3-80 characters)	Название (3-80 символов)
+Use the open design	Использовать открытый макет
+What is wrong with it?	В чём проблема?
+Waiting for you to sign in in your browser…	Ждём входа в браузере…
 Banner	Баннер
-Descripción (máx. 300, sin enlaces)	Описание (макс. 300, без ссылок)
-Elegir…	Выбрать…
-Foto de perfil	Фото профиля
-Guardando…	Сохранение…
-Guardar perfil	Сохранить профиль
-Icono…	Значок…
-Imagen quitada.	Изображение убрано.
-La descripción admite hasta 300 caracteres.	Описание до 300 символов.
-Mi perfil de creador	Мой профиль автора
-Opcional: icono (PNG hasta 512×512) y vista previa (PNG hasta 1920×1080).	Необязательно: значок (PNG до 512×512) и предпросмотр (PNG до 1920×1080).
-Perfil guardado.	Профиль сохранён.
-Tu perfil es público cuando tienes al menos un contenido aprobado. Las imágenes y la descripción se moderan.	Профиль становится публичным, когда у вас есть хотя бы один одобренный материал. Изображения и описание проходят модерацию.
-Usuario de GitHub	Имя пользователя GitHub
-Usuario de GitHub no válido.	Неверное имя пользователя GitHub.
-Ver el perfil del creador	Смотреть профиль автора
-Ver mi perfil público	Смотреть мой публичный профиль
-Vista previa	Предпросмотр
-Vista previa…	Предпросмотр…
-Volver a la comunidad	Вернуться в сообщество
-contenidos publicados	опубликованных материалов
-debe empezar por	должно начинаться с
-en revisión	на проверке
-Cerrar	Закрыть
-Clic para ampliar	Щёлкните, чтобы увеличить
-Dar o quitar corazón	Поставить или убрать сердечко
-Dejar de seguir	Отписаться
-Editar mi perfil de creador	Изменить мой профиль автора
-Inicia sesión para dar corazones y seguir a creadores.	Войдите, чтобы ставить сердечки и подписываться на авторов.
-Perfil de creador: inicia sesión en Comunidad	Профиль автора: войдите в разделе «Сообщество»
-Seguir	Подписаться
-Siguiendo	Вы подписаны
-Solo contenido de los creadores que sigues	Только материалы авторов, на которых вы подписаны
-seguidores	подписчиков
-Acento	Акцент
-Acento suave	Мягкий акцент
-Al pasar el ratón	При наведении
-Aviso	Предупреждение
-Base clara (texto oscuro)	Светлая основа (тёмный текст)
-Biografía	Описание
-Bordes	Границы
-Borrar	Удалить
-Búscala en Comunidad › Fuentes.	Найдите его в «Сообщество › Шрифты».
-Cambia los colores, las esquinas y la fuente de toda la app. Se guarda al momento.	Меняет цвета, углы и шрифт всего приложения. Сохраняется сразу.
-Cambiar el banner	Сменить баннер
-Cambiar la foto de perfil	Сменить фото профиля
-Campos y botones	Поля и кнопки
-Colores, esquinas y fuente de la app; temas de la comunidad	Цвета, углы и шрифт приложения; темы сообщества
-Compartir en la comunidad	Поделиться в сообществе
-Correcto	Успешно
-Cuéntale a la comunidad quién eres (sin enlaces)	Расскажите сообществу о себе (без ссылок)
-Editar perfil	Изменить профиль
-En uso	Используется
-Fuente de la interfaz	Шрифт интерфейса
-Guardar como tema	Сохранить как тему
-Guías del lienzo	Направляющие холста
-Inicia sesión para compartir.	Войдите, чтобы поделиться.
-Líneas	Линии
-Más temas en la comunidad	Больше тем в сообществе
-No tienes la fuente	У вас нет этого шрифта
-Nombre: 3-32 caracteres (letras, números, punto, guion y guion bajo).	Имя: 3-32 символа (буквы, цифры, точка, дефис и подчёркивание).
-Paneles	Панели
-Paneles oscuros	Тёмные панели
-Personalizar	Настроить
-Predeterminada	По умолчанию
-Quitar el banner	Убрать баннер
-Quitar la foto de perfil	Убрать фото профиля
-Revisa los datos y pulsa «Enviar a revisión».	Проверьте данные и нажмите «Отправить на проверку».
-Se está revisando	Проверяется
-Subiendo imagen…	Загрузка изображения…
-Tema guardado:	Тема сохранена:
-Tema instalado y en uso:	Тема установлена и используется:
-Temas	Темы
-Texto secundario	Вторичный текст
-Tú ya la ves aquí; los demás la verán cuando la apruebe una persona.	Вы уже видите это здесь; остальные увидят, когда человек одобрит.
-Usar	Использовать
-Usar el tema actual	Использовать текущую тему
-Volver al predeterminado	Вернуть по умолчанию
-el banner	баннер
-la foto de perfil	фото профиля
-personalizado	настроена
-y	и
-Opcional: vista previa (PNG hasta 1920×1080). El icono del contenido lo pone la app según su tipo.	Необязательно: предпросмотр (PNG до 1920×1080). Значок материала приложение ставит по его типу.
-Enviando y analizando… (puede tardar hasta un minuto)	Отправка и анализ… (может занять до минуты)
-Subiendo y analizando la imagen… (puede tardar hasta un minuto)	Загрузка и анализ изображения… (может занять до минуты)
-Actualizaciones	Обновления
-Versión instalada:	Установленная версия:
-Buscar actualizaciones	Проверить обновления
-Buscar actualizaciones…	Проверить обновления…
-Buscando actualizaciones…	Проверка обновлений…
-Tienes la última versión.	У вас последняя версия.
-Volver a buscar	Проверить снова
-Hay una versión nueva:	Доступна новая версия:
-Hay una versión nueva de Lienzo UI	Доступна новая версия Lienzo UI
-Actualizar a	Обновить до
-Actualizar ahora	Обновить сейчас
-Descarga manual	Ручная загрузка
-Abrir página de descarga	Открыть страницу загрузки
-Omitir esta versión	Пропустить эту версию
-Esta versión hay que descargarla a mano (no se puede verificar desde la app).	Эту версию нужно загрузить вручную (её нельзя проверить из приложения).
-Descargando e instalando la versión	Загрузка и установка версии
-No cierres la app mientras tanto.	Не закрывайте приложение.
-Versión instalada correctamente:	Версия успешно установлена:
-Guarda tu diseño: al reiniciar se cierra la ventana actual.	Сохраните макет: при перезапуске текущее окно закроется.
-Reiniciar ahora	Перезапустить сейчас
-Reiniciar para actualizar	Перезапустить для обновления
-Reintentar	Повторить попытку
-Buscar actualizaciones al abrir	Проверять обновления при запуске
-Solo se consulta github.com; no se envía ningún dato tuyo.	Запрашивается только github.com; ваши данные не отправляются.
-No se pudo conectar con GitHub.	Не удалось подключиться к GitHub.
-Respuesta de GitHub no válida.	Неверный ответ от GitHub.
-La descarga no coincide con la huella publicada; no se instala.	Загрузка не совпадает с опубликованной контрольной суммой; установка отменена.
-No hay permiso para escribir junto a la app. Descarga la versión nueva a mano.	Нет прав на запись рядом с приложением. Загрузите новую версию вручную.
-No se pudo reemplazar la app (¿carpeta protegida?). Descarga la versión nueva a mano.	Не удалось заменить приложение (защищённая папка?). Загрузите новую версию вручную.
-No se pudo instalar la versión nueva; se conserva la actual.	Не удалось установить новую версию; текущая сохранена.
-La instalación automática solo existe en Windows. Descarga la versión nueva a mano.	Автоустановка есть только в Windows. Загрузите новую версию вручную.
-Esta release no se puede verificar; descárgala a mano.	Эту сборку нельзя проверить; загрузите её вручную.
-No se pudo descargar la actualización.	Не удалось скачать обновление.
-Duplicado (con su contenido)	Дублировано (с содержимым)
-Pegado	Вставлено
-Agrupado en un Contenedor (RectTransform vacío en Unity)	Сгруппировано в контейнер (пустой RectTransform в Unity)
-Desagrupado	Разгруппировано
-Selecciona un Contenedor para desagrupar	Выберите контейнер, чтобы разгруппировать
-Movido un nivel arriba en la jerarquía	Перемещено на уровень выше в иерархии
-Jerarquía actualizada (la posición en pantalla se mantiene)	Иерархия обновлена (положение на экране сохраняется)
-No se puede meter un elemento dentro de sí mismo	Элемент нельзя поместить внутрь себя
-Elemento de tu biblioteca agregado	Элемент из вашей библиотеки добавлен
-Modo prueba activo · Esc para volver a editar	Режим проверки включён · Esc, чтобы вернуться к редактированию
-De vuelta al modo edición (el diseño quedó como antes de la prueba)	Возврат в режим редактирования (макет как до проверки)
-Elemento bloqueado: desbloquéalo para moverlo	Элемент заблокирован: разблокируйте, чтобы переместить
-Imagen cambiada	Изображение изменено
-Copiado al portapapeles	Скопировано в буфер обмена
-Bloqueado: no se puede mover ni borrar	Заблокировано: нельзя переместить или удалить
-Desbloqueado	Разблокировано
-Se agregó: {}{}	Добавлено: {}{}
-Se eliminaron {} elemento(s) con su contenido (los bloqueados se conservan)	Удалено элементов: {} (вместе с содержимым; заблокированные сохранены)
-Copiado(s) {} elemento(s)	Скопировано элементов: {}
-Plantilla aplicada: {} (Ctrl+Z para deshacer)	Шаблон применён: {} (Ctrl+Z для отмены)
-Resolución de referencia: {} × {} (los elementos siguen sus anclas)	Опорное разрешение: {} × {} (элементы следуют своим якорям)
-Proyecto guardado en {}	Проект сохранён в {}
-No se pudo guardar: {}	Не удалось сохранить: {}
-No se pudo abrir: {}	Не удалось открыть: {}
-{}: {} agregado(s) a tu biblioteca	{}: в библиотеку добавлено: {}
-{}: {} agregado(s), {} con error ({})	{}: добавлено: {}, с ошибкой: {} ({})
-«{}» guardado en Mis elementos	«{}» сохранено в «Мои элементы»
-No se pudo guardar el elemento: {}	Не удалось сохранить элемент: {}
-Plantilla «{}» guardada (pestaña Plantillas › Mis plantillas)	Шаблон «{}» сохранён (вкладка «Шаблоны › Мои шаблоны»)
-No se pudo guardar la plantilla: {}	Не удалось сохранить шаблон: {}
-Exportado a Unity ({} archivos) en {}\{} · Unity crea el prefab en Assets/EditorGUI/Prefabs al volver a la ventana	Экспортировано в Unity (файлов: {}) в {}\{} · Unity создаст prefab в Assets/EditorGUI/Prefabs при возврате в окно
-No se pudo exportar: {}	Не удалось экспортировать: {}
-Guardado: {}	Сохранено: {}
-Listo. Arrastra elementos al lienzo, organízalos en la Jerarquía y exporta a Unity.	Готово. Перетащите элементы на холст, упорядочьте их в панели иерархии и экспортируйте в Unity.
-No se pudo usar la imagen: {}	Не удалось использовать изображение: {}
-Jerarquía · {}	Иерархия · {}
-Algunos valores los controla el Layout Group de «{}».	Некоторые значения управляются Layout Group у «{}».
-Padre: {}	Родитель: {}
-Activo / inactivo (GameObject.SetActive)	Активен / неактивен (GameObject.SetActive)
-Al fondo	На задний план
-Al frente	На передний план
-Atrás	Ниже
-Adelante	Выше
-Cerrar el inspector	Закрыть инспектор
-Color de la pista	Цвет дорожки
-Crea un Contenedor con la selección (Ctrl+G)	Создаёт контейнер из выделения (Ctrl+G)
-Degradados (marcadores de posición)	Градиенты (заглушки)
-Deshacer (Ctrl+Z)	Отменить (Ctrl+Z)
-Rehacer (Ctrl+Y)	Повторить (Ctrl+Y)
-Distribuir horiz.	Распределить по гор.
-Distribuir vert.	Распределить по верт.
-Duplicar (Ctrl+D)	Дублировать (Ctrl+D)
-Eliminar con su contenido (Supr)	Удалить с содержимым (Del)
-Estilos de texto	Стили текста
-Izquierda	Слева
-Centro	По центру
-Derecha	Справа
-Arriba	Сверху
-Medio	По середине
-Abajo	Снизу
-Mis elementos (prefabs reutilizables)	Мои элементы (переиспользуемые prefabs)
-Mis plantillas	Мои шаблоны
-Para botones y HUD	Для кнопок и HUD
-Plantillas de interfaz	Шаблоны интерфейса
-Segundo color del degradado	Второй цвет градиента
-Seleccionar el padre (Esc)	Выбрать родителя (Esc)
-Tus imágenes	Ваши изображения
-Elegir imagen…	Выбрать изображение…
-Cambiar…	Сменить…
-Menú principal	Главное меню
-HUD de juego	Игровой HUD
-Ventana de diálogo	Окно диалога
-Ajustes	Настройки
-Inventario	Инвентарь
-En blanco	Пустой
-# 1.3.0: plantillas, componentes y estilos nuevos
-Menú de pausa	Меню паузы
-Fin de partida	Конец игры
-Selección de nivel	Выбор уровня
-Pantalla de carga	Экран загрузки
-Diálogo de personaje	Диалог персонажа
-Clasificación	Таблица лидеров
-Selección de personaje	Выбор персонажа
-Componentes listos	Готовые компоненты
-Botón píldora	Кнопка-таблетка
-Botón contorno	Контурная кнопка
-Botón cerrar	Кнопка закрытия
-Barra de vida	Полоса здоровья
-Barra de maná	Полоса маны
-Tarjeta	Карточка
-Panel translúcido	Полупрозрачная панель
-Insignia	Значок
-Casilla	Слот
-Temporizador	Таймер
-Monedas	Монеты
-Daño	Урон
+Description (max. 300, no links)	Описание (макс. 300, без ссылок)
+Choose…	Выбрать…
+Profile picture	Фото профиля
+Saving…	Сохранение…
+Save profile	Сохранить профиль
+Icon…	Значок…
+Image removed.	Изображение убрано.
+The description allows up to 300 characters.	Описание до 300 символов.
+My creator profile	Мой профиль автора
+Optional: icon (PNG up to 512×512) and preview (PNG up to 1920×1080).	Необязательно: значок (PNG до 512×512) и предпросмотр (PNG до 1920×1080).
+Profile saved.	Профиль сохранён.
+Your profile is public once you have at least one approved item. Images and description are moderated.	Профиль становится публичным, когда у вас есть хотя бы один одобренный материал. Изображения и описание проходят модерацию.
+GitHub username	Имя пользователя GitHub
+Invalid GitHub username.	Неверное имя пользователя GitHub.
+View the creator's profile	Смотреть профиль автора
+View my public profile	Смотреть мой публичный профиль
+Preview	Предпросмотр
+Preview…	Предпросмотр…
+Back to the community	Вернуться в сообщество
+published items	опубликованных материалов
+must start with	должно начинаться с
+under review	на проверке
+Close	Закрыть
+Click to enlarge	Щёлкните, чтобы увеличить
+Give or remove a heart	Поставить или убрать сердечко
+Unfollow	Отписаться
+Edit my creator profile	Изменить мой профиль автора
+Sign in to give hearts and follow creators.	Войдите, чтобы ставить сердечки и подписываться на авторов.
+Creator profile: sign in at Community	Профиль автора: войдите в разделе «Сообщество»
+Follow	Подписаться
+Following	Вы подписаны
+Only content from creators you follow	Только материалы авторов, на которых вы подписаны
+followers	подписчиков
+Accent	Акцент
+Soft accent	Мягкий акцент
+Hover	При наведении
+Warning	Предупреждение
+Light base (dark text)	Светлая основа (тёмный текст)
+Bio	Описание
+Borders	Границы
+Find it in Community › Fonts.	Найдите его в «Сообщество › Шрифты».
+Change the colours, corners and font of the whole app. Saved instantly.	Меняет цвета, углы и шрифт всего приложения. Сохраняется сразу.
+Change the banner	Сменить баннер
+Change the profile picture	Сменить фото профиля
+Fields and buttons	Поля и кнопки
+App colours, corners and font; community themes	Цвета, углы и шрифт приложения; темы сообщества
+Success	Успешно
+Tell the community who you are (no links)	Расскажите сообществу о себе (без ссылок)
+Edit profile	Изменить профиль
+In use	Используется
+Interface font	Шрифт интерфейса
+Save as theme	Сохранить как тему
+Canvas guides	Направляющие холста
+Sign in to share.	Войдите, чтобы поделиться.
+Lines	Линии
+More themes in the community	Больше тем в сообществе
+You don't have the font	У вас нет этого шрифта
+Name: 3-32 characters (letters, numbers, dot, hyphen and underscore).	Имя: 3-32 символа (буквы, цифры, точка, дефис и подчёркивание).
+Panels	Панели
+Dark panels	Тёмные панели
+Customise	Настроить
+Default	По умолчанию
+Remove the banner	Убрать баннер
+Remove the profile picture	Убрать фото профиля
+Check the details and press "Send for review".	Проверьте данные и нажмите «Отправить на проверку».
+Under review:	Проверяется
+Uploading image…	Загрузка изображения…
+Theme saved:	Тема сохранена:
+Theme installed and in use:	Тема установлена и используется:
+Themes	Темы
+Secondary text	Вторичный текст
+You already see it here; others will once a person approves it.	Вы уже видите это здесь; остальные увидят, когда человек одобрит.
+Use	Использовать
+Use the current theme	Использовать текущую тему
+Back to default	Вернуть по умолчанию
+the banner	баннер
+the profile picture	фото профиля
+custom	настроена
+and	и
+Optional: preview (PNG up to 1920×1080). The app sets the content icon from its type.	Необязательно: предпросмотр (PNG до 1920×1080). Значок материала приложение ставит по его типу.
+Sending and analysing… (can take up to a minute)	Отправка и анализ… (может занять до минуты)
+Uploading and analysing the image… (can take up to a minute)	Загрузка и анализ изображения… (может занять до минуты)
+Updates	Обновления
+Installed version:	Установленная версия:
+Check for updates	Проверить обновления
+Check for updates…	Проверить обновления…
+Checking for updates…	Проверка обновлений…
+You have the latest version.	У вас последняя версия.
+Check again	Проверить снова
+A new version is available:	Доступна новая версия:
+A new version of Lienzo UI is available	Доступна новая версия Lienzo UI
+Update to	Обновить до
+Update now	Обновить сейчас
+Manual download	Ручная загрузка
+Open download page	Открыть страницу загрузки
+Skip this version	Пропустить эту версию
+This version must be downloaded manually (it can't be verified from the app).	Эту версию нужно загрузить вручную (её нельзя проверить из приложения).
+Downloading and installing version	Загрузка и установка версии
+Don't close the app in the meantime.	Не закрывайте приложение.
+Version installed successfully:	Версия успешно установлена:
+Save your design: restarting closes the current window.	Сохраните макет: при перезапуске текущее окно закроется.
+Restart now	Перезапустить сейчас
+Restart to update	Перезапустить для обновления
+Retry	Повторить попытку
+Check for updates on startup	Проверять обновления при запуске
+Only github.com is queried; none of your data is sent.	Запрашивается только github.com; ваши данные не отправляются.
+Could not connect to GitHub.	Не удалось подключиться к GitHub.
+Invalid response from GitHub.	Неверный ответ от GitHub.
+The download doesn't match the published checksum; not installing.	Загрузка не совпадает с опубликованной контрольной суммой; установка отменена.
+No permission to write next to the app. Download the new version manually.	Нет прав на запись рядом с приложением. Загрузите новую версию вручную.
+Could not replace the app (protected folder?). Download the new version manually.	Не удалось заменить приложение (защищённая папка?). Загрузите новую версию вручную.
+Could not install the new version; keeping the current one.	Не удалось установить новую версию; текущая сохранена.
+Automatic install only exists on Windows. Download the new version manually.	Автоустановка есть только в Windows. Загрузите новую версию вручную.
+This release can't be verified; download it manually.	Эту сборку нельзя проверить; загрузите её вручную.
+Could not download the update.	Не удалось скачать обновление.
+Duplicated (with its contents)	Дублировано (с содержимым)
+Pasted	Вставлено
+Grouped into a Container (empty RectTransform in Unity)	Сгруппировано в контейнер (пустой RectTransform в Unity)
+Ungrouped	Разгруппировано
+Select a Container to ungroup	Выберите контейнер, чтобы разгруппировать
+Moved up one level in the hierarchy	Перемещено на уровень выше в иерархии
+Hierarchy updated (the on-screen position is kept)	Иерархия обновлена (положение на экране сохраняется)
+An element can't be placed inside itself	Элемент нельзя поместить внутрь себя
+Element from your library added	Элемент из вашей библиотеки добавлен
+Test mode on · Esc to go back to editing	Режим проверки включён · Esc, чтобы вернуться к редактированию
+Back to edit mode (the design is as it was before the test)	Возврат в режим редактирования (макет как до проверки)
+Element locked: unlock it to move it	Элемент заблокирован: разблокируйте, чтобы переместить
+Image changed	Изображение изменено
+Copied to the clipboard	Скопировано в буфер обмена
+Locked: it can't be moved or deleted	Заблокировано: нельзя переместить или удалить
+Unlocked	Разблокировано
+Added: {}{}	Добавлено: {}{}
+Deleted {} element(s) with their contents (locked ones are kept)	Удалено элементов: {} (вместе с содержимым; заблокированные сохранены)
+Copied {} element(s)	Скопировано элементов: {}
+Template applied: {} (Ctrl+Z to undo)	Шаблон применён: {} (Ctrl+Z для отмены)
+Reference resolution: {} × {} (elements follow their anchors)	Опорное разрешение: {} × {} (элементы следуют своим якорям)
+Project saved to {}	Проект сохранён в {}
+Could not save: {}	Не удалось сохранить: {}
+Could not open: {}	Не удалось открыть: {}
+{}: {} added to your library	{}: в библиотеку добавлено: {}
+{}: {} added, {} failed ({})	{}: добавлено: {}, с ошибкой: {} ({})
+“{}” saved to My elements	«{}» сохранено в «Мои элементы»
+Could not save the element: {}	Не удалось сохранить элемент: {}
+Template “{}” saved (Templates tab › My templates)	Шаблон «{}» сохранён (вкладка «Шаблоны › Мои шаблоны»)
+Could not save the template: {}	Не удалось сохранить шаблон: {}
+Exported to Unity ({} files) in {}\{} · Unity creates the prefab in Assets/EditorGUI/Prefabs when you return to the window	Экспортировано в Unity (файлов: {}) в {}\{} · Unity создаст prefab в Assets/EditorGUI/Prefabs при возврате в окно
+Could not export: {}	Не удалось экспортировать: {}
+Saved: {}	Сохранено: {}
+Ready. Drag elements onto the canvas, organise them in the Hierarchy and export to Unity.	Готово. Перетащите элементы на холст, упорядочьте их в панели иерархии и экспортируйте в Unity.
+Could not use the image: {}	Не удалось использовать изображение: {}
+Hierarchy · {}	Иерархия · {}
+Some values are controlled by the Layout Group of “{}”.	Некоторые значения управляются Layout Group у «{}».
+Parent: {}	Родитель: {}
+Active / inactive (GameObject.SetActive)	Активен / неактивен (GameObject.SetActive)
+To back	На задний план
+To front	На передний план
+Backward	Ниже
+Forward	Выше
+Close the inspector	Закрыть инспектор
+Track colour	Цвет дорожки
+Creates a Container with the selection (Ctrl+G)	Создаёт контейнер из выделения (Ctrl+G)
+Gradients (placeholders)	Градиенты (заглушки)
+Undo (Ctrl+Z)	Отменить (Ctrl+Z)
+Redo (Ctrl+Y)	Повторить (Ctrl+Y)
+Distribute horiz.	Распределить по гор.
+Distribute vert.	Распределить по верт.
+Duplicate (Ctrl+D)	Дублировать (Ctrl+D)
+Delete with its contents (Del)	Удалить с содержимым (Del)
+Text styles	Стили текста
+Left	Слева
+Center	По центру
+Right	Справа
+Top	Сверху
+Middle	По середине
+Bottom	Снизу
+My elements (reusable prefabs)	Мои элементы (переиспользуемые prefabs)
+My templates	Мои шаблоны
+For buttons and HUD	Для кнопок и HUD
+Interface templates	Шаблоны интерфейса
+Second gradient colour	Второй цвет градиента
+Select the parent (Esc)	Выбрать родителя (Esc)
+Your images	Ваши изображения
+Choose image…	Выбрать изображение…
+Change…	Сменить…
+Main menu	Главное меню
+Game HUD	Игровой HUD
+Dialog window	Окно диалога
+Settings	Настройки
+Inventory	Инвентарь
+Blank	Пустой
+Pause menu	Меню паузы
+Game over	Конец игры
+Level select	Выбор уровня
+Loading screen	Экран загрузки
+Character dialogue	Диалог персонажа
+Leaderboard	Таблица лидеров
+Character select	Выбор персонажа
+Ready-made components	Готовые компоненты
+Pill button	Кнопка-таблетка
+Outline button	Контурная кнопка
+Close button	Кнопка закрытия
+Health bar	Полоса здоровья
+Mana bar	Полоса маны
+Card	Карточка
+Translucent panel	Полупрозрачная панель
+Badge	Значок
+Slot	Слот
+Timer	Таймер
+Coins	Монеты
+Damage	Урон
 Combo	Комбо
-Nivel	Уровень
-Subtítulo de diálogo	Субтитр диалога
-Océano	Океан
-Desierto	Пустыня
-Neón	Неон
-Hielo	Лёд
-Volcán	Вулкан
-Caramelo	Карамель
-Madera	Дерево
-Viñeta	Виньетка
-Cuadrado	Квадрат
-Redondeado	Скруглённый
-Círculo	Круг
-Contorno	Контур
-Línea	Линия
-Fila (Horizontal)	Ряд (Horizontal)
-Columna (Vertical)	Колонка (Vertical)
-Rejilla (Grid)	Сетка (Grid)
-Marcador	Очки
-Etiqueta	Тег
-Atardecer	Закат
-Noche	Ночь
-Paisaje	Пейзаж
-Fuego	Огонь
+Level	Уровень
+Dialogue subtitle	Субтитр диалога
+Ocean	Океан
+Desert	Пустыня
+Neon	Неон
+Ice	Лёд
+Volcano	Вулкан
+Candy	Карамель
+Wood	Дерево
+Vignette	Виньетка
+Square	Квадрат
+Rounded	Скруглённый
+Circle	Круг
+Outline	Контур
+Line	Линия
+Row (Horizontal)	Ряд (Horizontal)
+Column (Vertical)	Колонка (Vertical)
+Grid	Сетка (Grid)
+Score	Очки
+Tag	Тег
+Sunset	Закат
+Night	Ночь
+Landscape	Пейзаж
+Fire	Огонь
 Aurora	Сияние
-Niebla	Туман
-Pizarra	Грифель
-Bosque	Лес
-Agregar un título	Добавить заголовок
-Agregar un subtítulo	Добавить подзаголовок
-Agregar texto de cuerpo	Добавить основной текст
-Etiqueta pequeña	Мелкая метка
+Fog	Туман
+Slate	Грифель
+Forest	Лес
+Add a heading	Добавить заголовок
+Add a subheading	Добавить подзаголовок
+Add body text	Добавить основной текст
+Small label	Мелкая метка
 Panel	Панель
-Imagen	Изображение
-Botón	Кнопка
+Button	Кнопка
 Input Field	Input Field
-Dropdown	Dropdown
+Dropdown	Раскрывающийся список
 Scroll View	Scroll View
-Campo de texto	Текстовое поле
-Desplegable	Раскрывающийся список
-Vista con scroll	Прокручиваемый вид
-Revisar	Проверить
-Revisa legibilidad, contraste, tamaño táctil e imágenes que faltan antes de exportar	Проверяет читаемость, контраст, размер для касания и отсутствующие изображения перед экспортом
-Revisar diseño	Проверить макет
-Sin problemas: el diseño pasa todas las comprobaciones.	Проблем нет: макет проходит все проверки.
-{} errores · {} avisos. Clic en uno para seleccionarlo.	Ошибок: {} · предупреждений: {}. Щёлкните по одному, чтобы выделить.
+Input field	Текстовое поле
+Scroll view	Прокручиваемый вид
+Review	Проверить
+Checks readability, contrast, touch size and missing images before exporting	Проверяет читаемость, контраст, размер для касания и отсутствующие изображения перед экспортом
+Review design	Проверить макет
+No issues: the design passes every check.	Проблем нет: макет проходит все проверки.
+{} errors · {} warnings. Click one to select it.	Ошибок: {} · предупреждений: {}. Щёлкните по одному, чтобы выделить.
 Error	Ошибка
-Los mínimos se calculan para la resolución de referencia (18 px de letra y 64 px por control a 1080 p).	Минимумы считаются для опорного разрешения (18 px текста и 64 px на элемент управления при 1080p).
-Letra de {} px: en pantallas pequeñas será difícil de leer (mínimo recomendado {} px)	Текст {} px: на маленьких экранах будет трудно читать (рекомендуемый минимум {} px)
-Contraste del texto {}:1 (WCAG pide {}:1)	Контраст текста {}:1 (WCAG требует {}:1)
-Control de {} px: difícil de pulsar con el dedo (mínimo recomendado {} px)	Элемент {} px: трудно нажать пальцем (рекомендуемый минимум {} px)
-Está completamente fuera de la página: no se verá en el juego	Полностью за пределами страницы: в игре его не будет видно
-Se sale en parte de la página	Частично выходит за пределы страницы
-Hay varios elementos llamados así: GameObject.Find y los scripts encontrarán solo el primero	Несколько элементов с таким именем: GameObject.Find и скрипты найдут только первый
-Falta la imagen «{}»: se exportará vacía	Нет изображения «{}»: оно будет экспортировано пустым
-Ninguno	Нет
-TextMeshPro · texto	TextMeshPro · текст
-TMP_Dropdown · opciones	TMP_Dropdown · варианты
-# Tamaños de página, pantallas de prueba y atajos
-Controles de UI (uGUI)	Элементы UI (uGUI)
-Contenedores y Layout Groups	Контейнеры и Layout Group
-Formas	Фигуры
-Guardar archivo	Сохранить файл
-Resolución de referencia	Опорное разрешение
-PC / consola Full HD	ПК / консоль Full HD
+Minimums are based on the reference resolution (18 px text and 64 px per control at 1080p).	Минимумы считаются для опорного разрешения (18 px текста и 64 px на элемент управления при 1080p).
+{} px text: hard to read on small screens (recommended minimum {} px)	Текст {} px: на маленьких экранах будет трудно читать (рекомендуемый минимум {} px)
+Text contrast {}:1 (WCAG asks for {}:1)	Контраст текста {}:1 (WCAG требует {}:1)
+{} px control: hard to tap with a finger (recommended minimum {} px)	Элемент {} px: трудно нажать пальцем (рекомендуемый минимум {} px)
+Completely outside the page: it will not be visible in the game	Полностью за пределами страницы: в игре его не будет видно
+Partly outside the page	Частично выходит за пределы страницы
+Several elements share this name: GameObject.Find and scripts will only find the first one	Несколько элементов с таким именем: GameObject.Find и скрипты найдут только первый
+Missing image “{}”: it will be exported empty	Нет изображения «{}»: оно будет экспортировано пустым
+None	Нет
+TextMeshPro · text	TextMeshPro · текст
+TMP_Dropdown · options	TMP_Dropdown · варианты
+UI controls (uGUI)	Элементы UI (uGUI)
+Containers and Layout Groups	Контейнеры и Layout Group
+Shapes	Фигуры
+Save file	Сохранить файл
+Reference resolution	Опорное разрешение
+PC / console Full HD	ПК / консоль Full HD
 PC HD	ПК HD
 PC 4K	ПК 4K
-Ultrapanorámico 21:9	Сверхширокий 21:9
-Móvil vertical	Телефон, вертикально
-Móvil horizontal	Телефон, горизонтально
-Tableta 4:3	Планшет 4:3
-2400 × 1080 (móvil apaisado)	2400 × 1080 (телефон, горизонтально)
-1080 × 2400 (móvil vertical)	1080 × 2400 (телефон, вертикально)
-1080 × 1080 (cuadrado)	1080 × 1080 (квадрат)
-Clic / Shift+clic	Щелчок / Shift+щелчок
-Seleccionar / sumar	Выделить / добавить
-Ctrl+clic	Ctrl+щелчок
-Seleccionar dentro de un grupo	Выделить внутри группы
-Seleccionar el padre	Выделить родителя
-Arrastrar vacío	Тянуть по пустому месту
-Selección por área	Выделение рамкой
-Doble clic	Двойной щелчок
-Editar texto	Изменить текст
-Escalar (Shift: libre)	Масштаб (Shift: свободно)
-Tirador de giro	Маркер поворота
-Girar (Shift: 15°)	Повернуть (Shift: 15°)
-Alt+arrastrar	Alt+перетаскивание
-Duplicar y mover	Дублировать и переместить
-Agrupar / desagrupar	Группировать / разгруппировать
-Ctrl+D / Supr	Ctrl+D / Del
-Duplicar / borrar	Дублировать / удалить
-Deshacer / rehacer	Отменить / повторить
-Flechas	Стрелки
-Mover 1 px (Shift: 10)	Сдвиг на 1 px (Shift: 10)
-Ctrl+rueda	Ctrl+колесо
-Probar / simular pantallas	Тест / имитация экранов
-
-No se encontró en el sistema una fuente con estos caracteres: el texto puede verse como cuadros.	В системе не найден шрифт с этими символами: текст может отображаться квадратами.
+Ultrawide 21:9	Сверхширокий 21:9
+Phone portrait	Телефон, вертикально
+Phone landscape	Телефон, горизонтально
+Tablet 4:3	Планшет 4:3
+2400 × 1080 (phone landscape)	2400 × 1080 (телефон, горизонтально)
+1080 × 2400 (phone portrait)	1080 × 2400 (телефон, вертикально)
+1080 × 1080 (square)	1080 × 1080 (квадрат)
+Click / Shift+click	Щелчок / Shift+щелчок
+Select / add	Выделить / добавить
+Ctrl+click	Ctrl+щелчок
+Select inside a group	Выделить внутри группы
+Select the parent	Выделить родителя
+Drag on empty space	Тянуть по пустому месту
+Area selection	Выделение рамкой
+Double-click	Двойной щелчок
+Edit text	Изменить текст
+Scale (Shift: free)	Масштаб (Shift: свободно)
+Rotation handle	Маркер поворота
+Rotate (Shift: 15°)	Повернуть (Shift: 15°)
+Alt+drag	Alt+перетаскивание
+Duplicate and move	Дублировать и переместить
+Group / ungroup	Группировать / разгруппировать
+Ctrl+D / Del	Ctrl+D / Del
+Duplicate / delete	Дублировать / удалить
+Undo / redo	Отменить / повторить
+Arrows	Стрелки
+Move 1 px (Shift: 10)	Сдвиг на 1 px (Shift: 10)
+Ctrl+wheel	Ctrl+колесо
+Test / simulate screens	Тест / имитация экранов
+No system font with these characters was found: text may show as boxes.	В системе не найден шрифт с этими символами: текст может отображаться квадратами.

@@ -114,7 +114,7 @@ pub fn revisar(doc: &Doc) -> Vec<Problema> {
         if con_texto {
             let min = LETRA_MIN * escala;
             if e.font_size < min {
-                p(Nivel::Aviso, "Letra de {} px: en pantallas pequeñas será difícil de leer (mínimo recomendado {} px)", vec![format!("{:.0}", e.font_size), format!("{:.0}", min)]);
+                p(Nivel::Aviso, "{} px text: hard to read on small screens (recommended minimum {} px)", vec![format!("{:.0}", e.font_size), format!("{:.0}", min)]);
             }
             // WCAG does not require contrast for disabled controls.
             let desactivado = !e.interactable && matches!(e.kind, Kind::Button | Kind::Toggle);
@@ -125,26 +125,26 @@ pub fn revisar(doc: &Doc) -> Vec<Problema> {
             let min_c = if grande { 3.0 } else { 4.5 };
             if c < min_c && !desactivado {
                 let nivel = if c < 2.0 { Nivel::Error } else { Nivel::Aviso };
-                p(nivel, "Contraste del texto {}:1 (WCAG pide {}:1)", vec![format!("{:.1}", c), format!("{:.1}", min_c)]);
+                p(nivel, "Text contrast {}:1 (WCAG asks for {}:1)", vec![format!("{:.1}", c), format!("{:.1}", min_c)]);
             }
         }
         if es_pulsable(e) {
             let min = TOQUE_MIN * escala;
             if e.w.min(e.h) < min {
-                p(Nivel::Aviso, "Control de {} px: difícil de pulsar con el dedo (mínimo recomendado {} px)", vec![format!("{:.0}", e.w.min(e.h)), format!("{:.0}", min)]);
+                p(Nivel::Aviso, "{} px control: hard to tap with a finger (recommended minimum {} px)", vec![format!("{:.0}", e.w.min(e.h)), format!("{:.0}", min)]);
             }
         }
         let fuera = e.x + e.w < 0.0 || e.y + e.h < 0.0 || e.x > doc.width || e.y > doc.height;
         if fuera && e.rot.abs() < 0.01 {
-            p(Nivel::Error, "Está completamente fuera de la página: no se verá en el juego", vec![]);
+            p(Nivel::Error, "Completely outside the page: it will not be visible in the game", vec![]);
         } else if e.parent.is_none() && (e.x < -1.0 || e.y < -1.0 || e.x + e.w > doc.width + 1.0 || e.y + e.h > doc.height + 1.0) && e.rot.abs() < 0.01 {
-            p(Nivel::Aviso, "Se sale en parte de la página", vec![]);
+            p(Nivel::Aviso, "Partly outside the page", vec![]);
         }
         if es_pulsable(e) && nombres.get(e.name.as_str()).copied().unwrap_or(0) > 1 {
-            p(Nivel::Aviso, "Hay varios elementos llamados así: GameObject.Find y los scripts encontrarán solo el primero", vec![]);
+            p(Nivel::Aviso, "Several elements share this name: GameObject.Find and scripts will only find the first one", vec![]);
         }
         if e.kind == Kind::Image && !e.image.is_empty() && !crate::library::resolve_image(&e.image).exists() {
-            p(Nivel::Error, "Falta la imagen «{}»: se exportará vacía", vec![e.image.clone()]);
+            p(Nivel::Error, "Missing image “{}”: it will be exported empty", vec![e.image.clone()]);
         }
     }
     out.sort_by(|a, b| b.nivel.cmp(&a.nivel));
@@ -161,7 +161,7 @@ pub fn describir(p: &Problema) -> String {
 pub fn informe(doc: &Doc) -> (String, bool) {
     let ps = revisar(doc);
     if ps.is_empty() {
-        return (crate::i18n::t("Sin problemas: el diseño pasa todas las comprobaciones."), false);
+        return (crate::i18n::t("No issues: the design passes every check."), false);
     }
     let errores = ps.iter().any(|p| p.nivel == Nivel::Error);
     let lineas: Vec<String> = ps
@@ -198,8 +198,8 @@ mod tests {
         t.x = 100.0;
         t.y = 100.0;
         let ps = revisar(&doc_con(t));
-        assert!(ps.iter().any(|p| p.plantilla.starts_with("Letra")));
-        assert!(ps.iter().any(|p| p.plantilla.starts_with("Contraste") && p.nivel == Nivel::Error));
+        assert!(ps.iter().any(|p| p.plantilla.starts_with("{} px text")));
+        assert!(ps.iter().any(|p| p.plantilla.starts_with("Text contrast") && p.nivel == Nivel::Error));
 
         let mut b = Element::new(0, Kind::Button);
         b.x = 100.0;
@@ -207,7 +207,7 @@ mod tests {
         b.w = 40.0;
         b.h = 40.0;
         let ps = revisar(&doc_con(b));
-        assert!(ps.iter().any(|p| p.plantilla.starts_with("Control")));
+        assert!(ps.iter().any(|p| p.plantilla.starts_with("{} px control")));
     }
 
     #[test]
@@ -215,11 +215,11 @@ mod tests {
         let mut b = Element::new(0, Kind::Button);
         b.x = 5000.0;
         let ps = revisar(&doc_con(b));
-        assert!(ps.iter().any(|p| p.nivel == Nivel::Error && p.plantilla.contains("fuera")));
+        assert!(ps.iter().any(|p| p.nivel == Nivel::Error && p.plantilla.contains("outside")));
         let mut d = Doc::empty(1920.0, 1080.0);
         for _ in 0..2 {
             let mut b = Element::new(0, Kind::Button);
-            b.name = "Jugar".into();
+            b.name = "Play".into();
             b.x = 100.0;
             b.y = 100.0;
             d.add(b);
@@ -248,20 +248,20 @@ impl crate::app::EditorApp {
         let problemas = revisar(&self.doc);
         let mut abierta = true;
         let mut elegir = None;
-        egui::Window::new(t("Revisar diseño")).open(&mut abierta).collapsible(false).default_width(460.0).show(ctx, |ui| {
+        egui::Window::new(t("Review design")).open(&mut abierta).collapsible(false).default_width(460.0).show(ctx, |ui| {
             let errores = problemas.iter().filter(|p| p.nivel == Nivel::Error).count();
             let avisos = problemas.len() - errores;
             if problemas.is_empty() {
-                ui.label(RichText::new(t("Sin problemas: el diseño pasa todas las comprobaciones.")).color(crate::theme::ACCENT()));
+                ui.label(RichText::new(t("No issues: the design passes every check.")).color(crate::theme::ACCENT()));
             } else {
-                ui.label(crate::i18n::tf("{} errores · {} avisos. Clic en uno para seleccionarlo.", &[&errores.to_string(), &avisos.to_string()]));
+                ui.label(crate::i18n::tf("{} errors · {} warnings. Click one to select it.", &[&errores.to_string(), &avisos.to_string()]));
             }
             ui.add_space(6.0);
             egui::ScrollArea::vertical().max_height(360.0).show(ui, |ui| {
                 for p in &problemas {
                     let (etq, col) = match p.nivel {
                         Nivel::Error => (t("Error"), Color32::from_rgb(235, 80, 90)),
-                        Nivel::Aviso => (t("Aviso"), Color32::from_rgb(230, 170, 60)),
+                        Nivel::Aviso => (t("Warning"), Color32::from_rgb(230, 170, 60)),
                     };
                     ui.horizontal_wrapped(|ui| {
                         ui.label(RichText::new(etq).strong().color(col));
@@ -273,7 +273,7 @@ impl crate::app::EditorApp {
                 }
             });
             ui.add_space(6.0);
-            ui.label(RichText::new(t("Los mínimos se calculan para la resolución de referencia (18 px de letra y 64 px por control a 1080 p).")).small().color(crate::theme::MUTED()));
+            ui.label(RichText::new(t("Minimums are based on the reference resolution (18 px text and 64 px per control at 1080p).")).small().color(crate::theme::MUTED()));
         });
         if let Some(id) = elegir {
             self.sel = vec![id];

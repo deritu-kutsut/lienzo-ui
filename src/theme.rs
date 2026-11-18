@@ -41,20 +41,20 @@ impl Default for Tema {
 
 /// The editable colors, in order: (JSON field, display name).
 pub const COLORES: &[(&str, &str)] = &[
-    ("fondo", "Fondo"),
-    ("panel", "Paneles"),
-    ("panel_oscuro", "Paneles oscuros"),
-    ("campo", "Campos y botones"),
-    ("hover", "Al pasar el ratón"),
-    ("linea", "Líneas"),
-    ("borde", "Bordes"),
-    ("texto", "Texto"),
-    ("apagado", "Texto secundario"),
-    ("acento", "Acento"),
-    ("acento_suave", "Acento suave"),
-    ("ok", "Correcto"),
-    ("aviso", "Aviso"),
-    ("guia", "Guías del lienzo"),
+    ("fondo", "Background"),
+    ("panel", "Panels"),
+    ("panel_oscuro", "Dark panels"),
+    ("campo", "Fields and buttons"),
+    ("hover", "Hover"),
+    ("linea", "Lines"),
+    ("borde", "Borders"),
+    ("texto", "Text"),
+    ("apagado", "Secondary text"),
+    ("acento", "Accent"),
+    ("acento_suave", "Soft accent"),
+    ("ok", "Success"),
+    ("aviso", "Warning"),
+    ("guia", "Canvas guides"),
 ];
 
 impl Tema {
@@ -87,23 +87,23 @@ impl Tema {
     pub fn validar(&self) -> Result<(), String> {
         let n = self.nombre.trim().chars().count();
         if !(1..=60).contains(&n) {
-            return Err("El tema necesita un nombre de 1 a 60 caracteres.".into());
+            return Err("The theme needs a name of 1 to 60 characters.".into());
         }
         if self.autor.chars().count() > 60 {
-            return Err("El autor del tema es demasiado largo.".into());
+            return Err("The theme author is too long.".into());
         }
         let mut t = self.clone();
         for (campo, nombre) in COLORES {
             let v = t.color_mut(campo).map(|c| c.clone()).unwrap_or_default();
             if parse_hex(&v).is_none() {
-                return Err(format!("Color no válido en «{}»: usa #RRGGBB.", nombre));
+                return Err(format!("Invalid color in “{}”: use #RRGGBB.", nombre));
             }
         }
         if !self.esquinas.is_finite() || !(0.0..=16.0).contains(&self.esquinas) {
-            return Err("Las esquinas deben estar entre 0 y 16.".into());
+            return Err("Corners must be between 0 and 16.".into());
         }
         if self.fuente.chars().count() > 60 || !self.fuente.chars().all(|c| c.is_alphanumeric() || " -_.".contains(c)) || self.fuente.contains("..") {
-            return Err("Nombre de fuente no válido.".into());
+            return Err("Invalid font name.".into());
         }
         Ok(())
     }
@@ -152,8 +152,8 @@ pub fn predeterminados() -> Vec<Tema> {
         tema("Lienzo oscuro", false, ["#1D1E23", "#26272E", "#202127", "#30323B", "#3A3D49", "#393C47", "#16171B", "#DEE0E7", "#9296A5", "#4D8EFF", "#273D68", "#40BA70", "#FFB840", "#FF3EB5"], 5.0),
         tema("Lienzo claro", true, ["#E9EBF0", "#F7F8FA", "#EEF0F4", "#E2E5EC", "#D6DAE3", "#CDD2DC", "#B9BFCC", "#1E2230", "#5D6476", "#2F6FE4", "#CFDDFB", "#1F9D57", "#B86E00", "#D6248F"], 5.0),
         tema("Medianoche", false, ["#0E1220", "#151B2E", "#111626", "#1D2540", "#27315A", "#26304F", "#0A0D17", "#E4E8F7", "#8B93B3", "#7C9CFF", "#253366", "#3CCB8B", "#FFC857", "#FF5CC8"], 7.0),
-        tema("Atardecer", false, ["#1E1714", "#29201B", "#231B17", "#352922", "#45352B", "#433328", "#150F0C", "#F4E7DC", "#B39C8B", "#FF9A2E", "#5A3415", "#5FC27E", "#FFD15C", "#FF5E8A"], 6.0),
-        tema("Bosque", false, ["#141A16", "#1B231D", "#171E19", "#24302A", "#2E3D34", "#2F3D33", "#0E130F", "#E2EDE5", "#93A79A", "#52C27C", "#1E4A30", "#7AD69A", "#F2C14E", "#E26FD0"], 4.0),
+        tema("Sunset", false, ["#1E1714", "#29201B", "#231B17", "#352922", "#45352B", "#433328", "#150F0C", "#F4E7DC", "#B39C8B", "#FF9A2E", "#5A3415", "#5FC27E", "#FFD15C", "#FF5E8A"], 6.0),
+        tema("Forest", false, ["#141A16", "#1B231D", "#171E19", "#24302A", "#2E3D34", "#2F3D33", "#0E130F", "#E2EDE5", "#93A79A", "#52C27C", "#1E4A30", "#7AD69A", "#F2C14E", "#E26FD0"], 4.0),
     ]
 }
 

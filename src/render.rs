@@ -283,7 +283,7 @@ pub fn promote_pending_fonts() {
 }
 
 pub fn font_family(name: &str) -> egui::FontFamily {
-    if name == "Monoespaciada" {
+    if name == "Monospace" {
         egui::FontFamily::Monospace
     } else if !name.is_empty() && FONTS.lock().ok().map(|g| g.as_ref().map(|s| s.available.iter().any(|f| f == name)).unwrap_or(false)).unwrap_or(false) {
         egui::FontFamily::Name(name.into())

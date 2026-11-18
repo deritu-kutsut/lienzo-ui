@@ -424,7 +424,7 @@ impl EditorApp {
                             self.sel = ids;
                         } else if let Some(id) = d.click_select {
                             self.sel = vec![id];
-                            self.status = crate::i18n::t("Elemento bloqueado: desbloquéalo para moverlo");
+                            self.status = crate::i18n::t("Element locked: unlock it to move it");
                         }
                     }
                     DragKind::Move => {
@@ -569,7 +569,7 @@ impl EditorApp {
                 if rect.contains(m) {
                     if let Some(c) = self.container_at(v.to_page(m)).and_then(|c| self.doc.get(c)) {
                         outline(&painter, c, &v, Stroke::new(2.0, theme::OK()));
-                        painter.text(v.to_screen(c.aabb()[0], c.aabb()[1]) + Vec2::new(0.0, -4.0), Align2::LEFT_BOTTOM, format!("Soltar dentro de «{}»", c.name), FontId::proportional(12.0), theme::OK());
+                        painter.text(v.to_screen(c.aabb()[0], c.aabb()[1]) + Vec2::new(0.0, -4.0), Align2::LEFT_BOTTOM, format!("Drop inside “{}”", c.name), FontId::proportional(12.0), theme::OK());
                     }
                 }
                 for it in &items {
@@ -714,14 +714,14 @@ impl EditorApp {
             }
         }
         // banner
-        let banner = "MODO PRUEBA · clic en los elementos con código · Esc o F5 para volver a editar";
+        let banner = "TEST MODE · click the elements with code · Esc or F5 to go back to editing";
         let galley = painter.layout_no_wrap(banner.into(), FontId::proportional(13.0), Color32::WHITE);
         let r = Rect::from_center_size(Pos2::new(rect.center().x, rect.top() + 20.0), galley.size() + Vec2::new(24.0, 10.0));
         painter.rect_filled(r, 14.0, theme::OK().gamma_multiply(0.9));
         painter.galley(r.min + Vec2::new(12.0, 5.0), galley, Color32::WHITE);
         let screen = self.preview_screen.unwrap_or([self.doc.width, self.doc.height]);
         let info = format!(
-            "Pantalla {} × {}  ·  lienzo virtual {} × {}  ·  escala del CanvasScaler {:.2}",
+            "Screen {} × {}  ·  virtual canvas {} × {}  ·  CanvasScaler scale {:.2}",
             screen[0], screen[1], sim.width.round(), sim.height.round(), scale
         );
         painter.text(Pos2::new(rect.center().x, rect.top() + 44.0), Align2::CENTER_CENTER, info, FontId::proportional(12.0), theme::MUTED());
@@ -846,7 +846,7 @@ impl EditorApp {
         }
         let driven = tops.iter().any(|t| self.doc.driven_by_layout(*t));
         self.drag_label = Some(if driven {
-            "Lo coloca el Layout Group del padre (usa la Jerarquía para reordenar)".into()
+            "Placed by the parent's Layout Group (use the Hierarchy to reorder)".into()
         } else {
             format!("X {:.0}  Y {:.0}", b[0] + dx, b[1] + dy)
         });
@@ -1049,24 +1049,24 @@ impl EditorApp {
                     .show(ui, |ui| {
                         ui.horizontal(|ui| {
                             ui.spacing_mut().item_spacing.x = 2.0;
-                            if self.sel.len() > 1 && ui.button(crate::i18n::t("Agrupar")).on_hover_text(crate::i18n::t("Crea un Contenedor con la selección (Ctrl+G)")).clicked() {
+                            if self.sel.len() > 1 && ui.button(crate::i18n::t("Group")).on_hover_text(crate::i18n::t("Creates a Container with the selection (Ctrl+G)")).clicked() {
                                 self.group_selection();
                             }
-                            if self.selection_grouped() && ui.button(crate::i18n::t("Desagrupar")).on_hover_text("Ctrl+Shift+G").clicked() {
+                            if self.selection_grouped() && ui.button(crate::i18n::t("Ungroup")).on_hover_text("Ctrl+Shift+G").clicked() {
                                 self.ungroup_selection();
                             }
-                            if self.sel.len() == 1 && self.doc.parent_of(self.sel[0]).is_some() && crate::icons::button(ui, "parent_up", "^", "Seleccionar el padre (Esc)").clicked() {
+                            if self.sel.len() == 1 && self.doc.parent_of(self.sel[0]).is_some() && crate::icons::button(ui, "parent_up", "^", "Select the parent (Esc)").clicked() {
                                 if let Some(p) = self.doc.parent_of(self.sel[0]) {
                                     self.sel = vec![p];
                                 }
                             }
-                            if crate::icons::toggle(ui, locked, if locked { "lock" } else { "unlock" }, "L", "Bloquear / desbloquear").clicked() {
+                            if crate::icons::toggle(ui, locked, if locked { "lock" } else { "unlock" }, "L", "Lock / unlock").clicked() {
                                 self.toggle_lock();
                             }
-                            if crate::icons::button(ui, "duplicate", "D", "Duplicar (Ctrl+D)").clicked() {
+                            if crate::icons::button(ui, "duplicate", "D", "Duplicate (Ctrl+D)").clicked() {
                                 self.duplicate_selection(30.0);
                             }
-                            if ui.add_enabled_ui(!locked, |ui| crate::icons::button(ui, "trash", "X", "Eliminar con su contenido (Supr)")).inner.clicked() {
+                            if ui.add_enabled_ui(!locked, |ui| crate::icons::button(ui, "trash", "X", "Delete with its contents (Del)")).inner.clicked() {
                                 self.delete_selection();
                             }
                         });

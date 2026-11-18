@@ -90,18 +90,18 @@ fn validar_diseno(json: serde_json::Value, es_plantilla: bool) -> Result<(), Str
     } else {
         json
     };
-    let elementos = json.get("elements").and_then(|e| e.as_array()).ok_or("Falta la lista «elements» del diseño.")?;
+    let elementos = json.get("elements").and_then(|e| e.as_array()).ok_or("The design's “elements” list is missing.")?;
     if elementos.len() > if es_plantilla { 2000 } else { 500 } {
-        return Err("Demasiados elementos.".into());
+        return Err("Too many elements.".into());
     }
     let mut t = Vec::new();
     textos(&serde_json::Value::Array(elementos.clone()), &mut t, 0);
     for s in &t {
         if url_externa(s) {
-            return Err("Los diseños no pueden llevar enlaces ni rutas externas.".into());
+            return Err("Designs cannot contain external links or paths.".into());
         }
         if ruta_peligrosa(s) && (s.contains('/') || s.contains('\\')) {
-            return Err("Los diseños no pueden llevar rutas absolutas o con «..».".into());
+            return Err("Designs cannot contain absolute paths or paths with “..”.".into());
         }
     }
     Ok(())
@@ -115,10 +115,10 @@ pub struct Paquete {
 }
 
 fn validar_plugin(json: serde_json::Value) -> Result<Paquete, String> {
-    let p: Paquete = serde_json::from_value(json).map_err(|_| "Un plugin necesita «manifiesto» y «archivos».")?;
+    let p: Paquete = serde_json::from_value(json).map_err(|_| "A plugin needs “manifiesto” and “archivos”.")?;
     let nombre = p.manifiesto.get("nombre").and_then(|n| n.as_str()).unwrap_or("");
     if nombre.chars().count() < 3 || nombre.chars().count() > 60 {
-        return Err("Manifiesto: nombre inválido.".into());
+        return Err("Manifest: invalid name.".into());
     }
     if p.archivos.is_empty() || p.archivos.len() > 20 {
         return Err("Un plugin lleva entre 1 y 20 archivos.".into());
@@ -139,7 +139,7 @@ fn validar_plugin(json: serde_json::Value) -> Result<Paquete, String> {
         for x in p.manifiesto.get(clave).and_then(|v| v.as_array()).into_iter().flatten() {
             if let Some(s) = x.get("script").and_then(|s| s.as_str()) {
                 if !p.archivos.contains_key(s) {
-                    return Err(format!("El manifiesto usa {}, que no está en el paquete.", s));
+                    return Err(format!("The manifest uses {}, which is not in the package.", s));
                 }
             }
         }
@@ -175,13 +175,13 @@ pub fn validar(tipo: &str, nombre: &str, bytes: &[u8]) -> Result<(), String> {
         return Err("Tipo de contenido desconocido.".into());
     }
     if bytes.is_empty() {
-        return Err("Archivo vacío.".into());
+        return Err("Empty file.".into());
     }
     if bytes.len() > limite_bytes(tipo) {
-        return Err(format!("Supera el límite de {} KB para {}.", limite_bytes(tipo) / 1024, tipo));
+        return Err(format!("Exceeds the limit of {} KB for {}.", limite_bytes(tipo) / 1024, tipo));
     }
     if EXT_PROHIBIDAS.contains(&ext(nombre).as_str()) {
-        return Err("Tipo de archivo prohibido.".into());
+        return Err("File type not allowed.".into());
     }
     let real = detectar(bytes);
     if let Some(r) = real {
@@ -191,14 +191,14 @@ pub fn validar(tipo: &str, nombre: &str, bytes: &[u8]) -> Result<(), String> {
     }
     match tipo {
         "imagen" => {
-            let r = real.filter(|r| ["png", "jpeg", "gif", "webp"].contains(r)).ok_or("No es una imagen PNG, JPEG, GIF ni WebP válida.")?;
+            let r = real.filter(|r| ["png", "jpeg", "gif", "webp"].contains(r)).ok_or("Not a valid PNG, JPEG, GIF or WebP image.")?;
             let (w, h) = match r {
                 "png" if bytes.len() >= 24 => (u32::from_be_bytes(bytes[16..20].try_into().unwrap()), u32::from_be_bytes(bytes[20..24].try_into().unwrap())),
                 "gif" if bytes.len() >= 10 => (u16::from_le_bytes([bytes[6], bytes[7]]) as u32, u16::from_le_bytes([bytes[8], bytes[9]]) as u32),
                 _ => (1, 1),
             };
             if w == 0 || h == 0 || w > 4096 || h > 4096 {
-                return Err("Dimensiones fuera de rango (máximo 4096×4096).".into());
+                return Err("Dimensions out of range (maximum 4096×4096).".into());
             }
             Ok(())
         }
@@ -208,13 +208,13 @@ pub fn validar(tipo: &str, nombre: &str, bytes: &[u8]) -> Result<(), String> {
         },
         _ => {
             if real.is_some() {
-                return Err("Se esperaba un JSON de texto.".into());
+                return Err("A text JSON was expected.".into());
             }
-            let texto = std::str::from_utf8(bytes).map_err(|_| "El archivo no es JSON UTF-8 válido.")?;
-            let json: serde_json::Value = serde_json::from_str(texto).map_err(|_| "El archivo no es JSON válido.")?;
+            let texto = std::str::from_utf8(bytes).map_err(|_| "The file is not valid UTF-8 JSON.")?;
+            let json: serde_json::Value = serde_json::from_str(texto).map_err(|_| "The file is not valid JSON.")?;
             if tipo == "tema" {
                 // Only the known theme fields: #RRGGBB colors, corners, light base and a font name.
-                let t: crate::theme::Tema = serde_json::from_value(json).map_err(|_| "El archivo no es un tema de Lienzo UI.")?;
+                let t: crate::theme::Tema = serde_json::from_value(json).map_err(|_| "The file is not a Lienzo UI theme.")?;
                 t.validar()
             } else if tipo == "plugin" {
                 validar_plugin(json).map(|_| ())
@@ -338,18 +338,18 @@ pub fn validar_png(clase: &str, bytes: &[u8]) -> Result<(u32, u32), String> {
         "avatar" => (512 * 1024, 512, 512),
         "vista" => (1024 * 1024, 1920, 1080),
         "banner" => (1536 * 1024, 1920, 640),
-        _ => return Err("Tipo de imagen desconocido.".into()),
+        _ => return Err("Unknown image type.".into()),
     };
     if bytes.is_empty() || bytes.len() > max_bytes {
-        return Err(format!("La imagen debe pesar como máximo {} KB.", max_bytes / 1024));
+        return Err(format!("The image must weigh at most {} KB.", max_bytes / 1024));
     }
     if detectar(bytes) != Some("png") || bytes.len() < 24 {
-        return Err("La imagen debe ser PNG.".into());
+        return Err("The image must be PNG.".into());
     }
     let w = u32::from_be_bytes(bytes[16..20].try_into().unwrap());
     let h = u32::from_be_bytes(bytes[20..24].try_into().unwrap());
     if w == 0 || h == 0 || w > max_w || h > max_h {
-        return Err(format!("La imagen debe medir como máximo {}×{} px.", max_w, max_h));
+        return Err(format!("The image must measure at most {}×{} px.", max_w, max_h));
     }
     Ok((w, h))
 }

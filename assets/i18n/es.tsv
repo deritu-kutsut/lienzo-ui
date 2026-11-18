@@ -1,0 +1,850 @@
+# Spanish translation of the Lienzo UI interface.
+# Format: English text<TAB>Spanish translation. Lines starting with # are comments.
++ Add font…	+ Añadir fuente…
+Open the beginner and pro tutorial (F1)	Abre el tutorial para novatos y profesionales (F1)
+Open folder	Abrir carpeta
+Open project…	Abrir proyecto…
+Accessibility	Accesibilidad
+Active / inactive (SetActive in Unity)	Activo / inactivo (SetActive en Unity)
+Add a text box	Agregar un cuadro de texto
+Group	Agrupar
+Group into Container	Agrupar en Contenedor
+Group into Container (Ctrl+G)	Agrupar en Contenedor (Ctrl+G)
+Snap	Ajustar
+Snap to grid	Ajustar a la cuadrícula
+Fit to window	Ajustar a la ventana
+On click (test code)	Al hacer clic (código de prueba)
+Alignment	Alineación
+Alt: + position	Alt: + posición
+High contrast	Alto contraste
+Anchor Max	Anchor Max
+Anchor Min	Anchor Min
+Previous	Anterior
+It will appear in Templates › My templates to start new designs.	Aparecerá en Plantillas › Mis plantillas para empezar nuevos diseños.
+File	Archivo
+.json files saved with this editor	Archivos .json guardados con este editor
+Shortcuts	Atajos
+Shortcuts: Ctrl+Alt+= and Ctrl+Alt+- change the interface size; F1 opens the tutorial.	Atajos: Ctrl+Alt+= y Ctrl+Alt+- cambian el tamaño de la interfaz; F1 abre el tutorial.
+They add commands, exporters and templates. Guide: docs/PLUGINS.md	Añaden comandos, exportadores y plantillas. Guía: docs/PLUGINS.md
+Add child Container	Añadir Contenedor hijo
+Add fonts…	Añadir fuentes…
+No project selected yet. “Export to Unity” will ask for the folder (the one containing Assets).	Aún no elegiste un proyecto. «Exportar a Unity» te pedirá la carpeta (la que contiene Assets).
+You don't have any templates yet. Save your design as a template or upload one.	Aún no tienes plantillas propias. Guarda tu diseño como plantilla o sube una.
+B	B
+Lock / unlock	Bloquear / desbloquear
+Lock in editor	Bloquear en el editor
+Border	Borde
+Search…	Buscar…
+Change project…	Cambiar proyecto…
+Canvas · Canvas Scaler	Canvas · Canvas Scaler
+Cell (height)	Celda (alto)
+Cell (width)	Celda (ancho)
+Child Alignment	Child Alignment
+Click adds to the center (or inside the selected panel/container). Drag to drop wherever you want: if you drop it on a panel, it becomes a child.	Clic agrega al centro (o dentro del panel/contenedor seleccionado). Arrastra para soltar donde quieras: si sueltas sobre un panel queda como hijo.
+Click to replace the design (Ctrl+Z undoes). All use hierarchy, anchors and Layout Groups.	Clic para reemplazar el diseño (Ctrl+Z deshace). Todas usan jerarquía, anclas y Layout Groups.
+Click selects · Ctrl+click enters groups · double-click edits text · Space+drag pans the view	Clic selecciona · Ctrl+clic entra en grupos · doble clic edita texto · Espacio+arrastrar mueve la vista
+Click: anchors	Clic: anclas
+Color	Color
+Color (Image.color)	Color (Image.color)
+Checkbox color	Color de la casilla
+Text color	Color del texto
+Columns	Columnas
+As template	Como plantilla
+As project	Como proyecto
+Control + Expand height	Control + Expand alto
+Control + Expand width	Control + Expand ancho
+Copy	Copiar
+Ctrl+0	Ctrl+0
+Ctrl+]	Ctrl+]
+Italic	Cursiva
+Gradient to	Degradado hasta
+Turn it off for health or progress bars	Desactívalo para barras de vida o progreso
+Ungroup	Desagrupar
+Undo	Deshacer
+Vertical scrolling. Children go into Content (Viewport/Content); its height grows so they all fit.	Desplazamiento vertical. Los hijos van al Content (Viewport/Content); su alto crece para que todos quepan.
+Distance	Distancia
+Duplicate	Duplicar
+Edit	Editar
+The design is empty.	El diseño está vacío.
+Elements	Elementos
+Delete	Eliminar
+In Unity they are created with TextMeshPro (TextMeshProUGUI).	En Unity se crean con TextMeshPro (TextMeshProUGUI).
+In uGUI they are exported as a generated gradient Sprite.	En uGUI se exportan como un Sprite de degradado generado.
+Plugin error:	Error del plugin:
+Corners	Esquinas
+Style	Estilo
+Export to Unity	Exportar a Unity
+Export to Unity project	Exportar al proyecto de Unity
+Export everything to project	Exportar todo al proyecto
+Export… (code and options)	Exportar… (código y opciones)
+F5	F5
+Rows	Filas
+Background	Fondo
+Font	Fuente
+Font (exported as TMP Font Asset)	Fuente (se exporta como TMP Font Asset)
+Available functions	Funciones disponibles
+Saves the selection (with its children) for reuse	Guarda lo seleccionado (con sus hijos) para reutilizarlo
+Save	Guardar
+Save as template…	Guardar como plantilla…
+Save as project or as template	Guardar como proyecto o como plantilla
+Save as…	Guardar como…
+Save project as…	Guardar proyecto como…
+Save selection	Guardar selección
+I	I
+Language	Idioma
+Language, interface size, high contrast and reduced motion	Idioma, tamaño de la interfaz, alto contraste y movimiento reducido
+As in Unity: items below are drawn on top. Drag rows to reorder or to nest an element inside another.	Igual que en Unity: lo de abajo se dibuja encima. Arrastra filas para reordenar o meter un elemento dentro de otro.
+Image	Imagen
+Images	Imágenes
+PNG/JPG images (icons with transparency) or .json elements	Imágenes PNG/JPG (íconos con transparencia) o elementos .json
+Images with nearest-neighbor filtering, positions and sizes in whole pixels. In Unity: Canvas Pixel Perfect and sprites with Point filter and no compression.	Imágenes con filtro de vecino más cercano, posiciones y tamaños en píxeles enteros. En Unity: Canvas Pixel Perfect y sprites con filtro Point sin compresión.
+Inspector	Inspector
+Interactable	Interactable
+Is On	Is On
+Hierarchy	Jerarquía
+The images you upload will appear here and are saved for your next designs.	Las imágenes que subas aparecerán aquí y se guardan para tus próximos diseños.
+Layout Group	Layout Group
+Canvas	Lienzo
+Lienzo UI	Lienzo UI
+Clear console	Limpiar consola
+Changes made by the code are discarded when you exit.	Los cambios que hace el código se descartan al salir.
+Match	Match
+Canvas size (px)	Medidas en el lienzo (px)
+Test mode	Modo prueba
+Test mode: click runs the code and you can simulate other screens (F5)	Modo prueba: clic ejecuta el código y puedes simular otras pantallas (F5)
+Monospace	Monoespaciada
+Show grid	Mostrar cuadrícula
+Mask and effects	Máscara y efectos
+Bold	Negrita
+No plugins installed. Copy a folder with plugin.json into the plugins folder and press Reload.	No hay plugins instalados. Copia una carpeta con plugin.json en la carpeta de plugins y pulsa Recargar.
+Name	Nombre
+New blank design	Nuevo diseño en blanco
+Opacity	Opacidad
+Automatically arranges direct children, as in Unity.	Organiza automáticamente a los hijos directos, como en Unity.
+STEP	PASO
+PNG, JPG, BMP, GIF or WEBP — exported as Sprites	PNG, JPG, BMP, GIF o WEBP — se exportan como Sprites
+To add a language, translate assets/i18n/en.tsv (see docs/EXTENDER.md).	Para añadir un idioma, traduce assets/i18n/en.tsv (ver docs/EXTENDER.md).
+Paste	Pegar
+Hint	Pista
+Pivot	Pivot
+Pixel art	Pixel art
+Plugin template applied (Ctrl+Z to undo):	Plantilla del plugin aplicada (Ctrl+Z para deshacer):
+Templates	Plantillas
+Plugin executed:	Plugin ejecutado:
+Plugins	Plugins
+Loaded plugins	Plugins cargados
+Test design	Probar diseño
+Unity project	Proyecto de Unity
+Project:	Proyecto:
+Remove	Quitar
+Corner radius	Radio de esquinas
+Raycast Target	Raycast Target
+Reload	Recargar
+Rect Mask 2D (clips children)	Rect Mask 2D (recorta a los hijos)
+Rect Transform	Rect Transform
+Empty RectTransform (inside the selection if it is a panel)	RectTransform vacío (dentro de la selección si es un panel)
+Reduce motion	Reducir movimiento
+Reference X	Referencia X
+Reference Y	Referencia Y
+Rules	Reglas
+Redo	Rehacer
+Padding	Relleno
+Rename	Renombrar
+Reference resolution (CanvasScaler)	Resolución de referencia (CanvasScaler)
+Rotation Z	Rotation Z
+Path inside the Canvas in Unity	Ruta dentro del Canvas en Unity
+Unparent	Sacar del padre
+Skip and go to editor	Saltar e ir al editor
+Scroll Rect	Scroll Rect
+Runs in Test. When exported, it becomes a comment in the OnClick method of the View script.	Se ejecuta en Probar. Al exportar queda como comentario en el método OnClick del script View.
+Exported as a generated 9-slice Sprite	Se exporta como Sprite 9-slice generado
+Select all	Seleccionar todo
+Selectable	Selectable
+Shadow	Shadow
+Shift: + pivot	Shift: + pivote
+No animations in the interface	Sin animaciones en la interfaz
+No smoothing, whole pixels	Sin suavizado, píxeles enteros
+Slider	Slider
+Sprite	Sprite
+Upload images or save a selection to have it here.	Sube imágenes o guarda una selección para tenerla aquí.
+Upload elements…	Subir elementos…
+Upload images	Subir imágenes
+Upload images…	Subir imágenes…
+Upload templates…	Subir plantillas…
+Underline	Subrayado
+Size	Tamaño
+Interface size	Tamaño de la interfaz
+Interface size:	Tamaño de la interfaz:
+Font size	Tamaño de letra
+Text	Texto
+White text and strong borders	Texto blanco y bordes marcados
+Placeholder text	Texto de ejemplo (Placeholder)
+Toggle	Toggle
+Tutorial	Tutorial
+Beginner tutorial	Tutorial para novatos
+Pro tutorial	Tutorial para profesionales
+U	U
+UI Scale Mode: Scale With Screen Size	UI Scale Mode: Scale With Screen Size
+A file you can reopen and keep editing.	Un archivo que puedes volver a abrir y seguir editando.
+One place earlier among siblings (Ctrl+[)	Un lugar antes entre hermanos (Ctrl+[)
+One option per line	Una opción por línea
+Use template	Usar plantilla
+View	Ver
+View and copy JSON, UXML/USS, IMGUI and scripts (Ctrl+Shift+E)	Ver y copiar JSON, UXML/USS, IMGUI y scripts (Ctrl+Shift+E)
+for Unity	para Unity
+by	por
+−	−
+Width / Height	Ancho / Alto
+Container	Contenedor
+Code…	Código…
+Run now	Ejecutar ahora
+Choose project…	Elegir proyecto…
+Remove from my library	Eliminar de mi biblioteca
+Save file…	Guardar archivo…
+Save as template	Guardar como plantilla
+Save current design	Guardar diseño actual
+Save project	Guardar proyecto
+Project opened:	Proyecto abierto:
+Common resolutions…	Resoluciones comunes…
+Take out	Sacar
+Upload element	Subir elemento
+Upload template	Subir plantilla
+Value	Value
+View code…	Ver código…
+Back to editing	Volver a editar
+elements	elementos
+elements selected	elementos seleccionados
+selected	seleccionados
+BEGINNERS	NOVATOS
+PROFESSIONALS	PROFESIONALES
+Next	Siguiente
+Open the editor	Abrir el editor
+Stop	Detener
+Test	Probar
+I accept the rules: no malware, hate, plagiarism or unmarked 18+ content	Acepto las reglas: nada de malware, odio, plagio ni contenido +18 sin marcar
+Refresh	Actualizar
+Delete my account	Borrar mi cuenta
+Search the community…	Buscar en la comunidad…
+Cancel	Cancelar
+Loading your profile…	Cargando tu perfil…
+Loading…	Cargando…
+Sign out	Cerrar sesión
+Share with the community	Compartir con la comunidad
+Community	Comunidad
+I confirm I am 18 or older	Confirmo que tengo 18 años o más
+Unmarked 18+ content	Contenido +18 sin marcar
+Contains 18+ content	Contiene contenido +18
+Create profile	Crear perfil
+Copyright	Derechos de autor
+Downloading and verifying…	Descargando y verificando…
+Description (max. 1000)	Descripción (máx. 1000)
+Choose file…	Elegir archivo…
+Choose plugin folder…	Elegir carpeta del plugin…
+Element installed:	Elemento instalado:
+Choose your public name	Elige tu nombre público
+Sign in with	Entrar con
+Sending…	Enviando…
+Send for review	Enviar a revisión
+It is all the community will see. 3-32 characters: letters, numbers, dot, hyphen and underscore.	Es lo único que verá la comunidad. 3-32 caracteres: letras, números, punto, guion y guion bajo.
+Tags separated by commas (max. 8)	Etiquetas separadas por coma (máx. 8)
+Font installed:	Fuente instalada:
+Fonts	Fuentes
+We only keep your public name, your 18+ preference and what you upload. Your email is handled by the sign-in provider and is never shown to anyone.	Guardamos solo tu nombre público, tu preferencia +18 y lo que subes. Tu correo lo gestiona el proveedor de inicio de sesión y no se muestra a nadie.
+Image installed:	Imagen instalada:
+Sign in to upload, report and enable 18+ content. Browsing needs no account.	Inicia sesión para subir, reportar y activar el contenido +18. Explorar no necesita cuenta.
+Install	Instalar
+Malware or viruses	Malware o virus
+My account and data	Mi cuenta y mis datos
+Show 18+ content	Mostrar contenido +18
+There is no content to show yet.	No hay contenido que mostrar todavía.
+Hide 18+ content	Ocultar contenido +18
+Hate or harassment	Odio o acoso
+Other	Otro
+Template installed:	Plantilla instalada:
+Plugin installed:	Plugin instalado:
+Shared plugins, images, fonts, templates and elements. Everything is reviewed before it is published.	Plugins, imágenes, fuentes, plantillas y elementos compartidos. Todo se revisa antes de publicarse.
+I want to delete my account and everything I uploaded (cannot be undone)	Quiero borrar mi cuenta y todo lo que subí (no se puede deshacer)
+Report	Reportar
+Report sent. Thank you.	Reporte enviado. Gracias.
+Your browser opened: finish signing in there.	Se abrió tu navegador: termina el inicio de sesión allí.
+It is reviewed before being published (format, antivirus and moderation). If it is 18+, mark it.	Se revisa antes de publicarse (formato, antivirus y moderación). Si es +18, márcalo.
+Signed out.	Sesión cerrada.
+Signed in.	Sesión iniciada.
+Session:	Sesión:
+No passwords: you sign in with your GitHub or Google account. The app only keeps a public name.	Sin contraseñas: entras con tu cuenta de GitHub o Google. La app solo guarda un nombre público.
+All	Todo
+Your account and content were deleted.	Tu cuenta y tu contenido se borraron.
+Title (3-80 characters)	Título (3-80 caracteres)
+Use the open design	Usar el diseño abierto
+What is wrong with it?	¿Qué problema tiene?
+Waiting for you to sign in in your browser…	Esperando el inicio de sesión en tu navegador…
+Banner	Banner
+Description (max. 300, no links)	Descripción (máx. 300, sin enlaces)
+Choose…	Elegir…
+Profile picture	Foto de perfil
+Saving…	Guardando…
+Save profile	Guardar perfil
+Icon…	Icono…
+Image removed.	Imagen quitada.
+The description allows up to 300 characters.	La descripción admite hasta 300 caracteres.
+My creator profile	Mi perfil de creador
+Optional: icon (PNG up to 512×512) and preview (PNG up to 1920×1080).	Opcional: icono (PNG hasta 512×512) y vista previa (PNG hasta 1920×1080).
+Profile saved.	Perfil guardado.
+Your profile is public once you have at least one approved item. Images and description are moderated.	Tu perfil es público cuando tienes al menos un contenido aprobado. Las imágenes y la descripción se moderan.
+GitHub username	Usuario de GitHub
+Invalid GitHub username.	Usuario de GitHub no válido.
+View the creator's profile	Ver el perfil del creador
+View my public profile	Ver mi perfil público
+Preview	Vista previa
+Preview…	Vista previa…
+Back to the community	Volver a la comunidad
+published items	contenidos publicados
+must start with	debe empezar por
+under review	en revisión
+Close	Cerrar
+Click to enlarge	Clic para ampliar
+Give or remove a heart	Dar o quitar corazón
+Unfollow	Dejar de seguir
+Edit my creator profile	Editar mi perfil de creador
+Sign in to give hearts and follow creators.	Inicia sesión para dar corazones y seguir a creadores.
+Creator profile: sign in at Community	Perfil de creador: inicia sesión en Comunidad
+Follow	Seguir
+Following	Siguiendo
+Only content from creators you follow	Solo contenido de los creadores que sigues
+followers	seguidores
+Accent	Acento
+Soft accent	Acento suave
+Hover	Al pasar el ratón
+Warning	Aviso
+Light base (dark text)	Base clara (texto oscuro)
+Bio	Biografía
+Borders	Bordes
+Find it in Community › Fonts.	Búscala en Comunidad › Fuentes.
+Change the colours, corners and font of the whole app. Saved instantly.	Cambia los colores, las esquinas y la fuente de toda la app. Se guarda al momento.
+Change the banner	Cambiar el banner
+Change the profile picture	Cambiar la foto de perfil
+Fields and buttons	Campos y botones
+App colours, corners and font; community themes	Colores, esquinas y fuente de la app; temas de la comunidad
+Success	Correcto
+Tell the community who you are (no links)	Cuéntale a la comunidad quién eres (sin enlaces)
+Edit profile	Editar perfil
+In use	En uso
+Interface font	Fuente de la interfaz
+Save as theme	Guardar como tema
+Canvas guides	Guías del lienzo
+Sign in to share.	Inicia sesión para compartir.
+Lines	Líneas
+More themes in the community	Más temas en la comunidad
+You don't have the font	No tienes la fuente
+Name: 3-32 characters (letters, numbers, dot, hyphen and underscore).	Nombre: 3-32 caracteres (letras, números, punto, guion y guion bajo).
+Panels	Paneles
+Dark panels	Paneles oscuros
+Customise	Personalizar
+Default	Predeterminada
+Remove the banner	Quitar el banner
+Remove the profile picture	Quitar la foto de perfil
+Check the details and press "Send for review".	Revisa los datos y pulsa «Enviar a revisión».
+Under review:	Se está revisando
+Uploading image…	Subiendo imagen…
+Theme saved:	Tema guardado:
+Theme installed and in use:	Tema instalado y en uso:
+Themes	Temas
+Secondary text	Texto secundario
+You already see it here; others will once a person approves it.	Tú ya la ves aquí; los demás la verán cuando la apruebe una persona.
+Use	Usar
+Use the current theme	Usar el tema actual
+Back to default	Volver al predeterminado
+the banner	el banner
+the profile picture	la foto de perfil
+custom	personalizado
+and	y
+Optional: preview (PNG up to 1920×1080). The app sets the content icon from its type.	Opcional: vista previa (PNG hasta 1920×1080). El icono del contenido lo pone la app según su tipo.
+Sending and analysing… (can take up to a minute)	Enviando y analizando… (puede tardar hasta un minuto)
+Uploading and analysing the image… (can take up to a minute)	Subiendo y analizando la imagen… (puede tardar hasta un minuto)
+Updates	Actualizaciones
+Installed version:	Versión instalada:
+Check for updates	Buscar actualizaciones
+Check for updates…	Buscar actualizaciones…
+Checking for updates…	Buscando actualizaciones…
+You have the latest version.	Tienes la última versión.
+Check again	Volver a buscar
+A new version is available:	Hay una versión nueva:
+A new version of Lienzo UI is available	Hay una versión nueva de Lienzo UI
+Update to	Actualizar a
+Update now	Actualizar ahora
+Manual download	Descarga manual
+Open download page	Abrir página de descarga
+Skip this version	Omitir esta versión
+This version must be downloaded manually (it can't be verified from the app).	Esta versión hay que descargarla a mano (no se puede verificar desde la app).
+Downloading and installing version	Descargando e instalando la versión
+Don't close the app in the meantime.	No cierres la app mientras tanto.
+Version installed successfully:	Versión instalada correctamente:
+Save your design: restarting closes the current window.	Guarda tu diseño: al reiniciar se cierra la ventana actual.
+Restart now	Reiniciar ahora
+Restart to update	Reiniciar para actualizar
+Retry	Reintentar
+Check for updates on startup	Buscar actualizaciones al abrir
+Only github.com is queried; none of your data is sent.	Solo se consulta github.com; no se envía ningún dato tuyo.
+Could not connect to GitHub.	No se pudo conectar con GitHub.
+Invalid response from GitHub.	Respuesta de GitHub no válida.
+The download doesn't match the published checksum; not installing.	La descarga no coincide con la huella publicada; no se instala.
+No permission to write next to the app. Download the new version manually.	No hay permiso para escribir junto a la app. Descarga la versión nueva a mano.
+Could not replace the app (protected folder?). Download the new version manually.	No se pudo reemplazar la app (¿carpeta protegida?). Descarga la versión nueva a mano.
+Could not install the new version; keeping the current one.	No se pudo instalar la versión nueva; se conserva la actual.
+Automatic install only exists on Windows. Download the new version manually.	La instalación automática solo existe en Windows. Descarga la versión nueva a mano.
+This release can't be verified; download it manually.	Esta release no se puede verificar; descárgala a mano.
+Could not download the update.	No se pudo descargar la actualización.
+Duplicated (with its contents)	Duplicado (con su contenido)
+Pasted	Pegado
+Grouped into a Container (empty RectTransform in Unity)	Agrupado en un Contenedor (RectTransform vacío en Unity)
+Ungrouped	Desagrupado
+Select a Container to ungroup	Selecciona un Contenedor para desagrupar
+Moved up one level in the hierarchy	Movido un nivel arriba en la jerarquía
+Hierarchy updated (the on-screen position is kept)	Jerarquía actualizada (la posición en pantalla se mantiene)
+An element can't be placed inside itself	No se puede meter un elemento dentro de sí mismo
+Element from your library added	Elemento de tu biblioteca agregado
+Test mode on · Esc to go back to editing	Modo prueba activo · Esc para volver a editar
+Back to edit mode (the design is as it was before the test)	De vuelta al modo edición (el diseño quedó como antes de la prueba)
+Element locked: unlock it to move it	Elemento bloqueado: desbloquéalo para moverlo
+Image changed	Imagen cambiada
+Copied to the clipboard	Copiado al portapapeles
+Locked: it can't be moved or deleted	Bloqueado: no se puede mover ni borrar
+Unlocked	Desbloqueado
+Added: {}{}	Se agregó: {}{}
+Deleted {} element(s) with their contents (locked ones are kept)	Se eliminaron {} elemento(s) con su contenido (los bloqueados se conservan)
+Copied {} element(s)	Copiado(s) {} elemento(s)
+Template applied: {} (Ctrl+Z to undo)	Plantilla aplicada: {} (Ctrl+Z para deshacer)
+Reference resolution: {} × {} (elements follow their anchors)	Resolución de referencia: {} × {} (los elementos siguen sus anclas)
+Project saved to {}	Proyecto guardado en {}
+Could not save: {}	No se pudo guardar: {}
+Could not open: {}	No se pudo abrir: {}
+{}: {} added to your library	{}: {} agregado(s) a tu biblioteca
+{}: {} added, {} failed ({})	{}: {} agregado(s), {} con error ({})
+“{}” saved to My elements	«{}» guardado en Mis elementos
+Could not save the element: {}	No se pudo guardar el elemento: {}
+Template “{}” saved (Templates tab › My templates)	Plantilla «{}» guardada (pestaña Plantillas › Mis plantillas)
+Could not save the template: {}	No se pudo guardar la plantilla: {}
+Exported to Unity ({} files) in {}\{} · Unity creates the prefab in Assets/EditorGUI/Prefabs when you return to the window	Exportado a Unity ({} archivos) en {}\{} · Unity crea el prefab en Assets/EditorGUI/Prefabs al volver a la ventana
+Could not export: {}	No se pudo exportar: {}
+Saved: {}	Guardado: {}
+Ready. Drag elements onto the canvas, organise them in the Hierarchy and export to Unity.	Listo. Arrastra elementos al lienzo, organízalos en la Jerarquía y exporta a Unity.
+Could not use the image: {}	No se pudo usar la imagen: {}
+Hierarchy · {}	Jerarquía · {}
+Some values are controlled by the Layout Group of “{}”.	Algunos valores los controla el Layout Group de «{}».
+Parent: {}	Padre: {}
+Active / inactive (GameObject.SetActive)	Activo / inactivo (GameObject.SetActive)
+To back	Al fondo
+To front	Al frente
+Backward	Atrás
+Forward	Adelante
+Close the inspector	Cerrar el inspector
+Track colour	Color de la pista
+Creates a Container with the selection (Ctrl+G)	Crea un Contenedor con la selección (Ctrl+G)
+Gradients (placeholders)	Degradados (marcadores de posición)
+Undo (Ctrl+Z)	Deshacer (Ctrl+Z)
+Redo (Ctrl+Y)	Rehacer (Ctrl+Y)
+Distribute horiz.	Distribuir horiz.
+Distribute vert.	Distribuir vert.
+Duplicate (Ctrl+D)	Duplicar (Ctrl+D)
+Delete with its contents (Del)	Eliminar con su contenido (Supr)
+Text styles	Estilos de texto
+Left	Izquierda
+Center	Centro
+Right	Derecha
+Top	Arriba
+Middle	Medio
+Bottom	Abajo
+My elements (reusable prefabs)	Mis elementos (prefabs reutilizables)
+My templates	Mis plantillas
+For buttons and HUD	Para botones y HUD
+Interface templates	Plantillas de interfaz
+Second gradient colour	Segundo color del degradado
+Select the parent (Esc)	Seleccionar el padre (Esc)
+Your images	Tus imágenes
+Choose image…	Elegir imagen…
+Change…	Cambiar…
+Main menu	Menú principal
+Game HUD	HUD de juego
+Dialog window	Ventana de diálogo
+Settings	Ajustes
+Inventory	Inventario
+Blank	En blanco
+Pause menu	Menú de pausa
+Game over	Fin de partida
+Level select	Selección de nivel
+Loading screen	Pantalla de carga
+Character dialogue	Diálogo de personaje
+Leaderboard	Clasificación
+Character select	Selección de personaje
+Ready-made components	Componentes listos
+Pill button	Botón píldora
+Outline button	Botón contorno
+Close button	Botón cerrar
+Health bar	Barra de vida
+Mana bar	Barra de maná
+Card	Tarjeta
+Translucent panel	Panel translúcido
+Badge	Insignia
+Slot	Casilla
+Timer	Temporizador
+Coins	Monedas
+Damage	Daño
+Combo	Combo
+Level	Nivel
+Dialogue subtitle	Subtítulo de diálogo
+Ocean	Océano
+Desert	Desierto
+Neon	Neón
+Ice	Hielo
+Volcano	Volcán
+Candy	Caramelo
+Wood	Madera
+Vignette	Viñeta
+Square	Cuadrado
+Rounded	Redondeado
+Circle	Círculo
+Outline	Contorno
+Line	Línea
+Row (Horizontal)	Fila (Horizontal)
+Column (Vertical)	Columna (Vertical)
+Grid	Rejilla (Grid)
+Score	Marcador
+Tag	Etiqueta
+Sunset	Atardecer
+Night	Noche
+Landscape	Paisaje
+Fire	Fuego
+Aurora	Aurora
+Fog	Niebla
+Slate	Pizarra
+Forest	Bosque
+Add a heading	Agregar un título
+Add a subheading	Agregar un subtítulo
+Add body text	Agregar texto de cuerpo
+Small label	Etiqueta pequeña
+Panel	Panel
+Button	Botón
+Input Field	Input Field
+Dropdown	Desplegable
+Scroll View	Scroll View
+Input field	Campo de texto
+Scroll view	Vista con scroll
+Review	Revisar
+Checks readability, contrast, touch size and missing images before exporting	Revisa legibilidad, contraste, tamaño táctil e imágenes que faltan antes de exportar
+Review design	Revisar diseño
+No issues: the design passes every check.	Sin problemas: el diseño pasa todas las comprobaciones.
+{} errors · {} warnings. Click one to select it.	{} errores · {} avisos. Clic en uno para seleccionarlo.
+Error	Error
+Minimums are based on the reference resolution (18 px text and 64 px per control at 1080p).	Los mínimos se calculan para la resolución de referencia (18 px de letra y 64 px por control a 1080 p).
+{} px text: hard to read on small screens (recommended minimum {} px)	Letra de {} px: en pantallas pequeñas será difícil de leer (mínimo recomendado {} px)
+Text contrast {}:1 (WCAG asks for {}:1)	Contraste del texto {}:1 (WCAG pide {}:1)
+{} px control: hard to tap with a finger (recommended minimum {} px)	Control de {} px: difícil de pulsar con el dedo (mínimo recomendado {} px)
+Completely outside the page: it will not be visible in the game	Está completamente fuera de la página: no se verá en el juego
+Partly outside the page	Se sale en parte de la página
+Several elements share this name: GameObject.Find and scripts will only find the first one	Hay varios elementos llamados así: GameObject.Find y los scripts encontrarán solo el primero
+Missing image “{}”: it will be exported empty	Falta la imagen «{}»: se exportará vacía
+None	Ninguno
+TextMeshPro · text	TextMeshPro · texto
+TMP_Dropdown · options	TMP_Dropdown · opciones
+UI controls (uGUI)	Controles de UI (uGUI)
+Containers and Layout Groups	Contenedores y Layout Groups
+Shapes	Formas
+Save file	Guardar archivo
+Reference resolution	Resolución de referencia
+PC / console Full HD	PC / consola Full HD
+PC HD	PC HD
+PC 4K	PC 4K
+Ultrawide 21:9	Ultrapanorámico 21:9
+Phone portrait	Móvil vertical
+Phone landscape	Móvil horizontal
+Tablet 4:3	Tableta 4:3
+2400 × 1080 (phone landscape)	2400 × 1080 (móvil apaisado)
+1080 × 2400 (phone portrait)	1080 × 2400 (móvil vertical)
+1080 × 1080 (square)	1080 × 1080 (cuadrado)
+Click / Shift+click	Clic / Shift+clic
+Select / add	Seleccionar / sumar
+Ctrl+click	Ctrl+clic
+Select inside a group	Seleccionar dentro de un grupo
+Select the parent	Seleccionar el padre
+Drag on empty space	Arrastrar vacío
+Area selection	Selección por área
+Double-click	Doble clic
+Edit text	Editar texto
+Scale (Shift: free)	Escalar (Shift: libre)
+Rotation handle	Tirador de giro
+Rotate (Shift: 15°)	Girar (Shift: 15°)
+Alt+drag	Alt+arrastrar
+Duplicate and move	Duplicar y mover
+Group / ungroup	Agrupar / desagrupar
+Ctrl+D / Del	Ctrl+D / Supr
+Duplicate / delete	Duplicar / borrar
+Undo / redo	Deshacer / rehacer
+Arrows	Flechas
+Move 1 px (Shift: 10)	Mover 1 px (Shift: 10)
+Ctrl+wheel	Ctrl+rueda
+Test / simulate screens	Probar / simular pantallas
+No system font with these characters was found: text may show as boxes.	No se encontró en el sistema una fuente con estos caracteres: el texto puede verse como cuadros.
+No system font was found for the language “{}”	No se encontró una fuente del sistema para el idioma «{}»
+The release has no version.	La release no tiene versión.
+Unrecognized release version.	Versión de la release no reconocida.
+GitHub responded {}.	GitHub respondió {}.
+The downloaded zip is not valid.	El zip descargado no es válido.
+The zip does not contain lienzo-ui.exe.	El zip no contiene lienzo-ui.exe.
+The zip could not be read.	El zip no se pudo leer.
+The executable in the zip is too large.	El ejecutable del zip es demasiado grande.
+The executable in the zip does not look valid.	El ejecutable del zip no parece válido.
+The download responded {}.	La descarga respondió {}.
+The download is too large or was cut off.	La descarga es demasiado grande o se cortó.
+there should be a version newer than 0.0.1	debería haber una versión más nueva que 0.0.1
+ inside “{}”	 dentro de «{}»
+Group {}	Grupo {}
+Upload elements (PNG images with transparency or .json elements)	Subir elementos (imágenes PNG con transparencia o elementos .json)
+Upload templates (.json from this editor)	Subir plantillas (.json de este editor)
+Add fonts (.ttf / .otf)	Añadir fuentes (.ttf / .otf)
+Element	Elemento
+Open project	Abrir proyecto
+▶ Test mode: click the elements with ⚡ to run their code.	▶ Modo prueba: haz clic en los elementos con ⚡ para ejecutar su código.
+Unity project folder (the one that contains Assets)	Carpeta del proyecto de Unity (la que contiene Assets)
+Play button	Botón Jugar
+Options button	Botón Opciones
+Credits button	Botón Créditos
+Exit button	Botón Salir
+the background keeps its order	al fondo conserva su orden
+Menu	Menú
+Header	Cabecera
+Moon	Luna
+the locked background does not enter the group	el fondo bloqueado no entra en el grupo
+Drop inside “{}”	Soltar dentro de «{}»
+TEST MODE · click the elements with code · Esc or F5 to go back to editing	MODO PRUEBA · clic en los elementos con código · Esc o F5 para volver a editar
+Screen {} × {}  ·  virtual canvas {} × {}  ·  CanvasScaler scale {:.2}	Pantalla {} × {}  ·  lienzo virtual {} × {}  ·  escala del CanvasScaler {:.2}
+Placed by the parent's Layout Group (use the Hierarchy to reorder)	Lo coloca el Layout Group del padre (usa la Jerarquía para reordenar)
+Unexpected response from the server.	Respuesta inesperada del servidor.
+You do not have permission or your session expired. Sign in again.	No tienes permiso o tu sesión caducó. Vuelve a iniciar sesión.
+It already exists or was already processed.	Ya existe o ya fue procesado.
+Daily limit	Límite diario
+That name is already in use.	Ese nombre ya está en uso.
+The server is not available right now.	El servidor no está disponible ahora mismo.
+No connection to the server.	Sin conexión con el servidor.
+The server response is too large or was cut off.	La respuesta del servidor es demasiado grande o se cortó.
+The server did not return a session.	El servidor no devolvió una sesión.
+Invalid account identifier.	Identificador de cuenta no válido.
+You can go back to Lienzo UI now. You can close this tab.	Ya puedes volver a Lienzo UI. Puedes cerrar esta pestaña.
+Could not sign in	No se pudo iniciar sesión
+Go back to Lienzo UI and try again.	Vuelve a Lienzo UI e inténtalo de nuevo.
+Local port {} is busy. Close another Lienzo UI session and try again.	El puerto local {} está ocupado. Cierra otra sesión de Lienzo UI e inténtalo de nuevo.
+Could not open the browser.	No se pudo abrir el navegador.
+Sign-in canceled.	Inicio de sesión cancelado.
+Timed out waiting for sign-in.	Se agotó el tiempo para iniciar sesión.
+Sign-in was canceled.	Se canceló el inicio de sesión.
+Invalid sign-in response.	Respuesta de inicio de sesión no válida.
+Invalid creator.	Creador no válido.
+This creator does not have a public profile yet.	Este creador aún no tiene un perfil público.
+The image is too heavy (maximum 25 MB).	La imagen pesa demasiado (máximo 25 MB).
+Could not read the image.	No se pudo leer la imagen.
+Could not read the image (use PNG, JPEG, WebP, GIF or BMP).	No se pudo leer la imagen (usa PNG, JPEG, WebP, GIF o BMP).
+Could not reduce the image to the allowed size.	No se pudo reducir la imagen al tamaño permitido.
+Could not upload the image.	No se pudo subir la imagen.
+Image published on your profile.	Imagen publicada en tu perfil.
+Image sent for review.	Imagen enviada a revisión.
+This content has no file.	Este contenido no tiene archivo.
+Invalid file path.	Ruta de archivo no válida.
+The file exceeds the allowed size.	El archivo supera el tamaño permitido.
+The content has no verification fingerprint.	El contenido no trae huella de verificación.
+The SHA-256 fingerprint does not match: the file is not the one that was approved. It was not installed.	La huella SHA-256 no coincide: el archivo no es el que se aprobó. No se instaló.
+Did not pass local validation: {}	No pasó la validación local: {}
+Sent for review: {}	Enviado a revisión: {}
+plugin.json is not valid.	plugin.json no es válido.
+{} “{}” (Plugins tab)	{} «{}» (pestaña Plugins)
+{} “{}” (Images tab)	{} «{}» (pestaña Imágenes)
+{} “{}” (Text tab)	{} «{}» (pestaña Texto)
+The theme is not valid.	El tema no es válido.
+{} “{}” (Themes button to change it)	{} «{}» (botón Temas para cambiarlo)
+{} “{}” (Templates › My templates)	{} «{}» (Plantillas › Mis plantillas)
+{} “{}” (Elements tab)	{} «{}» (pestaña Elementos)
+Plugin folder (with plugin.json)	Carpeta del plugin (con plugin.json)
+No saved session: open the app, Community tab, and sign in.	No hay sesión guardada: abre la app, pestaña Comunidad, e inicia sesión.
+Could not renew the session: {}	No se pudo renovar la sesión: {}
+This account does not have a profile yet: create it in the app (Community tab).	Esta cuenta aún no tiene perfil: créalo en la app (pestaña Comunidad).
+Server error.	Error del servidor.
+{}  [{}] {}  (by {}, {} bytes{})	{}  [{}] {}  (por {}, {} bytes{})
+{} content item(s) and {} profile image(s) pending. To see the files use the moderation website.	{} contenido(s) y {} imagen(es) de perfil pendientes. Para ver los archivos usa la web de moderación.
+Token created (expires {}). Copy it now, it cannot be viewed again:	Token creado (caduca {}). Cópialo ahora, no se puede volver a ver:
+I make game interfaces with Unity.	Hago interfaces para juegos con Unity.
+My button menu	Mi menú de botones
+Four buttons ready for a main menu.	Cuatro botones listos para un menú principal.
+Provide a valid identifier.	Indica un identificador válido.
+Could not read your data (do you have a profile?).	No se pudo leer lo tuyo (¿tienes perfil?).
+removed	quitado
+added	añadido
+the banner ends up 3:1	el banner queda en 3:1
+The design's “elements” list is missing.	Falta la lista «elements» del diseño.
+Too many elements.	Demasiados elementos.
+Designs cannot contain external links or paths.	Los diseños no pueden llevar enlaces ni rutas externas.
+Designs cannot contain absolute paths or paths with “..”.	Los diseños no pueden llevar rutas absolutas o con «..».
+A plugin needs “manifiesto” and “archivos”.	Un plugin necesita «manifiesto» y «archivos».
+Manifest: invalid name.	Manifiesto: nombre inválido.
+The manifest uses {}, which is not in the package.	El manifiesto usa {}, que no está en el paquete.
+Empty file.	Archivo vacío.
+Exceeds the limit of {} KB for {}.	Supera el límite de {} KB para {}.
+File type not allowed.	Tipo de archivo prohibido.
+Not a valid PNG, JPEG, GIF or WebP image.	No es una imagen PNG, JPEG, GIF ni WebP válida.
+Dimensions out of range (maximum 4096×4096).	Dimensiones fuera de rango (máximo 4096×4096).
+A text JSON was expected.	Se esperaba un JSON de texto.
+The file is not valid UTF-8 JSON.	El archivo no es JSON UTF-8 válido.
+The file is not valid JSON.	El archivo no es JSON válido.
+The file is not a Lienzo UI theme.	El archivo no es un tema de Lienzo UI.
+Unknown image type.	Tipo de imagen desconocido.
+The image must weigh at most {} KB.	La imagen debe pesar como máximo {} KB.
+The image must be PNG.	La imagen debe ser PNG.
+The image must measure at most {}×{} px.	La imagen debe medir como máximo {}×{} px.
+{}// (the {}° rotation is ignored inside an IMGUI mask or scroll)	{}// (la rotación de {}° se ignora dentro de una máscara o scroll en IMGUI)
+{}// editor gradient: IMGUI uses the first color	{}// degradado del editor: IMGUI usa el primer color
+could not read the image {}: {}	no se pudo leer la imagen {}: {}
+Card/Options/Viewport/Content/Slider Brightness	Tarjeta/Opciones/Viewport/Content/Slider Brillo
+Window	Ventana
+Window title	Título ventana
+Dim	Oscurecer
+unsupported image format	formato de imagen no compatible
+could not read the image	no se pudo leer la imagen
+the file does not contain elements from this editor	el archivo no contiene elementos de este editor
+nothing is selected	no hay nada seleccionado
+the file is not a design from this editor	el archivo no es un diseño de este editor
+use a .ttf or .otf font file	usa un archivo de fuente .ttf o .otf
+invalid name	nombre no válido
+unnamed	sin nombre
+template {} does not exist (0-{})	la plantilla {} no existe (0-{})
+Specify the design with --abrir <file> or --plantilla <n>	Indica el diseño con --abrir <archivo> o --plantilla <n>
+Could not load the design: {}	No se pudo cargar el diseño: {}
+Could not save {}: {}	No se pudo guardar {}: {}
+Lienzo UI · design interfaces for Unity	Lienzo UI · diseña interfaces para Unity
+In-app updates: a button appears in the header when there is a new version.	Actualizaciones desde la app: aparece un botón en la cabecera cuando hay una versión nueva.
+Type your text	Escribe tu texto
+Option	Opción
+Type here...	Escribe aquí...
+Option A	Opción A
+Option B	Opción B
+Option C	Opción C
+Untitled design	Diseño sin título
+Title	Título
+STAR ADVENTURE	AVENTURA ESTELAR
+Subtitle	Subtítulo
+An interface demo	Una demo de interfaz
+Play	Jugar
+Options	Opciones
+Credits	Créditos
+Exit	Salir
+{} button	Botón {}
+Version	Versión
+Scene (preview)	Escena (vista previa)
+Top bar	Barra superior
+Health frame	Marco vida
+Health label	Etiqueta vida
+HEALTH 72/100	VIDA 72/100
+Points	Puntos
+Action bar	Barra de acciones
+Slot {}	Ranura {}
+Minimap	Minimapa
+Save the game?	¿Guardar la partida?
+Message	Mensaje
+Your progress will be saved in slot 1. You can continue later.	Tu progreso se guardará en la ranura 1. Puedes continuar más tarde.
+Buttons	Botones
+Cancel button	Botón cancelar
+Accept button	Botón aceptar
+Music volume	Volumen música
+Effects volume	Volumen efectos
+Brightness	Brillo
+Fullscreen	Pantalla completa
+Quality	Calidad
+Low	Baja
+Medium	Media
+High	Alta
+Player name	Nombre jugador
+Back button	Botón volver
+Back	Volver
+Game (preview)	Juego (vista previa)
+Pause	Pausa
+PAUSED	PAUSA
+Continue	Continuar
+Restart level	Reiniciar nivel
+Exit to menu	Salir al menú
+GAME OVER	FIN DE LA PARTIDA
+Results	Resultados
+Best score	Mejor marca
+Time	Tiempo
+Retry button	Botón reintentar
+Menu button	Botón menú
+Choose a level	Elige un nivel
+Stars	Estrellas
+Stars: 14 / 36	Estrellas: 14 / 36
+Levels	Niveles
+Level {}	Nivel {}
+Level name	Nombre del nivel
+The Crystal Caves	Las Cuevas de Cristal
+Tip	Consejo
+Tip: hold the jump button to reach higher.	Consejo: mantén pulsado el salto para llegar más alto.
+Loading bar	Barra de carga
+Percentage	Porcentaje
+Loading... 64 %	Cargando... 64 %
+Indicator	Indicador
+Dialogue box	Caja de diálogo
+Portrait	Retrato
+Old woman of the forest	Anciana del bosque
+Traveler, the north bridge fell last night. If you are looking for the temple, you will have to cross through the caves.	Viajero, el puente del norte cayó anoche. Si buscas el templo, tendrás que cruzar por las cuevas.
+Continue button	Botón continuar
+List	Lista
+Nebula	Nébula
+You	Tú
+Row {}	Fila {}
+Choose your character	Elige tu personaje
+Warrior	Guerrera
+High strength	Fuerza alta
+Mage	Mago
+High magic	Magia alta
+Archer	Arquero
+High precision	Precisión alta
+Rogue	Pícara
+High stealth	Sigilo alto
+Card {}	Tarjeta {}
+Portrait {}	Retrato {}
+Name {}	Nombre {}
+Attribute {}	Atributo {}
+Confirm button	Botón confirmar
+{} empty	{} vacía
+the title matches the name	el título coincide con el nombre
+{}: {} has no size	{}: {} sin tamaño
+{} @{}x{}: “{}” outside the page {:?}	{} @{}x{}: «{}» fuera de la página {:?}
+Choose your Unity project folder (Ctrl+E)	Elige la carpeta de tu proyecto de Unity (Ctrl+E)
+They will be added inside “{}”	Se agregarán dentro de «{}»
+NEW	NUEVO
+Watch out, it's coming from the left!	¡Cuidado, viene por la izquierda!
+Choose image	Elegir imagen
+(not chosen)	(sin elegir)
+Writes to Assets/EditorGUI: Editor/EditorGuiImporter.cs, Designs/{c}.json, Sprites, Fonts, UI Toolkit/{c}.uxml+.uss and Scripts/{c}OnGUI.cs, {c}ViewBase.cs, {c}View.cs. When you return to Unity, Prefabs/{c}.prefab (uGUI + TextMeshPro) is generated automatically.	Escribe en Assets/EditorGUI: Editor/EditorGuiImporter.cs, Designs/{c}.json, Sprites, Fonts, UI Toolkit/{c}.uxml+.uss y Scripts/{c}OnGUI.cs, {c}ViewBase.cs, {c}View.cs. Al volver a Unity se genera Prefabs/{c}.prefab (uGUI + TextMeshPro) automáticamente.
+Design for the importer. Unity turns it into a prefab (Tools › Lienzo UI).	Diseño para el importador. Unity lo convierte en prefab (Tools › Lienzo UI).
+Uses a UIDocument with PanelSettings set to “Scale With Screen Size” and this reference resolution.	Usa un UIDocument con PanelSettings en «Scale With Screen Size» y esta resolución de referencia.
+Standalone component: draws the interface with UnityEngine.GUI inside OnGUI (no Canvas).	Componente autónomo: dibuja la interfaz con UnityEngine.GUI dentro de OnGUI (sin Canvas).
+Typed references and onClick/onValueChanged events. Inherit in <Class>View for your logic.	Referencias tipadas y eventos onClick/onValueChanged. Hereda en <Clase>View para tu lógica.
+Goes in Assets/EditorGUI/Editor/. Builds the prefab with uGUI + TextMeshPro.	Va en Assets/EditorGUI/Editor/. Construye el prefab con uGUI + TextMeshPro.
+{} lines	{} líneas
+path not allowed in the plugin: {}	ruta no permitida en el plugin: {}
+{}: the returned design is not valid ({})	{}: el diseño devuelto no es válido ({})
+{}: exportar() must return text, it returned {}	{}: exportar() debe devolver texto, devolvió {}
+{} “{}”{}	{} «{}»{}
+the command must work	el comando debe funcionar
+the exporter must work	el exportador debe funcionar
+should reject {:?}	debería rechazar {:?}
+should accept {:?}	debería aceptar {:?}
+⚠ There is no element named “{}”	⚠ No existe un elemento llamado «{}»
+⚠ Invalid color: {}	⚠ Color no válido: {}
+⚠ Error in the code of “{}”: {}	⚠ Error en el código de «{}»: {}
+the child follows the parent	el hijo sigue al padre
+does not go past the last option	no pasa de la última opción
+this is not code (	esto no es código (
+{} “{}”. {}	{} «{}». {}
+{} “{}”	{} «{}»
+My theme ✨	Mi tema ✨
+The theme needs a name of 1 to 60 characters.	El tema necesita un nombre de 1 a 60 caracteres.
+The theme author is too long.	El autor del tema es demasiado largo.
+Invalid color in “{}”: use #RRGGBB.	Color no válido en «{}»: usa #RRGGBB.
+Corners must be between 0 and 16.	Las esquinas deben estar entre 0 y 16.
+Invalid font name.	Nombre de fuente no válido.

@@ -54,7 +54,7 @@ pub fn fonts_dir() -> PathBuf {
     root_dir().join("fuentes")
 }
 fn elements_dir() -> PathBuf {
-    root_dir().join("elementos")
+    root_dir().join("elements")
 }
 fn templates_dir() -> PathBuf {
     root_dir().join("plantillas")
@@ -154,9 +154,9 @@ impl Library {
     /// Copy an image into the library. Returns its file name.
     pub fn add_image(&mut self, src: &Path) -> Result<String, String> {
         if !IMAGE_EXTS.contains(&ext_of(src).as_str()) {
-            return Err("formato de imagen no compatible".into());
+            return Err("unsupported image format".into());
         }
-        image_size(src).ok_or("no se pudo leer la imagen")?;
+        image_size(src).ok_or("could not read the image")?;
         let name = import_file(src, &images_dir())?;
         self.refresh();
         Ok(name)
@@ -169,7 +169,7 @@ impl Library {
             let text = std::fs::read_to_string(src).map_err(|e| e.to_string())?;
             let items: Vec<Element> = serde_json::from_str::<Vec<Element>>(&text)
                 .or_else(|_| serde_json::from_str::<Element>(&text).map(|e| vec![e]))
-                .map_err(|_| "el archivo no contiene elementos de este editor".to_string())?;
+                .map_err(|_| "the file does not contain elements from this editor".to_string())?;
             return self.save_element(&stem(src), &items);
         }
         let file = self.add_image(src)?;
@@ -181,7 +181,7 @@ impl Library {
     /// Save elements (e.g. the current selection) as a reusable library element.
     pub fn save_element(&mut self, name: &str, items: &[Element]) -> Result<String, String> {
         if items.is_empty() {
-            return Err("no hay nada seleccionado".into());
+            return Err("nothing is selected".into());
         }
         let ids: Vec<u64> = items.iter().map(|e| e.id).collect();
         // normalise: top-left of the group at (0,0)
@@ -224,7 +224,7 @@ impl Library {
     /// Upload a template: a project/template .json saved by this editor.
     pub fn add_template_file(&mut self, src: &Path) -> Result<String, String> {
         let text = std::fs::read_to_string(src).map_err(|e| e.to_string())?;
-        let doc: Doc = serde_json::from_str(&text).map_err(|_| "el archivo no es un diseño de este editor".to_string())?;
+        let doc: Doc = serde_json::from_str(&text).map_err(|_| "the file is not a design from this editor".to_string())?;
         self.save_template(&stem(src), &doc)
     }
 
@@ -237,12 +237,12 @@ impl Library {
 /// Copy a font file into the library. Returns the font's display name (file stem), bytes and library path.
 pub fn add_font_file(src: &Path) -> Result<(String, Vec<u8>, PathBuf), String> {
     if !FONT_EXTS.contains(&ext_of(src).as_str()) {
-        return Err("usa un archivo de fuente .ttf o .otf".into());
+        return Err("use a .ttf or .otf font file".into());
     }
     let bytes = std::fs::read(src).map_err(|e| e.to_string())?;
     let dir = fonts_dir();
     std::fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
-    let mut dest = dir.join(src.file_name().ok_or("nombre no válido")?);
+    let mut dest = dir.join(src.file_name().ok_or("invalid name")?);
     // Another font with the same file name: stored separately (previously the new one was used this session and the old one after a restart).
     if dest.exists() && std::fs::read(&dest).map(|b| b != bytes).unwrap_or(true) {
         dest = dir.join(unique_name(&dir, &stem(src), &ext_of(src)));
@@ -315,12 +315,12 @@ pub fn image_element(file: &str, w: u32, h: u32, max_side: f32) -> Element {
     e.h = (h as f32 * s).max(8.0);
     e.radius = 0.0;
     e.image = file.to_string();
-    e.name = Path::new(file).file_stem().and_then(|s| s.to_str()).unwrap_or("Imagen").to_string();
+    e.name = Path::new(file).file_stem().and_then(|s| s.to_str()).unwrap_or("Image").to_string();
     e
 }
 
 fn stem(p: &Path) -> String {
-    p.file_stem().and_then(|s| s.to_str()).unwrap_or("sin nombre").to_string()
+    p.file_stem().and_then(|s| s.to_str()).unwrap_or("unnamed").to_string()
 }
 
 fn list(dir: &Path) -> Vec<PathBuf> {

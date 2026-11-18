@@ -1,592 +1,586 @@
-# Lienzo UI 界面简体中文翻译。
-# 格式：西班牙语原文<TAB>译文。以 # 开头的行是注释。
-+ Añadir fuente…	+ 添加字体…
-Abre el tutorial para novatos y profesionales (F1)	打开新手和进阶教程（F1）
-Abrir carpeta	打开文件夹
-Abrir proyecto…	打开项目…
-Accesibilidad	无障碍
-Activo / inactivo (SetActive en Unity)	激活 / 停用（Unity 中的 SetActive）
-Agregar un cuadro de texto	添加文本框
-Agrupar	编组
-Agrupar en Contenedor	编组到容器
-Agrupar en Contenedor (Ctrl+G)	编组到容器（Ctrl+G）
-Ajustar	吸附
-Ajustar a la cuadrícula	吸附到网格
-Ajustar a la ventana	适应窗口
-Al hacer clic (código de prueba)	点击时（测试代码）
-Alineación	对齐
-Alt: + posición	Alt：+ 位置
-Alto contraste	高对比度
+# Chinese translation of the Lienzo UI interface.
+# Format: English text<TAB>Chinese translation. Lines starting with # are comments.
++ Add font…	+ 添加字体…
+Open the beginner and pro tutorial (F1)	打开新手和进阶教程（F1）
+Open folder	打开文件夹
+Open project…	打开项目…
+Accessibility	无障碍
+Active / inactive (SetActive in Unity)	激活 / 停用（Unity 中的 SetActive）
+Add a text box	添加文本框
+Group	编组
+Group into Container	编组到容器
+Group into Container (Ctrl+G)	编组到容器（Ctrl+G）
+Snap	吸附
+Snap to grid	吸附到网格
+Fit to window	适应窗口
+On click (test code)	点击时（测试代码）
+Alignment	对齐
+Alt: + position	Alt：+ 位置
+High contrast	高对比度
 Anchor Max	Anchor Max
 Anchor Min	Anchor Min
-Anterior	上一个
-Aparecerá en Plantillas › Mis plantillas para empezar nuevos diseños.	会出现在「模板 › 我的模板」中，用于创建新设计。
-Archivo	文件
-Archivos .json guardados con este editor	用此编辑器保存的 .json 文件
-Atajos	快捷键
-Atajos: Ctrl+Alt+= y Ctrl+Alt+- cambian el tamaño de la interfaz; F1 abre el tutorial.	快捷键：Ctrl+Alt+= 和 Ctrl+Alt+- 调节界面大小；F1 打开教程。
-Añaden comandos, exportadores y plantillas. Guía: docs/PLUGINS.md	用于添加命令、导出器和模板。指南：docs/PLUGINS.md
-Añadir Contenedor hijo	添加子容器
-Añadir fuentes…	添加字体…
-Aún no elegiste un proyecto. «Exportar a Unity» te pedirá la carpeta (la que contiene Assets).	尚未选择项目。「导出到 Unity」会询问文件夹（即包含 Assets 的那个）。
-Aún no tienes plantillas propias. Guarda tu diseño como plantilla o sube una.	你还没有自己的模板。把设计保存为模板或上传一个。
+Previous	上一个
+It will appear in Templates › My templates to start new designs.	会出现在「模板 › 我的模板」中，用于创建新设计。
+File	文件
+.json files saved with this editor	用此编辑器保存的 .json 文件
+Shortcuts	快捷键
+Shortcuts: Ctrl+Alt+= and Ctrl+Alt+- change the interface size; F1 opens the tutorial.	快捷键：Ctrl+Alt+= 和 Ctrl+Alt+- 调节界面大小；F1 打开教程。
+They add commands, exporters and templates. Guide: docs/PLUGINS.md	用于添加命令、导出器和模板。指南：docs/PLUGINS.md
+Add child Container	添加子容器
+Add fonts…	添加字体…
+No project selected yet. “Export to Unity” will ask for the folder (the one containing Assets).	尚未选择项目。「导出到 Unity」会询问文件夹（即包含 Assets 的那个）。
+You don't have any templates yet. Save your design as a template or upload one.	你还没有自己的模板。把设计保存为模板或上传一个。
 B	B
-Bloquear / desbloquear	锁定 / 解锁
-Bloquear en el editor	在编辑器中锁定
-Borde	边框
-Buscar…	搜索…
-Cambiar proyecto…	切换项目…
+Lock / unlock	锁定 / 解锁
+Lock in editor	在编辑器中锁定
+Border	边框
+Search…	搜索…
+Change project…	切换项目…
 Canvas · Canvas Scaler	Canvas · Canvas Scaler
-Celda (alto)	单元格（高）
-Celda (ancho)	单元格（宽）
+Cell (height)	单元格（高）
+Cell (width)	单元格（宽）
 Child Alignment	Child Alignment
-Clic agrega al centro (o dentro del panel/contenedor seleccionado). Arrastra para soltar donde quieras: si sueltas sobre un panel queda como hijo.	单击添加到中心（或所选面板/容器内）。拖动可放到任意位置：放在面板上会成为其子级。
-Clic para reemplazar el diseño (Ctrl+Z deshace). Todas usan jerarquía, anclas y Layout Groups.	单击即可替换设计（Ctrl+Z 撤销）。所有模板都使用层级、锚点和 Layout Group。
-Clic selecciona · Ctrl+clic entra en grupos · doble clic edita texto · Espacio+arrastrar mueve la vista	单击选择 · Ctrl+单击进入编组 · 双击编辑文字 · 空格+拖动平移视图
-Clic: anclas	单击：锚点
+Click adds to the center (or inside the selected panel/container). Drag to drop wherever you want: if you drop it on a panel, it becomes a child.	单击添加到中心（或所选面板/容器内）。拖动可放到任意位置：放在面板上会成为其子级。
+Click to replace the design (Ctrl+Z undoes). All use hierarchy, anchors and Layout Groups.	单击即可替换设计（Ctrl+Z 撤销）。所有模板都使用层级、锚点和 Layout Group。
+Click selects · Ctrl+click enters groups · double-click edits text · Space+drag pans the view	单击选择 · Ctrl+单击进入编组 · 双击编辑文字 · 空格+拖动平移视图
+Click: anchors	单击：锚点
 Color	颜色
 Color (Image.color)	颜色（Image.color）
-Color de la casilla	勾选框颜色
-Color del texto	文字颜色
-Columnas	列数
-Como plantilla	作为模板
-Como proyecto	作为项目
-Control + Expand alto	Control + 扩展高度
-Control + Expand ancho	Control + 扩展宽度
-Copiar	复制
+Checkbox color	勾选框颜色
+Text color	文字颜色
+Columns	列数
+As template	作为模板
+As project	作为项目
+Control + Expand height	Control + 扩展高度
+Control + Expand width	Control + 扩展宽度
+Copy	复制
 Ctrl+0	Ctrl+0
 Ctrl+]	Ctrl+]
-Cursiva	斜体
-Degradado hasta	渐变到
-Desactívalo para barras de vida o progreso	用于血条或进度条时请关闭
-Desagrupar	取消编组
-Deshacer	撤销
-Desplazamiento vertical. Los hijos van al Content (Viewport/Content); su alto crece para que todos quepan.	垂直滚动。子级放在 Content 中（Viewport/Content）；其高度会增长以容纳全部子级。
-Distancia	间距
-Duplicar	复制
-Editar	编辑
-El diseño está vacío.	设计为空。
-Elementos	元素
-Eliminar	删除
-En Unity se crean con TextMeshPro (TextMeshProUGUI).	在 Unity 中用 TextMeshPro（TextMeshProUGUI）创建。
-En uGUI se exportan como un Sprite de degradado generado.	在 uGUI 中导出为生成的渐变 Sprite。
-Error del plugin:	插件错误：
-Esquinas	圆角
-Estilo	样式
-Exportar a Unity	导出到 Unity
-Exportar al proyecto de Unity	导出到 Unity 项目
-Exportar todo al proyecto	全部导出到项目
-Exportar… (código y opciones)	导出…（代码和选项）
+Italic	斜体
+Gradient to	渐变到
+Turn it off for health or progress bars	用于血条或进度条时请关闭
+Ungroup	取消编组
+Undo	撤销
+Vertical scrolling. Children go into Content (Viewport/Content); its height grows so they all fit.	垂直滚动。子级放在 Content 中（Viewport/Content）；其高度会增长以容纳全部子级。
+Distance	间距
+Duplicate	复制
+Edit	编辑
+The design is empty.	设计为空。
+Elements	元素
+Delete	删除
+In Unity they are created with TextMeshPro (TextMeshProUGUI).	在 Unity 中用 TextMeshPro（TextMeshProUGUI）创建。
+In uGUI they are exported as a generated gradient Sprite.	在 uGUI 中导出为生成的渐变 Sprite。
+Plugin error:	插件错误：
+Corners	圆角
+Style	样式
+Export to Unity	导出到 Unity
+Export to Unity project	导出到 Unity 项目
+Export everything to project	全部导出到项目
+Export… (code and options)	导出…（代码和选项）
 F5	F5
-Filas	行数
-Fondo	背景
-Fuente	字体
-Fuente (se exporta como TMP Font Asset)	字体（导出为 TMP Font Asset）
-Funciones disponibles	可用函数
-Guarda lo seleccionado (con sus hijos) para reutilizarlo	保存所选内容（含子级）以便复用
-Guardar	保存
-Guardar como plantilla…	另存为模板…
-Guardar como proyecto o como plantilla	保存为项目或模板
-Guardar como…	另存为…
-Guardar proyecto como…	项目另存为…
-Guardar selección	保存所选内容
+Rows	行数
+Background	背景
+Font	字体
+Font (exported as TMP Font Asset)	字体（导出为 TMP Font Asset）
+Available functions	可用函数
+Saves the selection (with its children) for reuse	保存所选内容（含子级）以便复用
+Save	保存
+Save as template…	另存为模板…
+Save as project or as template	保存为项目或模板
+Save as…	另存为…
+Save project as…	项目另存为…
+Save selection	保存所选内容
 I	I
-Idioma	语言
-Idioma, tamaño de la interfaz, alto contraste y movimiento reducido	语言、界面大小、高对比度和减少动态效果
-Igual que en Unity: lo de abajo se dibuja encima. Arrastra filas para reordenar o meter un elemento dentro de otro.	与 Unity 相同：下方的内容绘制在上层。拖动行可重新排序或把一个元素放入另一个元素中。
-Image	Image
-Imágenes	图片
-Imágenes PNG/JPG (íconos con transparencia) o elementos .json	PNG/JPG 图片（带透明的图标）或 .json 元素
-Imágenes con filtro de vecino más cercano, posiciones y tamaños en píxeles enteros. En Unity: Canvas Pixel Perfect y sprites con filtro Point sin compresión.	图片使用最近邻过滤，位置和尺寸为整数像素。Unity 中对应：Canvas Pixel Perfect，以及 Point 过滤、无压缩的 Sprite。
+Language	语言
+Language, interface size, high contrast and reduced motion	语言、界面大小、高对比度和减少动态效果
+As in Unity: items below are drawn on top. Drag rows to reorder or to nest an element inside another.	与 Unity 相同：下方的内容绘制在上层。拖动行可重新排序或把一个元素放入另一个元素中。
+Image	图片
+Images	图片
+PNG/JPG images (icons with transparency) or .json elements	PNG/JPG 图片（带透明的图标）或 .json 元素
+Images with nearest-neighbor filtering, positions and sizes in whole pixels. In Unity: Canvas Pixel Perfect and sprites with Point filter and no compression.	图片使用最近邻过滤，位置和尺寸为整数像素。Unity 中对应：Canvas Pixel Perfect，以及 Point 过滤、无压缩的 Sprite。
 Inspector	检查器
 Interactable	Interactable
 Is On	Is On
-Jerarquía	层级
-Las imágenes que subas aparecerán aquí y se guardan para tus próximos diseños.	你上传的图片会显示在这里，并保存供之后的设计使用。
+Hierarchy	层级
+The images you upload will appear here and are saved for your next designs.	你上传的图片会显示在这里，并保存供之后的设计使用。
 Layout Group	Layout Group
-Lienzo	Canvas
+Canvas	Canvas
 Lienzo UI	Lienzo UI
-Limpiar consola	清空控制台
-Los cambios que hace el código se descartan al salir.	退出时，代码所做的更改会被丢弃。
+Clear console	清空控制台
+Changes made by the code are discarded when you exit.	退出时，代码所做的更改会被丢弃。
 Match	Match
-Medidas en el lienzo (px)	画布尺寸（px）
-Modo prueba	测试模式
-Modo prueba: clic ejecuta el código y puedes simular otras pantallas (F5)	测试模式：单击会执行代码，并可模拟其他屏幕（F5）
-Monoespaciada	等宽字体
-Mostrar cuadrícula	显示网格
-Máscara y efectos	遮罩与效果
-Negrita	粗体
-No hay plugins instalados. Copia una carpeta con plugin.json en la carpeta de plugins y pulsa Recargar.	未安装插件。把含有 plugin.json 的文件夹复制到 plugins 文件夹，然后点击重新加载。
-Nombre	名称
-Nuevo diseño en blanco	新建空白设计
-Opacidad	不透明度
-Organiza automáticamente a los hijos directos, como en Unity.	自动排列直接子级，与 Unity 相同。
-PASO	步骤
-PNG, JPG, BMP, GIF o WEBP — se exportan como Sprites	PNG、JPG、BMP、GIF 或 WEBP —— 导出为 Sprite
-Para añadir un idioma, traduce assets/i18n/en.tsv (ver docs/EXTENDER.md).	要添加语言，请翻译 assets/i18n/en.tsv（见 docs/EXTENDER.md）。
-Pegar	粘贴
-Pista	轨道
+Canvas size (px)	画布尺寸（px）
+Test mode	测试模式
+Test mode: click runs the code and you can simulate other screens (F5)	测试模式：单击会执行代码，并可模拟其他屏幕（F5）
+Monospace	等宽字体
+Show grid	显示网格
+Mask and effects	遮罩与效果
+Bold	粗体
+No plugins installed. Copy a folder with plugin.json into the plugins folder and press Reload.	未安装插件。把含有 plugin.json 的文件夹复制到 plugins 文件夹，然后点击重新加载。
+Name	名称
+New blank design	新建空白设计
+Opacity	不透明度
+Automatically arranges direct children, as in Unity.	自动排列直接子级，与 Unity 相同。
+STEP	步骤
+PNG, JPG, BMP, GIF or WEBP — exported as Sprites	PNG、JPG、BMP、GIF 或 WEBP —— 导出为 Sprite
+To add a language, translate assets/i18n/en.tsv (see docs/EXTENDER.md).	要添加语言，请翻译 assets/i18n/en.tsv（见 docs/EXTENDER.md）。
+Paste	粘贴
+Hint	轨道
 Pivot	Pivot
 Pixel art	像素艺术
-Plantilla del plugin aplicada (Ctrl+Z para deshacer):	已应用插件模板（Ctrl+Z 撤销）：
-Plantillas	模板
-Plugin ejecutado:	已执行插件：
+Plugin template applied (Ctrl+Z to undo):	已应用插件模板（Ctrl+Z 撤销）：
+Templates	模板
+Plugin executed:	已执行插件：
 Plugins	插件
-Plugins cargados	已加载的插件
-Probar diseño	测试设计
-Proyecto de Unity	Unity 项目
-Proyecto:	项目：
-Quitar	移除
-Radio de esquinas	圆角半径
+Loaded plugins	已加载的插件
+Test design	测试设计
+Unity project	Unity 项目
+Project:	项目：
+Remove	移除
+Corner radius	圆角半径
 Raycast Target	Raycast Target
-Recargar	重新加载
-Rect Mask 2D (recorta a los hijos)	Rect Mask 2D（裁剪子级）
+Reload	重新加载
+Rect Mask 2D (clips children)	Rect Mask 2D（裁剪子级）
 Rect Transform	Rect Transform
-RectTransform vacío (dentro de la selección si es un panel)	空 RectTransform（若选中面板则放在其内部）
-Reducir movimiento	减少动态效果
-Referencia X	参考 X
-Referencia Y	参考 Y
-Reglas	规则
-Rehacer	重做
-Relleno	内边距
-Renombrar	重命名
-Resolución de referencia (CanvasScaler)	参考分辨率（CanvasScaler）
+Empty RectTransform (inside the selection if it is a panel)	空 RectTransform（若选中面板则放在其内部）
+Reduce motion	减少动态效果
+Reference X	参考 X
+Reference Y	参考 Y
+Rules	规则
+Redo	重做
+Padding	内边距
+Rename	重命名
+Reference resolution (CanvasScaler)	参考分辨率（CanvasScaler）
 Rotation Z	Rotation Z
-Ruta dentro del Canvas en Unity	Unity 中 Canvas 内的路径
-Sacar del padre	移出父级
-Saltar e ir al editor	跳过并前往编辑器
+Path inside the Canvas in Unity	Unity 中 Canvas 内的路径
+Unparent	移出父级
+Skip and go to editor	跳过并前往编辑器
 Scroll Rect	Scroll Rect
-Se ejecuta en Probar. Al exportar queda como comentario en el método OnClick del script View.	在测试时运行。导出后会作为注释写入 View 脚本的 OnClick 方法。
-Se exporta como Sprite 9-slice generado	导出为生成的 9 宫格 Sprite
-Seleccionar todo	全选
+Runs in Test. When exported, it becomes a comment in the OnClick method of the View script.	在测试时运行。导出后会作为注释写入 View 脚本的 OnClick 方法。
+Exported as a generated 9-slice Sprite	导出为生成的 9 宫格 Sprite
+Select all	全选
 Selectable	Selectable
 Shadow	Shadow
-Shift: + pivote	Shift：+ 轴心
-Sin animaciones en la interfaz	界面无动画
-Sin suavizado, píxeles enteros	不平滑，整数像素
+Shift: + pivot	Shift：+ 轴心
+No animations in the interface	界面无动画
+No smoothing, whole pixels	不平滑，整数像素
 Slider	Slider
 Sprite	Sprite
-Sube imágenes o guarda una selección para tenerla aquí.	上传图片或保存所选内容，就会出现在这里。
-Subir elementos…	上传元素…
-Subir imágenes	上传图片
-Subir imágenes…	上传图片…
-Subir plantillas…	上传模板…
-Subrayado	下划线
-Tamaño	大小
-Tamaño de la interfaz	界面大小
-Tamaño de la interfaz:	界面大小：
-Tamaño de letra	字号
-Texto	文字
-Texto blanco y bordes marcados	白字与明显边框
-Texto de ejemplo (Placeholder)	示例文字（Placeholder）
+Upload images or save a selection to have it here.	上传图片或保存所选内容，就会出现在这里。
+Upload elements…	上传元素…
+Upload images	上传图片
+Upload images…	上传图片…
+Upload templates…	上传模板…
+Underline	下划线
+Size	大小
+Interface size	界面大小
+Interface size:	界面大小：
+Font size	字号
+Text	文字
+White text and strong borders	白字与明显边框
+Placeholder text	示例文字（Placeholder）
 Toggle	Toggle
 Tutorial	教程
-Tutorial para novatos	新手教程
-Tutorial para profesionales	进阶教程
+Beginner tutorial	新手教程
+Pro tutorial	进阶教程
 U	U
 UI Scale Mode: Scale With Screen Size	UI Scale Mode: Scale With Screen Size
-Un archivo que puedes volver a abrir y seguir editando.	可再次打开并继续编辑的文件。
-Un lugar antes entre hermanos (Ctrl+[)	在同级中前移一位（Ctrl+[）
-Una opción por línea	每行一个选项
-Usar plantilla	使用模板
-Ver	视图
-Ver y copiar JSON, UXML/USS, IMGUI y scripts (Ctrl+Shift+E)	查看并复制 JSON、UXML/USS、IMGUI 和脚本（Ctrl+Shift+E）
-para Unity	用于 Unity
-por	由
+A file you can reopen and keep editing.	可再次打开并继续编辑的文件。
+One place earlier among siblings (Ctrl+[)	在同级中前移一位（Ctrl+[）
+One option per line	每行一个选项
+Use template	使用模板
+View	视图
+View and copy JSON, UXML/USS, IMGUI and scripts (Ctrl+Shift+E)	查看并复制 JSON、UXML/USS、IMGUI 和脚本（Ctrl+Shift+E）
+for Unity	用于 Unity
+by	由
 −	−
-Ancho / Alto	宽 / 高
-Contenedor	容器
-Código…	代码…
-Ejecutar ahora	立即运行
-Elegir proyecto…	选择项目…
-Eliminar de mi biblioteca	从我的库中删除
-Guardar archivo…	保存文件…
-Guardar como plantilla	另存为模板
-Guardar diseño actual	保存当前设计
-Guardar proyecto	保存项目
-Proyecto abierto:	已打开项目：
-Resoluciones comunes…	常用分辨率…
-Sacar	移出
-Subir elemento	上传元素
-Subir plantilla	上传模板
+Width / Height	宽 / 高
+Container	容器
+Code…	代码…
+Run now	立即运行
+Choose project…	选择项目…
+Remove from my library	从我的库中删除
+Save file…	保存文件…
+Save as template	另存为模板
+Save current design	保存当前设计
+Save project	保存项目
+Project opened:	已打开项目：
+Common resolutions…	常用分辨率…
+Take out	移出
+Upload element	上传元素
+Upload template	上传模板
 Value	Value
-Ver código…	查看代码…
-Volver a editar	返回编辑
-elementos	个元素
-elementos seleccionados	个已选元素
-seleccionados	已选中
-NOVATOS	新手
-PROFESIONALES	进阶
-Siguiente	下一个
-Abrir el editor	打开编辑器
-Detener	停止
-Probar	测试
-Acepto las reglas: nada de malware, odio, plagio ni contenido +18 sin marcar	我接受规则：不得含恶意软件、仇恨、抄袭或未标记的 18+ 内容
-Actualizar	刷新
-Borrar mi cuenta	删除我的账户
-Buscar en la comunidad…	在社区中搜索…
-Cancelar	取消
-Cargando tu perfil…	正在加载你的个人资料…
-Cargando…	加载中…
-Cerrar sesión	退出登录
-Compartir con la comunidad	分享到社区
-Comunidad	社区
-Confirmo que tengo 18 años o más	我确认已年满 18 岁
-Contenido +18 sin marcar	未标记的 18+ 内容
-Contiene contenido +18	含 18+ 内容
-Crear perfil	创建个人资料
-Derechos de autor	版权
-Descargando y verificando…	正在下载并校验…
-Descripción (máx. 1000)	描述（最多 1000 字）
-Elegir archivo…	选择文件…
-Elegir carpeta del plugin…	选择插件文件夹…
-Elemento instalado:	已安装元素：
-Elige tu nombre público	选择你的公开名称
-Entrar con	登录方式
-Enviando…	正在发送…
-Enviar a revisión	提交审核
-Es lo único que verá la comunidad. 3-32 caracteres: letras, números, punto, guion y guion bajo.	这是社区唯一能看到的信息。3-32 个字符：字母、数字、点、连字符和下划线。
-Etiquetas separadas por coma (máx. 8)	标签用逗号分隔（最多 8 个）
-Fuente instalada:	已安装字体：
-Fuentes	字体
-Guardamos solo tu nombre público, tu preferencia +18 y lo que subes. Tu correo lo gestiona el proveedor de inicio de sesión y no se muestra a nadie.	我们只保存你的公开名称、18+ 偏好和你上传的内容。你的邮箱由登录服务商管理，不会向任何人显示。
-Imagen instalada:	已安装图片：
-Inicia sesión para subir, reportar y activar el contenido +18. Explorar no necesita cuenta.	登录后即可上传、举报和启用 18+ 内容。浏览无需账户。
-Instalar	安装
-Malware o virus	恶意软件或病毒
-Mi cuenta y mis datos	我的账户与数据
-Mostrar contenido +18	显示 18+ 内容
-No hay contenido que mostrar todavía.	目前还没有可显示的内容。
-Ocultar contenido +18	隐藏 18+ 内容
-Odio o acoso	仇恨或骚扰
-Otro	其他
-Plantilla instalada:	已安装模板：
-Plugin instalado:	已安装插件：
-Plugins, imágenes, fuentes, plantillas y elementos compartidos. Todo se revisa antes de publicarse.	共享的插件、图片、字体、模板和元素。发布前都会审核。
-Quiero borrar mi cuenta y todo lo que subí (no se puede deshacer)	我要删除我的账户及我上传的全部内容（无法撤销）
-Reportar	举报
-Reporte enviado. Gracias.	举报已发送。谢谢。
-Se abrió tu navegador: termina el inicio de sesión allí.	已打开浏览器：请在那里完成登录。
-Se revisa antes de publicarse (formato, antivirus y moderación). Si es +18, márcalo.	发布前会审核（格式、杀毒和人工审核）。如果是 18+，请标记。
-Sesión cerrada.	已退出登录。
-Sesión iniciada.	已登录。
-Sesión:	会话：
-Sin contraseñas: entras con tu cuenta de GitHub o Google. La app solo guarda un nombre público.	无需密码：使用 GitHub 或 Google 账户登录。应用只保存一个公开名称。
-Todo	全部
-Tu cuenta y tu contenido se borraron.	你的账户和内容已删除。
-Título (3-80 caracteres)	标题（3-80 个字符）
-Usar el diseño abierto	使用已打开的设计
-¿Qué problema tiene?	有什么问题？
-Esperando el inicio de sesión en tu navegador…	正在等待你在浏览器中完成登录…
+View code…	查看代码…
+Back to editing	返回编辑
+elements	个元素
+elements selected	个已选元素
+selected	已选中
+BEGINNERS	新手
+PROFESSIONALS	进阶
+Next	下一个
+Open the editor	打开编辑器
+Stop	停止
+Test	测试
+I accept the rules: no malware, hate, plagiarism or unmarked 18+ content	我接受规则：不得含恶意软件、仇恨、抄袭或未标记的 18+ 内容
+Refresh	刷新
+Delete my account	删除我的账户
+Search the community…	在社区中搜索…
+Cancel	取消
+Loading your profile…	正在加载你的个人资料…
+Loading…	加载中…
+Sign out	退出登录
+Share with the community	分享到社区
+Community	社区
+I confirm I am 18 or older	我确认已年满 18 岁
+Unmarked 18+ content	未标记的 18+ 内容
+Contains 18+ content	含 18+ 内容
+Create profile	创建个人资料
+Copyright	版权
+Downloading and verifying…	正在下载并校验…
+Description (max. 1000)	描述（最多 1000 字）
+Choose file…	选择文件…
+Choose plugin folder…	选择插件文件夹…
+Element installed:	已安装元素：
+Choose your public name	选择你的公开名称
+Sign in with	登录方式
+Sending…	正在发送…
+Send for review	提交审核
+It is all the community will see. 3-32 characters: letters, numbers, dot, hyphen and underscore.	这是社区唯一能看到的信息。3-32 个字符：字母、数字、点、连字符和下划线。
+Tags separated by commas (max. 8)	标签用逗号分隔（最多 8 个）
+Font installed:	已安装字体：
+Fonts	字体
+We only keep your public name, your 18+ preference and what you upload. Your email is handled by the sign-in provider and is never shown to anyone.	我们只保存你的公开名称、18+ 偏好和你上传的内容。你的邮箱由登录服务商管理，不会向任何人显示。
+Image installed:	已安装图片：
+Sign in to upload, report and enable 18+ content. Browsing needs no account.	登录后即可上传、举报和启用 18+ 内容。浏览无需账户。
+Install	安装
+Malware or viruses	恶意软件或病毒
+My account and data	我的账户与数据
+Show 18+ content	显示 18+ 内容
+There is no content to show yet.	目前还没有可显示的内容。
+Hide 18+ content	隐藏 18+ 内容
+Hate or harassment	仇恨或骚扰
+Other	其他
+Template installed:	已安装模板：
+Plugin installed:	已安装插件：
+Shared plugins, images, fonts, templates and elements. Everything is reviewed before it is published.	共享的插件、图片、字体、模板和元素。发布前都会审核。
+I want to delete my account and everything I uploaded (cannot be undone)	我要删除我的账户及我上传的全部内容（无法撤销）
+Report	举报
+Report sent. Thank you.	举报已发送。谢谢。
+Your browser opened: finish signing in there.	已打开浏览器：请在那里完成登录。
+It is reviewed before being published (format, antivirus and moderation). If it is 18+, mark it.	发布前会审核（格式、杀毒和人工审核）。如果是 18+，请标记。
+Signed out.	已退出登录。
+Signed in.	已登录。
+Session:	会话：
+No passwords: you sign in with your GitHub or Google account. The app only keeps a public name.	无需密码：使用 GitHub 或 Google 账户登录。应用只保存一个公开名称。
+All	全部
+Your account and content were deleted.	你的账户和内容已删除。
+Title (3-80 characters)	标题（3-80 个字符）
+Use the open design	使用已打开的设计
+What is wrong with it?	有什么问题？
+Waiting for you to sign in in your browser…	正在等待你在浏览器中完成登录…
 Banner	横幅
-Descripción (máx. 300, sin enlaces)	描述（最多 300 字，不含链接）
-Elegir…	选择…
-Foto de perfil	头像
-Guardando…	正在保存…
-Guardar perfil	保存个人资料
-Icono…	图标…
-Imagen quitada.	图片已移除。
-La descripción admite hasta 300 caracteres.	描述最多支持 300 个字符。
-Mi perfil de creador	我的创作者资料
-Opcional: icono (PNG hasta 512×512) y vista previa (PNG hasta 1920×1080).	可选：图标（PNG，最大 512×512）和预览图（PNG，最大 1920×1080）。
-Perfil guardado.	个人资料已保存。
-Tu perfil es público cuando tienes al menos un contenido aprobado. Las imágenes y la descripción se moderan.	至少有一个内容通过审核后，你的资料才会公开。图片和描述会经过审核。
-Usuario de GitHub	GitHub 用户名
-Usuario de GitHub no válido.	GitHub 用户名无效。
-Ver el perfil del creador	查看创作者资料
-Ver mi perfil público	查看我的公开资料
-Vista previa	预览
-Vista previa…	预览…
-Volver a la comunidad	返回社区
-contenidos publicados	个已发布内容
-debe empezar por	必须以…开头
-en revisión	审核中
-Cerrar	关闭
-Clic para ampliar	单击放大
-Dar o quitar corazón	点赞或取消点赞
-Dejar de seguir	取消关注
-Editar mi perfil de creador	编辑我的创作者资料
-Inicia sesión para dar corazones y seguir a creadores.	登录后即可点赞和关注创作者。
-Perfil de creador: inicia sesión en Comunidad	创作者资料：请在「社区」中登录
-Seguir	关注
-Siguiendo	已关注
-Solo contenido de los creadores que sigues	仅显示你关注的创作者的内容
-seguidores	位关注者
-Acento	强调色
-Acento suave	柔和强调色
-Al pasar el ratón	悬停
-Aviso	警告
-Base clara (texto oscuro)	浅色基底（深色文字）
-Biografía	简介
-Bordes	边框
-Borrar	删除
-Búscala en Comunidad › Fuentes.	可在「社区 › 字体」中找到。
-Cambia los colores, las esquinas y la fuente de toda la app. Se guarda al momento.	更改整个应用的颜色、圆角和字体。即时保存。
-Cambiar el banner	更换横幅
-Cambiar la foto de perfil	更换头像
-Campos y botones	输入框与按钮
-Colores, esquinas y fuente de la app; temas de la comunidad	应用的颜色、圆角和字体；社区主题
-Compartir en la comunidad	分享到社区
-Correcto	成功
-Cuéntale a la comunidad quién eres (sin enlaces)	向社区介绍你自己（不含链接）
-Editar perfil	编辑资料
-En uso	使用中
-Fuente de la interfaz	界面字体
-Guardar como tema	另存为主题
-Guías del lienzo	画布参考线
-Inicia sesión para compartir.	登录后即可分享。
-Líneas	线条
-Más temas en la comunidad	社区中的更多主题
-No tienes la fuente	你没有该字体
-Nombre: 3-32 caracteres (letras, números, punto, guion y guion bajo).	名称：3-32 个字符（字母、数字、点、连字符和下划线）。
-Paneles	面板
-Paneles oscuros	深色面板
-Personalizar	自定义
-Predeterminada	默认
-Quitar el banner	移除横幅
-Quitar la foto de perfil	移除头像
-Revisa los datos y pulsa «Enviar a revisión».	确认信息后点击「提交审核」。
-Se está revisando	审核中：
-Subiendo imagen…	正在上传图片…
-Tema guardado:	已保存主题：
-Tema instalado y en uso:	已安装并使用的主题：
-Temas	主题
-Texto secundario	次要文字
-Tú ya la ves aquí; los demás la verán cuando la apruebe una persona.	你在这里已能看到；其他人要等人工审核通过后才能看到。
-Usar	使用
-Usar el tema actual	使用当前主题
-Volver al predeterminado	恢复默认
-el banner	横幅
-la foto de perfil	头像
-personalizado	自定义
-y	和
-Opcional: vista previa (PNG hasta 1920×1080). El icono del contenido lo pone la app según su tipo.	可选：预览图（PNG，最大 1920×1080）。内容图标由应用按其类型设置。
-Enviando y analizando… (puede tardar hasta un minuto)	正在发送并分析…（可能最长需一分钟）
-Subiendo y analizando la imagen… (puede tardar hasta un minuto)	正在上传并分析图片…（可能最长需一分钟）
-Actualizaciones	更新
-Versión instalada:	已安装版本：
-Buscar actualizaciones	检查更新
-Buscar actualizaciones…	检查更新…
-Buscando actualizaciones…	正在检查更新…
-Tienes la última versión.	已是最新版本。
-Volver a buscar	重新检查
-Hay una versión nueva:	有新版本可用：
-Hay una versión nueva de Lienzo UI	Lienzo UI 有新版本
-Actualizar a	更新到
-Actualizar ahora	立即更新
-Descarga manual	手动下载
-Abrir página de descarga	打开下载页面
-Omitir esta versión	跳过此版本
-Esta versión hay que descargarla a mano (no se puede verificar desde la app).	此版本需手动下载（无法在应用内校验）。
-Descargando e instalando la versión	正在下载并安装版本
-No cierres la app mientras tanto.	在此期间请不要关闭应用。
-Versión instalada correctamente:	版本安装成功：
-Guarda tu diseño: al reiniciar se cierra la ventana actual.	请保存设计：重启会关闭当前窗口。
-Reiniciar ahora	立即重启
-Reiniciar para actualizar	重启以更新
-Reintentar	重试
-Buscar actualizaciones al abrir	启动时检查更新
-Solo se consulta github.com; no se envía ningún dato tuyo.	只访问 github.com；不会发送你的任何数据。
-No se pudo conectar con GitHub.	无法连接 GitHub。
-Respuesta de GitHub no válida.	GitHub 返回的响应无效。
-La descarga no coincide con la huella publicada; no se instala.	下载内容与已发布的校验值不符；不会安装。
-No hay permiso para escribir junto a la app. Descarga la versión nueva a mano.	没有权限写入应用所在位置。请手动下载新版本。
-No se pudo reemplazar la app (¿carpeta protegida?). Descarga la versión nueva a mano.	无法替换应用（文件夹受保护？）。请手动下载新版本。
-No se pudo instalar la versión nueva; se conserva la actual.	无法安装新版本；保留当前版本。
-La instalación automática solo existe en Windows. Descarga la versión nueva a mano.	自动安装仅在 Windows 上可用。请手动下载新版本。
-Esta release no se puede verificar; descárgala a mano.	此版本无法校验；请手动下载。
-No se pudo descargar la actualización.	无法下载更新。
-Duplicado (con su contenido)	已复制（含其内容）
-Pegado	已粘贴
-Agrupado en un Contenedor (RectTransform vacío en Unity)	已编组到容器（Unity 中为空 RectTransform）
-Desagrupado	已取消编组
-Selecciona un Contenedor para desagrupar	请选择一个容器来取消编组
-Movido un nivel arriba en la jerarquía	已在层级中上移一级
-Jerarquía actualizada (la posición en pantalla se mantiene)	层级已更新（屏幕位置保持不变）
-No se puede meter un elemento dentro de sí mismo	不能把元素放进它自己里面
-Elemento de tu biblioteca agregado	已添加你库中的元素
-Modo prueba activo · Esc para volver a editar	测试模式已开启 · 按 Esc 返回编辑
-De vuelta al modo edición (el diseño quedó como antes de la prueba)	已返回编辑模式（设计恢复到测试前的状态）
-Elemento bloqueado: desbloquéalo para moverlo	元素已锁定：解锁后才能移动
-Imagen cambiada	图片已更换
-Copiado al portapapeles	已复制到剪贴板
-Bloqueado: no se puede mover ni borrar	已锁定：无法移动或删除
-Desbloqueado	已解锁
-Se agregó: {}{}	已添加：{}{}
-Se eliminaron {} elemento(s) con su contenido (los bloqueados se conservan)	已删除 {} 个元素及其内容（已锁定的保留）
-Copiado(s) {} elemento(s)	已复制 {} 个元素
-Plantilla aplicada: {} (Ctrl+Z para deshacer)	已应用模板：{}（Ctrl+Z 撤销）
-Resolución de referencia: {} × {} (los elementos siguen sus anclas)	参考分辨率：{} × {}（元素跟随其锚点）
-Proyecto guardado en {}	项目已保存到 {}
-No se pudo guardar: {}	无法保存：{}
-No se pudo abrir: {}	无法打开：{}
-{}: {} agregado(s) a tu biblioteca	{}：已向你的库添加 {} 个
-{}: {} agregado(s), {} con error ({})	{}：已添加 {} 个，{} 个出错（{}）
-«{}» guardado en Mis elementos	「{}」已保存到我的元素
-No se pudo guardar el elemento: {}	无法保存元素：{}
-Plantilla «{}» guardada (pestaña Plantillas › Mis plantillas)	模板「{}」已保存（选项卡 模板 › 我的模板）
-No se pudo guardar la plantilla: {}	无法保存模板：{}
-Exportado a Unity ({} archivos) en {}\{} · Unity crea el prefab en Assets/EditorGUI/Prefabs al volver a la ventana	已导出到 Unity（{} 个文件），位置：{}\{} · 返回 Unity 窗口时，Unity 会在 Assets/EditorGUI/Prefabs 中创建 prefab
-No se pudo exportar: {}	无法导出：{}
-Guardado: {}	已保存：{}
-Listo. Arrastra elementos al lienzo, organízalos en la Jerarquía y exporta a Unity.	就绪。把元素拖到画布上，在层级中整理，然后导出到 Unity。
-No se pudo usar la imagen: {}	无法使用图片：{}
-Jerarquía · {}	层级 · {}
-Algunos valores los controla el Layout Group de «{}».	部分数值由「{}」的 Layout Group 控制。
-Padre: {}	父级：{}
-Activo / inactivo (GameObject.SetActive)	激活 / 停用（GameObject.SetActive）
-Al fondo	置于底层
-Al frente	置于顶层
-Atrás	后移
-Adelante	前移
-Cerrar el inspector	关闭检查器
-Color de la pista	轨道颜色
-Crea un Contenedor con la selección (Ctrl+G)	用所选内容创建容器（Ctrl+G）
-Degradados (marcadores de posición)	渐变（占位）
-Deshacer (Ctrl+Z)	撤销（Ctrl+Z）
-Rehacer (Ctrl+Y)	重做（Ctrl+Y）
-Distribuir horiz.	水平分布
-Distribuir vert.	垂直分布
-Duplicar (Ctrl+D)	复制（Ctrl+D）
-Eliminar con su contenido (Supr)	删除及其内容（Del）
-Estilos de texto	文字样式
-Izquierda	左
-Centro	居中
-Derecha	右
-Arriba	上
-Medio	中
-Abajo	下
-Mis elementos (prefabs reutilizables)	我的元素（可复用 prefab）
-Mis plantillas	我的模板
-Para botones y HUD	用于按钮和 HUD
-Plantillas de interfaz	界面模板
-Segundo color del degradado	渐变的第二种颜色
-Seleccionar el padre (Esc)	选择父级（Esc）
-Tus imágenes	你的图片
-Elegir imagen…	选择图片…
-Cambiar…	更换…
-Menú principal	主菜单
-HUD de juego	游戏 HUD
-Ventana de diálogo	对话框窗口
-Ajustes	设置
-Inventario	背包
-En blanco	空白
-# 1.3.0: plantillas, componentes y estilos nuevos
-Menú de pausa	暂停菜单
-Fin de partida	游戏结束
-Selección de nivel	关卡选择
-Pantalla de carga	加载界面
-Diálogo de personaje	角色对话
-Clasificación	排行榜
-Selección de personaje	角色选择
-Componentes listos	现成组件
-Botón píldora	胶囊按钮
-Botón contorno	描边按钮
-Botón cerrar	关闭按钮
-Barra de vida	生命条
-Barra de maná	法力条
-Tarjeta	卡片
-Panel translúcido	半透明面板
-Insignia	徽章
-Casilla	槽位
-Temporizador	计时器
-Monedas	金币
-Daño	伤害
+Description (max. 300, no links)	描述（最多 300 字，不含链接）
+Choose…	选择…
+Profile picture	头像
+Saving…	正在保存…
+Save profile	保存个人资料
+Icon…	图标…
+Image removed.	图片已移除。
+The description allows up to 300 characters.	描述最多支持 300 个字符。
+My creator profile	我的创作者资料
+Optional: icon (PNG up to 512×512) and preview (PNG up to 1920×1080).	可选：图标（PNG，最大 512×512）和预览图（PNG，最大 1920×1080）。
+Profile saved.	个人资料已保存。
+Your profile is public once you have at least one approved item. Images and description are moderated.	至少有一个内容通过审核后，你的资料才会公开。图片和描述会经过审核。
+GitHub username	GitHub 用户名
+Invalid GitHub username.	GitHub 用户名无效。
+View the creator's profile	查看创作者资料
+View my public profile	查看我的公开资料
+Preview	预览
+Preview…	预览…
+Back to the community	返回社区
+published items	个已发布内容
+must start with	必须以…开头
+under review	审核中
+Close	关闭
+Click to enlarge	单击放大
+Give or remove a heart	点赞或取消点赞
+Unfollow	取消关注
+Edit my creator profile	编辑我的创作者资料
+Sign in to give hearts and follow creators.	登录后即可点赞和关注创作者。
+Creator profile: sign in at Community	创作者资料：请在「社区」中登录
+Follow	关注
+Following	已关注
+Only content from creators you follow	仅显示你关注的创作者的内容
+followers	位关注者
+Accent	强调色
+Soft accent	柔和强调色
+Hover	悬停
+Warning	警告
+Light base (dark text)	浅色基底（深色文字）
+Bio	简介
+Borders	边框
+Find it in Community › Fonts.	可在「社区 › 字体」中找到。
+Change the colours, corners and font of the whole app. Saved instantly.	更改整个应用的颜色、圆角和字体。即时保存。
+Change the banner	更换横幅
+Change the profile picture	更换头像
+Fields and buttons	输入框与按钮
+App colours, corners and font; community themes	应用的颜色、圆角和字体；社区主题
+Success	成功
+Tell the community who you are (no links)	向社区介绍你自己（不含链接）
+Edit profile	编辑资料
+In use	使用中
+Interface font	界面字体
+Save as theme	另存为主题
+Canvas guides	画布参考线
+Sign in to share.	登录后即可分享。
+Lines	线条
+More themes in the community	社区中的更多主题
+You don't have the font	你没有该字体
+Name: 3-32 characters (letters, numbers, dot, hyphen and underscore).	名称：3-32 个字符（字母、数字、点、连字符和下划线）。
+Panels	面板
+Dark panels	深色面板
+Customise	自定义
+Default	默认
+Remove the banner	移除横幅
+Remove the profile picture	移除头像
+Check the details and press "Send for review".	确认信息后点击「提交审核」。
+Under review:	审核中：
+Uploading image…	正在上传图片…
+Theme saved:	已保存主题：
+Theme installed and in use:	已安装并使用的主题：
+Themes	主题
+Secondary text	次要文字
+You already see it here; others will once a person approves it.	你在这里已能看到；其他人要等人工审核通过后才能看到。
+Use	使用
+Use the current theme	使用当前主题
+Back to default	恢复默认
+the banner	横幅
+the profile picture	头像
+custom	自定义
+and	和
+Optional: preview (PNG up to 1920×1080). The app sets the content icon from its type.	可选：预览图（PNG，最大 1920×1080）。内容图标由应用按其类型设置。
+Sending and analysing… (can take up to a minute)	正在发送并分析…（可能最长需一分钟）
+Uploading and analysing the image… (can take up to a minute)	正在上传并分析图片…（可能最长需一分钟）
+Updates	更新
+Installed version:	已安装版本：
+Check for updates	检查更新
+Check for updates…	检查更新…
+Checking for updates…	正在检查更新…
+You have the latest version.	已是最新版本。
+Check again	重新检查
+A new version is available:	有新版本可用：
+A new version of Lienzo UI is available	Lienzo UI 有新版本
+Update to	更新到
+Update now	立即更新
+Manual download	手动下载
+Open download page	打开下载页面
+Skip this version	跳过此版本
+This version must be downloaded manually (it can't be verified from the app).	此版本需手动下载（无法在应用内校验）。
+Downloading and installing version	正在下载并安装版本
+Don't close the app in the meantime.	在此期间请不要关闭应用。
+Version installed successfully:	版本安装成功：
+Save your design: restarting closes the current window.	请保存设计：重启会关闭当前窗口。
+Restart now	立即重启
+Restart to update	重启以更新
+Retry	重试
+Check for updates on startup	启动时检查更新
+Only github.com is queried; none of your data is sent.	只访问 github.com；不会发送你的任何数据。
+Could not connect to GitHub.	无法连接 GitHub。
+Invalid response from GitHub.	GitHub 返回的响应无效。
+The download doesn't match the published checksum; not installing.	下载内容与已发布的校验值不符；不会安装。
+No permission to write next to the app. Download the new version manually.	没有权限写入应用所在位置。请手动下载新版本。
+Could not replace the app (protected folder?). Download the new version manually.	无法替换应用（文件夹受保护？）。请手动下载新版本。
+Could not install the new version; keeping the current one.	无法安装新版本；保留当前版本。
+Automatic install only exists on Windows. Download the new version manually.	自动安装仅在 Windows 上可用。请手动下载新版本。
+This release can't be verified; download it manually.	此版本无法校验；请手动下载。
+Could not download the update.	无法下载更新。
+Duplicated (with its contents)	已复制（含其内容）
+Pasted	已粘贴
+Grouped into a Container (empty RectTransform in Unity)	已编组到容器（Unity 中为空 RectTransform）
+Ungrouped	已取消编组
+Select a Container to ungroup	请选择一个容器来取消编组
+Moved up one level in the hierarchy	已在层级中上移一级
+Hierarchy updated (the on-screen position is kept)	层级已更新（屏幕位置保持不变）
+An element can't be placed inside itself	不能把元素放进它自己里面
+Element from your library added	已添加你库中的元素
+Test mode on · Esc to go back to editing	测试模式已开启 · 按 Esc 返回编辑
+Back to edit mode (the design is as it was before the test)	已返回编辑模式（设计恢复到测试前的状态）
+Element locked: unlock it to move it	元素已锁定：解锁后才能移动
+Image changed	图片已更换
+Copied to the clipboard	已复制到剪贴板
+Locked: it can't be moved or deleted	已锁定：无法移动或删除
+Unlocked	已解锁
+Added: {}{}	已添加：{}{}
+Deleted {} element(s) with their contents (locked ones are kept)	已删除 {} 个元素及其内容（已锁定的保留）
+Copied {} element(s)	已复制 {} 个元素
+Template applied: {} (Ctrl+Z to undo)	已应用模板：{}（Ctrl+Z 撤销）
+Reference resolution: {} × {} (elements follow their anchors)	参考分辨率：{} × {}（元素跟随其锚点）
+Project saved to {}	项目已保存到 {}
+Could not save: {}	无法保存：{}
+Could not open: {}	无法打开：{}
+{}: {} added to your library	{}：已向你的库添加 {} 个
+{}: {} added, {} failed ({})	{}：已添加 {} 个，{} 个出错（{}）
+“{}” saved to My elements	「{}」已保存到我的元素
+Could not save the element: {}	无法保存元素：{}
+Template “{}” saved (Templates tab › My templates)	模板「{}」已保存（选项卡 模板 › 我的模板）
+Could not save the template: {}	无法保存模板：{}
+Exported to Unity ({} files) in {}\{} · Unity creates the prefab in Assets/EditorGUI/Prefabs when you return to the window	已导出到 Unity（{} 个文件），位置：{}\{} · 返回 Unity 窗口时，Unity 会在 Assets/EditorGUI/Prefabs 中创建 prefab
+Could not export: {}	无法导出：{}
+Saved: {}	已保存：{}
+Ready. Drag elements onto the canvas, organise them in the Hierarchy and export to Unity.	就绪。把元素拖到画布上，在层级中整理，然后导出到 Unity。
+Could not use the image: {}	无法使用图片：{}
+Hierarchy · {}	层级 · {}
+Some values are controlled by the Layout Group of “{}”.	部分数值由「{}」的 Layout Group 控制。
+Parent: {}	父级：{}
+Active / inactive (GameObject.SetActive)	激活 / 停用（GameObject.SetActive）
+To back	置于底层
+To front	置于顶层
+Backward	后移
+Forward	前移
+Close the inspector	关闭检查器
+Track colour	轨道颜色
+Creates a Container with the selection (Ctrl+G)	用所选内容创建容器（Ctrl+G）
+Gradients (placeholders)	渐变（占位）
+Undo (Ctrl+Z)	撤销（Ctrl+Z）
+Redo (Ctrl+Y)	重做（Ctrl+Y）
+Distribute horiz.	水平分布
+Distribute vert.	垂直分布
+Duplicate (Ctrl+D)	复制（Ctrl+D）
+Delete with its contents (Del)	删除及其内容（Del）
+Text styles	文字样式
+Left	左
+Center	居中
+Right	右
+Top	上
+Middle	中
+Bottom	下
+My elements (reusable prefabs)	我的元素（可复用 prefab）
+My templates	我的模板
+For buttons and HUD	用于按钮和 HUD
+Interface templates	界面模板
+Second gradient colour	渐变的第二种颜色
+Select the parent (Esc)	选择父级（Esc）
+Your images	你的图片
+Choose image…	选择图片…
+Change…	更换…
+Main menu	主菜单
+Game HUD	游戏 HUD
+Dialog window	对话框窗口
+Settings	设置
+Inventory	背包
+Blank	空白
+Pause menu	暂停菜单
+Game over	游戏结束
+Level select	关卡选择
+Loading screen	加载界面
+Character dialogue	角色对话
+Leaderboard	排行榜
+Character select	角色选择
+Ready-made components	现成组件
+Pill button	胶囊按钮
+Outline button	描边按钮
+Close button	关闭按钮
+Health bar	生命条
+Mana bar	法力条
+Card	卡片
+Translucent panel	半透明面板
+Badge	徽章
+Slot	槽位
+Timer	计时器
+Coins	金币
+Damage	伤害
 Combo	连击
-Nivel	等级
-Subtítulo de diálogo	对话字幕
-Océano	海洋
-Desierto	沙漠
-Neón	霓虹
-Hielo	冰
-Volcán	火山
-Caramelo	糖果
-Madera	木纹
-Viñeta	暗角
-Cuadrado	方形
-Redondeado	圆角
-Círculo	圆形
-Contorno	描边
-Línea	直线
-Fila (Horizontal)	行（Horizontal）
-Columna (Vertical)	列（Vertical）
-Rejilla (Grid)	网格（Grid）
-Marcador	得分
-Etiqueta	标签
-Atardecer	日落
-Noche	夜晚
-Paisaje	风景
-Fuego	火焰
+Level	等级
+Dialogue subtitle	对话字幕
+Ocean	海洋
+Desert	沙漠
+Neon	霓虹
+Ice	冰
+Volcano	火山
+Candy	糖果
+Wood	木纹
+Vignette	暗角
+Square	方形
+Rounded	圆角
+Circle	圆形
+Outline	描边
+Line	直线
+Row (Horizontal)	行（Horizontal）
+Column (Vertical)	列（Vertical）
+Grid	网格（Grid）
+Score	得分
+Tag	标签
+Sunset	日落
+Night	夜晚
+Landscape	风景
+Fire	火焰
 Aurora	极光
-Niebla	雾
-Pizarra	石板
-Bosque	森林
-Agregar un título	添加标题
-Agregar un subtítulo	添加副标题
-Agregar texto de cuerpo	添加正文
-Etiqueta pequeña	小标签
+Fog	雾
+Slate	石板
+Forest	森林
+Add a heading	添加标题
+Add a subheading	添加副标题
+Add body text	添加正文
+Small label	小标签
 Panel	面板
-Imagen	图片
-Botón	按钮
+Button	按钮
 Input Field	Input Field
-Dropdown	Dropdown
+Dropdown	下拉菜单
 Scroll View	Scroll View
-Campo de texto	文本输入
-Desplegable	下拉菜单
-Vista con scroll	滚动视图
-Revisar	检查
-Revisa legibilidad, contraste, tamaño táctil e imágenes que faltan antes de exportar	导出前检查可读性、对比度、触控尺寸和缺失的图片
-Revisar diseño	检查设计
-Sin problemas: el diseño pasa todas las comprobaciones.	没问题：设计通过了所有检查。
-{} errores · {} avisos. Clic en uno para seleccionarlo.	{} 个错误 · {} 个警告。点击可选中其中一个。
+Input field	文本输入
+Scroll view	滚动视图
+Review	检查
+Checks readability, contrast, touch size and missing images before exporting	导出前检查可读性、对比度、触控尺寸和缺失的图片
+Review design	检查设计
+No issues: the design passes every check.	没问题：设计通过了所有检查。
+{} errors · {} warnings. Click one to select it.	{} 个错误 · {} 个警告。点击可选中其中一个。
 Error	错误
-Los mínimos se calculan para la resolución de referencia (18 px de letra y 64 px por control a 1080 p).	最小值按参考分辨率计算（1080p 下文字 18 px，每个控件 64 px）。
-Letra de {} px: en pantallas pequeñas será difícil de leer (mínimo recomendado {} px)	文字 {} px：在小屏幕上难以阅读（建议最小值 {} px）
-Contraste del texto {}:1 (WCAG pide {}:1)	文字对比度 {}:1（WCAG 要求 {}:1）
-Control de {} px: difícil de pulsar con el dedo (mínimo recomendado {} px)	控件 {} px：手指难以点击（建议最小值 {} px）
-Está completamente fuera de la página: no se verá en el juego	完全在页面之外：游戏中不会显示
-Se sale en parte de la página	有一部分超出页面
-Hay varios elementos llamados así: GameObject.Find y los scripts encontrarán solo el primero	有多个元素名称相同：GameObject.Find 和脚本只会找到第一个
-Falta la imagen «{}»: se exportará vacía	缺少图片「{}」：将导出为空
-Ninguno	无
-TextMeshPro · texto	TextMeshPro · 文字
-TMP_Dropdown · opciones	TMP_Dropdown · 选项
-# Tamaños de página, pantallas de prueba y atajos
-Controles de UI (uGUI)	UI 控件（uGUI）
-Contenedores y Layout Groups	容器和 Layout Group
-Formas	形状
-Guardar archivo	保存文件
-Resolución de referencia	参考分辨率
-PC / consola Full HD	PC / 主机 Full HD
+Minimums are based on the reference resolution (18 px text and 64 px per control at 1080p).	最小值按参考分辨率计算（1080p 下文字 18 px，每个控件 64 px）。
+{} px text: hard to read on small screens (recommended minimum {} px)	文字 {} px：在小屏幕上难以阅读（建议最小值 {} px）
+Text contrast {}:1 (WCAG asks for {}:1)	文字对比度 {}:1（WCAG 要求 {}:1）
+{} px control: hard to tap with a finger (recommended minimum {} px)	控件 {} px：手指难以点击（建议最小值 {} px）
+Completely outside the page: it will not be visible in the game	完全在页面之外：游戏中不会显示
+Partly outside the page	有一部分超出页面
+Several elements share this name: GameObject.Find and scripts will only find the first one	有多个元素名称相同：GameObject.Find 和脚本只会找到第一个
+Missing image “{}”: it will be exported empty	缺少图片「{}」：将导出为空
+None	无
+TextMeshPro · text	TextMeshPro · 文字
+TMP_Dropdown · options	TMP_Dropdown · 选项
+UI controls (uGUI)	UI 控件（uGUI）
+Containers and Layout Groups	容器和 Layout Group
+Shapes	形状
+Save file	保存文件
+Reference resolution	参考分辨率
+PC / console Full HD	PC / 主机 Full HD
 PC HD	PC HD
 PC 4K	PC 4K
-Ultrapanorámico 21:9	超宽屏 21:9
-Móvil vertical	手机竖屏
-Móvil horizontal	手机横屏
-Tableta 4:3	平板 4:3
-2400 × 1080 (móvil apaisado)	2400 × 1080（手机横屏）
-1080 × 2400 (móvil vertical)	1080 × 2400（手机竖屏）
-1080 × 1080 (cuadrado)	1080 × 1080（方形）
-Clic / Shift+clic	单击 / Shift+单击
-Seleccionar / sumar	选择 / 追加
-Ctrl+clic	Ctrl+单击
-Seleccionar dentro de un grupo	在编组内选择
-Seleccionar el padre	选择父级
-Arrastrar vacío	空白处拖动
-Selección por área	框选
-Doble clic	双击
-Editar texto	编辑文字
-Escalar (Shift: libre)	缩放（Shift：自由）
-Tirador de giro	旋转手柄
-Girar (Shift: 15°)	旋转（Shift：15°）
-Alt+arrastrar	Alt+拖动
-Duplicar y mover	复制并移动
-Agrupar / desagrupar	编组 / 取消编组
-Ctrl+D / Supr	Ctrl+D / Del
-Duplicar / borrar	复制 / 删除
-Deshacer / rehacer	撤销 / 重做
-Flechas	方向键
-Mover 1 px (Shift: 10)	移动 1 px（Shift：10）
-Ctrl+rueda	Ctrl+滚轮
-Probar / simular pantallas	测试 / 模拟屏幕
-No se encontró en el sistema una fuente con estos caracteres: el texto puede verse como cuadros.	系统中未找到包含这些字符的字体：文字可能显示为方框。
+Ultrawide 21:9	超宽屏 21:9
+Phone portrait	手机竖屏
+Phone landscape	手机横屏
+Tablet 4:3	平板 4:3
+2400 × 1080 (phone landscape)	2400 × 1080（手机横屏）
+1080 × 2400 (phone portrait)	1080 × 2400（手机竖屏）
+1080 × 1080 (square)	1080 × 1080（方形）
+Click / Shift+click	单击 / Shift+单击
+Select / add	选择 / 追加
+Ctrl+click	Ctrl+单击
+Select inside a group	在编组内选择
+Select the parent	选择父级
+Drag on empty space	空白处拖动
+Area selection	框选
+Double-click	双击
+Edit text	编辑文字
+Scale (Shift: free)	缩放（Shift：自由）
+Rotation handle	旋转手柄
+Rotate (Shift: 15°)	旋转（Shift：15°）
+Alt+drag	Alt+拖动
+Duplicate and move	复制并移动
+Group / ungroup	编组 / 取消编组
+Ctrl+D / Del	Ctrl+D / Del
+Duplicate / delete	复制 / 删除
+Undo / redo	撤销 / 重做
+Arrows	方向键
+Move 1 px (Shift: 10)	移动 1 px（Shift：10）
+Ctrl+wheel	Ctrl+滚轮
+Test / simulate screens	测试 / 模拟屏幕
+No system font with these characters was found: text may show as boxes.	系统中未找到包含这些字符的字体：文字可能显示为方框。

@@ -71,9 +71,9 @@ impl EditorApp {
         let actual = self.settings.tema.clone().unwrap_or_default();
         let mut nuevo: Option<Tema> = None;
         let mut borrar: Option<PathBuf> = None;
-        egui::Window::new(t("Temas")).open(&mut abierta).collapsible(false).default_width(430.0).show(ctx, |ui| {
+        egui::Window::new(t("Themes")).open(&mut abierta).collapsible(false).default_width(430.0).show(ctx, |ui| {
             egui::ScrollArea::vertical().max_height(ctx.content_rect().height() * 0.8).show(ui, |ui| {
-                ui.label(RichText::new(t("Cambia los colores, las esquinas y la fuente de toda la app. Se guarda al momento.")).small().color(MUTED()));
+                ui.label(RichText::new(t("Change the colours, corners and font of the whole app. Saved instantly.")).small().color(MUTED()));
                 ui.add_space(4.0);
                 // ── Choose ──
                 let mut lista: Vec<(Option<PathBuf>, Tema)> = theme::predeterminados().into_iter().map(|t| (None, t)).collect();
@@ -86,24 +86,24 @@ impl EditorApp {
                         ui.label(if en_uso { RichText::new(nombre).strong().color(ACCENT()) } else { RichText::new(nombre) });
                         ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                             if let Some(p) = ruta {
-                                if ui.small_button(t("Borrar")).clicked() {
+                                if ui.small_button(t("Delete")).clicked() {
                                     borrar = Some(p.clone());
                                 }
                             }
-                            if ui.add_enabled(!en_uso, egui::Button::new(if en_uso { t("En uso") } else { t("Usar") }).small()).clicked() {
+                            if ui.add_enabled(!en_uso, egui::Button::new(if en_uso { t("In use") } else { t("Use") }).small()).clicked() {
                                 nuevo = Some(tema.clone());
                             }
                         });
                     });
                 }
                 ui.horizontal(|ui| {
-                    if ui.add(crate::icons::btn("heart", t("Más temas en la comunidad"))).clicked() {
+                    if ui.add(crate::icons::btn("heart", t("More themes in the community"))).clicked() {
                         self.comunidad_ir_a(ctx, "tema");
                     }
                 });
                 ui.separator();
                 // ── Customize ──
-                ui.label(RichText::new(t("Personalizar")).strong());
+                ui.label(RichText::new(t("Customise")).strong());
                 let mut t2 = actual.clone();
                 egui::Grid::new("tema_colores").num_columns(4).spacing([10.0, 6.0]).show(ui, |ui| {
                     for (i, (campo, nombre)) in theme::COLORES.iter().enumerate() {
@@ -119,13 +119,13 @@ impl EditorApp {
                         }
                     }
                 });
-                ui.add(egui::Slider::new(&mut t2.esquinas, 0.0..=16.0).step_by(1.0).text(t("Esquinas")));
-                ui.checkbox(&mut t2.claro, t("Base clara (texto oscuro)"));
+                ui.add(egui::Slider::new(&mut t2.esquinas, 0.0..=16.0).step_by(1.0).text(t("Corners")));
+                ui.checkbox(&mut t2.claro, t("Light base (dark text)"));
                 ui.horizontal(|ui| {
-                    ui.label(t("Fuente de la interfaz"));
-                    let actual_fuente = if t2.fuente.is_empty() { t("Predeterminada") } else { t2.fuente.clone() };
+                    ui.label(t("Interface font"));
+                    let actual_fuente = if t2.fuente.is_empty() { t("Default") } else { t2.fuente.clone() };
                     egui::ComboBox::from_id_salt("tema_fuente").selected_text(actual_fuente).show_ui(ui, |ui| {
-                        if ui.selectable_label(t2.fuente.is_empty(), t("Predeterminada")).clicked() {
+                        if ui.selectable_label(t2.fuente.is_empty(), t("Default")).clicked() {
                             t2.fuente.clear();
                         }
                         for f in crate::render::available_fonts() {
@@ -136,11 +136,11 @@ impl EditorApp {
                     });
                 });
                 if !t2.fuente.is_empty() && !crate::render::available_fonts().contains(&t2.fuente) {
-                    ui.label(RichText::new(format!("{} «{}». {}", t("No tienes la fuente"), t2.fuente, t("Búscala en Comunidad › Fuentes."))).small().color(theme::WARN()));
+                    ui.label(RichText::new(format!("{} “{}”. {}", t("You don't have the font"), t2.fuente, t("Find it in Community › Fonts."))).small().color(theme::WARN()));
                 }
                 if t2 != actual {
                     if t2.nombre == actual.nombre && theme::predeterminados().iter().any(|p| p.nombre == t2.nombre) {
-                        t2.nombre = format!("{} ({})", actual.nombre, t("personalizado"));
+                        t2.nombre = format!("{} ({})", actual.nombre, t("custom"));
                         t2.autor = String::new();
                     }
                     nuevo = Some(t2.clone());
@@ -148,14 +148,14 @@ impl EditorApp {
                 ui.separator();
                 // ── Save and share ──
                 ui.horizontal(|ui| {
-                    ui.label(t("Nombre"));
+                    ui.label(t("Name"));
                     if self.tema_nombre.is_empty() {
                         self.tema_nombre = actual.nombre.clone();
                     }
                     ui.add(egui::TextEdit::singleline(&mut self.tema_nombre).desired_width(200.0));
                 });
                 ui.horizontal_wrapped(|ui| {
-                    if ui.button(t("Guardar como tema")).clicked() {
+                    if ui.button(t("Save as theme")).clicked() {
                         let mut g = self.settings.tema.clone().unwrap_or_default();
                         g.nombre = self.tema_nombre.trim().to_string();
                         if let Some(p) = self.comunidad.perfil_nombre() {
@@ -163,13 +163,13 @@ impl EditorApp {
                         }
                         match guardar(&g) {
                             Ok(_) => {
-                                self.status = format!("{} «{}»", t("Tema guardado:"), g.nombre);
+                                self.status = format!("{} “{}”", t("Theme saved:"), g.nombre);
                                 nuevo = Some(g);
                             }
                             Err(e) => self.status = e,
                         }
                     }
-                    if ui.button(t("Compartir en la comunidad")).clicked() {
+                    if ui.button(t("Share with the community")).clicked() {
                         let mut g = self.settings.tema.clone().unwrap_or_default();
                         g.nombre = self.tema_nombre.trim().to_string();
                         if let Some(p) = self.comunidad.perfil_nombre() {
@@ -189,7 +189,7 @@ impl EditorApp {
                             Err(e) => self.status = e,
                         }
                     }
-                    if ui.button(t("Volver al predeterminado")).clicked() {
+                    if ui.button(t("Back to default")).clicked() {
                         nuevo = Some(Tema::default());
                     }
                 });
@@ -213,7 +213,7 @@ mod tests {
 
     #[test]
     fn nombres_de_archivo_seguros() {
-        assert_eq!(nombre_archivo("Mi tema ✨"), "Mi_tema");
+        assert_eq!(nombre_archivo("My theme ✨"), "My_theme");
         assert_eq!(nombre_archivo("../../malo"), "malo");
         assert_eq!(nombre_archivo("   "), "tema");
     }

@@ -5,13 +5,13 @@ use crate::model::{Doc, Element, Rgba};
 use rhai::{Dynamic, Engine, Scope};
 use std::{cell::RefCell, rc::Rc};
 
-pub const HELP: &str = "Funciones (los nombres son los de la lista de capas; «yo» es el elemento clicado):
-  mostrar(\"Nombre\")      ocultar(\"Nombre\")      alternar(\"Nombre\")
-  texto(\"Nombre\", \"Hola\")   leer_texto(\"Nombre\")
-  color(\"Nombre\", \"#FF8800\")   color_texto(\"Nombre\", \"#FFFFFF\")
-  mover(\"Nombre\", dx, dy)   posicion(\"Nombre\", x, y)   girar(\"Nombre\", grados)
-  valor(\"Nombre\", 0.5)   leer_valor(\"Nombre\")   transparencia(\"Nombre\", 0.5)
-  mensaje(\"texto\")  — también sirven let, if, for, while, +, etc.";
+pub const HELP: &str = "Functions (the names are those in the layer list; “yo” is the clicked element):
+  mostrar(\"Name\")      ocultar(\"Name\")      alternar(\"Name\")
+  texto(\"Name\", \"Hello\")   leer_texto(\"Name\")
+  color(\"Name\", \"#FF8800\")   color_texto(\"Name\", \"#FFFFFF\")
+  mover(\"Name\", dx, dy)   posicion(\"Name\", x, y)   girar(\"Name\", degrees)
+  valor(\"Name\", 0.5)   leer_valor(\"Name\")   transparencia(\"Name\", 0.5)
+  mensaje(\"text\")  — also usable: let, if, for, while, +, etc.";
 
 /// Number from a script argument; NaN or infinity count as 0 (they must not reach the coordinates).
 fn num(d: &Dynamic) -> f32 {
@@ -27,7 +27,7 @@ fn with_frame(doc: &Shared, log: &Log, name: &str, f: impl FnOnce(&mut crate::mo
             f(&mut fr);
             d.set_frame_keep_children(id, &fr);
         }
-        None => log.borrow_mut().push(format!("⚠ No existe un elemento llamado «{}»", name)),
+        None => log.borrow_mut().push(format!("⚠ There is no element named “{}”", name)),
     }
 }
 
@@ -48,7 +48,7 @@ fn with_el(doc: &Shared, log: &Log, name: &str, f: impl FnOnce(&mut Element)) {
     let mut d = doc.borrow_mut();
     match d.elements.iter_mut().find(|e| e.name == name) {
         Some(e) => f(e),
-        None => log.borrow_mut().push(format!("⚠ No existe un elemento llamado «{}»", name)),
+        None => log.borrow_mut().push(format!("⚠ There is no element named “{}”", name)),
     }
 }
 
@@ -84,14 +84,14 @@ pub fn run(doc: &mut Doc, id: u64, code: &str, log: &mut Vec<String>) {
     reg!("leer_texto", |d, l, n: &str| match d.borrow().elements.iter().find(|e| e.name == n) {
         Some(e) => e.text.clone(),
         None => {
-            l.borrow_mut().push(format!("⚠ No existe un elemento llamado «{}»", n));
+            l.borrow_mut().push(format!("⚠ There is no element named “{}”", n));
             String::new()
         }
     });
     reg!("leer_valor", |d, l, n: &str| match d.borrow().elements.iter().find(|e| e.name == n) {
         Some(e) => e.value as f64,
         None => {
-            l.borrow_mut().push(format!("⚠ No existe un elemento llamado «{}»", n));
+            l.borrow_mut().push(format!("⚠ There is no element named “{}”", n));
             0.0
         }
     });
@@ -116,11 +116,11 @@ pub fn run(doc: &mut Doc, id: u64, code: &str, log: &mut Vec<String>) {
     reg!("girar", |d, l, n: &str, g: Dynamic| with_frame(&d, &l, n, |f| f.rot = num(&g) % 360.0));
     reg!("color", |d, l, n: &str, c: &str| match parse_hex(c) {
         Some(rgba) => with_el(&d, &l, n, |e| e.fill = rgba),
-        None => l.borrow_mut().push(format!("⚠ Color no válido: {}", c)),
+        None => l.borrow_mut().push(format!("⚠ Invalid color: {}", c)),
     });
     reg!("color_texto", |d, l, n: &str, c: &str| match parse_hex(c) {
         Some(rgba) => with_el(&d, &l, n, |e| e.text_color = rgba),
-        None => l.borrow_mut().push(format!("⚠ Color no válido: {}", c)),
+        None => l.borrow_mut().push(format!("⚠ Invalid color: {}", c)),
     });
 
     let mut scope = Scope::new();
@@ -128,7 +128,7 @@ pub fn run(doc: &mut Doc, id: u64, code: &str, log: &mut Vec<String>) {
     let result = engine.run_with_scope(&mut scope, code);
     drop(engine);
     if let Err(err) = result {
-        out.borrow_mut().push(format!("⚠ Error en el código de «{}»: {}", me, err));
+        out.borrow_mut().push(format!("⚠ Error in the code of “{}”: {}", me, err));
     }
     *doc = shared.borrow().clone();
     log.extend(out.borrow().iter().cloned());
@@ -142,14 +142,14 @@ mod tests {
     #[test]
     fn click_code_changes_elements() {
         let mut doc = model::template(0, 1920.0, 1080.0);
-        let id = doc.elements.iter().find(|e| e.name == "Botón Jugar").unwrap().id;
+        let id = doc.elements.iter().find(|e| e.name == "Play button").unwrap().id;
         let mut log = Vec::new();
-        run(&mut doc, id, "texto(\"Subtítulo\", \"Hola \" + 3);\nocultar(\"Luna\");\ncolor(yo, \"#46BE78\");\nmover(yo, 10, 5.5);\nmensaje(leer_texto(\"Subtítulo\"));\nmostrar(\"NoExiste\");", &mut log);
+        run(&mut doc, id, "texto(\"Subtitle\", \"Hello \" + 3);\nocultar(\"Moon\");\ncolor(yo, \"#46BE78\");\nmover(yo, 10, 5.5);\nmensaje(leer_texto(\"Subtitle\"));\nmostrar(\"NoExiste\");", &mut log);
         let get = |n: &str| doc.elements.iter().find(|e| e.name == n).unwrap().clone();
-        assert_eq!(get("Subtítulo").text, "Hola 3");
-        assert!(!get("Luna").visible);
-        assert_eq!(get("Botón Jugar").fill, [0x46, 0xBE, 0x78, 255]);
-        assert_eq!(log[0], "Hola 3");
+        assert_eq!(get("Subtitle").text, "Hello 3");
+        assert!(!get("Moon").visible);
+        assert_eq!(get("Play button").fill, [0x46, 0xBE, 0x78, 255]);
+        assert_eq!(log[0], "Hello 3");
         assert!(log[1].contains("NoExiste"), "{:?}", log);
     }
 
@@ -157,22 +157,21 @@ mod tests {
     fn mover_lleva_a_los_hijos_y_valor_respeta_desplegables() {
         let mut doc = model::template(2, 1920.0, 1080.0);
         let get = |d: &Doc, n: &str| d.elements.iter().find(|e| e.name == n).unwrap().clone();
-        let (v0, t0) = (get(&doc, "Ventana"), get(&doc, "Título ventana"));
+        let (v0, t0) = (get(&doc, "Window"), get(&doc, "Window title"));
         let mut log = Vec::new();
-        run(&mut doc, v0.id, "mover(\"Ventana\", 100, -20);
-mover(\"Ventana\", 1.0/0.0, 0);", &mut log);
-        let (v1, t1) = (get(&doc, "Ventana"), get(&doc, "Título ventana"));
+        run(&mut doc, v0.id, "mover(\"Window\", 100, -20);\nmover(\"Window\", 1.0/0.0, 0);", &mut log);
+        let (v1, t1) = (get(&doc, "Window"), get(&doc, "Window title"));
         assert!((v1.x - v0.x - 100.0).abs() < 0.01 && (v1.y - v0.y + 20.0).abs() < 0.01, "{:?}", log);
-        assert!((t1.x - t0.x - 100.0).abs() < 0.01 && (t1.y - t0.y + 20.0).abs() < 0.01, "el hijo sigue al padre");
+        assert!((t1.x - t0.x - 100.0).abs() < 0.01 && (t1.y - t0.y + 20.0).abs() < 0.01, "the child follows the parent");
         assert!(doc.elements.iter().all(|e| e.x.is_finite() && e.y.is_finite()));
 
         let mut doc = model::template(3, 1920.0, 1080.0);
-        let id = get(&doc, "Calidad").id;
-        run(&mut doc, id, "valor(\"Calidad\", 3); valor(\"Slider Brillo\", 7);", &mut log);
-        assert_eq!(get(&doc, "Calidad").value, 3.0);
-        assert_eq!(get(&doc, "Slider Brillo").value, 1.0);
-        run(&mut doc, id, "valor(\"Calidad\", 99);", &mut log);
-        assert_eq!(get(&doc, "Calidad").value, 3.0, "no pasa de la última opción");
+        let id = get(&doc, "Quality").id;
+        run(&mut doc, id, "valor(\"Quality\", 3); valor(\"Slider Brightness\", 7);", &mut log);
+        assert_eq!(get(&doc, "Quality").value, 3.0);
+        assert_eq!(get(&doc, "Slider Brightness").value, 1.0);
+        run(&mut doc, id, "valor(\"Quality\", 99);", &mut log);
+        assert_eq!(get(&doc, "Quality").value, 3.0, "does not go past the last option");
     }
 
     #[test]
@@ -180,7 +179,7 @@ mover(\"Ventana\", 1.0/0.0, 0);", &mut log);
         let mut doc = model::template(0, 1920.0, 1080.0);
         let mut log = Vec::new();
         run(&mut doc, 1, "loop { }", &mut log);
-        run(&mut doc, 1, "esto no es código (", &mut log);
+        run(&mut doc, 1, "this is not code (", &mut log);
         assert_eq!(log.len(), 2);
         assert!(log.iter().all(|l| l.starts_with('⚠')));
     }

@@ -268,7 +268,7 @@ fn iso(t: u64) -> String {
 
 fn aleatorio(n: usize) -> Vec<u8> {
     let mut b = vec![0u8; n];
-    getrandom::fill(&mut b).expect("el sistema no dio números aleatorios");
+    getrandom::fill(&mut b).expect("the system did not provide random numbers");
     b
 }
 
@@ -322,7 +322,7 @@ impl Resp {
         }
     }
     fn json<T: for<'de> Deserialize<'de>>(&self) -> Result<T, String> {
-        serde_json::from_slice(&self.cuerpo).map_err(|_| "Respuesta inesperada del servidor.".to_string())
+        serde_json::from_slice(&self.cuerpo).map_err(|_| "Unexpected response from the server.".to_string())
     }
 }
 
@@ -331,13 +331,13 @@ fn mensaje_error(estado: u16, cuerpo: &str) -> String {
     let v: serde_json::Value = serde_json::from_str(cuerpo).unwrap_or_default();
     let msg = ["message", "msg", "error_description", "error"].iter().find_map(|k| v.get(k).and_then(|m| m.as_str())).unwrap_or("");
     match estado {
-        401 | 403 => "No tienes permiso o tu sesión caducó. Vuelve a iniciar sesión.".into(),
+        401 | 403 => "You do not have permission or your session expired. Sign in again.".into(),
         404 => "No encontrado.".into(),
-        409 => "Ya existe o ya fue procesado.".into(),
+        409 => "It already exists or was already processed.".into(),
         429 => "Demasiadas peticiones: espera un momento.".into(),
-        _ if msg.contains("Demasiadas subidas") || msg.contains("Límite diario") => msg.to_string(),
-        _ if msg.contains("duplicate key") => "Ese nombre ya está en uso.".into(),
-        s if s >= 500 => "El servidor no está disponible ahora mismo.".into(),
+        _ if msg.contains("Demasiadas subidas") || msg.contains("Daily limit") => msg.to_string(),
+        _ if msg.contains("duplicate key") => "That name is already in use.".into(),
+        s if s >= 500 => "The server is not available right now.".into(),
         s => format!("Error {}", s),
     }
 }
@@ -364,9 +364,9 @@ fn pedir(metodo: &str, ruta: &str, sesion: Option<&Sesion>, tipo: Option<&str>, 
         (_, Some(c)) => cabeceras!(a.post(&url)).content_type(tipo.unwrap_or("application/json")).send(c),
         (_, None) => cabeceras!(a.post(&url)).send_empty(),
     };
-    let mut res = res.map_err(|_| "Sin conexión con el servidor.".to_string())?;
+    let mut res = res.map_err(|_| "No connection to the server.".to_string())?;
     let estado = res.status().as_u16();
-    let cuerpo = res.body_mut().with_config().limit(limite as u64).read_to_vec().map_err(|_| "La respuesta del servidor es demasiado grande o se cortó.".to_string())?;
+    let cuerpo = res.body_mut().with_config().limit(limite as u64).read_to_vec().map_err(|_| "The server response is too large or was cut off.".to_string())?;
     Ok(Resp { estado, cuerpo })
 }
 
@@ -378,11 +378,11 @@ fn json_post(ruta: &str, sesion: Option<&Sesion>, v: &serde_json::Value, extra: 
 
 fn sesion_desde(v: &serde_json::Value) -> Result<Sesion, String> {
     let s = |k: &str| v.get(k).and_then(|x| x.as_str()).map(|x| x.to_string());
-    let acceso = s("access_token").ok_or("El servidor no devolvió una sesión.")?;
-    let renovacion = s("refresh_token").ok_or("El servidor no devolvió una sesión.")?;
+    let acceso = s("access_token").ok_or("The server did not return a session.")?;
+    let renovacion = s("refresh_token").ok_or("The server did not return a session.")?;
     let uid = v.get("user").and_then(|u| u.get("id")).and_then(|i| i.as_str()).unwrap_or("").to_string();
     if !es_uuid(&uid) {
-        return Err("Identificador de cuenta no válido.".into());
+        return Err("Invalid account identifier.".into());
     }
     let dur = v.get("expires_in").and_then(|e| e.as_u64()).unwrap_or(3600);
     Ok(Sesion { acceso, renovacion, uid, expira: ahora() + dur })
@@ -435,7 +435,7 @@ fn vigente(s: &Sesion, tx: &Sender<Mensaje>) -> Result<Sesion, String> {
 }
 
 fn pagina_retorno(ok: bool) -> String {
-    let (titulo, texto) = if ok { ("Listo", "Ya puedes volver a Lienzo UI. Puedes cerrar esta pestaña.") } else { ("No se pudo iniciar sesión", "Vuelve a Lienzo UI e inténtalo de nuevo.") };
+    let (titulo, texto) = if ok { ("Listo", "You can go back to Lienzo UI now. You can close this tab.") } else { ("Could not sign in", "Go back to Lienzo UI and try again.") };
     let cuerpo = format!("<!doctype html><meta charset=utf-8><title>Lienzo UI</title><body style=\"font-family:sans-serif;background:#14161f;color:#eee;text-align:center;padding-top:20vh\"><h1>{}</h1><p>{}</p>", titulo, texto);
     format!("HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=utf-8\r\nContent-Length: {}\r\nCache-Control: no-store\r\nReferrer-Policy: no-referrer\r\nX-Content-Type-Options: nosniff\r\nConnection: close\r\n\r\n{}", cuerpo.len(), cuerpo)
 }
@@ -446,21 +446,21 @@ fn flujo_oauth(proveedor: &str, cancelar: &AtomicBool) -> Result<Sesion, String>
     if !["github", "google"].contains(&proveedor) {
         return Err("Proveedor no admitido.".into());
     }
-    let escucha = std::net::TcpListener::bind(("127.0.0.1", PUERTO_LOCAL)).map_err(|_| format!("El puerto local {} está ocupado. Cierra otra sesión de Lienzo UI e inténtalo de nuevo.", PUERTO_LOCAL))?;
+    let escucha = std::net::TcpListener::bind(("127.0.0.1", PUERTO_LOCAL)).map_err(|_| format!("Local port {} is busy. Close another Lienzo UI session and try again.", PUERTO_LOCAL))?;
     escucha.set_nonblocking(true).map_err(|e| e.to_string())?;
     let verificador = b64url(&aleatorio(48));
     let desafio = b64url(&Sha256::digest(verificador.as_bytes()));
     let retorno = format!("http://127.0.0.1:{}/callback", PUERTO_LOCAL);
     let url = format!("{}/auth/v1/authorize?provider={}&redirect_to={}&code_challenge={}&code_challenge_method=s256", URL, proveedor, codificar(&retorno), desafio);
-    webbrowser::open(&url).map_err(|_| "No se pudo abrir el navegador.".to_string())?;
+    webbrowser::open(&url).map_err(|_| "Could not open the browser.".to_string())?;
 
     let limite = std::time::Instant::now() + Duration::from_secs(180);
     let codigo = loop {
         if cancelar.load(Ordering::Relaxed) {
-            return Err("Inicio de sesión cancelado.".into());
+            return Err("Sign-in canceled.".into());
         }
         if std::time::Instant::now() > limite {
-            return Err("Se agotó el tiempo para iniciar sesión.".into());
+            return Err("Timed out waiting for sign-in.".into());
         }
         match escucha.accept() {
             Ok((mut c, _)) => {
@@ -478,7 +478,7 @@ fn flujo_oauth(proveedor: &str, cancelar: &AtomicBool) -> Result<Sesion, String>
                 let param = |k: &str| consulta.split('&').find_map(|p| p.strip_prefix(&format!("{}=", k))).map(|v| v.to_string());
                 if param("error").is_some() || param("error_description").is_some() {
                     let _ = c.write_all(pagina_retorno(false).as_bytes());
-                    return Err("Se canceló el inicio de sesión.".into());
+                    return Err("Sign-in was canceled.".into());
                 }
                 match param("code").filter(|c| !c.is_empty() && c.len() < 300 && c.chars().all(|ch| ch.is_ascii_alphanumeric() || ch == '-' || ch == '_')) {
                     Some(code) => {
@@ -487,7 +487,7 @@ fn flujo_oauth(proveedor: &str, cancelar: &AtomicBool) -> Result<Sesion, String>
                     }
                     None => {
                         let _ = c.write_all(pagina_retorno(false).as_bytes());
-                        return Err("Respuesta de inicio de sesión no válida.".into());
+                        return Err("Invalid sign-in response.".into());
                     }
                 }
             }
@@ -535,10 +535,10 @@ const COLUMNAS_ITEM: &str = "id,tipo,titulo,descripcion,etiquetas,es_18,ruta_pub
 
 fn cargar_perfil_publico(sesion: Option<&Sesion>, uid: &str) -> Result<(PerfilPublico, Vec<Item>), String> {
     if !es_uuid(uid) {
-        return Err("Creador no válido.".into());
+        return Err("Invalid creator.".into());
     }
     let p: Vec<PerfilPublico> = pedir("GET", &format!("/rest/v1/perfiles_publicos?select=id,nombre_publico,bio,github,enlaces,avatar_publico,banner_publico,seguidores,corazones_recibidos&id=eq.{}", uid), sesion, None, None, &[], 1 << 18)?.ok()?.json()?;
-    let p = p.into_iter().next().ok_or("Este creador aún no tiene un perfil público.")?;
+    let p = p.into_iter().next().ok_or("This creator does not have a public profile yet.")?;
     let mut items: Vec<Item> = pedir("GET", &format!("/rest/v1/items?select={}&estado=eq.aprobado&autor=eq.{}&order=creado_en.desc&limit=60", COLUMNAS_ITEM, uid), sesion, None, None, &[], 2 << 20)?.ok()?.json()?;
     items.retain(|i| es_uuid(&i.id) && val::TIPOS.contains(&i.tipo.as_str()));
     Ok((p, items))
@@ -552,20 +552,20 @@ fn cargar_mi_perfil(s: &Sesion) -> Option<PerfilPublico> {
 /// Crops a photo to the profile format (avatar 1:1, banner 3:1), shrinks it and converts it to PNG within the limits.
 fn preparar_imagen_perfil(clase: &str, bytes: &[u8]) -> Result<Vec<u8>, String> {
     if bytes.len() > 25 * 1024 * 1024 {
-        return Err("La imagen pesa demasiado (máximo 25 MB).".into());
+        return Err("The image is too heavy (maximum 25 MB).".into());
     }
     if let Some(r) = val::detectar(bytes) {
         if r.starts_with("ejecutable") || r == "zip" || r.starts_with("script") {
             return Err(format!("Contenido peligroso detectado ({}).", r));
         }
     }
-    let mut lector = image::ImageReader::new(std::io::Cursor::new(bytes)).with_guessed_format().map_err(|_| "No se pudo leer la imagen.".to_string())?;
+    let mut lector = image::ImageReader::new(std::io::Cursor::new(bytes)).with_guessed_format().map_err(|_| "Could not read the image.".to_string())?;
     let mut limites = image::Limits::default();
     limites.max_image_width = Some(12_000);
     limites.max_image_height = Some(12_000);
     limites.max_alloc = Some(512 * 1024 * 1024);
     lector.limits(limites);
-    let img = lector.decode().map_err(|_| "No se pudo leer la imagen (usa PNG, JPEG, WebP, GIF o BMP).".to_string())?;
+    let img = lector.decode().map_err(|_| "Could not read the image (use PNG, JPEG, WebP, GIF or BMP).".to_string())?;
     let (w, h) = (img.width().max(1), img.height().max(1));
     let proporcion = if clase == "avatar" { 1.0 } else { 3.0 };
     let (cw, ch) = if (w as f32 / h as f32) > proporcion { (((h as f32) * proporcion) as u32, h) } else { (w, ((w as f32) / proporcion) as u32) };
@@ -580,7 +580,7 @@ fn preparar_imagen_perfil(clase: &str, bytes: &[u8]) -> Result<Vec<u8>, String> 
             return Ok(b);
         }
     }
-    Err("No se pudo reducir la imagen al tamaño permitido.".into())
+    Err("Could not reduce the image to the allowed size.".into())
 }
 
 /// Uploads a profile PNG image (avatar or banner) to quarantine and asks the server to moderate it.
@@ -592,11 +592,11 @@ fn subir_imagen_perfil(s: &Sesion, clase: &str, bytes: &[u8]) -> Result<String, 
     let r = json_post("/functions/v1/perfil", Some(s), &serde_json::json!({ "accion": "imagen", "clase": clase }), &[])?;
     let v: serde_json::Value = r.json().unwrap_or_default();
     if !(200..300).contains(&r.estado) {
-        return Err(v["error"].as_str().unwrap_or("No se pudo subir la imagen.").to_string());
+        return Err(v["error"].as_str().unwrap_or("Could not upload the image.").to_string());
     }
     Ok(match v["estado"].as_str().unwrap_or("") {
-        "publicado" => "Imagen publicada en tu perfil.".to_string(),
-        _ => v["motivo"].as_str().unwrap_or("Imagen enviada a revisión.").to_string(),
+        "publicado" => "Image published on your profile.".to_string(),
+        _ => v["motivo"].as_str().unwrap_or("Image sent for review.").to_string(),
     })
 }
 
@@ -615,22 +615,22 @@ fn cargar_perfil(s: &Sesion) -> Option<Perfil> {
 }
 
 fn descargar(item: &Item, sesion: Option<&Sesion>) -> Result<Vec<u8>, String> {
-    let ruta = item.ruta_publica.as_deref().ok_or("Este contenido no tiene archivo.")?;
+    let ruta = item.ruta_publica.as_deref().ok_or("This content has no file.")?;
     if !ruta_publica_valida(ruta) {
-        return Err("Ruta de archivo no válida.".into());
+        return Err("Invalid file path.".into());
     }
     let limite = val::limite_bytes(&item.tipo);
     let r = pedir("GET", &format!("/storage/v1/object/public/publico/{}", ruta), None, None, None, &[], limite + 1)?.ok()?;
     let bytes = r.cuerpo;
     if bytes.len() > limite {
-        return Err("El archivo supera el tamaño permitido.".into());
+        return Err("The file exceeds the allowed size.".into());
     }
-    let esperado = item.sha256.as_deref().ok_or("El contenido no trae huella de verificación.")?;
+    let esperado = item.sha256.as_deref().ok_or("The content has no verification fingerprint.")?;
     if val::sha256_hex(&bytes) != esperado {
-        return Err("La huella SHA-256 no coincide: el archivo no es el que se aprobó. No se instaló.".into());
+        return Err("The SHA-256 fingerprint does not match: the file is not the one that was approved. It was not installed.".into());
     }
     let nombre = ruta.rsplit('/').next().unwrap_or("");
-    val::validar(&item.tipo, nombre, &bytes).map_err(|e| format!("No pasó la validación local: {}", e))?;
+    val::validar(&item.tipo, nombre, &bytes).map_err(|e| format!("Did not pass local validation: {}", e))?;
     if let Some(s) = sesion {
         let _ = json_post("/rest/v1/rpc/registrar_descarga", Some(s), &serde_json::json!({ "p_item": item.id }), &[]); // only counts when signed in
     }
@@ -678,7 +678,7 @@ fn subir_contenido(s: &Sesion, tipo: &str, titulo: &str, descripcion: &str, etiq
     Ok(match v["estado"].as_str().unwrap_or("") {
         "aprobado" => "Publicado en la comunidad.".to_string(),
         "rechazado" => format!("Rechazado: {}", motivo),
-        _ => format!("Enviado a revisión: {}", motivo),
+        _ => format!("Sent for review: {}", motivo),
     })
 }
 
@@ -712,7 +712,7 @@ fn instalar_plugin(bytes: &[u8]) -> Result<String, String> {
 
 /// Turns a plugin folder into the package that gets uploaded.
 fn empaquetar_plugin(carpeta: &std::path::Path) -> Result<Vec<u8>, String> {
-    let manifiesto: serde_json::Value = serde_json::from_str(&std::fs::read_to_string(carpeta.join("plugin.json")).map_err(|_| "La carpeta no tiene plugin.json.")?).map_err(|_| "plugin.json no es válido.")?;
+    let manifiesto: serde_json::Value = serde_json::from_str(&std::fs::read_to_string(carpeta.join("plugin.json")).map_err(|_| "La carpeta no tiene plugin.json.")?).map_err(|_| "plugin.json is not valid.")?;
     let mut archivos = std::collections::BTreeMap::new();
     archivos.insert("plugin.json".to_string(), serde_json::to_string(&manifiesto).map_err(|e| e.to_string())?);
     for clave in ["comandos", "exportadores"] {
@@ -737,8 +737,8 @@ fn empaquetar_plugin(carpeta: &std::path::Path) -> Result<Vec<u8>, String> {
 
 // ───────────────────────────── UI ─────────────────────────────
 
-const NOMBRES_TIPO: &[(&str, &str)] = &[("plugin", "Plugins"), ("imagen", "Imágenes"), ("fuente", "Fuentes"), ("plantilla", "Plantillas"), ("elemento", "Elementos"), ("tema", "Temas")];
-const MOTIVOS: &[(&str, &str)] = &[("malware", "Malware o virus"), ("contenido_18", "Contenido +18 sin marcar"), ("odio_o_acoso", "Odio o acoso"), ("derechos_de_autor", "Derechos de autor"), ("otro", "Otro")];
+const NOMBRES_TIPO: &[(&str, &str)] = &[("plugin", "Plugins"), ("imagen", "Images"), ("fuente", "Fonts"), ("plantilla", "Templates"), ("elemento", "Elements"), ("tema", "Themes")];
+const MOTIVOS: &[(&str, &str)] = &[("malware", "Malware or viruses"), ("contenido_18", "Unmarked 18+ content"), ("odio_o_acoso", "Hate or harassment"), ("derechos_de_autor", "Copyright"), ("otro", "Other")];
 
 fn nombre_tipo(t: &str) -> &'static str {
     NOMBRES_TIPO.iter().find(|(k, _)| *k == t).map(|(_, n)| *n).unwrap_or("")
@@ -787,7 +787,7 @@ impl EditorApp {
                     match r {
                         Ok(s) => {
                             self.com_tras_sesion(ctx, s);
-                            self.comunidad.estado = t("Sesión iniciada.");
+                            self.comunidad.estado = t("Signed in.");
                         }
                         Err(e) => {
                             self.comunidad.estado = e;
@@ -836,7 +836,7 @@ impl EditorApp {
                 Mensaje::Reportado(r) => {
                     self.comunidad.ocupado = self.comunidad.ocupado.saturating_sub(1);
                     self.comunidad.estado = match r {
-                        Ok(()) => t("Reporte enviado. Gracias."),
+                        Ok(()) => t("Report sent. Thank you."),
                         Err(e) => e,
                     };
                 }
@@ -845,7 +845,7 @@ impl EditorApp {
                     match r {
                         Ok(()) => {
                             self.com_cerrar_local();
-                            self.comunidad.estado = t("Tu cuenta y tu contenido se borraron.");
+                            self.comunidad.estado = t("Your account and content were deleted.");
                         }
                         Err(e) => self.comunidad.estado = e,
                     }
@@ -924,13 +924,13 @@ impl EditorApp {
             "plugin" => {
                 let n = instalar_plugin(bytes)?;
                 self.plugins = crate::plugins::cargar_todos();
-                format!("{} «{}» (pestaña Plugins)", t("Plugin instalado:"), n)
+                format!("{} “{}” (Plugins tab)", t("Plugin installed:"), n)
             }
             "imagen" => {
                 let f = escribir_temporal(nombre, bytes)?;
                 let r = self.library.add_image(&f);
                 let _ = std::fs::remove_file(&f);
-                format!("{} «{}» (pestaña Imágenes)", t("Imagen instalada:"), r?)
+                format!("{} “{}” (Images tab)", t("Image installed:"), r?)
             }
             "fuente" => {
                 let f = escribir_temporal(nombre, bytes)?;
@@ -938,27 +938,27 @@ impl EditorApp {
                 let _ = std::fs::remove_file(&f);
                 let (n, datos, ruta) = r?;
                 crate::render::add_font(ctx, &n, datos, ruta);
-                format!("{} «{}» (pestaña Texto)", t("Fuente instalada:"), n)
+                format!("{} “{}” (Text tab)", t("Font installed:"), n)
             }
             "tema" => {
-                let tema: crate::theme::Tema = serde_json::from_slice(bytes).map_err(|_| "El tema no es válido.".to_string())?;
+                let tema: crate::theme::Tema = serde_json::from_slice(bytes).map_err(|_| "The theme is not valid.".to_string())?;
                 tema.validar()?;
                 crate::temas::guardar(&tema)?;
                 let n = tema.nombre.clone();
                 self.usar_tema(ctx, tema);
-                format!("{} «{}» (botón Temas para cambiarlo)", t("Tema instalado y en uso:"), n)
+                format!("{} “{}” (Themes button to change it)", t("Theme installed and in use:"), n)
             }
             "plantilla" => {
                 let f = escribir_temporal(&format!("{}.json", nombre_seguro(&item.titulo)), bytes)?;
                 let r = self.library.add_template_file(&f);
                 let _ = std::fs::remove_file(&f);
-                format!("{} «{}» (Plantillas › Mis plantillas)", t("Plantilla instalada:"), r?)
+                format!("{} “{}” (Templates › My templates)", t("Template installed:"), r?)
             }
             _ => {
                 let f = escribir_temporal(&format!("{}.json", nombre_seguro(&item.titulo)), bytes)?;
                 let r = self.library.add_element_file(&f);
                 let _ = std::fs::remove_file(&f);
-                format!("{} «{}» (pestaña Elementos)", t("Elemento instalado:"), r?)
+                format!("{} “{}” (Elements tab)", t("Element installed:"), r?)
             }
         };
         Ok(msg)
@@ -980,16 +980,16 @@ impl EditorApp {
         }
 
         ui.horizontal(|ui| {
-            ui.label(RichText::new(t("Comunidad")).strong());
+            ui.label(RichText::new(t("Community")).strong());
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                 if self.comunidad.ocupado > 0 {
                     ui.spinner();
-                } else if ui.small_button(t("Actualizar")).clicked() {
+                } else if ui.small_button(t("Refresh")).clicked() {
                     self.com_cargar_lista(&ctx);
                 }
             });
         });
-        ui.label(RichText::new(t("Plugins, imágenes, fuentes, plantillas y elementos compartidos. Todo se revisa antes de publicarse.")).small().color(MUTED()));
+        ui.label(RichText::new(t("Shared plugins, images, fonts, templates and elements. Everything is reviewed before it is published.")).small().color(MUTED()));
         if !self.comunidad.estado.is_empty() {
             ui.add_space(4.0);
             ui.label(RichText::new(&self.comunidad.estado).small().color(ACCENT()));
@@ -1008,12 +1008,12 @@ impl EditorApp {
         egui::Frame::new().fill(crate::theme::PANEL_DARK()).corner_radius(6.0).inner_margin(8.0).show(ui, |ui| {
             ui.set_width(ui.available_width());
             if self.comunidad.sesion.is_none() {
-                ui.label(RichText::new(t("Inicia sesión para subir, reportar y activar el contenido +18. Explorar no necesita cuenta.")).small());
-                ui.label(RichText::new(t("Sin contraseñas: entras con tu cuenta de GitHub o Google. La app solo guarda un nombre público.")).small().color(MUTED()));
+                ui.label(RichText::new(t("Sign in to upload, report and enable 18+ content. Browsing needs no account.")).small());
+                ui.label(RichText::new(t("No passwords: you sign in with your GitHub or Google account. The app only keeps a public name.")).small().color(MUTED()));
                 ui.horizontal(|ui| {
                     for (clave, nombre) in [("github", "GitHub"), ("google", "Google")] {
-                        if ui.add_enabled(self.comunidad.login.is_none(), egui::Button::new(format!("{} {}", t("Entrar con"), nombre))).clicked() {
-                            self.comunidad.estado = t("Se abrió tu navegador: termina el inicio de sesión allí.");
+                        if ui.add_enabled(self.comunidad.login.is_none(), egui::Button::new(format!("{} {}", t("Sign in with"), nombre))).clicked() {
+                            self.comunidad.estado = t("Your browser opened: finish signing in there.");
                             let cancelar = Arc::new(AtomicBool::new(false));
                             self.comunidad.login = Some(cancelar.clone());
                             let (tx, ctx2) = (self.comunidad.tx.clone(), ctx.clone());
@@ -1027,8 +1027,8 @@ impl EditorApp {
                 if let Some(c) = &self.comunidad.login {
                     ui.horizontal(|ui| {
                         ui.spinner();
-                        ui.label(RichText::new(t("Esperando el inicio de sesión en tu navegador…")).small().color(MUTED()));
-                        if ui.small_button(t("Cancelar")).clicked() {
+                        ui.label(RichText::new(t("Waiting for you to sign in in your browser…")).small().color(MUTED()));
+                        if ui.small_button(t("Cancel")).clicked() {
                             c.store(true, Ordering::Relaxed);
                         }
                     });
@@ -1037,17 +1037,17 @@ impl EditorApp {
             }
             let Some(perfil) = self.comunidad.perfil.clone() else {
                 if !self.comunidad.perfil_cargado {
-                    ui.label(RichText::new(t("Cargando tu perfil…")).small().color(MUTED()));
+                    ui.label(RichText::new(t("Loading your profile…")).small().color(MUTED()));
                     return;
                 }
                 // First time: choose a public name and accept the rules.
-                ui.label(RichText::new(t("Elige tu nombre público")).strong());
-                ui.label(RichText::new(t("Es lo único que verá la comunidad. 3-32 caracteres: letras, números, punto, guion y guion bajo.")).small().color(MUTED()));
+                ui.label(RichText::new(t("Choose your public name")).strong());
+                ui.label(RichText::new(t("It is all the community will see. 3-32 characters: letters, numbers, dot, hyphen and underscore.")).small().color(MUTED()));
                 ui.add(egui::TextEdit::singleline(&mut self.comunidad.nombre_nuevo).hint_text("nombre_publico").desired_width(f32::INFINITY));
-                ui.checkbox(&mut self.comunidad.acepto, t("Acepto las reglas: nada de malware, odio, plagio ni contenido +18 sin marcar"));
+                ui.checkbox(&mut self.comunidad.acepto, t("I accept the rules: no malware, hate, plagiarism or unmarked 18+ content"));
                 let n = self.comunidad.nombre_nuevo.trim().to_string();
                 let valido = (3..=32).contains(&n.chars().count()) && n.chars().all(|c| c.is_ascii_alphanumeric() || "_.-".contains(c));
-                if ui.add_enabled(valido && self.comunidad.acepto && self.comunidad.ocupado == 0, egui::Button::new(t("Crear perfil"))).clicked() {
+                if ui.add_enabled(valido && self.comunidad.acepto && self.comunidad.ocupado == 0, egui::Button::new(t("Create profile"))).clicked() {
                     let s = self.comunidad.sesion.clone().unwrap();
                     self.com_lanzar(ctx, move |tx| {
                         let r = vigente(&s, tx).and_then(|s| json_post("/rest/v1/perfiles", Some(&s), &serde_json::json!({ "id": s.uid, "nombre_publico": n, "acepto_terminos_en": iso(ahora()) }), &[("Prefer", "return=minimal")])?.ok().map(|_| s));
@@ -1061,15 +1061,15 @@ impl EditorApp {
                         }
                     });
                 }
-                if ui.small_button(t("Cerrar sesión")).clicked() {
+                if ui.small_button(t("Sign out")).clicked() {
                     self.com_cerrar_local();
                 }
                 return;
             };
             ui.horizontal(|ui| {
-                ui.label(RichText::new(format!("{} {}", t("Sesión:"), perfil.nombre_publico)).strong());
+                ui.label(RichText::new(format!("{} {}", t("Session:"), perfil.nombre_publico)).strong());
                 ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                    if ui.small_button(t("Cerrar sesión")).clicked() {
+                    if ui.small_button(t("Sign out")).clicked() {
                         let s = self.comunidad.sesion.clone();
                         self.com_cerrar_local();
                         if let Some(s) = s {
@@ -1077,17 +1077,17 @@ impl EditorApp {
                                 let _ = pedir("POST", "/auth/v1/logout?scope=local", Some(&s), None, None, &[], 1 << 16);
                             });
                         }
-                        self.comunidad.estado = t("Sesión cerrada.");
+                        self.comunidad.estado = t("Signed out.");
                     }
                 });
             });
             let mut m18 = perfil.mostrar_18;
             if !perfil.mostrar_18 {
-                ui.checkbox(&mut self.comunidad.mayor_edad, t("Confirmo que tengo 18 años o más"));
-                if self.comunidad.mayor_edad && ui.small_button(t("Mostrar contenido +18")).clicked() {
+                ui.checkbox(&mut self.comunidad.mayor_edad, t("I confirm I am 18 or older"));
+                if self.comunidad.mayor_edad && ui.small_button(t("Show 18+ content")).clicked() {
                     m18 = true;
                 }
-            } else if ui.small_button(t("Ocultar contenido +18")).clicked() {
+            } else if ui.small_button(t("Hide 18+ content")).clicked() {
                 m18 = false;
             }
             if m18 != perfil.mostrar_18 {
@@ -1104,13 +1104,13 @@ impl EditorApp {
                 });
                 self.com_cargar_lista(ctx);
             }
-            if ui.button(t("Editar mi perfil de creador")).clicked() {
+            if ui.button(t("Edit my creator profile")).clicked() {
                 self.comunidad.perfil_abierto = true;
             }
-            ui.collapsing(t("Mi cuenta y mis datos"), |ui| {
-                ui.label(RichText::new(t("Guardamos solo tu nombre público, tu preferencia +18 y lo que subes. Tu correo lo gestiona el proveedor de inicio de sesión y no se muestra a nadie.")).small().color(MUTED()));
-                ui.checkbox(&mut self.comunidad.borrar_confirmado, t("Quiero borrar mi cuenta y todo lo que subí (no se puede deshacer)"));
-                if ui.add_enabled(self.comunidad.borrar_confirmado && self.comunidad.ocupado == 0, egui::Button::new(RichText::new(t("Borrar mi cuenta")).color(WARN()))).clicked() {
+            ui.collapsing(t("My account and data"), |ui| {
+                ui.label(RichText::new(t("We only keep your public name, your 18+ preference and what you upload. Your email is handled by the sign-in provider and is never shown to anyone.")).small().color(MUTED()));
+                ui.checkbox(&mut self.comunidad.borrar_confirmado, t("I want to delete my account and everything I uploaded (cannot be undone)"));
+                if ui.add_enabled(self.comunidad.borrar_confirmado && self.comunidad.ocupado == 0, egui::Button::new(RichText::new(t("Delete my account")).color(WARN()))).clicked() {
                     let s = self.comunidad.sesion.clone().unwrap();
                     self.com_lanzar(ctx, move |tx| {
                         let r = vigente(&s, tx).and_then(|s| json_post("/functions/v1/borrar-cuenta", Some(&s), &serde_json::json!({}), &[])?.ok().map(|_| ()));
@@ -1128,7 +1128,7 @@ impl EditorApp {
         }
         let mut recargar = false;
         ui.horizontal_wrapped(|ui| {
-            if ui.selectable_label(self.comunidad.filtro.is_none(), t("Todo")).clicked() {
+            if ui.selectable_label(self.comunidad.filtro.is_none(), t("All")).clicked() {
                 self.comunidad.filtro = None;
                 recargar = true;
             }
@@ -1138,12 +1138,12 @@ impl EditorApp {
                     recargar = true;
                 }
             }
-            if self.comunidad.sesion.is_some() && ui.add(crate::icons::btn("heart", t("Siguiendo")).selected(self.comunidad.solo_siguiendo)).on_hover_text(t("Solo contenido de los creadores que sigues")).clicked() {
+            if self.comunidad.sesion.is_some() && ui.add(crate::icons::btn("heart", t("Following")).selected(self.comunidad.solo_siguiendo)).on_hover_text(t("Only content from creators you follow")).clicked() {
                 self.comunidad.solo_siguiendo = !self.comunidad.solo_siguiendo;
                 recargar = true;
             }
         });
-        let r = ui.add(egui::TextEdit::singleline(&mut self.comunidad.busqueda).hint_text(t("Buscar en la comunidad…")).desired_width(f32::INFINITY));
+        let r = ui.add(egui::TextEdit::singleline(&mut self.comunidad.busqueda).hint_text(t("Search the community…")).desired_width(f32::INFINITY));
         if r.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter)) {
             recargar = true;
         }
@@ -1152,7 +1152,7 @@ impl EditorApp {
         }
         ui.add_space(4.0);
         if self.comunidad.items.is_empty() {
-            ui.label(RichText::new(if self.comunidad.ocupado > 0 { t("Cargando…") } else { t("No hay contenido que mostrar todavía.") }).color(MUTED()));
+            ui.label(RichText::new(if self.comunidad.ocupado > 0 { t("Loading…") } else { t("There is no content to show yet.") }).color(MUTED()));
             return;
         }
         let items = self.comunidad.items.clone();
@@ -1165,29 +1165,29 @@ impl EditorApp {
 
     fn com_subir(&mut self, ui: &mut egui::Ui, ctx: &egui::Context) {
         let abrir = std::mem::take(&mut self.comunidad.abrir_subida);
-        egui::CollapsingHeader::new(RichText::new(t("Compartir con la comunidad")).strong()).id_salt("com_subir").open(abrir.then_some(true)).show(ui, |ui| {
-            ui.label(RichText::new(t("Se revisa antes de publicarse (formato, antivirus y moderación). Si es +18, márcalo.")).small().color(MUTED()));
+        egui::CollapsingHeader::new(RichText::new(t("Share with the community")).strong()).id_salt("com_subir").open(abrir.then_some(true)).show(ui, |ui| {
+            ui.label(RichText::new(t("It is reviewed before being published (format, antivirus and moderation). If it is 18+, mark it.")).small().color(MUTED()));
             egui::ComboBox::from_id_salt("com_tipo").selected_text(t(NOMBRES_TIPO[self.comunidad.subir.tipo].1)).show_ui(ui, |ui| {
                 for (i, (_, n)) in NOMBRES_TIPO.iter().enumerate() {
                     ui.selectable_value(&mut self.comunidad.subir.tipo, i, t(n));
                 }
             });
             let tipo = NOMBRES_TIPO[self.comunidad.subir.tipo].0;
-            ui.add(egui::TextEdit::singleline(&mut self.comunidad.subir.titulo).hint_text(t("Título (3-80 caracteres)")).desired_width(f32::INFINITY));
-            ui.add(egui::TextEdit::multiline(&mut self.comunidad.subir.descripcion).hint_text(t("Descripción (máx. 1000)")).desired_rows(3).desired_width(f32::INFINITY));
-            ui.add(egui::TextEdit::singleline(&mut self.comunidad.subir.etiquetas).hint_text(t("Etiquetas separadas por coma (máx. 8)")).desired_width(f32::INFINITY));
-            ui.checkbox(&mut self.comunidad.subir.es_18, t("Contiene contenido +18"));
+            ui.add(egui::TextEdit::singleline(&mut self.comunidad.subir.titulo).hint_text(t("Title (3-80 characters)")).desired_width(f32::INFINITY));
+            ui.add(egui::TextEdit::multiline(&mut self.comunidad.subir.descripcion).hint_text(t("Description (max. 1000)")).desired_rows(3).desired_width(f32::INFINITY));
+            ui.add(egui::TextEdit::singleline(&mut self.comunidad.subir.etiquetas).hint_text(t("Tags separated by commas (max. 8)")).desired_width(f32::INFINITY));
+            ui.checkbox(&mut self.comunidad.subir.es_18, t("Contains 18+ content"));
             ui.horizontal(|ui| {
-                let boton = if tipo == "plugin" { t("Elegir carpeta del plugin…") } else { t("Elegir archivo…") };
+                let boton = if tipo == "plugin" { t("Choose plugin folder…") } else { t("Choose file…") };
                 if ui.button(boton).clicked() {
                     self.comunidad.subir.archivo = match tipo {
-                        "plugin" => rfd::FileDialog::new().set_title("Carpeta del plugin (con plugin.json)").pick_folder(),
-                        "imagen" => rfd::FileDialog::new().add_filter("Imágenes", &["png", "jpg", "jpeg", "gif", "webp"]).pick_file(),
-                        "fuente" => rfd::FileDialog::new().add_filter("Fuentes", &["ttf", "otf"]).pick_file(),
+                        "plugin" => rfd::FileDialog::new().set_title("Plugin folder (with plugin.json)").pick_folder(),
+                        "imagen" => rfd::FileDialog::new().add_filter("Images", &["png", "jpg", "jpeg", "gif", "webp"]).pick_file(),
+                        "fuente" => rfd::FileDialog::new().add_filter("Fonts", &["ttf", "otf"]).pick_file(),
                         _ => rfd::FileDialog::new().add_filter("JSON", &["json"]).pick_file(),
                     };
                 }
-                if tipo == "tema" && ui.button(t("Usar el tema actual")).clicked() {
+                if tipo == "tema" && ui.button(t("Use the current theme")).clicked() {
                     let tema = self.settings.tema.clone().unwrap_or_default();
                     let f = std::env::temp_dir().join("lienzo-ui-comunidad");
                     let _ = std::fs::create_dir_all(&f);
@@ -1199,7 +1199,7 @@ impl EditorApp {
                         }
                     }
                 }
-                if tipo == "plantilla" && ui.button(t("Usar el diseño abierto")).clicked() {
+                if tipo == "plantilla" && ui.button(t("Use the open design")).clicked() {
                     let f = std::env::temp_dir().join("lienzo-ui-comunidad");
                     let _ = std::fs::create_dir_all(&f);
                     let f = f.join("diseno-actual.json");
@@ -1211,11 +1211,11 @@ impl EditorApp {
             if let Some(a) = &self.comunidad.subir.archivo {
                 ui.label(RichText::new(a.file_name().map(|n| n.to_string_lossy().to_string()).unwrap_or_default()).small());
             }
-            ui.label(RichText::new(t("Opcional: vista previa (PNG hasta 1920×1080). El icono del contenido lo pone la app según su tipo.")).small().color(MUTED()));
+            ui.label(RichText::new(t("Optional: preview (PNG up to 1920×1080). The app sets the content icon from its type.")).small().color(MUTED()));
             ui.horizontal(|ui| {
                 let (icono, texto) = match &self.comunidad.subir.vista {
-                    Some(p) => ("check", format!("{} {}", t("Vista previa…"), p.file_name().map(|n| n.to_string_lossy().to_string()).unwrap_or_default())),
-                    None => ("image", t("Vista previa…")),
+                    Some(p) => ("check", format!("{} {}", t("Preview…"), p.file_name().map(|n| n.to_string_lossy().to_string()).unwrap_or_default())),
+                    None => ("image", t("Preview…")),
                 };
                 if ui.add(crate::icons::btn(icono, texto)).clicked() {
                     self.comunidad.subir.vista = rfd::FileDialog::new().add_filter("PNG", &["png"]).pick_file();
@@ -1224,7 +1224,7 @@ impl EditorApp {
             let f = &self.comunidad.subir;
             let etiquetas: Vec<String> = f.etiquetas.split(',').map(|e| e.trim().to_lowercase()).filter(|e| !e.is_empty()).take(8).collect();
             let listo = (3..=80).contains(&f.titulo.trim().chars().count()) && f.archivo.is_some() && self.comunidad.ocupado == 0;
-            if ui.add_enabled(listo, egui::Button::new(t("Enviar a revisión"))).clicked() {
+            if ui.add_enabled(listo, egui::Button::new(t("Send for review"))).clicked() {
                 let f = &self.comunidad.subir;
                 let (titulo, desc, es_18, ruta) = (f.titulo.trim().to_string(), f.descripcion.chars().take(1000).collect::<String>(), f.es_18, f.archivo.clone().unwrap());
                 let lectura = if ruta.is_dir() { empaquetar_plugin(&ruta).map(|b| ("plugin.json".to_string(), b)) } else { std::fs::read(&ruta).map(|b| (ruta.file_name().map(|n| n.to_string_lossy().to_string()).unwrap_or_default(), b)).map_err(|e| e.to_string()) };
@@ -1246,7 +1246,7 @@ impl EditorApp {
                     Err(e) => self.comunidad.estado = e,
                     Ok((nombre, bytes)) => {
                         let s = self.comunidad.sesion.clone().unwrap();
-                        self.comunidad.estado = t("Enviando y analizando… (puede tardar hasta un minuto)");
+                        self.comunidad.estado = t("Sending and analysing… (can take up to a minute)");
                         self.com_lanzar(ctx, move |tx| {
                             let extras: Vec<(&str, Vec<u8>)> = extras.into_iter().collect();
                             let r = subir_contenido(&s, tipo, &titulo, &desc, etiquetas, es_18, &nombre, &bytes, &extras, tx);
@@ -1287,7 +1287,7 @@ mod tests {
     fn mensajes_sin_filtrar_el_cuerpo() {
         let e = mensaje_error(500, r#"{"message":"clave=SECRETA"}"#);
         assert!(!e.contains("SECRETA"));
-        assert!(mensaje_error(401, "").contains("sesión"));
+        assert!(mensaje_error(401, "").contains("session"));
     }
 
     #[test]
@@ -1325,23 +1325,23 @@ pub fn subir_cli(args: &[String]) -> i32 {
     let etiquetas: Vec<String> = opcion("--etiquetas").split(',').map(|e| e.trim().to_lowercase()).filter(|e| !e.is_empty()).take(8).collect();
     let es_18 = args.iter().any(|a| a == "--18");
     if !val::TIPOS.contains(&tipo) || !ruta.exists() || titulo.trim().chars().count() < 3 {
-        eprintln!("Uso: lienzo-ui --comunidad-subir <plugin|imagen|fuente|plantilla|elemento> <archivo|carpeta> --titulo \"…\" [--descripcion \"…\"] [--etiquetas a,b] [--18] [--icono icono.png] [--vista vista.png]");
+        eprintln!("Usage: lienzo-ui --comunidad-subir <plugin|imagen|fuente|plantilla|elemento> <file|folder> --titulo \"…\" [--descripcion \"…\"] [--etiquetas a,b] [--18] [--icono icon.png] [--vista preview.png]");
         return 2;
     }
     let Some((renovacion, uid)) = leer_credencial() else {
-        eprintln!("No hay sesión guardada: abre la app, pestaña Comunidad, e inicia sesión.");
+        eprintln!("No saved session: open the app, Community tab, and sign in.");
         return 1;
     };
     let s = match renovar(&Sesion { renovacion, uid, ..Default::default() }) {
         Ok(s) => s,
         Err(e) => {
-            eprintln!("No se pudo renovar la sesión: {}", e);
+            eprintln!("Could not renew the session: {}", e);
             return 1;
         }
     };
     guardar_credencial(Some(&s)); // the token rotates: the new one is saved for next time
     if cargar_perfil(&s).is_none() {
-        eprintln!("Esta cuenta aún no tiene perfil: créalo en la app (pestaña Comunidad).");
+        eprintln!("This account does not have a profile yet: create it in the app (Community tab).");
         return 1;
     }
     let lectura = if ruta.is_dir() { empaquetar_plugin(&ruta).map(|b| ("plugin.json".to_string(), b)) } else { std::fs::read(&ruta).map(|b| (ruta.file_name().map(|n| n.to_string_lossy().to_string()).unwrap_or_default(), b)).map_err(|e| e.to_string()) };
@@ -1382,13 +1382,13 @@ pub fn subir_cli(args: &[String]) -> i32 {
 ///   lienzo-ui --comunidad-reintentar
 pub fn reintentar_cli() -> i32 {
     let Some((renovacion, uid)) = leer_credencial() else {
-        eprintln!("No hay sesión guardada: abre la app, pestaña Comunidad, e inicia sesión.");
+        eprintln!("No saved session: open the app, Community tab, and sign in.");
         return 1;
     };
     let s = match renovar(&Sesion { renovacion, uid, ..Default::default() }) {
         Ok(s) => s,
         Err(e) => {
-            eprintln!("No se pudo renovar la sesión: {}", e);
+            eprintln!("Could not renew the session: {}", e);
             return 1;
         }
     };
@@ -1420,8 +1420,8 @@ pub fn reintentar_cli() -> i32 {
 }
 
 fn sesion_guardada() -> Result<Sesion, String> {
-    let (renovacion, uid) = leer_credencial().ok_or("No hay sesión guardada: abre la app, pestaña Comunidad, e inicia sesión.")?;
-    let s = renovar(&Sesion { renovacion, uid, ..Default::default() }).map_err(|e| format!("No se pudo renovar la sesión: {}", e))?;
+    let (renovacion, uid) = leer_credencial().ok_or("No saved session: open the app, Community tab, and sign in.")?;
+    let s = renovar(&Sesion { renovacion, uid, ..Default::default() }).map_err(|e| format!("Could not renew the session: {}", e))?;
     guardar_credencial(Some(&s)); // the token rotates: the new one is saved
     Ok(s)
 }
@@ -1452,7 +1452,7 @@ pub fn revisar_cli(args: &[String]) -> i32 {
     let accion = args.first().map(|s| s.as_str()).unwrap_or("");
     let a1 = args.get(1).map(|s| s.as_str()).unwrap_or("");
     let a2 = args.get(2).map(|s| s.as_str()).unwrap_or("");
-    let uso = "Uso: lienzo-ui --comunidad-revisar listar | aprobar <id> [--18] | rechazar <id> \"motivo\" | aprobar-perfil <cuenta> avatar|banner | rechazar-perfil <cuenta> avatar|banner | token-crear \"nombre\" leer,rechazar [dias] | tokens | token-revocar <id> | reanalizar [id]";
+    let uso = "Usage: lienzo-ui --comunidad-revisar listar | aprobar <id> [--18] | rechazar <id> \"reason\" | aprobar-perfil <account> avatar|banner | rechazar-perfil <account> avatar|banner | token-crear \"name\" leer,rechazar [days] | tokens | token-revocar <id> | reanalizar [id]";
     let cuerpo = match accion {
         "listar" | "tokens" => serde_json::json!({ "accion": if accion == "tokens" { "listar_tokens" } else { "listar" } }),
         "aprobar" | "rechazar" if es_uuid(a1) => serde_json::json!({ "accion": accion, "item": a1, "motivo": a2, "es_18": args.iter().any(|x| x == "--18") }),
@@ -1485,21 +1485,21 @@ pub fn revisar_cli(args: &[String]) -> i32 {
     };
     let v: serde_json::Value = r.json().unwrap_or_default();
     if !(200..300).contains(&r.estado) {
-        eprintln!("{}", v["error"].as_str().unwrap_or("Error del servidor."));
+        eprintln!("{}", v["error"].as_str().unwrap_or("Server error."));
         return 1;
     }
     match accion {
         "listar" => {
             let lista = v["pendientes"].as_array().cloned().unwrap_or_default();
             for f in &lista {
-                println!("{}  [{}] {}  (por {}, {} bytes{})", f["id"].as_str().unwrap_or(""), f["tipo"].as_str().unwrap_or(""), f["titulo"].as_str().unwrap_or(""), f["autor_nombre"].as_str().unwrap_or(""), f["bytes"].as_i64().unwrap_or(0), if f["es_18"].as_bool().unwrap_or(false) { ", +18" } else { "" });
+                println!("{}  [{}] {}  (by {}, {} bytes{})", f["id"].as_str().unwrap_or(""), f["tipo"].as_str().unwrap_or(""), f["titulo"].as_str().unwrap_or(""), f["autor_nombre"].as_str().unwrap_or(""), f["bytes"].as_i64().unwrap_or(0), if f["es_18"].as_bool().unwrap_or(false) { ", +18" } else { "" });
                 println!("    motivo: {}", f["motivo_rechazo"].as_str().unwrap_or("-"));
             }
             let perfiles = v["perfiles"].as_array().cloned().unwrap_or_default();
             for p in &perfiles {
                 println!("{}  [perfil {}] de {}", p["usuario"].as_str().unwrap_or(""), p["clase"].as_str().unwrap_or(""), p["nombre_publico"].as_str().unwrap_or(""));
             }
-            println!("{} contenido(s) y {} imagen(es) de perfil pendientes. Para ver los archivos usa la web de moderación.", lista.len(), perfiles.len());
+            println!("{} content item(s) and {} profile image(s) pending. To see the files use the moderation website.", lista.len(), perfiles.len());
         }
         "tokens" => {
             for t in v["tokens"].as_array().cloned().unwrap_or_default() {
@@ -1507,7 +1507,7 @@ pub fn revisar_cli(args: &[String]) -> i32 {
             }
         }
         "token-crear" => {
-            println!("Token creado (caduca {}). Cópialo ahora, no se puede volver a ver:", v["expira_en"].as_str().unwrap_or(""));
+            println!("Token created (expires {}). Copy it now, it cannot be viewed again:", v["expira_en"].as_str().unwrap_or(""));
             println!("{}", v["token"].as_str().unwrap_or(""));
         }
         "reanalizar" => println!("reanalizar: {} {}{}", v["estado"].as_str().unwrap_or("?"), v["titulo"].as_str().unwrap_or(""), v["motivo"].as_str().map(|m| format!(" · {}", m)).unwrap_or_default()),
@@ -1672,7 +1672,7 @@ impl EditorApp {
                 }
                 ui.add_space(6.0);
                 ui.vertical_centered(|ui| {
-                    if ui.button(t("Cerrar")).clicked() {
+                    if ui.button(t("Close")).clicked() {
                         self.comunidad.ampliada = None;
                     }
                 });
@@ -1706,8 +1706,8 @@ impl EditorApp {
         let borde = if r.hovered() { ACCENT() } else { MUTED() };
         ui.painter().circle_stroke(r.rect.center(), 14.0, egui::Stroke::new(1.5, borde));
         let tip = match (&self.comunidad.sesion, &self.comunidad.perfil) {
-            (Some(_), Some(p)) => format!("{}: {}", t("Mi perfil de creador"), p.nombre_publico),
-            _ => t("Perfil de creador: inicia sesión en Comunidad"),
+            (Some(_), Some(p)) => format!("{}: {}", t("My creator profile"), p.nombre_publico),
+            _ => t("Creator profile: sign in at Community"),
         };
         if r.on_hover_cursor(egui::CursorIcon::PointingHand).on_hover_text(tip).clicked() {
             if self.comunidad.sesion.is_some() && self.comunidad.perfil.is_some() {
@@ -1734,10 +1734,10 @@ impl EditorApp {
         self.comunidad.perfil_cargado = true;
         let mut enlaces = std::collections::BTreeMap::new();
         enlaces.insert("itch".to_string(), "https://tunombre.itch.io/".to_string());
-        self.comunidad.mi_perfil = Some(PerfilPublico { id: uid, nombre_publico: "TuNombre".into(), bio: "Hago interfaces para juegos con Unity.".into(), github: Some("tu-usuario".into()), enlaces, ..Default::default() });
+        self.comunidad.mi_perfil = Some(PerfilPublico { id: uid, nombre_publico: "TuNombre".into(), bio: "I make game interfaces with Unity.".into(), github: Some("tu-usuario".into()), enlaces, ..Default::default() });
         let f = &mut self.comunidad.form_perfil;
         f.nombre = "TuNombre".into();
-        f.bio = "Hago interfaces para juegos con Unity.".into();
+        f.bio = "I make game interfaces with Unity.".into();
         f.github = "tu-usuario".into();
         f.enlaces = REDES.iter().map(|(k, _, _)| if *k == "itch" { "https://tunombre.itch.io/".to_string() } else { String::new() }).collect();
         f.cargado = true;
@@ -1746,8 +1746,8 @@ impl EditorApp {
             // "Share" form already open with an example, no catalog underneath
             self.comunidad.abrir_subida = true;
             self.comunidad.subir.tipo = 4;
-            self.comunidad.subir.titulo = "Mi menú de botones".into();
-            self.comunidad.subir.descripcion = "Cuatro botones listos para un menú principal.".into();
+            self.comunidad.subir.titulo = "My button menu".into();
+            self.comunidad.subir.descripcion = "Four buttons ready for a main menu.".into();
             self.comunidad.subir.etiquetas = "menu, botones".into();
             self.comunidad.subir.archivo = Some(PathBuf::from("menu_de_botones.json"));
         }
@@ -1774,7 +1774,7 @@ impl EditorApp {
         self.comunidad.subir.archivo = Some(archivo);
         self.comunidad.subir.titulo = titulo.chars().take(80).collect();
         self.comunidad.abrir_subida = true;
-        self.comunidad.estado = if self.comunidad.sesion.is_some() { t("Revisa los datos y pulsa «Enviar a revisión».") } else { t("Inicia sesión para compartir.") };
+        self.comunidad.estado = if self.comunidad.sesion.is_some() { t("Check the details and press \"Send for review\".") } else { t("Sign in to share.") };
     }
 
     fn com_abrir_perfil(&mut self, ctx: &egui::Context, uid: String) {
@@ -1810,9 +1810,9 @@ impl EditorApp {
                     });
                     ui.horizontal(|ui| {
                         ui.spacing_mut().item_spacing.x = 3.0;
-                        ui.label(RichText::new(format!("{} · {}", t(nombre_tipo(&it.tipo)), t("por"))).small().color(MUTED()));
+                        ui.label(RichText::new(format!("{} · {}", t(nombre_tipo(&it.tipo)), t("by"))).small().color(MUTED()));
                         let nombre = if it.autor_nombre.is_empty() { "—" } else { it.autor_nombre.as_str() };
-                        if ui.link(RichText::new(nombre).small()).on_hover_text(t("Ver el perfil del creador")).clicked() {
+                        if ui.link(RichText::new(nombre).small()).on_hover_text(t("View the creator's profile")).clicked() {
                             self.com_abrir_perfil(ctx, it.autor.clone());
                         }
                         crate::icons::con_texto(ui, "download", RichText::new(it.descargas.to_string()).small().color(MUTED()), MUTED());
@@ -1826,12 +1826,12 @@ impl EditorApp {
                 ui.label(RichText::new(it.etiquetas.iter().map(|e| format!("#{}", e)).collect::<Vec<_>>().join(" ")).small().color(MUTED()));
             }
             if let Some(r) = it.vista_publica.clone() {
-                egui::CollapsingHeader::new(RichText::new(t("Vista previa")).small()).id_salt(("vista", &it.id)).show(ui, |ui| match self.com_textura(ctx, &r) {
+                egui::CollapsingHeader::new(RichText::new(t("Preview")).small()).id_salt(("vista", &it.id)).show(ui, |ui| match self.com_textura(ctx, &r) {
                     Some(tex) => {
                         let w = ui.available_width();
                         let s = tex.size_vec2();
                         let img = ui.add(egui::Image::new(&tex).fit_to_exact_size(egui::Vec2::new(w, w * s.y / s.x.max(1.0))).corner_radius(4.0).sense(egui::Sense::click()));
-                        if img.on_hover_cursor(egui::CursorIcon::PointingHand).on_hover_text(t("Clic para ampliar")).clicked() {
+                        if img.on_hover_cursor(egui::CursorIcon::PointingHand).on_hover_text(t("Click to enlarge")).clicked() {
                             self.comunidad.ampliada = Some(r.clone());
                         }
                     }
@@ -1841,8 +1841,8 @@ impl EditorApp {
                 });
             }
             ui.horizontal(|ui| {
-                if ui.add_enabled(self.comunidad.ocupado == 0, egui::Button::new(RichText::new(t("Instalar")).color(ACCENT()))).clicked() {
-                    self.comunidad.estado = t("Descargando y verificando…");
+                if ui.add_enabled(self.comunidad.ocupado == 0, egui::Button::new(RichText::new(t("Install")).color(ACCENT()))).clicked() {
+                    self.comunidad.estado = t("Downloading and verifying…");
                     let item = it.clone();
                     let sesion = self.comunidad.sesion.clone();
                     self.com_lanzar(ctx, move |tx| {
@@ -1855,15 +1855,15 @@ impl EditorApp {
                 let color = if dado { WARN() } else { MUTED() };
                 let corazon = RichText::new(it.corazones.max(0).to_string()).color(color);
                 let r = ui.add_enabled(logueado, crate::icons::btn_tint(if dado { "heart_fill" } else { "heart" }, corazon, color).small());
-                if r.on_hover_text(if logueado { t("Dar o quitar corazón") } else { t("Inicia sesión para dar corazones y seguir a creadores.") }).clicked() {
+                if r.on_hover_text(if logueado { t("Give or remove a heart") } else { t("Sign in to give hearts and follow creators.") }).clicked() {
                     self.com_corazon(ctx, it.id.clone());
                 }
-                if logueado && ui.small_button(t("Reportar")).clicked() {
+                if logueado && ui.small_button(t("Report")).clicked() {
                     self.comunidad.reportar = Some(it.id.clone());
                 }
             });
             if self.comunidad.reportar.as_deref() == Some(it.id.as_str()) {
-                ui.label(RichText::new(t("¿Qué problema tiene?")).small());
+                ui.label(RichText::new(t("What is wrong with it?")).small());
                 for (k, n) in MOTIVOS {
                     if ui.small_button(t(n)).clicked() {
                         let (s, id, motivo) = (self.comunidad.sesion.clone().unwrap(), it.id.clone(), k.to_string());
@@ -1874,7 +1874,7 @@ impl EditorApp {
                         });
                     }
                 }
-                if ui.small_button(t("Cancelar")).clicked() {
+                if ui.small_button(t("Cancel")).clicked() {
                     self.comunidad.reportar = None;
                 }
             }
@@ -1883,7 +1883,7 @@ impl EditorApp {
 
     fn com_ver_perfil(&mut self, ui: &mut egui::Ui, ctx: &egui::Context) {
         let Some((p, items)) = self.comunidad.viendo.clone() else { return };
-        if ui.add(crate::icons::btn("arrow_left", t("Volver a la comunidad"))).clicked() {
+        if ui.add(crate::icons::btn("arrow_left", t("Back to the community"))).clicked() {
             self.comunidad.viendo = None;
             return;
         }
@@ -1913,15 +1913,15 @@ impl EditorApp {
                 ui.vertical(|ui| {
                     ui.label(RichText::new(&p.nombre_publico).strong().size(16.0));
                     ui.horizontal(|ui| {
-                        ui.label(RichText::new(format!("{} {} · {} {} ·", items.len(), t("contenidos publicados"), p.seguidores.max(0), t("seguidores"))).small().color(MUTED()));
+                        ui.label(RichText::new(format!("{} {} · {} {} ·", items.len(), t("published items"), p.seguidores.max(0), t("followers"))).small().color(MUTED()));
                         crate::icons::con_texto(ui, "heart_fill", RichText::new(p.corazones_recibidos.max(0).to_string()).small().color(MUTED()), WARN());
                     });
                     let propio = self.comunidad.sesion.as_ref().map(|s| s.uid == p.id).unwrap_or(false);
                     if !propio {
                         let sigo = self.comunidad.mis_seguidos.contains(&p.id);
-                        let etiqueta = if sigo { t("Siguiendo") } else { t("Seguir") };
+                        let etiqueta = if sigo { t("Following") } else { t("Follow") };
                         let r = ui.add_enabled(self.comunidad.sesion.is_some() && self.comunidad.perfil.is_some(), crate::icons::btn(if sigo { "check" } else { "plus" }, etiqueta).small());
-                        if r.on_hover_text(if sigo { t("Dejar de seguir") } else { t("Inicia sesión para dar corazones y seguir a creadores.") }).clicked() {
+                        if r.on_hover_text(if sigo { t("Unfollow") } else { t("Sign in to give hearts and follow creators.") }).clicked() {
                             self.com_seguir(ctx, p.id.clone());
                         }
                     }
@@ -1965,13 +1965,13 @@ impl EditorApp {
         // ── Top bar: close · title · Save ──
         let mut guardar = false;
         ui.horizontal(|ui| {
-            if ui.add(crate::icons::btn("close", "").frame(false)).on_hover_text(t("Cerrar")).clicked() {
+            if ui.add(crate::icons::btn("close", "").frame(false)).on_hover_text(t("Close")).clicked() {
                 self.comunidad.perfil_abierto = false;
             }
             ui.add_space(10.0);
-            ui.label(RichText::new(t("Editar perfil")).strong().size(19.0));
+            ui.label(RichText::new(t("Edit profile")).strong().size(19.0));
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                let b = egui::Button::new(RichText::new(t("Guardar")).strong().color(crate::theme::PANEL())).fill(crate::theme::TEXT()).corner_radius(16.0).min_size(egui::vec2(86.0, 32.0));
+                let b = egui::Button::new(RichText::new(t("Save")).strong().color(crate::theme::PANEL())).fill(crate::theme::TEXT()).corner_radius(16.0).min_size(egui::vec2(86.0, 32.0));
                 if ui.add_enabled(self.comunidad.ocupado == 0, b).clicked() {
                     guardar = true;
                 }
@@ -2000,12 +2000,12 @@ impl EditorApp {
             let redondo = |icono: &str| crate::icons::redondo(icono, 44.0, egui::Color32::WHITE);
             let c = rb.center();
             let r1 = egui::Rect::from_center_size(c - egui::vec2(if hay_banner { 28.0 } else { 0.0 }, 0.0), egui::vec2(44.0, 44.0));
-            if ui.put(r1, redondo("camera")).on_hover_text(t("Cambiar el banner")).clicked() {
+            if ui.put(r1, redondo("camera")).on_hover_text(t("Change the banner")).clicked() {
                 accion = Some(("banner", true));
             }
             if hay_banner {
                 let r2 = egui::Rect::from_center_size(c + egui::vec2(28.0, 0.0), egui::vec2(44.0, 44.0));
-                if ui.put(r2, redondo("close")).on_hover_text(t("Quitar el banner")).clicked() {
+                if ui.put(r2, redondo("close")).on_hover_text(t("Remove the banner")).clicked() {
                     accion = Some(("banner", false));
                 }
             }
@@ -2016,16 +2016,16 @@ impl EditorApp {
                 Some(tex) => egui::Image::new(&tex).corner_radius(54.0).paint_at(ui, ra),
                 None => egui::Image::new(egui::include_image!("../assets/marca/avatar.svg")).paint_at(ui, ra),
             }
-            if ui.put(egui::Rect::from_center_size(ra.center(), egui::vec2(44.0, 44.0)), redondo("camera")).on_hover_text(t("Cambiar la foto de perfil")).clicked() {
+            if ui.put(egui::Rect::from_center_size(ra.center(), egui::vec2(44.0, 44.0)), redondo("camera")).on_hover_text(t("Change the profile picture")).clicked() {
                 accion = Some(("avatar", true));
             }
             ui.add_space(62.0);
             let hay_avatar = mi.avatar_publico.is_some() || mi.avatar_pendiente || self.comunidad.previas.contains_key("avatar");
-            if hay_avatar && ui.small_button(t("Quitar la foto de perfil")).clicked() {
+            if hay_avatar && ui.small_button(t("Remove the profile picture")).clicked() {
                 accion = Some(("avatar", false));
             }
             // ── Review notice (like X's) ──
-            let pendientes: Vec<String> = [("avatar", mi.avatar_pendiente, t("la foto de perfil")), ("banner", mi.banner_pendiente, t("el banner"))]
+            let pendientes: Vec<String> = [("avatar", mi.avatar_pendiente, t("the profile picture")), ("banner", mi.banner_pendiente, t("the banner"))]
                 .into_iter()
                 .filter(|(_, p, _)| *p)
                 .map(|(_, _, n)| n)
@@ -2034,7 +2034,7 @@ impl EditorApp {
                 ui.add_space(6.0);
                 egui::Frame::new().fill(crate::theme::ACCENT_SOFT()).corner_radius(6.0).inner_margin(10.0).show(ui, |ui| {
                     ui.set_width(ui.available_width());
-                    ui.label(RichText::new(format!("{} {}. {}", t("Se está revisando"), pendientes.join(&format!(" {} ", t("y"))), t("Tú ya la ves aquí; los demás la verán cuando la apruebe una persona."))).color(crate::theme::TEXT()));
+                    ui.label(RichText::new(format!("{} {}. {}", t("Under review:"), pendientes.join(&format!(" {} ", t("and"))), t("You already see it here; others will once a person approves it."))).color(crate::theme::TEXT()));
                 });
             }
             ui.add_space(10.0);
@@ -2044,25 +2044,25 @@ impl EditorApp {
                 f.enlaces.resize(REDES.len(), String::new());
             }
             let mut errores: Vec<String> = Vec::new();
-            campo_x(ui, &t("Nombre"), &mut f.nombre, 1, "nombre_publico");
+            campo_x(ui, &t("Name"), &mut f.nombre, 1, "nombre_publico");
             let nombre = f.nombre.trim().to_string();
             if !((3..=32).contains(&nombre.chars().count()) && nombre.chars().all(|c| c.is_ascii_alphanumeric() || "_.-".contains(c))) {
-                errores.push(t("Nombre: 3-32 caracteres (letras, números, punto, guion y guion bajo)."));
+                errores.push(t("Name: 3-32 characters (letters, numbers, dot, hyphen and underscore)."));
             }
-            campo_x(ui, &format!("{} · {}/300", t("Biografía"), f.bio.chars().count()), &mut f.bio, 3, &t("Cuéntale a la comunidad quién eres (sin enlaces)"));
+            campo_x(ui, &format!("{} · {}/300", t("Bio"), f.bio.chars().count()), &mut f.bio, 3, &t("Tell the community who you are (no links)"));
             if f.bio.chars().count() > 300 {
-                errores.push(t("La descripción admite hasta 300 caracteres."));
+                errores.push(t("The description allows up to 300 characters."));
             }
-            campo_x(ui, "GitHub", &mut f.github, 1, &t("Usuario de GitHub"));
+            campo_x(ui, "GitHub", &mut f.github, 1, &t("GitHub username"));
             let gh = f.github.trim().trim_start_matches('@').to_string();
             if !gh.is_empty() && !github_valido(&gh) {
-                errores.push(t("Usuario de GitHub no válido."));
+                errores.push(t("Invalid GitHub username."));
             }
             for (i, (k, nombre_red, dominios)) in REDES.iter().enumerate() {
                 campo_x(ui, nombre_red, &mut f.enlaces[i], 1, &format!("https://{}/…", dominios[0]));
                 let u = f.enlaces[i].trim();
                 if !u.is_empty() && !enlace_valido(k, u) {
-                    errores.push(format!("{}: {} https://{}/…", nombre_red, t("debe empezar por"), dominios[0]));
+                    errores.push(format!("{}: {} https://{}/…", nombre_red, t("must start with"), dominios[0]));
                 }
             }
             for e in &errores {
@@ -2070,14 +2070,14 @@ impl EditorApp {
             }
             ui.add_space(6.0);
             // ── "View my public profile ›" row ──
-            let fila = ui.add(crate::icons::btn("user", RichText::new(t("Ver mi perfil público")).size(15.0)).frame(false));
+            let fila = ui.add(crate::icons::btn("user", RichText::new(t("View my public profile")).size(15.0)).frame(false));
             if fila.clicked() {
                 self.comunidad.perfil_abierto = false;
                 self.tab = crate::app::Tab::Comunidad;
                 self.drawer_open = true;
                 self.com_abrir_perfil(ctx, s.uid.clone());
             }
-            ui.label(RichText::new(t("Tu perfil es público cuando tienes al menos un contenido aprobado. Las imágenes y la descripción se moderan.")).small().color(MUTED()));
+            ui.label(RichText::new(t("Your profile is public once you have at least one approved item. Images and description are moderated.")).small().color(MUTED()));
 
             // ── Actions ──
             match accion {
@@ -2090,7 +2090,7 @@ impl EditorApp {
                         if let Ok(s) = &r {
                             let _ = tx.send(Mensaje::MiPerfil(cargar_mi_perfil(s)));
                         }
-                        let _ = tx.send(Mensaje::Estado(r.map(|_| t("Imagen quitada.")).unwrap_or_else(|e| e)));
+                        let _ = tx.send(Mensaje::Estado(r.map(|_| t("Image removed.")).unwrap_or_else(|e| e)));
                     });
                 }
                 None => {}
@@ -2104,7 +2104,7 @@ impl EditorApp {
                     let enlaces: serde_json::Map<String, serde_json::Value> = REDES.iter().zip(&f.enlaces).filter(|(_, u)| !u.trim().is_empty()).map(|((k, _, _), u)| (k.to_string(), serde_json::Value::String(u.trim().to_string()))).collect();
                     let cuerpo = serde_json::json!({ "accion": "guardar", "bio": f.bio.trim(), "github": gh, "enlaces": enlaces });
                     let s = s.clone();
-                    self.comunidad.estado = t("Guardando…");
+                    self.comunidad.estado = t("Saving…");
                     self.com_lanzar(ctx, move |tx| {
                         let r = vigente(&s, tx).and_then(|s| {
                             if let Some(n) = &nombre_nuevo {
@@ -2120,7 +2120,7 @@ impl EditorApp {
                         if let Ok(s) = &r {
                             let _ = tx.send(Mensaje::MiPerfil(cargar_mi_perfil(s)));
                         }
-                        let _ = tx.send(Mensaje::Estado(r.map(|_| t("Perfil guardado.")).unwrap_or_else(|e| e)));
+                        let _ = tx.send(Mensaje::Estado(r.map(|_| t("Profile saved.")).unwrap_or_else(|e| e)));
                     });
                 }
             }
@@ -2164,7 +2164,7 @@ impl EditorApp {
     /// Picks a photo or banner (PNG, JPEG, WebP, GIF or BMP of any size): the app crops and shrinks it,
     /// shows it immediately and uploads it for review.
     fn com_elegir_imagen_perfil(&mut self, ctx: &egui::Context, clase: &'static str) {
-        let Some(f) = rfd::FileDialog::new().add_filter(t("Imágenes"), &["png", "jpg", "jpeg", "webp", "gif", "bmp"]).pick_file() else { return };
+        let Some(f) = rfd::FileDialog::new().add_filter(t("Images"), &["png", "jpg", "jpeg", "webp", "gif", "bmp"]).pick_file() else { return };
         let preparada = std::fs::read(&f).map_err(|e| e.to_string()).and_then(|b| preparar_imagen_perfil(clase, &b));
         let bytes = match preparada {
             Ok(b) => b,
@@ -2180,7 +2180,7 @@ impl EditorApp {
             self.comunidad.previas.insert(clase, ctx.load_texture(format!("previa/{}", clase), ci, egui::TextureOptions::LINEAR));
         }
         let Some(s) = self.comunidad.sesion.clone() else { return };
-        self.comunidad.estado = t("Subiendo y analizando la imagen… (puede tardar hasta un minuto)");
+        self.comunidad.estado = t("Uploading and analysing the image… (can take up to a minute)");
         self.com_lanzar(ctx, move |tx| {
             let r = vigente(&s, tx).and_then(|s| subir_imagen_perfil(&s, clase, &bytes).map(|m| (s, m)));
             match r {
@@ -2230,7 +2230,7 @@ mod tests_perfil {
 ///   lienzo-ui --comunidad-seguir <id-del-creador>
 pub fn social_cli(que: &str, id: &str) -> i32 {
     if !es_uuid(id) {
-        eprintln!("Indica un identificador válido.");
+        eprintln!("Provide a valid identifier.");
         return 2;
     }
     let s = match sesion_guardada() {
@@ -2241,7 +2241,7 @@ pub fn social_cli(que: &str, id: &str) -> i32 {
         }
     };
     let Some((corazones, seguidos)) = cargar_mios(&s) else {
-        eprintln!("No se pudo leer lo tuyo (¿tienes perfil?).");
+        eprintln!("Could not read your data (do you have a profile?).");
         return 1;
     };
     let (ruta_get, ruta_post, campo, fila, ya) = if que == "corazon" {
@@ -2251,7 +2251,7 @@ pub fn social_cli(que: &str, id: &str) -> i32 {
     };
     let r = if ya { pedir("DELETE", &ruta_get, Some(&s), None, None, &[], 1 << 16) } else { json_post(ruta_post, Some(&s), &fila, &[("Prefer", "return=minimal")]) };
     match r.and_then(|r| r.ok()) {
-        Ok(_) => println!("{} {}: {}", que, campo, if ya { "quitado" } else { "añadido" }),
+        Ok(_) => println!("{} {}: {}", que, campo, if ya { "removed" } else { "added" }),
         Err(e) => {
             eprintln!("{}", e);
             return 1;
@@ -2281,7 +2281,7 @@ mod tests_imagenes {
         assert!(val::validar_png("avatar", &a).is_ok());
         let b = preparar_imagen_perfil("banner", &jpeg(1000, 1000)).unwrap();
         let (w, h) = val::validar_png("banner", &b).unwrap();
-        assert_eq!(w, h * 3, "el banner queda en 3:1");
+        assert_eq!(w, h * 3, "the banner ends up 3:1");
     }
 
     #[test]

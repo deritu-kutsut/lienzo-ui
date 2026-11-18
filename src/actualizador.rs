@@ -97,13 +97,13 @@ pub fn limpiar_notas(md: &str) -> String {
 
 /// Parses the `releases/latest` response. `None` = you are already up to date.
 pub fn parsear_release(json: &str, actual: &str) -> Result<Option<Novedad>, String> {
-    let v: serde_json::Value = serde_json::from_str(json).map_err(|_| "Respuesta de GitHub no válida.".to_string())?;
+    let v: serde_json::Value = serde_json::from_str(json).map_err(|_| "Invalid response from GitHub.".to_string())?;
     if v["draft"].as_bool() == Some(true) || v["prerelease"].as_bool() == Some(true) {
         return Ok(None);
     }
-    let tag = v["tag_name"].as_str().ok_or("La release no tiene versión.")?;
+    let tag = v["tag_name"].as_str().ok_or("The release has no version.")?;
     if parsear_version(tag).is_none() {
-        return Err("Versión de la release no reconocida.".into());
+        return Err("Unrecognized release version.".into());
     }
     if !es_mas_nueva(tag, actual) {
         return Ok(None);
@@ -132,12 +132,12 @@ fn agente(segundos: u64) -> ureq::Agent {
 
 /// A single GET request to GitHub; no user data is sent.
 fn buscar() -> Result<Option<Novedad>, String> {
-    let mut r = agente(15).get(API).header("Accept", "application/vnd.github+json").call().map_err(|_| "No se pudo conectar con GitHub.".to_string())?;
+    let mut r = agente(15).get(API).header("Accept", "application/vnd.github+json").call().map_err(|_| "Could not connect to GitHub.".to_string())?;
     if r.status().as_u16() == 404 {
         return Ok(None);
     }
     if !r.status().is_success() {
-        return Err(format!("GitHub respondió {}.", r.status().as_u16()));
+        return Err(format!("GitHub responded {}.", r.status().as_u16()));
     }
     let cuerpo = r.body_mut().with_config().limit(2 * 1024 * 1024).read_to_string().map_err(|_| "Respuesta de GitHub demasiado grande o ilegible.".to_string())?;
     parsear_release(&cuerpo, VERSION_ACTUAL)
@@ -148,23 +148,23 @@ fn buscar() -> Result<Option<Novedad>, String> {
 pub fn verificar_sha256(bytes: &[u8], esperado: &str) -> Result<(), String> {
     let h = Sha256::digest(bytes);
     let hex: String = h.iter().map(|b| format!("{:02x}", b)).collect();
-    if !esperado.is_empty() && hex.eq_ignore_ascii_case(esperado) { Ok(()) } else { Err("La descarga no coincide con la huella publicada; no se instala.".into()) }
+    if !esperado.is_empty() && hex.eq_ignore_ascii_case(esperado) { Ok(()) } else { Err("The download doesn't match the published checksum; not installing.".into()) }
 }
 
 /// Extracts only the executable from the zip (`LienzoUI-<v>/lienzo-ui.exe`); no other name is written to disk.
 pub fn extraer_exe(zip: &[u8], version: &str) -> Result<Vec<u8>, String> {
-    let mut a = zip::ZipArchive::new(std::io::Cursor::new(zip)).map_err(|_| "El zip descargado no es válido.".to_string())?;
+    let mut a = zip::ZipArchive::new(std::io::Cursor::new(zip)).map_err(|_| "The downloaded zip is not valid.".to_string())?;
     let nombre = format!("LienzoUI-{}/lienzo-ui.exe", version);
     // Compress-Archive in old Windows PowerShell stores paths with "\": they are compared normalized.
-    let idx = (0..a.len()).find(|&i| a.by_index_raw(i).is_ok_and(|f| f.name().is_ok_and(|n| n.replace('\\', "/") == nombre))).ok_or("El zip no contiene lienzo-ui.exe.")?;
-    let mut f = a.by_index(idx).map_err(|_| "El zip no se pudo leer.".to_string())?;
+    let idx = (0..a.len()).find(|&i| a.by_index_raw(i).is_ok_and(|f| f.name().is_ok_and(|n| n.replace('\\', "/") == nombre))).ok_or("The zip does not contain lienzo-ui.exe.")?;
+    let mut f = a.by_index(idx).map_err(|_| "The zip could not be read.".to_string())?;
     if f.size() > MAX_EXE {
-        return Err("El ejecutable del zip es demasiado grande.".into());
+        return Err("The executable in the zip is too large.".into());
     }
     let mut out = Vec::with_capacity(f.size() as usize);
     f.by_ref().take(MAX_EXE + 1).read_to_end(&mut out).map_err(|_| "No se pudo descomprimir.".to_string())?;
     if out.len() as u64 > MAX_EXE || out.len() < 4096 || &out[..2] != b"MZ" {
-        return Err("El ejecutable del zip no parece válido.".into());
+        return Err("The executable in the zip does not look valid.".into());
     }
     Ok(out)
 }
@@ -181,32 +181,32 @@ pub fn reemplazar_exe(exe: &std::path::Path, nuevo: &[u8]) -> Result<(), String>
     let tmp = ruta_con_extension(exe, ".nuevo");
     let viejo = ruta_con_extension(exe, ".viejo");
     let _ = std::fs::remove_file(&viejo);
-    std::fs::write(&tmp, nuevo).map_err(|_| "No hay permiso para escribir junto a la app. Descarga la versión nueva a mano.".to_string())?;
+    std::fs::write(&tmp, nuevo).map_err(|_| "No permission to write next to the app. Download the new version manually.".to_string())?;
     if std::fs::rename(exe, &viejo).is_err() {
         let _ = std::fs::remove_file(&tmp);
-        return Err("No se pudo reemplazar la app (¿carpeta protegida?). Descarga la versión nueva a mano.".into());
+        return Err("Could not replace the app (protected folder?). Download the new version manually.".into());
     }
     if std::fs::rename(&tmp, exe).is_err() {
         let _ = std::fs::rename(&viejo, exe);
         let _ = std::fs::remove_file(&tmp);
-        return Err("No se pudo instalar la versión nueva; se conserva la actual.".into());
+        return Err("Could not install the new version; keeping the current one.".into());
     }
     Ok(())
 }
 
 fn descargar_e_instalar(n: &Novedad) -> Result<(String, std::path::PathBuf), String> {
     if !cfg!(windows) {
-        return Err("La instalación automática solo existe en Windows. Descarga la versión nueva a mano.".into());
+        return Err("Automatic install only exists on Windows. Download the new version manually.".into());
     }
     if n.url_zip.is_empty() || n.sha256.is_empty() {
-        return Err("Esta release no se puede verificar; descárgala a mano.".into());
+        return Err("This release can't be verified; download it manually.".into());
     }
     let exe = std::env::current_exe().map_err(|_| "No se encuentra la ruta de la app.".to_string())?;
-    let mut r = agente(300).get(&n.url_zip).call().map_err(|_| "No se pudo descargar la actualización.".to_string())?;
+    let mut r = agente(300).get(&n.url_zip).call().map_err(|_| "Could not download the update.".to_string())?;
     if !r.status().is_success() {
-        return Err(format!("La descarga respondió {}.", r.status().as_u16()));
+        return Err(format!("The download responded {}.", r.status().as_u16()));
     }
-    let zip = r.body_mut().with_config().limit(MAX_ZIP).read_to_vec().map_err(|_| "La descarga es demasiado grande o se cortó.".to_string())?;
+    let zip = r.body_mut().with_config().limit(MAX_ZIP).read_to_vec().map_err(|_| "The download is too large or was cut off.".to_string())?;
     verificar_sha256(&zip, &n.sha256)?;
     let bytes = extraer_exe(&zip, &n.version)?;
     reemplazar_exe(&exe, &bytes)?;
@@ -271,12 +271,12 @@ impl EditorApp {
     /// Header button: only shown when there is a new version.
     pub fn actualizador_boton(&mut self, ui: &mut egui::Ui) {
         let etiqueta = match &self.actualizador.estado {
-            Estado::Instalada(..) => Some((t("Reiniciar para actualizar"), OK())),
-            _ => self.actualizacion_para_boton().map(|n| (format!("{} {}", t("Actualizar a"), n.version), ACCENT())),
+            Estado::Instalada(..) => Some((t("Restart to update"), OK())),
+            _ => self.actualizacion_para_boton().map(|n| (format!("{} {}", t("Update to"), n.version), ACCENT())),
         };
         if let Some((texto, color)) = etiqueta {
             let b = egui::Button::new(RichText::new(texto).strong().color(Color32::WHITE)).fill(color).corner_radius(6.0);
-            if ui.add(b).on_hover_text(t("Hay una versión nueva de Lienzo UI")).clicked() {
+            if ui.add(b).on_hover_text(t("A new version of Lienzo UI is available")).clicked() {
                 self.actualizador.abierta = true;
             }
         }
@@ -309,29 +309,29 @@ impl EditorApp {
         let mut omitir: Option<String> = None;
         let mut reinicio: Option<std::path::PathBuf> = None;
         let mut cambio = false;
-        egui::Window::new(t("Actualizaciones")).open(&mut abierta).collapsible(false).resizable(false).default_width(440.0).show(ctx, |ui| {
-            ui.label(format!("{} {}", t("Versión instalada:"), VERSION_ACTUAL));
+        egui::Window::new(t("Updates")).open(&mut abierta).collapsible(false).resizable(false).default_width(440.0).show(ctx, |ui| {
+            ui.label(format!("{} {}", t("Installed version:"), VERSION_ACTUAL));
             ui.add_space(6.0);
             match &self.actualizador.estado {
                 Estado::Nada => {
-                    if ui.button(t("Buscar actualizaciones")).clicked() {
+                    if ui.button(t("Check for updates")).clicked() {
                         buscar_otra = true;
                     }
                 }
                 Estado::Buscando => {
                     ui.horizontal(|ui| {
                         ui.spinner();
-                        ui.label(t("Buscando actualizaciones…"));
+                        ui.label(t("Checking for updates…"));
                     });
                 }
                 Estado::AlDia => {
-                    ui.label(RichText::new(t("Tienes la última versión.")).color(OK()));
-                    if ui.button(t("Volver a buscar")).clicked() {
+                    ui.label(RichText::new(t("You have the latest version.")).color(OK()));
+                    if ui.button(t("Check again")).clicked() {
                         buscar_otra = true;
                     }
                 }
                 Estado::Disponible(n) => {
-                    ui.label(RichText::new(format!("{} {}", t("Hay una versión nueva:"), n.version)).strong().color(ACCENT()));
+                    ui.label(RichText::new(format!("{} {}", t("A new version is available:"), n.version)).strong().color(ACCENT()));
                     if !n.notas.is_empty() {
                         egui::ScrollArea::vertical().max_height(180.0).show(ui, |ui| {
                             ui.label(RichText::new(&n.notas).small().color(MUTED()));
@@ -341,42 +341,42 @@ impl EditorApp {
                     ui.horizontal(|ui| {
                         let auto = cfg!(windows) && !n.url_zip.is_empty() && !n.sha256.is_empty();
                         if auto {
-                            if ui.add(egui::Button::new(RichText::new(t("Actualizar ahora")).strong().color(Color32::WHITE)).fill(ACCENT())).clicked() {
+                            if ui.add(egui::Button::new(RichText::new(t("Update now")).strong().color(Color32::WHITE)).fill(ACCENT())).clicked() {
                                 instalar = Some(n.clone());
                             }
                         }
-                        if ui.button(t(if auto { "Descarga manual" } else { "Abrir página de descarga" })).clicked() {
+                        if ui.button(t(if auto { "Manual download" } else { "Open download page" })).clicked() {
                             let _ = webbrowser::open(PAGINA_RELEASES);
                         }
-                        if ui.button(t("Omitir esta versión")).clicked() {
+                        if ui.button(t("Skip this version")).clicked() {
                             omitir = Some(n.version.clone());
                         }
                     });
                     if !(cfg!(windows) && !n.sha256.is_empty()) {
-                        ui.label(RichText::new(t("Esta versión hay que descargarla a mano (no se puede verificar desde la app).")).small().color(MUTED()));
+                        ui.label(RichText::new(t("This version must be downloaded manually (it can't be verified from the app).")).small().color(MUTED()));
                     }
                 }
                 Estado::Descargando(n) => {
                     ui.horizontal(|ui| {
                         ui.spinner();
-                        ui.label(format!("{} {}…", t("Descargando e instalando la versión"), n.version));
+                        ui.label(format!("{} {}…", t("Downloading and installing version"), n.version));
                     });
-                    ui.label(RichText::new(t("No cierres la app mientras tanto.")).small().color(MUTED()));
+                    ui.label(RichText::new(t("Don't close the app in the meantime.")).small().color(MUTED()));
                 }
                 Estado::Instalada(v, exe) => {
-                    ui.label(RichText::new(format!("{} {}", t("Versión instalada correctamente:"), v)).strong().color(OK()));
-                    ui.label(RichText::new(t("Guarda tu diseño: al reiniciar se cierra la ventana actual.")).small().color(MUTED()));
-                    if ui.add(egui::Button::new(RichText::new(t("Reiniciar ahora")).strong().color(Color32::WHITE)).fill(OK())).clicked() {
+                    ui.label(RichText::new(format!("{} {}", t("Version installed successfully:"), v)).strong().color(OK()));
+                    ui.label(RichText::new(t("Save your design: restarting closes the current window.")).small().color(MUTED()));
+                    if ui.add(egui::Button::new(RichText::new(t("Restart now")).strong().color(Color32::WHITE)).fill(OK())).clicked() {
                         reinicio = Some(exe.clone());
                     }
                 }
                 Estado::Error(e) => {
                     ui.label(RichText::new(t(e)).color(crate::theme::WARN()));
                     ui.horizontal(|ui| {
-                        if ui.button(t("Reintentar")).clicked() {
+                        if ui.button(t("Retry")).clicked() {
                             buscar_otra = true;
                         }
-                        if ui.button(t("Abrir página de descarga")).clicked() {
+                        if ui.button(t("Open download page")).clicked() {
                             let _ = webbrowser::open(PAGINA_RELEASES);
                         }
                     });
@@ -385,11 +385,11 @@ impl EditorApp {
             ui.add_space(8.0);
             ui.separator();
             let mut buscar_al_abrir = !self.settings.no_buscar_actualizaciones;
-            if ui.checkbox(&mut buscar_al_abrir, t("Buscar actualizaciones al abrir")).changed() {
+            if ui.checkbox(&mut buscar_al_abrir, t("Check for updates on startup")).changed() {
                 self.settings.no_buscar_actualizaciones = !buscar_al_abrir;
                 cambio = true;
             }
-            ui.label(RichText::new(t("Solo se consulta github.com; no se envía ningún dato tuyo.")).small().color(MUTED()));
+            ui.label(RichText::new(t("Only github.com is queried; none of your data is sent.")).small().color(MUTED()));
         });
         if cambio {
             self.settings.save();
@@ -528,7 +528,7 @@ aviso");
     fn con_la_release_real_de_github() {
         let mut r = agente(15).get(API).header("Accept", "application/vnd.github+json").call().unwrap();
         let json = r.body_mut().read_to_string().unwrap();
-        let n = parsear_release(&json, "0.0.1").unwrap().expect("debería haber una versión más nueva que 0.0.1");
+        let n = parsear_release(&json, "0.0.1").unwrap().expect("there should be a version newer than 0.0.1");
         assert!(!n.sha256.is_empty() && !n.url_zip.is_empty(), "la release debe traer URL y huella: {:?}", n);
         let mut d = agente(300).get(&n.url_zip).call().unwrap();
         let zip = d.body_mut().with_config().limit(MAX_ZIP).read_to_vec().unwrap();

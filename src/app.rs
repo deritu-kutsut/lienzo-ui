@@ -134,26 +134,26 @@ pub struct GridSettings {
 }
 
 pub const SIZE_PRESETS: &[(&str, f32, f32)] = &[
-    ("PC / consola Full HD", 1920.0, 1080.0),
+    ("PC / console Full HD", 1920.0, 1080.0),
     ("PC HD", 1280.0, 720.0),
     ("PC 4K", 3840.0, 2160.0),
-    ("Ultrapanorámico 21:9", 2560.0, 1080.0),
-    ("Móvil vertical", 1080.0, 1920.0),
-    ("Móvil horizontal", 1920.0, 1080.0),
-    ("Tableta 4:3", 2048.0, 1536.0),
-    ("Cuadrado", 1080.0, 1080.0),
+    ("Ultrawide 21:9", 2560.0, 1080.0),
+    ("Phone portrait", 1080.0, 1920.0),
+    ("Phone landscape", 1920.0, 1080.0),
+    ("Tablet 4:3", 2048.0, 1536.0),
+    ("Square", 1080.0, 1080.0),
 ];
 
 /// Screens offered in test mode to check how the anchors adapt.
 pub const SCREEN_PRESETS: &[(&str, f32, f32)] = &[
-    ("Resolución de referencia", 0.0, 0.0),
+    ("Reference resolution", 0.0, 0.0),
     ("1280 × 720 (16:9)", 1280.0, 720.0),
     ("2560 × 1080 (21:9)", 2560.0, 1080.0),
     ("1024 × 768 (4:3)", 1024.0, 768.0),
     ("2732 × 2048 (iPad)", 2732.0, 2048.0),
-    ("2400 × 1080 (móvil apaisado)", 2400.0, 1080.0),
-    ("1080 × 2400 (móvil vertical)", 1080.0, 2400.0),
-    ("1080 × 1080 (cuadrado)", 1080.0, 1080.0),
+    ("2400 × 1080 (phone landscape)", 2400.0, 1080.0),
+    ("1080 × 2400 (phone portrait)", 1080.0, 2400.0),
+    ("1080 × 1080 (square)", 1080.0, 1080.0),
 ];
 
 impl EditorApp {
@@ -186,7 +186,7 @@ impl EditorApp {
             export_open: false,
             export_tab: 0,
             project_path: if settings.last_project_file.is_empty() { "proyecto.editorgui.json".into() } else { settings.last_project_file.clone() },
-            status: "Listo. Arrastra elementos al lienzo, organízalos en la Jerarquía y exporta a Unity.".into(),
+            status: "Ready. Drag elements onto the canvas, organise them in the Hierarchy and export to Unity.".into(),
             renaming: None,
             search: String::new(),
             canvas_rect: egui::Rect::NOTHING,
@@ -397,8 +397,8 @@ impl EditorApp {
             }
         }
         self.sel = vec![id];
-        let pname = parent.and_then(|p| self.doc.get(p)).map(|p| format!(" dentro de «{}»", p.name)).unwrap_or_default();
-        self.status = crate::i18n::tf("Se agregó: {}{}", &[&crate::i18n::t(kind.label()), &pname]);
+        let pname = parent.and_then(|p| self.doc.get(p)).map(|p| format!(" inside “{}”", p.name)).unwrap_or_default();
+        self.status = crate::i18n::tf("Added: {}{}", &[&crate::i18n::t(kind.label()), &pname]);
     }
 
     /// Topmost Panel / Contenedor / ScrollView under a page point (drop target).
@@ -421,7 +421,7 @@ impl EditorApp {
         self.sel.retain(|id| self.doc.get(*id).is_some());
         self.sel.clear();
         self.editing = None;
-        self.status = crate::i18n::tf("Se eliminaron {} elemento(s) con su contenido (los bloqueados se conservan)", &[&n.to_string()]);
+        self.status = crate::i18n::tf("Deleted {} element(s) with their contents (locked ones are kept)", &[&n.to_string()]);
     }
 
     pub fn duplicate_selection(&mut self, offset: f32) {
@@ -452,13 +452,13 @@ impl EditorApp {
             new_ids.extend(roots);
         }
         self.sel = new_ids;
-        self.status = crate::i18n::t("Duplicado (con su contenido)");
+        self.status = crate::i18n::t("Duplicated (with its contents)");
     }
 
     pub fn copy(&mut self) {
         self.clipboard = self.doc.collect_subtrees(&self.sel);
         if !self.clipboard.is_empty() {
-            self.status = crate::i18n::tf("Copiado(s) {} elemento(s)", &[&self.doc.top_level(&self.sel).len().to_string()]);
+            self.status = crate::i18n::tf("Copied {} element(s)", &[&self.doc.top_level(&self.sel).len().to_string()]);
         }
     }
 
@@ -479,7 +479,7 @@ impl EditorApp {
         }
         self.sel = self.doc.insert_items(&items, parent);
         self.doc.sanitize();
-        self.status = crate::i18n::t("Pegado");
+        self.status = crate::i18n::t("Pasted");
     }
 
     /// Wrap the selection in a new "Contenedor" (an empty RectTransform), like grouping in Unity.
@@ -493,7 +493,7 @@ impl EditorApp {
         let items: Vec<&Element> = tops.iter().filter_map(|i| self.doc.get(*i)).collect();
         let b = bounds(&items);
         let mut g = Element::new(0, Kind::Empty);
-        g.name = format!("Grupo {}", self.doc.next_id);
+        g.name = format!("Group {}", self.doc.next_id);
         g.x = b[0];
         g.y = b[1];
         g.w = (b[2] - b[0]).max(1.0);
@@ -511,7 +511,7 @@ impl EditorApp {
         }
         self.doc.set_sibling_order(Some(gid), &tops);
         self.sel = vec![gid];
-        self.status = crate::i18n::t("Agrupado en un Contenedor (RectTransform vacío en Unity)");
+        self.status = crate::i18n::t("Grouped into a Container (empty RectTransform in Unity)");
     }
 
     /// Remove selected "Contenedores", keeping their children where they are.
@@ -540,9 +540,9 @@ impl EditorApp {
         freed.retain(|id| self.doc.get(*id).is_some());
         if !freed.is_empty() {
             self.sel = freed;
-            self.status = crate::i18n::t("Desagrupado");
+            self.status = crate::i18n::t("Ungrouped");
         } else {
-            self.status = crate::i18n::t("Selecciona un Contenedor para desagrupar");
+            self.status = crate::i18n::t("Select a Container to ungroup");
         }
     }
 
@@ -559,7 +559,7 @@ impl EditorApp {
                 self.doc.reparent(id, gp, idx);
             }
         }
-        self.status = crate::i18n::t("Movido un nivel arriba en la jerarquía");
+        self.status = crate::i18n::t("Moved up one level in the hierarchy");
     }
 
     pub fn toggle_lock(&mut self) {
@@ -568,7 +568,7 @@ impl EditorApp {
         for e in self.doc.elements.iter_mut().filter(|e| sel.contains(&e.id)) {
             e.locked = any_unlocked;
         }
-        self.status = crate::i18n::t(if any_unlocked { "Bloqueado: no se puede mover ni borrar" } else { "Desbloqueado" });
+        self.status = crate::i18n::t(if any_unlocked { "Locked: it can't be moved or deleted" } else { "Unlocked" });
     }
 
     /// Move the selection among its siblings. `to_front`: Some(true) last (drawn on top), Some(false) first.
@@ -615,9 +615,9 @@ impl EditorApp {
                     pe.collapsed = false;
                 }
             }
-            self.status = crate::i18n::t("Jerarquía actualizada (la posición en pantalla se mantiene)");
+            self.status = crate::i18n::t("Hierarchy updated (the on-screen position is kept)");
         } else {
-            self.status = crate::i18n::t("No se puede meter un elemento dentro de sí mismo");
+            self.status = crate::i18n::t("An element can't be placed inside itself");
         }
     }
 
@@ -700,7 +700,7 @@ impl EditorApp {
         self.sel.clear();
         self.editing = None;
         self.fit_pending = true;
-        self.status = crate::i18n::tf("Plantilla aplicada: {} (Ctrl+Z para deshacer)", &[&model::TEMPLATES[i].to_string()]);
+        self.status = crate::i18n::tf("Template applied: {} (Ctrl+Z to undo)", &[&model::TEMPLATES[i].to_string()]);
     }
 
     /// Change the reference resolution: every element keeps its anchors (like Unity).
@@ -711,7 +711,7 @@ impl EditorApp {
         self.doc.reapply_children(None, old);
         self.doc.apply_layouts();
         self.fit_pending = true;
-        self.status = crate::i18n::tf("Resolución de referencia: {} × {} (los elementos siguen sus anclas)", &[&w.to_string(), &h.to_string()]);
+        self.status = crate::i18n::tf("Reference resolution: {} × {} (elements follow their anchors)", &[&w.to_string(), &h.to_string()]);
     }
 
     fn remember_project(&mut self) {
@@ -722,10 +722,10 @@ impl EditorApp {
     pub fn save_project(&mut self) {
         match serde_json::to_string_pretty(self.doc_real()).map_err(|e| e.to_string()).and_then(|s| std::fs::write(&self.project_path, s).map_err(|e| e.to_string())) {
             Ok(()) => {
-                self.status = crate::i18n::tf("Proyecto guardado en {}", &[&self.project_path]);
+                self.status = crate::i18n::tf("Project saved to {}", &[&self.project_path]);
                 self.remember_project();
             }
-            Err(e) => self.status = crate::i18n::tf("No se pudo guardar: {}", &[&e.to_string()]),
+            Err(e) => self.status = crate::i18n::tf("Could not save: {}", &[&e.to_string()]),
         }
     }
 
@@ -740,10 +740,10 @@ impl EditorApp {
                 self.editing = None;
                 self.drag = None;
                 self.fit_pending = true;
-                self.status = format!("{} {}", crate::i18n::t("Proyecto abierto:"), self.project_path);
+                self.status = format!("{} {}", crate::i18n::t("Project opened:"), self.project_path);
                 self.remember_project();
             }
-            Err(e) => self.status = crate::i18n::tf("No se pudo abrir: {}", &[&e.to_string()]),
+            Err(e) => self.status = crate::i18n::tf("Could not open: {}", &[&e.to_string()]),
         }
     }
 
@@ -753,40 +753,40 @@ impl EditorApp {
         let ok = results.iter().filter(|r| r.is_ok()).count();
         let errs: Vec<String> = results.into_iter().filter_map(|r| r.err()).collect();
         self.status = if errs.is_empty() {
-            crate::i18n::tf("{}: {} agregado(s) a tu biblioteca", &[what, &ok.to_string()])
+            crate::i18n::tf("{}: {} added to your library", &[what, &ok.to_string()])
         } else {
-            crate::i18n::tf("{}: {} agregado(s), {} con error ({})", &[what, &ok.to_string(), &errs.len().to_string(), &errs.join("; ")])
+            crate::i18n::tf("{}: {} added, {} failed ({})", &[what, &ok.to_string(), &errs.len().to_string(), &errs.join("; ")])
         };
     }
 
     pub fn upload_images(&mut self) {
-        let Some(files) = rfd::FileDialog::new().set_title("Subir imágenes").add_filter("Imágenes", crate::library::IMAGE_EXTS).pick_files() else { return };
+        let Some(files) = rfd::FileDialog::new().set_title("Upload images").add_filter("Images", crate::library::IMAGE_EXTS).pick_files() else { return };
         let r = files.iter().map(|f| self.library.add_image(f)).collect();
-        self.report("Imágenes", r);
+        self.report("Images", r);
     }
 
     pub fn upload_elements(&mut self) {
         let mut exts: Vec<&str> = crate::library::IMAGE_EXTS.to_vec();
         exts.push("json");
         let Some(files) = rfd::FileDialog::new()
-            .set_title("Subir elementos (imágenes PNG con transparencia o elementos .json)")
-            .add_filter("Elementos", &exts)
+            .set_title("Upload elements (PNG images with transparency or .json elements)")
+            .add_filter("Elements", &exts)
             .pick_files()
         else {
             return;
         };
         let r = files.iter().map(|f| self.library.add_element_file(f)).collect();
-        self.report("Elementos", r);
+        self.report("Elements", r);
     }
 
     pub fn upload_templates(&mut self) {
-        let Some(files) = rfd::FileDialog::new().set_title("Subir plantillas (.json de este editor)").add_filter("Plantillas", &["json"]).pick_files() else { return };
+        let Some(files) = rfd::FileDialog::new().set_title("Upload templates (.json from this editor)").add_filter("Templates", &["json"]).pick_files() else { return };
         let r = files.iter().map(|f| self.library.add_template_file(f)).collect();
-        self.report("Plantillas", r);
+        self.report("Templates", r);
     }
 
     pub fn add_fonts(&mut self, ctx: &egui::Context) {
-        let mut dialog = rfd::FileDialog::new().set_title("Añadir fuentes (.ttf / .otf)").add_filter("Fuentes", crate::library::FONT_EXTS);
+        let mut dialog = rfd::FileDialog::new().set_title("Add fonts (.ttf / .otf)").add_filter("Fonts", crate::library::FONT_EXTS);
         if cfg!(target_os = "windows") {
             dialog = dialog.set_directory("C:/Windows/Fonts");
         }
@@ -798,7 +798,7 @@ impl EditorApp {
                 name
             }));
         }
-        self.report("Fuentes", r);
+        self.report("Fonts", r);
     }
 
     pub fn insert_library_image(&mut self, file: &str, at: Option<[f32; 2]>) {
@@ -852,15 +852,15 @@ impl EditorApp {
         self.sel = self.doc.insert_items(&items, parent);
         // What arrives from the library or the community may carry absurd values (1e9 px letter, NaN…).
         self.doc.sanitize();
-        self.status = crate::i18n::t("Elemento de tu biblioteca agregado");
+        self.status = crate::i18n::t("Element from your library added");
     }
 
     pub fn save_selection_as_element(&mut self, name: &str) {
         let items = self.doc.collect_subtrees(&self.sel);
-        let name = if name.trim().is_empty() { items.first().map(|e| e.name.clone()).unwrap_or_else(|| "Elemento".into()) } else { name.trim().to_string() };
+        let name = if name.trim().is_empty() { items.first().map(|e| e.name.clone()).unwrap_or_else(|| "Element".into()) } else { name.trim().to_string() };
         match self.library.save_element(&name, &items) {
-            Ok(_) => self.status = crate::i18n::tf("«{}» guardado en Mis elementos", &[&name]),
-            Err(e) => self.status = crate::i18n::tf("No se pudo guardar el elemento: {}", &[&e.to_string()]),
+            Ok(_) => self.status = crate::i18n::tf("“{}” saved to My elements", &[&name]),
+            Err(e) => self.status = crate::i18n::tf("Could not save the element: {}", &[&e.to_string()]),
         }
     }
 
@@ -868,8 +868,8 @@ impl EditorApp {
         let name = if name.trim().is_empty() { self.doc.title.clone() } else { name.trim().to_string() };
         let doc = self.doc_real().clone();
         match self.library.save_template(&name, &doc) {
-            Ok(_) => self.status = crate::i18n::tf("Plantilla «{}» guardada (pestaña Plantillas › Mis plantillas)", &[&name]),
-            Err(e) => self.status = crate::i18n::tf("No se pudo guardar la plantilla: {}", &[&e.to_string()]),
+            Ok(_) => self.status = crate::i18n::tf("Template “{}” saved (Templates tab › My templates)", &[&name]),
+            Err(e) => self.status = crate::i18n::tf("Could not save the template: {}", &[&e.to_string()]),
         }
     }
 
@@ -882,19 +882,19 @@ impl EditorApp {
         self.sel.clear();
         self.editing = None;
         self.fit_pending = true;
-        self.status = crate::i18n::tf("Plantilla aplicada: {} (Ctrl+Z para deshacer)", &[&doc.title]);
+        self.status = crate::i18n::tf("Template applied: {} (Ctrl+Z to undo)", &[&doc.title]);
     }
 
     pub fn save_project_as(&mut self) {
         let name = format!("{}.editorgui.json", self.doc.title.trim());
-        if let Some(path) = rfd::FileDialog::new().set_title("Guardar proyecto").set_file_name(&name).add_filter("Proyecto", &["json"]).save_file() {
+        if let Some(path) = rfd::FileDialog::new().set_title("Save project").set_file_name(&name).add_filter("Proyecto", &["json"]).save_file() {
             self.project_path = path.to_string_lossy().to_string();
             self.save_project();
         }
     }
 
     pub fn open_project_dialog(&mut self) {
-        if let Some(path) = rfd::FileDialog::new().set_title("Abrir proyecto").add_filter("Proyecto", &["json"]).pick_file() {
+        if let Some(path) = rfd::FileDialog::new().set_title("Open project").add_filter("Proyecto", &["json"]).pick_file() {
             self.project_path = path.to_string_lossy().to_string();
             self.open_project();
         }
@@ -916,15 +916,15 @@ impl EditorApp {
             self.editing = None;
             self.drag = None;
             self.fit_pending = true;
-            self.console.push("▶ Modo prueba: haz clic en los elementos con ⚡ para ejecutar su código.".into());
-            self.status = crate::i18n::t("Modo prueba activo · Esc para volver a editar");
+            self.console.push("▶ Test mode: click the elements with ⚡ to run their code.".into());
+            self.status = crate::i18n::t("Test mode on · Esc to go back to editing");
         } else if !on && self.preview {
             if let Some(d) = self.preview_backup.take() {
                 self.doc = d;
             }
             self.preview = false;
             self.fit_pending = true;
-            self.status = crate::i18n::t("De vuelta al modo edición (el diseño quedó como antes de la prueba)");
+            self.status = crate::i18n::t("Back to edit mode (the design is as it was before the test)");
         }
     }
 
@@ -947,7 +947,7 @@ impl EditorApp {
     pub fn export_to_unity(&mut self, ask: bool) {
         let mut dir = self.settings.unity_project.clone();
         if ask || dir.is_empty() || crate::export::find_unity_root(std::path::Path::new(&dir)).is_none() {
-            let mut dlg = rfd::FileDialog::new().set_title("Carpeta del proyecto de Unity (la que contiene Assets)");
+            let mut dlg = rfd::FileDialog::new().set_title("Unity project folder (the one that contains Assets)");
             if !dir.is_empty() {
                 dlg = dlg.set_directory(&dir);
             }
@@ -962,19 +962,19 @@ impl EditorApp {
                 self.settings.unity_project = root.clone();
                 self.settings.save();
                 self.status = crate::i18n::tf(
-                    "Exportado a Unity ({} archivos) en {}\\{} · Unity crea el prefab en Assets/EditorGUI/Prefabs al volver a la ventana",
+                    "Exported to Unity ({} files) in {}\\{} · Unity creates the prefab in Assets/EditorGUI/Prefabs when you return to the window",
                     &[&files.len().to_string(), &root, &crate::export::UNITY_ROOT.replace('/', "\\")],
                 );
             }
-            Err(e) => self.status = crate::i18n::tf("No se pudo exportar: {}", &[&e.to_string()]),
+            Err(e) => self.status = crate::i18n::tf("Could not export: {}", &[&e.to_string()]),
         }
     }
 
     pub fn save_text_file(&mut self, title: &str, name: &str, ext: &str, text: &str) {
         if let Some(path) = rfd::FileDialog::new().set_title(title).set_file_name(name).add_filter(ext, &[ext]).save_file() {
             match std::fs::write(&path, text) {
-                Ok(()) => self.status = crate::i18n::tf("Guardado: {}", &[&path.display().to_string()]),
-                Err(e) => self.status = format!("No se pudo guardar: {}", e),
+                Ok(()) => self.status = crate::i18n::tf("Saved: {}", &[&path.display().to_string()]),
+                Err(e) => self.status = format!("Could not save: {}", e),
             }
         }
     }
@@ -1161,22 +1161,22 @@ mod tests {
     #[test]
     fn reordenar_varios_hermanos_no_se_anula() {
         let mut a = app_con(0);
-        let (j, o) = (id(&a, "Botón Jugar"), id(&a, "Botón Opciones"));
+        let (j, o) = (id(&a, "Play button"), id(&a, "Options button"));
         let menu = a.doc.parent_of(j);
         a.sel = vec![j, o];
         a.reorder(None, 1);
         let orden: Vec<String> = a.doc.children(menu).iter().map(|c| a.doc.get(*c).unwrap().name.clone()).collect();
-        assert_eq!(orden, ["Botón Créditos", "Botón Jugar", "Botón Opciones", "Botón Salir"]);
+        assert_eq!(orden, ["Credits button", "Play button", "Options button", "Exit button"]);
         a.reorder(Some(false), 0);
         let orden: Vec<String> = a.doc.children(menu).iter().map(|c| a.doc.get(*c).unwrap().name.clone()).collect();
-        assert_eq!(&orden[..2], ["Botón Jugar", "Botón Opciones"], "al fondo conserva su orden");
+        assert_eq!(&orden[..2], ["Play button", "Options button"], "the background keeps its order");
     }
 
     #[test]
     fn desagrupar_anidados_no_deja_ids_borrados() {
         let mut a = app_con(0);
-        let menu = id(&a, "Menú");
-        let head = id(&a, "Cabecera");
+        let menu = id(&a, "Menu");
+        let head = id(&a, "Header");
         a.sel = vec![head, menu];
         a.group_selection();
         let g = a.sel[0];
@@ -1188,13 +1188,13 @@ mod tests {
     #[test]
     fn bloqueados_no_se_agrupan_ni_desagrupan() {
         let mut a = app_con(0);
-        let fondo = id(&a, "Fondo");
-        let luna = id(&a, "Luna");
+        let fondo = id(&a, "Background");
+        let luna = id(&a, "Moon");
         a.doc.get_mut(fondo).unwrap().locked = true;
         a.sel = vec![fondo, luna];
         a.group_selection();
-        assert_eq!(a.doc.parent_of(fondo), None, "el fondo bloqueado no entra en el grupo");
-        let menu = id(&a, "Menú");
+        assert_eq!(a.doc.parent_of(fondo), None, "the locked background does not enter the group");
+        let menu = id(&a, "Menu");
         a.doc.get_mut(menu).unwrap().locked = true;
         a.sel = vec![menu];
         a.ungroup_selection();
@@ -1204,7 +1204,7 @@ mod tests {
     #[test]
     fn pegar_un_contenedor_lo_pone_a_su_lado() {
         let mut a = app_con(4);
-        let win = id(&a, "Inventario");
+        let win = id(&a, "Inventory");
         a.sel = vec![win];
         a.copy();
         a.paste();
@@ -1217,11 +1217,11 @@ mod tests {
     fn insertar_conserva_rotacion_y_nombre() {
         let mut a = app_con(5);
         let mut e = Element::new(0, Kind::Button);
-        e.name = "Botón píldora".into();
+        e.name = "Pill button".into();
         e.rot = -8.0;
         a.insert(e, None);
         let n = a.doc.get(a.sel[0]).unwrap();
-        assert_eq!(n.name, "Botón píldora");
+        assert_eq!(n.name, "Pill button");
         assert!((n.rot + 8.0).abs() < 0.01);
         a.insert(Element::new(0, Kind::Button), None);
         assert!(a.doc.get(a.sel[0]).unwrap().name.starts_with(&format!("{} ", Kind::Button.label())));

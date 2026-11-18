@@ -16,7 +16,7 @@ pub fn aplicar(ctx: &egui::Context, s: &crate::library::Settings) {
     let tema = s.tema.clone().filter(|t| t.validar().is_ok()).unwrap_or_default();
     crate::theme::usar(&tema);
     if !crate::render::fuente_idioma(ctx, i18n::codigo()) {
-        eprintln!("No se encontró una fuente del sistema para el idioma «{}»", i18n::codigo());
+        eprintln!("No system font was found for the language “{}”", i18n::codigo());
     }
     crate::render::fuente_interfaz(ctx, &tema.fuente);
     crate::theme::apply(ctx, s.alto_contraste);
@@ -30,10 +30,10 @@ impl EditorApp {
         }
         let mut abierta = true;
         let mut cambio = false;
-        egui::Window::new(t("Accesibilidad")).open(&mut abierta).collapsible(false).resizable(false).default_width(380.0).show(ctx, |ui| {
+        egui::Window::new(t("Accessibility")).open(&mut abierta).collapsible(false).resizable(false).default_width(380.0).show(ctx, |ui| {
             egui::Grid::new("accesibilidad").num_columns(2).spacing([14.0, 10.0]).show(ui, |ui| {
-                ui.label(t("Idioma"));
-                let actual = i18n::IDIOMAS.iter().find(|(c, _, _)| *c == i18n::codigo()).map(|x| x.1).unwrap_or("Español");
+                ui.label(t("Language"));
+                let actual = i18n::IDIOMAS.iter().find(|(c, _, _)| *c == i18n::codigo()).map(|x| x.1).unwrap_or("English");
                 egui::ComboBox::from_id_salt("idioma").selected_text(actual).show_ui(ui, |ui| {
                     for (codigo, nombre, _) in i18n::IDIOMAS {
                         if ui.selectable_label(i18n::codigo() == *codigo, *nombre).clicked() {
@@ -46,11 +46,11 @@ impl EditorApp {
                 let rutas = crate::render::fuentes_de_idioma(i18n::codigo());
                 if !rutas.is_empty() && !rutas.iter().any(|p| std::path::Path::new(p).exists()) {
                     ui.label("");
-                    ui.label(RichText::new(t("No se encontró en el sistema una fuente con estos caracteres: el texto puede verse como cuadros.")).small().color(egui::Color32::from_rgb(230, 170, 60)));
+                    ui.label(RichText::new(t("No system font with these characters was found: text may show as boxes.")).small().color(egui::Color32::from_rgb(230, 170, 60)));
                     ui.end_row();
                 }
 
-                ui.label(t("Tamaño de la interfaz"));
+                ui.label(t("Interface size"));
                 ui.horizontal_wrapped(|ui| {
                     let actual = if self.settings.escala_ui <= 0.0 { 1.0 } else { self.settings.escala_ui };
                     for (v, nombre) in ESCALAS {
@@ -62,17 +62,17 @@ impl EditorApp {
                 });
                 ui.end_row();
 
-                ui.label(t("Alto contraste"));
-                cambio |= ui.checkbox(&mut self.settings.alto_contraste, t("Texto blanco y bordes marcados")).changed();
+                ui.label(t("High contrast"));
+                cambio |= ui.checkbox(&mut self.settings.alto_contraste, t("White text and strong borders")).changed();
                 ui.end_row();
 
-                ui.label(t("Reducir movimiento"));
-                cambio |= ui.checkbox(&mut self.settings.reducir_movimiento, t("Sin animaciones en la interfaz")).changed();
+                ui.label(t("Reduce motion"));
+                cambio |= ui.checkbox(&mut self.settings.reducir_movimiento, t("No animations in the interface")).changed();
                 ui.end_row();
             });
             ui.add_space(8.0);
-            ui.label(RichText::new(t("Atajos: Ctrl+Alt+= y Ctrl+Alt+- cambian el tamaño de la interfaz; F1 abre el tutorial.")).small().color(MUTED()));
-            ui.label(RichText::new(t("Para añadir un idioma, traduce assets/i18n/en.tsv (ver docs/EXTENDER.md).")).small().color(ACCENT()));
+            ui.label(RichText::new(t("Shortcuts: Ctrl+Alt+= and Ctrl+Alt+- change the interface size; F1 opens the tutorial.")).small().color(MUTED()));
+            ui.label(RichText::new(t("To add a language, translate assets/i18n/en.tsv (see docs/EXTENDER.md).")).small().color(ACCENT()));
         });
         if cambio {
             self.settings.save();
@@ -90,7 +90,7 @@ impl EditorApp {
             self.settings.escala_ui = (actual + if mas { 0.25 } else { -0.25 }).clamp(0.75, 2.0);
             self.settings.save();
             aplicar(ctx, &self.settings);
-            self.status = format!("{} {:.0} %", t("Tamaño de la interfaz:"), self.settings.escala_ui * 100.0);
+            self.status = format!("{} {:.0} %", t("Interface size:"), self.settings.escala_ui * 100.0);
         }
     }
 }

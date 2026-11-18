@@ -1,592 +1,586 @@
-# Traduction française de l'interface de Lienzo UI.
-# Format : texte en espagnol<TAB>traduction. Les lignes avec # sont des commentaires.
-+ Añadir fuente…	+ Ajouter une police…
-Abre el tutorial para novatos y profesionales (F1)	Ouvre le tutoriel débutant et pro (F1)
-Abrir carpeta	Ouvrir le dossier
-Abrir proyecto…	Ouvrir un projet…
-Accesibilidad	Accessibilité
-Activo / inactivo (SetActive en Unity)	Actif / inactif (SetActive dans Unity)
-Agregar un cuadro de texto	Ajouter une zone de texte
-Agrupar	Grouper
-Agrupar en Contenedor	Grouper dans un conteneur
-Agrupar en Contenedor (Ctrl+G)	Grouper dans un conteneur (Ctrl+G)
-Ajustar	Aligner
-Ajustar a la cuadrícula	Aligner sur la grille
-Ajustar a la ventana	Ajuster à la fenêtre
-Al hacer clic (código de prueba)	Au clic (code de test)
-Alineación	Alignement
-Alt: + posición	Alt : + position
-Alto contraste	Contraste élevé
+# French translation of the Lienzo UI interface.
+# Format: English text<TAB>French translation. Lines starting with # are comments.
++ Add font…	+ Ajouter une police…
+Open the beginner and pro tutorial (F1)	Ouvre le tutoriel débutant et pro (F1)
+Open folder	Ouvrir le dossier
+Open project…	Ouvrir un projet…
+Accessibility	Accessibilité
+Active / inactive (SetActive in Unity)	Actif / inactif (SetActive dans Unity)
+Add a text box	Ajouter une zone de texte
+Group	Grouper
+Group into Container	Grouper dans un conteneur
+Group into Container (Ctrl+G)	Grouper dans un conteneur (Ctrl+G)
+Snap	Aligner
+Snap to grid	Aligner sur la grille
+Fit to window	Ajuster à la fenêtre
+On click (test code)	Au clic (code de test)
+Alignment	Alignement
+Alt: + position	Alt : + position
+High contrast	Contraste élevé
 Anchor Max	Anchor Max
 Anchor Min	Anchor Min
-Anterior	Précédent
-Aparecerá en Plantillas › Mis plantillas para empezar nuevos diseños.	Il apparaîtra dans Modèles › Mes modèles pour démarrer de nouveaux designs.
-Archivo	Fichier
-Archivos .json guardados con este editor	Fichiers .json enregistrés avec cet éditeur
-Atajos	Raccourcis
-Atajos: Ctrl+Alt+= y Ctrl+Alt+- cambian el tamaño de la interfaz; F1 abre el tutorial.	Raccourcis : Ctrl+Alt+= et Ctrl+Alt+- changent la taille de l'interface ; F1 ouvre le tutoriel.
-Añaden comandos, exportadores y plantillas. Guía: docs/PLUGINS.md	Ils ajoutent des commandes, des exportateurs et des modèles. Guide : docs/PLUGINS.md
-Añadir Contenedor hijo	Ajouter un conteneur enfant
-Añadir fuentes…	Ajouter des polices…
-Aún no elegiste un proyecto. «Exportar a Unity» te pedirá la carpeta (la que contiene Assets).	Aucun projet choisi. « Exporter vers Unity » te demandera le dossier (celui qui contient Assets).
-Aún no tienes plantillas propias. Guarda tu diseño como plantilla o sube una.	Tu n'as pas encore de modèles. Enregistre ton design comme modèle ou importes-en un.
+Previous	Précédent
+It will appear in Templates › My templates to start new designs.	Il apparaîtra dans Modèles › Mes modèles pour démarrer de nouveaux designs.
+File	Fichier
+.json files saved with this editor	Fichiers .json enregistrés avec cet éditeur
+Shortcuts	Raccourcis
+Shortcuts: Ctrl+Alt+= and Ctrl+Alt+- change the interface size; F1 opens the tutorial.	Raccourcis : Ctrl+Alt+= et Ctrl+Alt+- changent la taille de l'interface ; F1 ouvre le tutoriel.
+They add commands, exporters and templates. Guide: docs/PLUGINS.md	Ils ajoutent des commandes, des exportateurs et des modèles. Guide : docs/PLUGINS.md
+Add child Container	Ajouter un conteneur enfant
+Add fonts…	Ajouter des polices…
+No project selected yet. “Export to Unity” will ask for the folder (the one containing Assets).	Aucun projet choisi. « Exporter vers Unity » te demandera le dossier (celui qui contient Assets).
+You don't have any templates yet. Save your design as a template or upload one.	Tu n'as pas encore de modèles. Enregistre ton design comme modèle ou importes-en un.
 B	B
-Bloquear / desbloquear	Verrouiller / déverrouiller
-Bloquear en el editor	Verrouiller dans l'éditeur
-Borde	Bordure
-Buscar…	Rechercher…
-Cambiar proyecto…	Changer de projet…
+Lock / unlock	Verrouiller / déverrouiller
+Lock in editor	Verrouiller dans l'éditeur
+Border	Bordure
+Search…	Rechercher…
+Change project…	Changer de projet…
 Canvas · Canvas Scaler	Canvas · Canvas Scaler
-Celda (alto)	Cellule (hauteur)
-Celda (ancho)	Cellule (largeur)
+Cell (height)	Cellule (hauteur)
+Cell (width)	Cellule (largeur)
 Child Alignment	Child Alignment
-Clic agrega al centro (o dentro del panel/contenedor seleccionado). Arrastra para soltar donde quieras: si sueltas sobre un panel queda como hijo.	Un clic l'ajoute au centre (ou dans le panneau/conteneur sélectionné). Fais un glisser-déposer où tu veux : déposé sur un panneau, il devient son enfant.
-Clic para reemplazar el diseño (Ctrl+Z deshace). Todas usan jerarquía, anclas y Layout Groups.	Clique pour remplacer le design (Ctrl+Z annule). Tous utilisent la hiérarchie, les ancres et les Layout Groups.
-Clic selecciona · Ctrl+clic entra en grupos · doble clic edita texto · Espacio+arrastrar mueve la vista	Clic sélectionne · Ctrl+clic entre dans les groupes · double-clic modifie le texte · Espace+glisser déplace la vue
-Clic: anclas	Clic : ancres
+Click adds to the center (or inside the selected panel/container). Drag to drop wherever you want: if you drop it on a panel, it becomes a child.	Un clic l'ajoute au centre (ou dans le panneau/conteneur sélectionné). Fais un glisser-déposer où tu veux : déposé sur un panneau, il devient son enfant.
+Click to replace the design (Ctrl+Z undoes). All use hierarchy, anchors and Layout Groups.	Clique pour remplacer le design (Ctrl+Z annule). Tous utilisent la hiérarchie, les ancres et les Layout Groups.
+Click selects · Ctrl+click enters groups · double-click edits text · Space+drag pans the view	Clic sélectionne · Ctrl+clic entre dans les groupes · double-clic modifie le texte · Espace+glisser déplace la vue
+Click: anchors	Clic : ancres
 Color	Couleur
 Color (Image.color)	Couleur (Image.color)
-Color de la casilla	Couleur de la case
-Color del texto	Couleur du texte
-Columnas	Colonnes
-Como plantilla	Comme modèle
-Como proyecto	Comme projet
-Control + Expand alto	Control + Expand hauteur
-Control + Expand ancho	Control + Expand largeur
-Copiar	Copier
+Checkbox color	Couleur de la case
+Text color	Couleur du texte
+Columns	Colonnes
+As template	Comme modèle
+As project	Comme projet
+Control + Expand height	Control + Expand hauteur
+Control + Expand width	Control + Expand largeur
+Copy	Copier
 Ctrl+0	Ctrl+0
 Ctrl+]	Ctrl+]
-Cursiva	Italique
-Degradado hasta	Dégradé jusqu'à
-Desactívalo para barras de vida o progreso	Désactive-le pour les barres de vie ou de progression
-Desagrupar	Dégrouper
-Deshacer	Annuler
-Desplazamiento vertical. Los hijos van al Content (Viewport/Content); su alto crece para que todos quepan.	Défilement vertical. Les enfants vont dans le Content (Viewport/Content) ; sa hauteur augmente pour qu'ils tiennent tous.
-Distancia	Distance
-Duplicar	Dupliquer
-Editar	Modifier
-El diseño está vacío.	Le design est vide.
-Elementos	Éléments
-Eliminar	Supprimer
-En Unity se crean con TextMeshPro (TextMeshProUGUI).	Dans Unity, ils sont créés avec TextMeshPro (TextMeshProUGUI).
-En uGUI se exportan como un Sprite de degradado generado.	En uGUI, ils sont exportés comme un Sprite de dégradé généré.
-Error del plugin:	Erreur du plugin :
-Esquinas	Coins
-Estilo	Style
-Exportar a Unity	Exporter vers Unity
-Exportar al proyecto de Unity	Exporter vers le projet Unity
-Exportar todo al proyecto	Tout exporter vers le projet
-Exportar… (código y opciones)	Exporter… (code et options)
+Italic	Italique
+Gradient to	Dégradé jusqu'à
+Turn it off for health or progress bars	Désactive-le pour les barres de vie ou de progression
+Ungroup	Dégrouper
+Undo	Annuler
+Vertical scrolling. Children go into Content (Viewport/Content); its height grows so they all fit.	Défilement vertical. Les enfants vont dans le Content (Viewport/Content) ; sa hauteur augmente pour qu'ils tiennent tous.
+Distance	Distance
+Duplicate	Dupliquer
+Edit	Modifier
+The design is empty.	Le design est vide.
+Elements	Éléments
+Delete	Supprimer
+In Unity they are created with TextMeshPro (TextMeshProUGUI).	Dans Unity, ils sont créés avec TextMeshPro (TextMeshProUGUI).
+In uGUI they are exported as a generated gradient Sprite.	En uGUI, ils sont exportés comme un Sprite de dégradé généré.
+Plugin error:	Erreur du plugin :
+Corners	Coins
+Style	Style
+Export to Unity	Exporter vers Unity
+Export to Unity project	Exporter vers le projet Unity
+Export everything to project	Tout exporter vers le projet
+Export… (code and options)	Exporter… (code et options)
 F5	F5
-Filas	Lignes
-Fondo	Fond
-Fuente	Police
-Fuente (se exporta como TMP Font Asset)	Police (exportée comme TMP Font Asset)
-Funciones disponibles	Fonctions disponibles
-Guarda lo seleccionado (con sus hijos) para reutilizarlo	Enregistre la sélection (avec ses enfants) pour la réutiliser
-Guardar	Enregistrer
-Guardar como plantilla…	Enregistrer comme modèle…
-Guardar como proyecto o como plantilla	Enregistrer comme projet ou comme modèle
-Guardar como…	Enregistrer sous…
-Guardar proyecto como…	Enregistrer le projet sous…
-Guardar selección	Enregistrer la sélection
+Rows	Lignes
+Background	Fond
+Font	Police
+Font (exported as TMP Font Asset)	Police (exportée comme TMP Font Asset)
+Available functions	Fonctions disponibles
+Saves the selection (with its children) for reuse	Enregistre la sélection (avec ses enfants) pour la réutiliser
+Save	Enregistrer
+Save as template…	Enregistrer comme modèle…
+Save as project or as template	Enregistrer comme projet ou comme modèle
+Save as…	Enregistrer sous…
+Save project as…	Enregistrer le projet sous…
+Save selection	Enregistrer la sélection
 I	I
-Idioma	Langue
-Idioma, tamaño de la interfaz, alto contraste y movimiento reducido	Langue, taille de l'interface, contraste élevé et mouvement réduit
-Igual que en Unity: lo de abajo se dibuja encima. Arrastra filas para reordenar o meter un elemento dentro de otro.	Comme dans Unity : les éléments du bas sont dessinés par-dessus. Glisse les lignes pour réorganiser ou imbriquer un élément dans un autre.
+Language	Langue
+Language, interface size, high contrast and reduced motion	Langue, taille de l'interface, contraste élevé et mouvement réduit
+As in Unity: items below are drawn on top. Drag rows to reorder or to nest an element inside another.	Comme dans Unity : les éléments du bas sont dessinés par-dessus. Glisse les lignes pour réorganiser ou imbriquer un élément dans un autre.
 Image	Image
-Imágenes	Images
-Imágenes PNG/JPG (íconos con transparencia) o elementos .json	Images PNG/JPG (icônes avec transparence) ou éléments .json
-Imágenes con filtro de vecino más cercano, posiciones y tamaños en píxeles enteros. En Unity: Canvas Pixel Perfect y sprites con filtro Point sin compresión.	Images avec filtre au plus proche voisin, positions et tailles en pixels entiers. Dans Unity : Canvas Pixel Perfect et sprites avec filtre Point sans compression.
+Images	Images
+PNG/JPG images (icons with transparency) or .json elements	Images PNG/JPG (icônes avec transparence) ou éléments .json
+Images with nearest-neighbor filtering, positions and sizes in whole pixels. In Unity: Canvas Pixel Perfect and sprites with Point filter and no compression.	Images avec filtre au plus proche voisin, positions et tailles en pixels entiers. Dans Unity : Canvas Pixel Perfect et sprites avec filtre Point sans compression.
 Inspector	Inspector
 Interactable	Interactable
 Is On	Is On
-Jerarquía	Hiérarchie
-Las imágenes que subas aparecerán aquí y se guardan para tus próximos diseños.	Les images que tu importes apparaîtront ici et sont conservées pour tes prochains designs.
+Hierarchy	Hiérarchie
+The images you upload will appear here and are saved for your next designs.	Les images que tu importes apparaîtront ici et sont conservées pour tes prochains designs.
 Layout Group	Layout Group
-Lienzo	Toile
+Canvas	Toile
 Lienzo UI	Lienzo UI
-Limpiar consola	Vider la console
-Los cambios que hace el código se descartan al salir.	Les modifications faites par le code sont perdues à la sortie.
+Clear console	Vider la console
+Changes made by the code are discarded when you exit.	Les modifications faites par le code sont perdues à la sortie.
 Match	Match
-Medidas en el lienzo (px)	Dimensions de la toile (px)
-Modo prueba	Mode test
-Modo prueba: clic ejecuta el código y puedes simular otras pantallas (F5)	Mode test : le clic exécute le code et tu peux simuler d'autres écrans (F5)
-Monoespaciada	Monospace
-Mostrar cuadrícula	Afficher la grille
-Máscara y efectos	Masque et effets
-Negrita	Gras
-No hay plugins instalados. Copia una carpeta con plugin.json en la carpeta de plugins y pulsa Recargar.	Aucun plugin installé. Copie un dossier contenant plugin.json dans le dossier des plugins et clique sur Recharger.
-Nombre	Nom
-Nuevo diseño en blanco	Nouveau design vierge
-Opacidad	Opacité
-Organiza automáticamente a los hijos directos, como en Unity.	Dispose automatiquement les enfants directs, comme dans Unity.
-PASO	ÉTAPE
-PNG, JPG, BMP, GIF o WEBP — se exportan como Sprites	PNG, JPG, BMP, GIF ou WEBP — exportés comme Sprites
-Para añadir un idioma, traduce assets/i18n/en.tsv (ver docs/EXTENDER.md).	Pour ajouter une langue, traduis assets/i18n/en.tsv (voir docs/EXTENDER.md).
-Pegar	Coller
-Pista	Indice
+Canvas size (px)	Dimensions de la toile (px)
+Test mode	Mode test
+Test mode: click runs the code and you can simulate other screens (F5)	Mode test : le clic exécute le code et tu peux simuler d'autres écrans (F5)
+Monospace	Monospace
+Show grid	Afficher la grille
+Mask and effects	Masque et effets
+Bold	Gras
+No plugins installed. Copy a folder with plugin.json into the plugins folder and press Reload.	Aucun plugin installé. Copie un dossier contenant plugin.json dans le dossier des plugins et clique sur Recharger.
+Name	Nom
+New blank design	Nouveau design vierge
+Opacity	Opacité
+Automatically arranges direct children, as in Unity.	Dispose automatiquement les enfants directs, comme dans Unity.
+STEP	ÉTAPE
+PNG, JPG, BMP, GIF or WEBP — exported as Sprites	PNG, JPG, BMP, GIF ou WEBP — exportés comme Sprites
+To add a language, translate assets/i18n/en.tsv (see docs/EXTENDER.md).	Pour ajouter une langue, traduis assets/i18n/en.tsv (voir docs/EXTENDER.md).
+Paste	Coller
+Hint	Indice
 Pivot	Pivot
 Pixel art	Pixel art
-Plantilla del plugin aplicada (Ctrl+Z para deshacer):	Modèle du plugin appliqué (Ctrl+Z pour annuler) :
-Plantillas	Modèles
-Plugin ejecutado:	Plugin exécuté :
+Plugin template applied (Ctrl+Z to undo):	Modèle du plugin appliqué (Ctrl+Z pour annuler) :
+Templates	Modèles
+Plugin executed:	Plugin exécuté :
 Plugins	Plugins
-Plugins cargados	Plugins chargés
-Probar diseño	Tester le design
-Proyecto de Unity	Projet Unity
-Proyecto:	Projet :
-Quitar	Retirer
-Radio de esquinas	Rayon des coins
+Loaded plugins	Plugins chargés
+Test design	Tester le design
+Unity project	Projet Unity
+Project:	Projet :
+Remove	Retirer
+Corner radius	Rayon des coins
 Raycast Target	Raycast Target
-Recargar	Recharger
-Rect Mask 2D (recorta a los hijos)	Rect Mask 2D (découpe les enfants)
+Reload	Recharger
+Rect Mask 2D (clips children)	Rect Mask 2D (découpe les enfants)
 Rect Transform	Rect Transform
-RectTransform vacío (dentro de la selección si es un panel)	RectTransform vide (dans la sélection si c'est un panneau)
-Reducir movimiento	Mouvement réduit
-Referencia X	Référence X
-Referencia Y	Référence Y
-Reglas	Règles
-Rehacer	Rétablir
-Relleno	Marge intérieure
-Renombrar	Renommer
-Resolución de referencia (CanvasScaler)	Résolution de référence (CanvasScaler)
+Empty RectTransform (inside the selection if it is a panel)	RectTransform vide (dans la sélection si c'est un panneau)
+Reduce motion	Mouvement réduit
+Reference X	Référence X
+Reference Y	Référence Y
+Rules	Règles
+Redo	Rétablir
+Padding	Marge intérieure
+Rename	Renommer
+Reference resolution (CanvasScaler)	Résolution de référence (CanvasScaler)
 Rotation Z	Rotation Z
-Ruta dentro del Canvas en Unity	Chemin dans le Canvas dans Unity
-Sacar del padre	Retirer du parent
-Saltar e ir al editor	Passer et aller à l'éditeur
+Path inside the Canvas in Unity	Chemin dans le Canvas dans Unity
+Unparent	Retirer du parent
+Skip and go to editor	Passer et aller à l'éditeur
 Scroll Rect	Scroll Rect
-Se ejecuta en Probar. Al exportar queda como comentario en el método OnClick del script View.	S'exécute dans Tester. À l'export, il devient un commentaire dans la méthode OnClick du script View.
-Se exporta como Sprite 9-slice generado	Exporté comme Sprite 9-slice généré
-Seleccionar todo	Tout sélectionner
+Runs in Test. When exported, it becomes a comment in the OnClick method of the View script.	S'exécute dans Tester. À l'export, il devient un commentaire dans la méthode OnClick du script View.
+Exported as a generated 9-slice Sprite	Exporté comme Sprite 9-slice généré
+Select all	Tout sélectionner
 Selectable	Selectable
 Shadow	Shadow
-Shift: + pivote	Maj : + pivot
-Sin animaciones en la interfaz	Aucune animation dans l'interface
-Sin suavizado, píxeles enteros	Sans lissage, pixels entiers
+Shift: + pivot	Maj : + pivot
+No animations in the interface	Aucune animation dans l'interface
+No smoothing, whole pixels	Sans lissage, pixels entiers
 Slider	Slider
 Sprite	Sprite
-Sube imágenes o guarda una selección para tenerla aquí.	Importe des images ou enregistre une sélection pour la retrouver ici.
-Subir elementos…	Importer des éléments…
-Subir imágenes	Importer des images
-Subir imágenes…	Importer des images…
-Subir plantillas…	Importer des modèles…
-Subrayado	Souligné
-Tamaño	Taille
-Tamaño de la interfaz	Taille de l'interface
-Tamaño de la interfaz:	Taille de l'interface :
-Tamaño de letra	Taille de la police
-Texto	Texte
-Texto blanco y bordes marcados	Texte blanc et bordures marquées
-Texto de ejemplo (Placeholder)	Texte d'exemple (Placeholder)
+Upload images or save a selection to have it here.	Importe des images ou enregistre une sélection pour la retrouver ici.
+Upload elements…	Importer des éléments…
+Upload images	Importer des images
+Upload images…	Importer des images…
+Upload templates…	Importer des modèles…
+Underline	Souligné
+Size	Taille
+Interface size	Taille de l'interface
+Interface size:	Taille de l'interface :
+Font size	Taille de la police
+Text	Texte
+White text and strong borders	Texte blanc et bordures marquées
+Placeholder text	Texte d'exemple (Placeholder)
 Toggle	Toggle
 Tutorial	Tutoriel
-Tutorial para novatos	Tutoriel débutant
-Tutorial para profesionales	Tutoriel pro
+Beginner tutorial	Tutoriel débutant
+Pro tutorial	Tutoriel pro
 U	U
 UI Scale Mode: Scale With Screen Size	UI Scale Mode: Scale With Screen Size
-Un archivo que puedes volver a abrir y seguir editando.	Un fichier que tu peux rouvrir et continuer à modifier.
-Un lugar antes entre hermanos (Ctrl+[)	Une place avant parmi les frères (Ctrl+[)
-Una opción por línea	Une option par ligne
-Usar plantilla	Utiliser le modèle
-Ver	Affichage
-Ver y copiar JSON, UXML/USS, IMGUI y scripts (Ctrl+Shift+E)	Voir et copier JSON, UXML/USS, IMGUI et scripts (Ctrl+Shift+E)
-para Unity	pour Unity
-por	par
+A file you can reopen and keep editing.	Un fichier que tu peux rouvrir et continuer à modifier.
+One place earlier among siblings (Ctrl+[)	Une place avant parmi les frères (Ctrl+[)
+One option per line	Une option par ligne
+Use template	Utiliser le modèle
+View	Affichage
+View and copy JSON, UXML/USS, IMGUI and scripts (Ctrl+Shift+E)	Voir et copier JSON, UXML/USS, IMGUI et scripts (Ctrl+Shift+E)
+for Unity	pour Unity
+by	par
 −	−
-Ancho / Alto	Largeur / Hauteur
-Contenedor	Conteneur
-Código…	Code…
-Ejecutar ahora	Exécuter maintenant
-Elegir proyecto…	Choisir un projet…
-Eliminar de mi biblioteca	Retirer de ma bibliothèque
-Guardar archivo…	Enregistrer le fichier…
-Guardar como plantilla	Enregistrer comme modèle
-Guardar diseño actual	Enregistrer le design actuel
-Guardar proyecto	Enregistrer le projet
-Proyecto abierto:	Projet ouvert :
-Resoluciones comunes…	Résolutions courantes…
-Sacar	Retirer
-Subir elemento	Importer un élément
-Subir plantilla	Importer un modèle
+Width / Height	Largeur / Hauteur
+Container	Conteneur
+Code…	Code…
+Run now	Exécuter maintenant
+Choose project…	Choisir un projet…
+Remove from my library	Retirer de ma bibliothèque
+Save file…	Enregistrer le fichier…
+Save as template	Enregistrer comme modèle
+Save current design	Enregistrer le design actuel
+Save project	Enregistrer le projet
+Project opened:	Projet ouvert :
+Common resolutions…	Résolutions courantes…
+Take out	Retirer
+Upload element	Importer un élément
+Upload template	Importer un modèle
 Value	Value
-Ver código…	Voir le code…
-Volver a editar	Retour à l'édition
-elementos	éléments
-elementos seleccionados	éléments sélectionnés
-seleccionados	sélectionnés
-NOVATOS	DÉBUTANTS
-PROFESIONALES	PROFESSIONNELS
-Siguiente	Suivant
-Abrir el editor	Ouvrir l'éditeur
-Detener	Arrêter
-Probar	Tester
-Acepto las reglas: nada de malware, odio, plagio ni contenido +18 sin marcar	J'accepte les règles : pas de malware, de haine, de plagiat ni de contenu +18 non signalé
-Actualizar	Actualiser
-Borrar mi cuenta	Supprimer mon compte
-Buscar en la comunidad…	Rechercher dans la communauté…
-Cancelar	Annuler
-Cargando tu perfil…	Chargement de ton profil…
-Cargando…	Chargement…
-Cerrar sesión	Se déconnecter
-Compartir con la comunidad	Partager avec la communauté
-Comunidad	Communauté
-Confirmo que tengo 18 años o más	Je confirme avoir 18 ans ou plus
-Contenido +18 sin marcar	Contenu +18 non signalé
-Contiene contenido +18	Contient du contenu +18
-Crear perfil	Créer un profil
-Derechos de autor	Droits d'auteur
-Descargando y verificando…	Téléchargement et vérification…
-Descripción (máx. 1000)	Description (max. 1000)
-Elegir archivo…	Choisir un fichier…
-Elegir carpeta del plugin…	Choisir le dossier du plugin…
-Elemento instalado:	Élément installé :
-Elige tu nombre público	Choisis ton nom public
-Entrar con	Se connecter avec
-Enviando…	Envoi…
-Enviar a revisión	Envoyer à la révision
-Es lo único que verá la comunidad. 3-32 caracteres: letras, números, punto, guion y guion bajo.	C'est tout ce que la communauté verra. 3 à 32 caractères : lettres, chiffres, point, tiret et tiret bas.
-Etiquetas separadas por coma (máx. 8)	Étiquettes séparées par une virgule (max. 8)
-Fuente instalada:	Police installée :
-Fuentes	Polices
-Guardamos solo tu nombre público, tu preferencia +18 y lo que subes. Tu correo lo gestiona el proveedor de inicio de sesión y no se muestra a nadie.	Nous ne gardons que ton nom public, ta préférence +18 et ce que tu importes. Ton e-mail est géré par le fournisseur de connexion et n'est montré à personne.
-Imagen instalada:	Image installée :
-Inicia sesión para subir, reportar y activar el contenido +18. Explorar no necesita cuenta.	Connecte-toi pour importer, signaler et activer le contenu +18. Explorer ne demande pas de compte.
-Instalar	Installer
-Malware o virus	Malware ou virus
-Mi cuenta y mis datos	Mon compte et mes données
-Mostrar contenido +18	Afficher le contenu +18
-No hay contenido que mostrar todavía.	Il n'y a encore aucun contenu à afficher.
-Ocultar contenido +18	Masquer le contenu +18
-Odio o acoso	Haine ou harcèlement
-Otro	Autre
-Plantilla instalada:	Modèle installé :
-Plugin instalado:	Plugin installé :
-Plugins, imágenes, fuentes, plantillas y elementos compartidos. Todo se revisa antes de publicarse.	Plugins, images, polices, modèles et éléments partagés. Tout est vérifié avant publication.
-Quiero borrar mi cuenta y todo lo que subí (no se puede deshacer)	Je veux supprimer mon compte et tout ce que j'ai importé (irréversible)
-Reportar	Signaler
-Reporte enviado. Gracias.	Signalement envoyé. Merci.
-Se abrió tu navegador: termina el inicio de sesión allí.	Ton navigateur s'est ouvert : termine la connexion là-bas.
-Se revisa antes de publicarse (formato, antivirus y moderación). Si es +18, márcalo.	Il est vérifié avant publication (format, antivirus et modération). S'il est +18, signale-le.
-Sesión cerrada.	Déconnecté.
-Sesión iniciada.	Connecté.
-Sesión:	Session :
-Sin contraseñas: entras con tu cuenta de GitHub o Google. La app solo guarda un nombre público.	Sans mot de passe : tu te connectes avec ton compte GitHub ou Google. L'app ne conserve qu'un nom public.
-Todo	Tout
-Tu cuenta y tu contenido se borraron.	Ton compte et ton contenu ont été supprimés.
-Título (3-80 caracteres)	Titre (3 à 80 caractères)
-Usar el diseño abierto	Utiliser le design ouvert
-¿Qué problema tiene?	Quel est le problème ?
-Esperando el inicio de sesión en tu navegador…	En attente de la connexion dans ton navigateur…
+View code…	Voir le code…
+Back to editing	Retour à l'édition
+elements	éléments
+elements selected	éléments sélectionnés
+selected	sélectionnés
+BEGINNERS	DÉBUTANTS
+PROFESSIONALS	PROFESSIONNELS
+Next	Suivant
+Open the editor	Ouvrir l'éditeur
+Stop	Arrêter
+Test	Tester
+I accept the rules: no malware, hate, plagiarism or unmarked 18+ content	J'accepte les règles : pas de malware, de haine, de plagiat ni de contenu +18 non signalé
+Refresh	Actualiser
+Delete my account	Supprimer mon compte
+Search the community…	Rechercher dans la communauté…
+Cancel	Annuler
+Loading your profile…	Chargement de ton profil…
+Loading…	Chargement…
+Sign out	Se déconnecter
+Share with the community	Partager avec la communauté
+Community	Communauté
+I confirm I am 18 or older	Je confirme avoir 18 ans ou plus
+Unmarked 18+ content	Contenu +18 non signalé
+Contains 18+ content	Contient du contenu +18
+Create profile	Créer un profil
+Copyright	Droits d'auteur
+Downloading and verifying…	Téléchargement et vérification…
+Description (max. 1000)	Description (max. 1000)
+Choose file…	Choisir un fichier…
+Choose plugin folder…	Choisir le dossier du plugin…
+Element installed:	Élément installé :
+Choose your public name	Choisis ton nom public
+Sign in with	Se connecter avec
+Sending…	Envoi…
+Send for review	Envoyer à la révision
+It is all the community will see. 3-32 characters: letters, numbers, dot, hyphen and underscore.	C'est tout ce que la communauté verra. 3 à 32 caractères : lettres, chiffres, point, tiret et tiret bas.
+Tags separated by commas (max. 8)	Étiquettes séparées par une virgule (max. 8)
+Font installed:	Police installée :
+Fonts	Polices
+We only keep your public name, your 18+ preference and what you upload. Your email is handled by the sign-in provider and is never shown to anyone.	Nous ne gardons que ton nom public, ta préférence +18 et ce que tu importes. Ton e-mail est géré par le fournisseur de connexion et n'est montré à personne.
+Image installed:	Image installée :
+Sign in to upload, report and enable 18+ content. Browsing needs no account.	Connecte-toi pour importer, signaler et activer le contenu +18. Explorer ne demande pas de compte.
+Install	Installer
+Malware or viruses	Malware ou virus
+My account and data	Mon compte et mes données
+Show 18+ content	Afficher le contenu +18
+There is no content to show yet.	Il n'y a encore aucun contenu à afficher.
+Hide 18+ content	Masquer le contenu +18
+Hate or harassment	Haine ou harcèlement
+Other	Autre
+Template installed:	Modèle installé :
+Plugin installed:	Plugin installé :
+Shared plugins, images, fonts, templates and elements. Everything is reviewed before it is published.	Plugins, images, polices, modèles et éléments partagés. Tout est vérifié avant publication.
+I want to delete my account and everything I uploaded (cannot be undone)	Je veux supprimer mon compte et tout ce que j'ai importé (irréversible)
+Report	Signaler
+Report sent. Thank you.	Signalement envoyé. Merci.
+Your browser opened: finish signing in there.	Ton navigateur s'est ouvert : termine la connexion là-bas.
+It is reviewed before being published (format, antivirus and moderation). If it is 18+, mark it.	Il est vérifié avant publication (format, antivirus et modération). S'il est +18, signale-le.
+Signed out.	Déconnecté.
+Signed in.	Connecté.
+Session:	Session :
+No passwords: you sign in with your GitHub or Google account. The app only keeps a public name.	Sans mot de passe : tu te connectes avec ton compte GitHub ou Google. L'app ne conserve qu'un nom public.
+All	Tout
+Your account and content were deleted.	Ton compte et ton contenu ont été supprimés.
+Title (3-80 characters)	Titre (3 à 80 caractères)
+Use the open design	Utiliser le design ouvert
+What is wrong with it?	Quel est le problème ?
+Waiting for you to sign in in your browser…	En attente de la connexion dans ton navigateur…
 Banner	Bannière
-Descripción (máx. 300, sin enlaces)	Description (max. 300, sans liens)
-Elegir…	Choisir…
-Foto de perfil	Photo de profil
-Guardando…	Enregistrement…
-Guardar perfil	Enregistrer le profil
-Icono…	Icône…
-Imagen quitada.	Image retirée.
-La descripción admite hasta 300 caracteres.	La description accepte jusqu'à 300 caractères.
-Mi perfil de creador	Mon profil de créateur
-Opcional: icono (PNG hasta 512×512) y vista previa (PNG hasta 1920×1080).	Facultatif : icône (PNG jusqu'à 512×512) et aperçu (PNG jusqu'à 1920×1080).
-Perfil guardado.	Profil enregistré.
-Tu perfil es público cuando tienes al menos un contenido aprobado. Las imágenes y la descripción se moderan.	Ton profil est public dès que tu as au moins un contenu approuvé. Les images et la description sont modérées.
-Usuario de GitHub	Nom d'utilisateur GitHub
-Usuario de GitHub no válido.	Nom d'utilisateur GitHub invalide.
-Ver el perfil del creador	Voir le profil du créateur
-Ver mi perfil público	Voir mon profil public
-Vista previa	Aperçu
-Vista previa…	Aperçu…
-Volver a la comunidad	Retour à la communauté
-contenidos publicados	contenus publiés
-debe empezar por	doit commencer par
-en revisión	en cours de révision
-Cerrar	Fermer
-Clic para ampliar	Clique pour agrandir
-Dar o quitar corazón	Donner ou retirer un cœur
-Dejar de seguir	Ne plus suivre
-Editar mi perfil de creador	Modifier mon profil de créateur
-Inicia sesión para dar corazones y seguir a creadores.	Connecte-toi pour donner des cœurs et suivre des créateurs.
-Perfil de creador: inicia sesión en Comunidad	Profil de créateur : connecte-toi dans Communauté
-Seguir	Suivre
-Siguiendo	Abonnements
-Solo contenido de los creadores que sigues	Uniquement le contenu des créateurs que tu suis
-seguidores	abonnés
-Acento	Accent
-Acento suave	Accent doux
-Al pasar el ratón	Survol
-Aviso	Avertissement
-Base clara (texto oscuro)	Base claire (texte sombre)
-Biografía	Bio
-Bordes	Bordures
-Borrar	Effacer
-Búscala en Comunidad › Fuentes.	Cherche-la dans Communauté › Polices.
-Cambia los colores, las esquinas y la fuente de toda la app. Se guarda al momento.	Change les couleurs, les coins et la police de toute l'app. Enregistré immédiatement.
-Cambiar el banner	Changer la bannière
-Cambiar la foto de perfil	Changer la photo de profil
-Campos y botones	Champs et boutons
-Colores, esquinas y fuente de la app; temas de la comunidad	Couleurs, coins et police de l'app ; thèmes de la communauté
-Compartir en la comunidad	Partager dans la communauté
-Correcto	Succès
-Cuéntale a la comunidad quién eres (sin enlaces)	Dis à la communauté qui tu es (sans liens)
-Editar perfil	Modifier le profil
-En uso	Utilisée
-Fuente de la interfaz	Police de l'interface
-Guardar como tema	Enregistrer comme thème
-Guías del lienzo	Repères de la toile
-Inicia sesión para compartir.	Connecte-toi pour partager.
-Líneas	Lignes
-Más temas en la comunidad	Plus de thèmes dans la communauté
-No tienes la fuente	Tu n'as pas la police
-Nombre: 3-32 caracteres (letras, números, punto, guion y guion bajo).	Nom : 3 à 32 caractères (lettres, chiffres, point, tiret et tiret bas).
-Paneles	Panneaux
-Paneles oscuros	Panneaux sombres
-Personalizar	Personnaliser
-Predeterminada	Par défaut
-Quitar el banner	Retirer la bannière
-Quitar la foto de perfil	Retirer la photo de profil
-Revisa los datos y pulsa «Enviar a revisión».	Vérifie les informations et clique sur « Envoyer à la révision ».
-Se está revisando	En cours de révision :
-Subiendo imagen…	Importation de l'image…
-Tema guardado:	Thème enregistré :
-Tema instalado y en uso:	Thème installé et utilisé :
-Temas	Thèmes
-Texto secundario	Texte secondaire
-Tú ya la ves aquí; los demás la verán cuando la apruebe una persona.	Tu la vois déjà ici ; les autres la verront après approbation par une personne.
-Usar	Utiliser
-Usar el tema actual	Utiliser le thème actuel
-Volver al predeterminado	Revenir au thème par défaut
-el banner	la bannière
-la foto de perfil	la photo de profil
-personalizado	personnalisé
-y	et
-Opcional: vista previa (PNG hasta 1920×1080). El icono del contenido lo pone la app según su tipo.	Facultatif : aperçu (PNG jusqu'à 1920×1080). L'icône du contenu est définie par l'app selon son type.
-Enviando y analizando… (puede tardar hasta un minuto)	Envoi et analyse… (jusqu'à une minute)
-Subiendo y analizando la imagen… (puede tardar hasta un minuto)	Importation et analyse de l'image… (jusqu'à une minute)
-Actualizaciones	Mises à jour
-Versión instalada:	Version installée :
-Buscar actualizaciones	Rechercher des mises à jour
-Buscar actualizaciones…	Rechercher des mises à jour…
-Buscando actualizaciones…	Recherche de mises à jour…
-Tienes la última versión.	Tu as la dernière version.
-Volver a buscar	Rechercher à nouveau
-Hay una versión nueva:	Une nouvelle version est disponible :
-Hay una versión nueva de Lienzo UI	Une nouvelle version de Lienzo UI est disponible
-Actualizar a	Mettre à jour vers
-Actualizar ahora	Mettre à jour
-Descarga manual	Téléchargement manuel
-Abrir página de descarga	Ouvrir la page de téléchargement
-Omitir esta versión	Ignorer cette version
-Esta versión hay que descargarla a mano (no se puede verificar desde la app).	Cette version doit être téléchargée manuellement (impossible de la vérifier depuis l'app).
-Descargando e instalando la versión	Téléchargement et installation de la version
-No cierres la app mientras tanto.	Ne ferme pas l'app entre-temps.
-Versión instalada correctamente:	Version installée avec succès :
-Guarda tu diseño: al reiniciar se cierra la ventana actual.	Enregistre ton design : le redémarrage ferme la fenêtre actuelle.
-Reiniciar ahora	Redémarrer maintenant
-Reiniciar para actualizar	Redémarrer pour mettre à jour
-Reintentar	Réessayer
-Buscar actualizaciones al abrir	Rechercher des mises à jour au démarrage
-Solo se consulta github.com; no se envía ningún dato tuyo.	Seul github.com est consulté ; aucune de tes données n'est envoyée.
-No se pudo conectar con GitHub.	Impossible de se connecter à GitHub.
-Respuesta de GitHub no válida.	Réponse de GitHub invalide.
-La descarga no coincide con la huella publicada; no se instala.	Le téléchargement ne correspond pas à l'empreinte publiée ; rien n'est installé.
-No hay permiso para escribir junto a la app. Descarga la versión nueva a mano.	Pas d'autorisation d'écriture à côté de l'app. Télécharge la nouvelle version manuellement.
-No se pudo reemplazar la app (¿carpeta protegida?). Descarga la versión nueva a mano.	Impossible de remplacer l'app (dossier protégé ?). Télécharge la nouvelle version manuellement.
-No se pudo instalar la versión nueva; se conserva la actual.	Impossible d'installer la nouvelle version ; l'actuelle est conservée.
-La instalación automática solo existe en Windows. Descarga la versión nueva a mano.	L'installation automatique n'existe que sous Windows. Télécharge la nouvelle version manuellement.
-Esta release no se puede verificar; descárgala a mano.	Cette release ne peut pas être vérifiée ; télécharge-la manuellement.
-No se pudo descargar la actualización.	Impossible de télécharger la mise à jour.
-Duplicado (con su contenido)	Dupliqué (avec son contenu)
-Pegado	Collé
-Agrupado en un Contenedor (RectTransform vacío en Unity)	Groupé dans un conteneur (RectTransform vide dans Unity)
-Desagrupado	Dégroupé
-Selecciona un Contenedor para desagrupar	Sélectionne un conteneur à dégrouper
-Movido un nivel arriba en la jerarquía	Déplacé d'un niveau vers le haut dans la hiérarchie
-Jerarquía actualizada (la posición en pantalla se mantiene)	Hiérarchie mise à jour (la position à l'écran est conservée)
-No se puede meter un elemento dentro de sí mismo	Un élément ne peut pas être placé dans lui-même
-Elemento de tu biblioteca agregado	Élément de ta bibliothèque ajouté
-Modo prueba activo · Esc para volver a editar	Mode test actif · Échap pour revenir à l'édition
-De vuelta al modo edición (el diseño quedó como antes de la prueba)	Retour au mode édition (le design est comme avant le test)
-Elemento bloqueado: desbloquéalo para moverlo	Élément verrouillé : déverrouille-le pour le déplacer
-Imagen cambiada	Image changée
-Copiado al portapapeles	Copié dans le presse-papiers
-Bloqueado: no se puede mover ni borrar	Verrouillé : impossible de le déplacer ou de le supprimer
-Desbloqueado	Déverrouillé
-Se agregó: {}{}	Ajouté : {}{}
-Se eliminaron {} elemento(s) con su contenido (los bloqueados se conservan)	{} élément(s) supprimé(s) avec son contenu (les verrouillés sont conservés)
-Copiado(s) {} elemento(s)	{} élément(s) copié(s)
-Plantilla aplicada: {} (Ctrl+Z para deshacer)	Modèle appliqué : {} (Ctrl+Z pour annuler)
-Resolución de referencia: {} × {} (los elementos siguen sus anclas)	Résolution de référence : {} × {} (les éléments suivent leurs ancres)
-Proyecto guardado en {}	Projet enregistré dans {}
-No se pudo guardar: {}	Impossible d'enregistrer : {}
-No se pudo abrir: {}	Impossible d'ouvrir : {}
-{}: {} agregado(s) a tu biblioteca	{} : {} ajouté(s) à ta bibliothèque
-{}: {} agregado(s), {} con error ({})	{} : {} ajouté(s), {} en erreur ({})
-«{}» guardado en Mis elementos	« {} » enregistré dans Mes éléments
-No se pudo guardar el elemento: {}	Impossible d'enregistrer l'élément : {}
-Plantilla «{}» guardada (pestaña Plantillas › Mis plantillas)	Modèle « {} » enregistré (onglet Modèles › Mes modèles)
-No se pudo guardar la plantilla: {}	Impossible d'enregistrer le modèle : {}
-Exportado a Unity ({} archivos) en {}\{} · Unity crea el prefab en Assets/EditorGUI/Prefabs al volver a la ventana	Exporté vers Unity ({} fichiers) dans {}\{} · Unity crée le prefab dans Assets/EditorGUI/Prefabs en revenant à la fenêtre
-No se pudo exportar: {}	Impossible d'exporter : {}
-Guardado: {}	Enregistré : {}
-Listo. Arrastra elementos al lienzo, organízalos en la Jerarquía y exporta a Unity.	Prêt. Glisse des éléments sur la toile, organise-les dans la Hiérarchie et exporte vers Unity.
-No se pudo usar la imagen: {}	Impossible d'utiliser l'image : {}
-Jerarquía · {}	Hiérarchie · {}
-Algunos valores los controla el Layout Group de «{}».	Certaines valeurs sont contrôlées par le Layout Group de « {} ».
-Padre: {}	Parent : {}
-Activo / inactivo (GameObject.SetActive)	Actif / inactif (GameObject.SetActive)
-Al fondo	À l'arrière
-Al frente	À l'avant
-Atrás	Vers l'arrière
-Adelante	Vers l'avant
-Cerrar el inspector	Fermer l'inspecteur
-Color de la pista	Couleur de la piste
-Crea un Contenedor con la selección (Ctrl+G)	Crée un conteneur avec la sélection (Ctrl+G)
-Degradados (marcadores de posición)	Dégradés (repères)
-Deshacer (Ctrl+Z)	Annuler (Ctrl+Z)
-Rehacer (Ctrl+Y)	Rétablir (Ctrl+Y)
-Distribuir horiz.	Répartir horiz.
-Distribuir vert.	Répartir vert.
-Duplicar (Ctrl+D)	Dupliquer (Ctrl+D)
-Eliminar con su contenido (Supr)	Supprimer avec son contenu (Suppr)
-Estilos de texto	Styles de texte
-Izquierda	Gauche
-Centro	Centre
-Derecha	Droite
-Arriba	Haut
-Medio	Milieu
-Abajo	Bas
-Mis elementos (prefabs reutilizables)	Mes éléments (prefabs réutilisables)
-Mis plantillas	Mes modèles
-Para botones y HUD	Pour boutons et HUD
-Plantillas de interfaz	Modèles d'interface
-Segundo color del degradado	Deuxième couleur du dégradé
-Seleccionar el padre (Esc)	Sélectionner le parent (Échap)
-Tus imágenes	Tes images
-Elegir imagen…	Choisir une image…
-Cambiar…	Changer…
-Menú principal	Menu principal
-HUD de juego	HUD de jeu
-Ventana de diálogo	Fenêtre de dialogue
-Ajustes	Réglages
-Inventario	Inventaire
-En blanco	Vierge
-# 1.3.0: plantillas, componentes y estilos nuevos
-Menú de pausa	Menu pause
-Fin de partida	Fin de partie
-Selección de nivel	Sélection de niveau
-Pantalla de carga	Écran de chargement
-Diálogo de personaje	Dialogue de personnage
-Clasificación	Classement
-Selección de personaje	Sélection de personnage
-Componentes listos	Composants prêts à l'emploi
-Botón píldora	Bouton pilule
-Botón contorno	Bouton contour
-Botón cerrar	Bouton fermer
-Barra de vida	Barre de vie
-Barra de maná	Barre de mana
-Tarjeta	Carte
-Panel translúcido	Panneau translucide
-Insignia	Badge
-Casilla	Emplacement
-Temporizador	Minuteur
-Monedas	Pièces
-Daño	Dégâts
+Description (max. 300, no links)	Description (max. 300, sans liens)
+Choose…	Choisir…
+Profile picture	Photo de profil
+Saving…	Enregistrement…
+Save profile	Enregistrer le profil
+Icon…	Icône…
+Image removed.	Image retirée.
+The description allows up to 300 characters.	La description accepte jusqu'à 300 caractères.
+My creator profile	Mon profil de créateur
+Optional: icon (PNG up to 512×512) and preview (PNG up to 1920×1080).	Facultatif : icône (PNG jusqu'à 512×512) et aperçu (PNG jusqu'à 1920×1080).
+Profile saved.	Profil enregistré.
+Your profile is public once you have at least one approved item. Images and description are moderated.	Ton profil est public dès que tu as au moins un contenu approuvé. Les images et la description sont modérées.
+GitHub username	Nom d'utilisateur GitHub
+Invalid GitHub username.	Nom d'utilisateur GitHub invalide.
+View the creator's profile	Voir le profil du créateur
+View my public profile	Voir mon profil public
+Preview	Aperçu
+Preview…	Aperçu…
+Back to the community	Retour à la communauté
+published items	contenus publiés
+must start with	doit commencer par
+under review	en cours de révision
+Close	Fermer
+Click to enlarge	Clique pour agrandir
+Give or remove a heart	Donner ou retirer un cœur
+Unfollow	Ne plus suivre
+Edit my creator profile	Modifier mon profil de créateur
+Sign in to give hearts and follow creators.	Connecte-toi pour donner des cœurs et suivre des créateurs.
+Creator profile: sign in at Community	Profil de créateur : connecte-toi dans Communauté
+Follow	Suivre
+Following	Abonnements
+Only content from creators you follow	Uniquement le contenu des créateurs que tu suis
+followers	abonnés
+Accent	Accent
+Soft accent	Accent doux
+Hover	Survol
+Warning	Avertissement
+Light base (dark text)	Base claire (texte sombre)
+Bio	Bio
+Borders	Bordures
+Find it in Community › Fonts.	Cherche-la dans Communauté › Polices.
+Change the colours, corners and font of the whole app. Saved instantly.	Change les couleurs, les coins et la police de toute l'app. Enregistré immédiatement.
+Change the banner	Changer la bannière
+Change the profile picture	Changer la photo de profil
+Fields and buttons	Champs et boutons
+App colours, corners and font; community themes	Couleurs, coins et police de l'app ; thèmes de la communauté
+Success	Succès
+Tell the community who you are (no links)	Dis à la communauté qui tu es (sans liens)
+Edit profile	Modifier le profil
+In use	Utilisée
+Interface font	Police de l'interface
+Save as theme	Enregistrer comme thème
+Canvas guides	Repères de la toile
+Sign in to share.	Connecte-toi pour partager.
+Lines	Lignes
+More themes in the community	Plus de thèmes dans la communauté
+You don't have the font	Tu n'as pas la police
+Name: 3-32 characters (letters, numbers, dot, hyphen and underscore).	Nom : 3 à 32 caractères (lettres, chiffres, point, tiret et tiret bas).
+Panels	Panneaux
+Dark panels	Panneaux sombres
+Customise	Personnaliser
+Default	Par défaut
+Remove the banner	Retirer la bannière
+Remove the profile picture	Retirer la photo de profil
+Check the details and press "Send for review".	Vérifie les informations et clique sur « Envoyer à la révision ».
+Under review:	En cours de révision :
+Uploading image…	Importation de l'image…
+Theme saved:	Thème enregistré :
+Theme installed and in use:	Thème installé et utilisé :
+Themes	Thèmes
+Secondary text	Texte secondaire
+You already see it here; others will once a person approves it.	Tu la vois déjà ici ; les autres la verront après approbation par une personne.
+Use	Utiliser
+Use the current theme	Utiliser le thème actuel
+Back to default	Revenir au thème par défaut
+the banner	la bannière
+the profile picture	la photo de profil
+custom	personnalisé
+and	et
+Optional: preview (PNG up to 1920×1080). The app sets the content icon from its type.	Facultatif : aperçu (PNG jusqu'à 1920×1080). L'icône du contenu est définie par l'app selon son type.
+Sending and analysing… (can take up to a minute)	Envoi et analyse… (jusqu'à une minute)
+Uploading and analysing the image… (can take up to a minute)	Importation et analyse de l'image… (jusqu'à une minute)
+Updates	Mises à jour
+Installed version:	Version installée :
+Check for updates	Rechercher des mises à jour
+Check for updates…	Rechercher des mises à jour…
+Checking for updates…	Recherche de mises à jour…
+You have the latest version.	Tu as la dernière version.
+Check again	Rechercher à nouveau
+A new version is available:	Une nouvelle version est disponible :
+A new version of Lienzo UI is available	Une nouvelle version de Lienzo UI est disponible
+Update to	Mettre à jour vers
+Update now	Mettre à jour
+Manual download	Téléchargement manuel
+Open download page	Ouvrir la page de téléchargement
+Skip this version	Ignorer cette version
+This version must be downloaded manually (it can't be verified from the app).	Cette version doit être téléchargée manuellement (impossible de la vérifier depuis l'app).
+Downloading and installing version	Téléchargement et installation de la version
+Don't close the app in the meantime.	Ne ferme pas l'app entre-temps.
+Version installed successfully:	Version installée avec succès :
+Save your design: restarting closes the current window.	Enregistre ton design : le redémarrage ferme la fenêtre actuelle.
+Restart now	Redémarrer maintenant
+Restart to update	Redémarrer pour mettre à jour
+Retry	Réessayer
+Check for updates on startup	Rechercher des mises à jour au démarrage
+Only github.com is queried; none of your data is sent.	Seul github.com est consulté ; aucune de tes données n'est envoyée.
+Could not connect to GitHub.	Impossible de se connecter à GitHub.
+Invalid response from GitHub.	Réponse de GitHub invalide.
+The download doesn't match the published checksum; not installing.	Le téléchargement ne correspond pas à l'empreinte publiée ; rien n'est installé.
+No permission to write next to the app. Download the new version manually.	Pas d'autorisation d'écriture à côté de l'app. Télécharge la nouvelle version manuellement.
+Could not replace the app (protected folder?). Download the new version manually.	Impossible de remplacer l'app (dossier protégé ?). Télécharge la nouvelle version manuellement.
+Could not install the new version; keeping the current one.	Impossible d'installer la nouvelle version ; l'actuelle est conservée.
+Automatic install only exists on Windows. Download the new version manually.	L'installation automatique n'existe que sous Windows. Télécharge la nouvelle version manuellement.
+This release can't be verified; download it manually.	Cette release ne peut pas être vérifiée ; télécharge-la manuellement.
+Could not download the update.	Impossible de télécharger la mise à jour.
+Duplicated (with its contents)	Dupliqué (avec son contenu)
+Pasted	Collé
+Grouped into a Container (empty RectTransform in Unity)	Groupé dans un conteneur (RectTransform vide dans Unity)
+Ungrouped	Dégroupé
+Select a Container to ungroup	Sélectionne un conteneur à dégrouper
+Moved up one level in the hierarchy	Déplacé d'un niveau vers le haut dans la hiérarchie
+Hierarchy updated (the on-screen position is kept)	Hiérarchie mise à jour (la position à l'écran est conservée)
+An element can't be placed inside itself	Un élément ne peut pas être placé dans lui-même
+Element from your library added	Élément de ta bibliothèque ajouté
+Test mode on · Esc to go back to editing	Mode test actif · Échap pour revenir à l'édition
+Back to edit mode (the design is as it was before the test)	Retour au mode édition (le design est comme avant le test)
+Element locked: unlock it to move it	Élément verrouillé : déverrouille-le pour le déplacer
+Image changed	Image changée
+Copied to the clipboard	Copié dans le presse-papiers
+Locked: it can't be moved or deleted	Verrouillé : impossible de le déplacer ou de le supprimer
+Unlocked	Déverrouillé
+Added: {}{}	Ajouté : {}{}
+Deleted {} element(s) with their contents (locked ones are kept)	{} élément(s) supprimé(s) avec son contenu (les verrouillés sont conservés)
+Copied {} element(s)	{} élément(s) copié(s)
+Template applied: {} (Ctrl+Z to undo)	Modèle appliqué : {} (Ctrl+Z pour annuler)
+Reference resolution: {} × {} (elements follow their anchors)	Résolution de référence : {} × {} (les éléments suivent leurs ancres)
+Project saved to {}	Projet enregistré dans {}
+Could not save: {}	Impossible d'enregistrer : {}
+Could not open: {}	Impossible d'ouvrir : {}
+{}: {} added to your library	{} : {} ajouté(s) à ta bibliothèque
+{}: {} added, {} failed ({})	{} : {} ajouté(s), {} en erreur ({})
+“{}” saved to My elements	« {} » enregistré dans Mes éléments
+Could not save the element: {}	Impossible d'enregistrer l'élément : {}
+Template “{}” saved (Templates tab › My templates)	Modèle « {} » enregistré (onglet Modèles › Mes modèles)
+Could not save the template: {}	Impossible d'enregistrer le modèle : {}
+Exported to Unity ({} files) in {}\{} · Unity creates the prefab in Assets/EditorGUI/Prefabs when you return to the window	Exporté vers Unity ({} fichiers) dans {}\{} · Unity crée le prefab dans Assets/EditorGUI/Prefabs en revenant à la fenêtre
+Could not export: {}	Impossible d'exporter : {}
+Saved: {}	Enregistré : {}
+Ready. Drag elements onto the canvas, organise them in the Hierarchy and export to Unity.	Prêt. Glisse des éléments sur la toile, organise-les dans la Hiérarchie et exporte vers Unity.
+Could not use the image: {}	Impossible d'utiliser l'image : {}
+Hierarchy · {}	Hiérarchie · {}
+Some values are controlled by the Layout Group of “{}”.	Certaines valeurs sont contrôlées par le Layout Group de « {} ».
+Parent: {}	Parent : {}
+Active / inactive (GameObject.SetActive)	Actif / inactif (GameObject.SetActive)
+To back	À l'arrière
+To front	À l'avant
+Backward	Vers l'arrière
+Forward	Vers l'avant
+Close the inspector	Fermer l'inspecteur
+Track colour	Couleur de la piste
+Creates a Container with the selection (Ctrl+G)	Crée un conteneur avec la sélection (Ctrl+G)
+Gradients (placeholders)	Dégradés (repères)
+Undo (Ctrl+Z)	Annuler (Ctrl+Z)
+Redo (Ctrl+Y)	Rétablir (Ctrl+Y)
+Distribute horiz.	Répartir horiz.
+Distribute vert.	Répartir vert.
+Duplicate (Ctrl+D)	Dupliquer (Ctrl+D)
+Delete with its contents (Del)	Supprimer avec son contenu (Suppr)
+Text styles	Styles de texte
+Left	Gauche
+Center	Centre
+Right	Droite
+Top	Haut
+Middle	Milieu
+Bottom	Bas
+My elements (reusable prefabs)	Mes éléments (prefabs réutilisables)
+My templates	Mes modèles
+For buttons and HUD	Pour boutons et HUD
+Interface templates	Modèles d'interface
+Second gradient colour	Deuxième couleur du dégradé
+Select the parent (Esc)	Sélectionner le parent (Échap)
+Your images	Tes images
+Choose image…	Choisir une image…
+Change…	Changer…
+Main menu	Menu principal
+Game HUD	HUD de jeu
+Dialog window	Fenêtre de dialogue
+Settings	Réglages
+Inventory	Inventaire
+Blank	Vierge
+Pause menu	Menu pause
+Game over	Fin de partie
+Level select	Sélection de niveau
+Loading screen	Écran de chargement
+Character dialogue	Dialogue de personnage
+Leaderboard	Classement
+Character select	Sélection de personnage
+Ready-made components	Composants prêts à l'emploi
+Pill button	Bouton pilule
+Outline button	Bouton contour
+Close button	Bouton fermer
+Health bar	Barre de vie
+Mana bar	Barre de mana
+Card	Carte
+Translucent panel	Panneau translucide
+Badge	Badge
+Slot	Emplacement
+Timer	Minuteur
+Coins	Pièces
+Damage	Dégâts
 Combo	Combo
-Nivel	Niveau
-Subtítulo de diálogo	Sous-titre de dialogue
-Océano	Océan
-Desierto	Désert
-Neón	Néon
-Hielo	Glace
-Volcán	Volcan
-Caramelo	Bonbon
-Madera	Bois
-Viñeta	Vignette
-Cuadrado	Carré
-Redondeado	Arrondi
-Círculo	Cercle
-Contorno	Contour
-Línea	Ligne
-Fila (Horizontal)	Ligne (horizontale)
-Columna (Vertical)	Colonne (verticale)
-Rejilla (Grid)	Grille (Grid)
-Marcador	Score
-Etiqueta	Étiquette
-Atardecer	Coucher de soleil
-Noche	Nuit
-Paisaje	Paysage
-Fuego	Feu
+Level	Niveau
+Dialogue subtitle	Sous-titre de dialogue
+Ocean	Océan
+Desert	Désert
+Neon	Néon
+Ice	Glace
+Volcano	Volcan
+Candy	Bonbon
+Wood	Bois
+Vignette	Vignette
+Square	Carré
+Rounded	Arrondi
+Circle	Cercle
+Outline	Contour
+Line	Ligne
+Row (Horizontal)	Ligne (horizontale)
+Column (Vertical)	Colonne (verticale)
+Grid	Grille (Grid)
+Score	Score
+Tag	Étiquette
+Sunset	Coucher de soleil
+Night	Nuit
+Landscape	Paysage
+Fire	Feu
 Aurora	Aurore
-Niebla	Brouillard
-Pizarra	Ardoise
-Bosque	Forêt
-Agregar un título	Ajouter un titre
-Agregar un subtítulo	Ajouter un sous-titre
-Agregar texto de cuerpo	Ajouter un corps de texte
-Etiqueta pequeña	Petite étiquette
+Fog	Brouillard
+Slate	Ardoise
+Forest	Forêt
+Add a heading	Ajouter un titre
+Add a subheading	Ajouter un sous-titre
+Add body text	Ajouter un corps de texte
+Small label	Petite étiquette
 Panel	Panneau
-Imagen	Image
-Botón	Bouton
+Button	Bouton
 Input Field	Input Field
-Dropdown	Dropdown
+Dropdown	Liste déroulante
 Scroll View	Scroll View
-Campo de texto	Champ de texte
-Desplegable	Liste déroulante
-Vista con scroll	Vue défilante
-Revisar	Vérifier
-Revisa legibilidad, contraste, tamaño táctil e imágenes que faltan antes de exportar	Vérifie la lisibilité, le contraste, la taille tactile et les images manquantes avant l'export
-Revisar diseño	Vérifier le design
-Sin problemas: el diseño pasa todas las comprobaciones.	Aucun problème : le design passe toutes les vérifications.
-{} errores · {} avisos. Clic en uno para seleccionarlo.	{} erreurs · {} avertissements. Clique sur un pour le sélectionner.
+Input field	Champ de texte
+Scroll view	Vue défilante
+Review	Vérifier
+Checks readability, contrast, touch size and missing images before exporting	Vérifie la lisibilité, le contraste, la taille tactile et les images manquantes avant l'export
+Review design	Vérifier le design
+No issues: the design passes every check.	Aucun problème : le design passe toutes les vérifications.
+{} errors · {} warnings. Click one to select it.	{} erreurs · {} avertissements. Clique sur un pour le sélectionner.
 Error	Erreur
-Los mínimos se calculan para la resolución de referencia (18 px de letra y 64 px por control a 1080 p).	Les minimums sont calculés pour la résolution de référence (18 px de texte et 64 px par contrôle en 1080 p).
-Letra de {} px: en pantallas pequeñas será difícil de leer (mínimo recomendado {} px)	Texte de {} px : difficile à lire sur petits écrans (minimum conseillé {} px)
-Contraste del texto {}:1 (WCAG pide {}:1)	Contraste du texte {}:1 (WCAG demande {}:1)
-Control de {} px: difícil de pulsar con el dedo (mínimo recomendado {} px)	Contrôle de {} px : difficile à toucher avec le doigt (minimum conseillé {} px)
-Está completamente fuera de la página: no se verá en el juego	Complètement hors de la page : il ne sera pas visible dans le jeu
-Se sale en parte de la página	Dépasse en partie de la page
-Hay varios elementos llamados así: GameObject.Find y los scripts encontrarán solo el primero	Plusieurs éléments portent ce nom : GameObject.Find et les scripts ne trouveront que le premier
-Falta la imagen «{}»: se exportará vacía	Image « {} » manquante : elle sera exportée vide
-Ninguno	Aucun
-TextMeshPro · texto	TextMeshPro · texte
-TMP_Dropdown · opciones	TMP_Dropdown · options
-# Tamaños de página, pantallas de prueba y atajos
-Controles de UI (uGUI)	Contrôles d'UI (uGUI)
-Contenedores y Layout Groups	Conteneurs et Layout Groups
-Formas	Formes
-Guardar archivo	Enregistrer le fichier
-Resolución de referencia	Résolution de référence
-PC / consola Full HD	PC / console Full HD
+Minimums are based on the reference resolution (18 px text and 64 px per control at 1080p).	Les minimums sont calculés pour la résolution de référence (18 px de texte et 64 px par contrôle en 1080 p).
+{} px text: hard to read on small screens (recommended minimum {} px)	Texte de {} px : difficile à lire sur petits écrans (minimum conseillé {} px)
+Text contrast {}:1 (WCAG asks for {}:1)	Contraste du texte {}:1 (WCAG demande {}:1)
+{} px control: hard to tap with a finger (recommended minimum {} px)	Contrôle de {} px : difficile à toucher avec le doigt (minimum conseillé {} px)
+Completely outside the page: it will not be visible in the game	Complètement hors de la page : il ne sera pas visible dans le jeu
+Partly outside the page	Dépasse en partie de la page
+Several elements share this name: GameObject.Find and scripts will only find the first one	Plusieurs éléments portent ce nom : GameObject.Find et les scripts ne trouveront que le premier
+Missing image “{}”: it will be exported empty	Image « {} » manquante : elle sera exportée vide
+None	Aucun
+TextMeshPro · text	TextMeshPro · texte
+TMP_Dropdown · options	TMP_Dropdown · options
+UI controls (uGUI)	Contrôles d'UI (uGUI)
+Containers and Layout Groups	Conteneurs et Layout Groups
+Shapes	Formes
+Save file	Enregistrer le fichier
+Reference resolution	Résolution de référence
+PC / console Full HD	PC / console Full HD
 PC HD	PC HD
 PC 4K	PC 4K
-Ultrapanorámico 21:9	Ultra-large 21:9
-Móvil vertical	Mobile portrait
-Móvil horizontal	Mobile paysage
-Tableta 4:3	Tablette 4:3
-2400 × 1080 (móvil apaisado)	2400 × 1080 (mobile paysage)
-1080 × 2400 (móvil vertical)	1080 × 2400 (mobile portrait)
-1080 × 1080 (cuadrado)	1080 × 1080 (carré)
-Clic / Shift+clic	Clic / Maj+clic
-Seleccionar / sumar	Sélectionner / ajouter
-Ctrl+clic	Ctrl+clic
-Seleccionar dentro de un grupo	Sélectionner dans un groupe
-Seleccionar el padre	Sélectionner le parent
-Arrastrar vacío	Glisser dans le vide
-Selección por área	Sélection par zone
-Doble clic	Double-clic
-Editar texto	Modifier le texte
-Escalar (Shift: libre)	Redimensionner (Maj : libre)
-Tirador de giro	Poignée de rotation
-Girar (Shift: 15°)	Pivoter (Maj : 15°)
-Alt+arrastrar	Alt+glisser
-Duplicar y mover	Dupliquer et déplacer
-Agrupar / desagrupar	Grouper / dégrouper
-Ctrl+D / Supr	Ctrl+D / Suppr
-Duplicar / borrar	Dupliquer / supprimer
-Deshacer / rehacer	Annuler / rétablir
-Flechas	Flèches
-Mover 1 px (Shift: 10)	Déplacer de 1 px (Maj : 10)
-Ctrl+rueda	Ctrl+molette
-Probar / simular pantallas	Tester / simuler des écrans
-No se encontró en el sistema una fuente con estos caracteres: el texto puede verse como cuadros.	Aucune police système avec ces caractères n'a été trouvée : le texte peut s'afficher sous forme de carrés.
+Ultrawide 21:9	Ultra-large 21:9
+Phone portrait	Mobile portrait
+Phone landscape	Mobile paysage
+Tablet 4:3	Tablette 4:3
+2400 × 1080 (phone landscape)	2400 × 1080 (mobile paysage)
+1080 × 2400 (phone portrait)	1080 × 2400 (mobile portrait)
+1080 × 1080 (square)	1080 × 1080 (carré)
+Click / Shift+click	Clic / Maj+clic
+Select / add	Sélectionner / ajouter
+Ctrl+click	Ctrl+clic
+Select inside a group	Sélectionner dans un groupe
+Select the parent	Sélectionner le parent
+Drag on empty space	Glisser dans le vide
+Area selection	Sélection par zone
+Double-click	Double-clic
+Edit text	Modifier le texte
+Scale (Shift: free)	Redimensionner (Maj : libre)
+Rotation handle	Poignée de rotation
+Rotate (Shift: 15°)	Pivoter (Maj : 15°)
+Alt+drag	Alt+glisser
+Duplicate and move	Dupliquer et déplacer
+Group / ungroup	Grouper / dégrouper
+Ctrl+D / Del	Ctrl+D / Suppr
+Duplicate / delete	Dupliquer / supprimer
+Undo / redo	Annuler / rétablir
+Arrows	Flèches
+Move 1 px (Shift: 10)	Déplacer de 1 px (Maj : 10)
+Ctrl+wheel	Ctrl+molette
+Test / simulate screens	Tester / simuler des écrans
+No system font with these characters was found: text may show as boxes.	Aucune police système avec ces caractères n'a été trouvée : le texte peut s'afficher sous forme de carrés.

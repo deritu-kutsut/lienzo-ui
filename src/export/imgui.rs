@@ -103,7 +103,7 @@ impl<'a> Gen<'a> {
         let mut m = pm.to_string();
         if rotated {
             if in_clip {
-                let _ = writeln!(b, "{}// (la rotación de {}° se ignora dentro de una máscara o scroll en IMGUI)", p2, -rt.rotation_z);
+                let _ = writeln!(b, "{}// (the {}° rotation is ignored inside an IMGUI mask or scroll)", p2, -rt.rotation_z);
             } else {
                 m = format!("m{}", n);
                 let _ = writeln!(b, "{}var {} = {} * Rot({}, new Vector2({}, {}), {});", p2, m, pm, r, cf(rt.pivot[0]), cf(rt.pivot[1]), cf(-rt.rotation_z));
@@ -134,7 +134,7 @@ impl<'a> Gen<'a> {
                     let _ = writeln!(b, "{}else Box({}, {}, {});", p2, r, color(e.fill, op), radius);
                 } else {
                     if e.kind == Kind::Image {
-                        let _ = writeln!(b, "{}// degradado del editor: IMGUI usa el primer color", p2);
+                        let _ = writeln!(b, "{}// editor gradient: IMGUI uses the first color", p2);
                     }
                     let _ = writeln!(b, "{}Box({}, {}, {});", p2, r, color(e.fill, op), radius);
                 }
@@ -164,7 +164,7 @@ impl<'a> Gen<'a> {
                 for l in e.on_click.lines() {
                     let _ = writeln!(code, "        // {}", l);
                 }
-                let _ = writeln!(self.methods, "    /// Clic en «{}».\n    protected virtual void OnClick{}()\n    {{\n{}    }}\n", e.name.replace('\n', " "), n, if code.is_empty() { String::new() } else { format!("        // Código «al hacer clic» del editor (tradúcelo a C#):\n{}", code) });
+                let _ = writeln!(self.methods, "    /// Click on “{}”.\n    protected virtual void OnClick{}()\n    {{\n{}    }}\n", e.name.replace('\n', " "), n, if code.is_empty() { String::new() } else { format!("        // Editor “on click” code (translate it to C#):\n{}", code) });
             }
             Kind::Toggle => {
                 let _ = writeln!(self.fields, "    public bool toggle{} = {};", n, e.value > 0.5);

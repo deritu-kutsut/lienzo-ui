@@ -111,7 +111,7 @@ fn doc_from_args(args: &[String]) -> Result<Option<model::Doc>, String> {
     }
     if let Some(t) = arg_after(args, "--plantilla").and_then(|v| v.parse::<usize>().ok()) {
         if t >= model::TEMPLATES.len() {
-            return Err(format!("la plantilla {} no existe (0-{})", t, model::TEMPLATES.len() - 1));
+            return Err(format!("template {} does not exist (0-{})", t, model::TEMPLATES.len() - 1));
         }
         return Ok(Some(model::template(t, 1920.0, 1080.0)));
     }
@@ -156,11 +156,11 @@ fn headless(args: &[String]) -> Option<i32> {
                 if errores { 1 } else { 0 }
             }
             Ok(None) => {
-                eprintln!("Indica el diseño con --abrir <archivo> o --plantilla <n>");
+                eprintln!("Specify the design with --abrir <file> or --plantilla <n>");
                 2
             }
             Err(e) => {
-                eprintln!("No se pudo cargar el diseño: {}", e);
+                eprintln!("Could not load the design: {}", e);
                 1
             }
         });
@@ -173,20 +173,20 @@ fn headless(args: &[String]) -> Option<i32> {
     let doc = match doc_from_args(args) {
         Ok(Some(d)) => d,
         Ok(None) => {
-            eprintln!("Indica el diseño con --abrir <archivo> o --plantilla <n>");
+            eprintln!("Specify the design with --abrir <file> or --plantilla <n>");
             return Some(2);
         }
         Err(e) => {
-            eprintln!("No se pudo cargar el diseño: {}", e);
+            eprintln!("Could not load the design: {}", e);
             return Some(1);
         }
     };
     if let Some(file) = guardar {
         let r = serde_json::to_string_pretty(&doc).map_err(|e| e.to_string()).and_then(|s| std::fs::write(file, s).map_err(|e| e.to_string()));
         match r {
-            Ok(()) => println!("Guardado: {}", file),
+            Ok(()) => println!("Saved: {}", file),
             Err(e) => {
-                eprintln!("No se pudo guardar {}: {}", file, e);
+                eprintln!("Could not save {}: {}", file, e);
                 return Some(1);
             }
         }
@@ -195,7 +195,7 @@ fn headless(args: &[String]) -> Option<i32> {
         match export::write_unity_package(&doc, std::path::Path::new(dest)) {
             Ok(files) => files.iter().for_each(|f| println!("{}", f)),
             Err(e) => {
-                eprintln!("No se pudo exportar: {}", e);
+                eprintln!("Could not export: {}", e);
                 return Some(1);
             }
         }
@@ -211,7 +211,7 @@ fn main() -> eframe::Result<()> {
     let shot_path = args.iter().position(|a| a == "--screenshot").and_then(|i| args.get(i + 1)).map(std::path::PathBuf::from);
 
     let mut viewport = egui::ViewportBuilder::default()
-        .with_title("Lienzo UI · diseña interfaces para Unity")
+        .with_title("Lienzo UI · design interfaces for Unity")
         .with_inner_size([1500.0, 900.0])
         .with_min_inner_size([960.0, 600.0]);
     // The window starts maximized (except in automatic screenshots, which need a fixed size).
@@ -260,7 +260,7 @@ fn main() -> eframe::Result<()> {
             if let Some(p) = arg_after(&args, "--pestana") {
                 app.tab = match p.as_str() {
                     "plantillas" => app::Tab::Templates,
-                    "elementos" => app::Tab::Elements,
+                    "elements" => app::Tab::Elements,
                     "texto" => app::Tab::Text,
                     "imagenes" => app::Tab::Images,
                     "plugins" => app::Tab::Plugins,
@@ -268,7 +268,7 @@ fn main() -> eframe::Result<()> {
                     _ => app::Tab::Layers,
                 };
             }
-            // --abrir-revision: opens the "Revisar diseño" window (screenshots).
+            // --abrir-revision: opens the "Review design" window (screenshots).
             app.revision_abierta = args.iter().any(|a| a == "--abrir-revision");
             // Automatic screenshots do not save settings.
             if app.screenshot.is_some() {
@@ -281,7 +281,7 @@ fn main() -> eframe::Result<()> {
             if args.iter().any(|a| a == "--demo-actualizacion") {
                 app.actualizador.estado = actualizador::Estado::Disponible(actualizador::Novedad {
                     version: "1.2.0".into(),
-                    notas: "Actualizaciones desde la app: aparece un botón en la cabecera cuando hay una versión nueva.".into(),
+                    notas: "In-app updates: a button appears in the header when there is a new version.".into(),
                     url_zip: "demo".into(),
                     sha256: "demo".into(),
                 });

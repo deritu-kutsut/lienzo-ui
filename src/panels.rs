@@ -110,143 +110,143 @@ impl EditorApp {
                 ui.horizontal_centered(|ui| {
                     ui.add(egui::Image::new(egui::include_image!("../assets/marca/icono.svg")).fit_to_exact_size(Vec2::splat(22.0)));
                     ui.label(RichText::new(crate::i18n::t("Lienzo UI")).strong().size(14.5).color(TEXT()));
-                    ui.label(RichText::new(crate::i18n::t("para Unity")).size(11.5).color(MUTED()));
+                    ui.label(RichText::new(crate::i18n::t("for Unity")).size(11.5).color(MUTED()));
                     ui.add_space(8.0);
-                    ui.menu_button(crate::i18n::t("Archivo"), |ui| {
+                    ui.menu_button(crate::i18n::t("File"), |ui| {
                         ui.set_min_width(230.0);
-                        if ui.button(crate::i18n::t("Nuevo diseño en blanco")).clicked() {
+                        if ui.button(crate::i18n::t("New blank design")).clicked() {
                             self.load_template(model::blank_template());
                             ui.close();
                         }
-                        if ui.button(crate::i18n::t("Abrir proyecto…")).clicked() {
+                        if ui.button(crate::i18n::t("Open project…")).clicked() {
                             ui.close();
                             self.open_project_dialog();
                         }
                         ui.separator();
-                        if ui.add(egui::Button::new(crate::i18n::t("Guardar")).shortcut_text("Ctrl+S")).clicked() {
+                        if ui.add(egui::Button::new(crate::i18n::t("Save")).shortcut_text("Ctrl+S")).clicked() {
                             ui.close();
                             if std::path::Path::new(&self.project_path).is_absolute() { self.save_project() } else { self.save_project_as() }
                         }
-                        if ui.button(crate::i18n::t("Guardar proyecto como…")).clicked() {
+                        if ui.button(crate::i18n::t("Save project as…")).clicked() {
                             ui.close();
                             self.save_project_as();
                         }
-                        if ui.button(crate::i18n::t("Guardar como plantilla…")).clicked() {
+                        if ui.button(crate::i18n::t("Save as template…")).clicked() {
                             self.save_open = true;
                             ui.close();
                         }
                         ui.separator();
-                        if ui.button(crate::i18n::t("Buscar actualizaciones…")).clicked() {
+                        if ui.button(crate::i18n::t("Check for updates…")).clicked() {
                             ui.close();
                             self.actualizador.abierta = true;
                             self.actualizador_buscar();
                         }
                         ui.separator();
-                        if ui.button(crate::i18n::t("Subir imágenes…")).clicked() {
+                        if ui.button(crate::i18n::t("Upload images…")).clicked() {
                             ui.close();
                             self.upload_images();
                             self.tab = Tab::Images;
                             self.drawer_open = true;
                         }
-                        if ui.button(crate::i18n::t("Subir elementos…")).clicked() {
+                        if ui.button(crate::i18n::t("Upload elements…")).clicked() {
                             ui.close();
                             self.upload_elements();
                             self.tab = Tab::Elements;
                             self.drawer_open = true;
                         }
-                        if ui.button(crate::i18n::t("Subir plantillas…")).clicked() {
+                        if ui.button(crate::i18n::t("Upload templates…")).clicked() {
                             ui.close();
                             self.upload_templates();
                             self.tab = Tab::Templates;
                             self.drawer_open = true;
                         }
-                        if ui.button(crate::i18n::t("Añadir fuentes…")).clicked() {
+                        if ui.button(crate::i18n::t("Add fonts…")).clicked() {
                             ui.close();
                             let ctx = ui.ctx().clone();
                             self.add_fonts(&ctx);
                         }
                         ui.separator();
-                        if ui.add(egui::Button::new(crate::i18n::t("Exportar al proyecto de Unity")).shortcut_text("Ctrl+E")).clicked() {
+                        if ui.add(egui::Button::new(crate::i18n::t("Export to Unity project")).shortcut_text("Ctrl+E")).clicked() {
                             ui.close();
                             self.export_to_unity(false);
                         }
-                        if ui.add(egui::Button::new(crate::i18n::t("Exportar… (código y opciones)")).shortcut_text("Ctrl+Shift+E")).clicked() {
+                        if ui.add(egui::Button::new(crate::i18n::t("Export… (code and options)")).shortcut_text("Ctrl+Shift+E")).clicked() {
                             self.export_open = true;
                             ui.close();
                         }
                     });
-                    ui.menu_button(crate::i18n::t("Editar"), |ui| {
+                    ui.menu_button(crate::i18n::t("Edit"), |ui| {
                         ui.set_min_width(240.0);
                         let has_sel = !self.sel.is_empty();
                         let multi = self.sel.len() > 1;
-                        if ui.add_enabled(self.can_undo(), egui::Button::new(crate::i18n::t("Deshacer")).shortcut_text("Ctrl+Z")).clicked() {
+                        if ui.add_enabled(self.can_undo(), egui::Button::new(crate::i18n::t("Undo")).shortcut_text("Ctrl+Z")).clicked() {
                             self.undo();
                             ui.close();
                         }
-                        if ui.add_enabled(self.can_redo(), egui::Button::new(crate::i18n::t("Rehacer")).shortcut_text("Ctrl+Y")).clicked() {
+                        if ui.add_enabled(self.can_redo(), egui::Button::new(crate::i18n::t("Redo")).shortcut_text("Ctrl+Y")).clicked() {
                             self.redo();
                             ui.close();
                         }
                         ui.separator();
-                        if ui.add_enabled(has_sel, egui::Button::new(crate::i18n::t("Copiar")).shortcut_text("Ctrl+C")).clicked() {
+                        if ui.add_enabled(has_sel, egui::Button::new(crate::i18n::t("Copy")).shortcut_text("Ctrl+C")).clicked() {
                             self.copy();
                             ui.close();
                         }
-                        if ui.add_enabled(!self.clipboard.is_empty(), egui::Button::new(crate::i18n::t("Pegar")).shortcut_text("Ctrl+V")).clicked() {
+                        if ui.add_enabled(!self.clipboard.is_empty(), egui::Button::new(crate::i18n::t("Paste")).shortcut_text("Ctrl+V")).clicked() {
                             self.paste();
                             ui.close();
                         }
-                        if ui.add_enabled(has_sel, egui::Button::new(crate::i18n::t("Duplicar")).shortcut_text("Ctrl+D")).clicked() {
+                        if ui.add_enabled(has_sel, egui::Button::new(crate::i18n::t("Duplicate")).shortcut_text("Ctrl+D")).clicked() {
                             self.duplicate_selection(30.0);
                             ui.close();
                         }
-                        if ui.add_enabled(has_sel, egui::Button::new(crate::i18n::t("Eliminar")).shortcut_text("Supr")).clicked() {
+                        if ui.add_enabled(has_sel, egui::Button::new(crate::i18n::t("Delete")).shortcut_text("Supr")).clicked() {
                             self.delete_selection();
                             ui.close();
                         }
                         ui.separator();
-                        if ui.add_enabled(has_sel, egui::Button::new(crate::i18n::t("Agrupar en Contenedor")).shortcut_text("Ctrl+G")).clicked() {
+                        if ui.add_enabled(has_sel, egui::Button::new(crate::i18n::t("Group into Container")).shortcut_text("Ctrl+G")).clicked() {
                             self.group_selection();
                             ui.close();
                         }
-                        if ui.add_enabled(self.selection_grouped(), egui::Button::new(crate::i18n::t("Desagrupar")).shortcut_text("Ctrl+Shift+G")).clicked() {
+                        if ui.add_enabled(self.selection_grouped(), egui::Button::new(crate::i18n::t("Ungroup")).shortcut_text("Ctrl+Shift+G")).clicked() {
                             self.ungroup_selection();
                             ui.close();
                         }
-                        if ui.add_enabled(has_sel, egui::Button::new(crate::i18n::t("Sacar del padre"))).clicked() {
+                        if ui.add_enabled(has_sel, egui::Button::new(crate::i18n::t("Unparent"))).clicked() {
                             self.unparent_selection();
                             ui.close();
                         }
-                        if ui.add_enabled(has_sel, egui::Button::new(crate::i18n::t("Bloquear / desbloquear")).shortcut_text("Ctrl+Shift+L")).clicked() {
+                        if ui.add_enabled(has_sel, egui::Button::new(crate::i18n::t("Lock / unlock")).shortcut_text("Ctrl+Shift+L")).clicked() {
                             self.toggle_lock();
                             ui.close();
                         }
                         ui.separator();
-                        if ui.add(egui::Button::new(crate::i18n::t("Seleccionar todo")).shortcut_text("Ctrl+A")).clicked() {
+                        if ui.add(egui::Button::new(crate::i18n::t("Select all")).shortcut_text("Ctrl+A")).clicked() {
                             self.sel = self.doc.elements.iter().filter(|e| !e.locked && e.visible && e.parent.is_none()).map(|e| e.id).collect();
                             ui.close();
                         }
                         let _ = multi;
                     });
-                    ui.menu_button(crate::i18n::t("Ver"), |ui| {
+                    ui.menu_button(crate::i18n::t("View"), |ui| {
                         ui.set_min_width(250.0);
-                        ui.checkbox(&mut self.rulers, crate::i18n::t("Reglas"));
-                        ui.checkbox(&mut self.grid.show, crate::i18n::t("Mostrar cuadrícula"));
-                        ui.checkbox(&mut self.grid.snap, crate::i18n::t("Ajustar a la cuadrícula"));
+                        ui.checkbox(&mut self.rulers, crate::i18n::t("Rules"));
+                        ui.checkbox(&mut self.grid.show, crate::i18n::t("Show grid"));
+                        ui.checkbox(&mut self.grid.snap, crate::i18n::t("Snap to grid"));
                         egui::Grid::new("gridset").num_columns(2).spacing([8.0, 6.0]).show(ui, |ui| {
-                            ui.label(crate::i18n::t("Celda (ancho)"));
+                            ui.label(crate::i18n::t("Cell (width)"));
                             ui.add(egui::DragValue::new(&mut self.grid.w).range(2.0..=2000.0).speed(1.0).suffix(" px"));
                             ui.end_row();
-                            ui.label(crate::i18n::t("Celda (alto)"));
+                            ui.label(crate::i18n::t("Cell (height)"));
                             ui.add(egui::DragValue::new(&mut self.grid.h).range(2.0..=2000.0).speed(1.0).suffix(" px"));
                             ui.end_row();
-                            ui.label(crate::i18n::t("Columnas"));
+                            ui.label(crate::i18n::t("Columns"));
                             let mut cols = (self.doc.width / self.grid.w).round().max(1.0) as u32;
                             if ui.add(egui::DragValue::new(&mut cols).range(1..=200)).changed() {
                                 self.grid.w = self.doc.width / cols as f32;
                             }
                             ui.end_row();
-                            ui.label(crate::i18n::t("Filas"));
+                            ui.label(crate::i18n::t("Rows"));
                             let mut rows = (self.doc.height / self.grid.h).round().max(1.0) as u32;
                             if ui.add(egui::DragValue::new(&mut rows).range(1..=200)).changed() {
                                 self.grid.h = self.doc.height / rows as f32;
@@ -266,13 +266,13 @@ impl EditorApp {
                             }
                         });
                         ui.separator();
-                        if ui.add(egui::Button::new(crate::i18n::t("Ajustar a la ventana")).shortcut_text("Ctrl+0")).clicked() {
+                        if ui.add(egui::Button::new(crate::i18n::t("Fit to window")).shortcut_text("Ctrl+0")).clicked() {
                             self.fit_pending = true;
                             ui.close();
                         }
                     });
-                    ui.menu_button(crate::i18n::t("Lienzo"), |ui| {
-                        ui.label(RichText::new(crate::i18n::t("Resolución de referencia (CanvasScaler)")).small().color(MUTED()));
+                    ui.menu_button(crate::i18n::t("Canvas"), |ui| {
+                        ui.label(RichText::new(crate::i18n::t("Reference resolution (CanvasScaler)")).small().color(MUTED()));
                         for (name, w, h) in SIZE_PRESETS {
                             if ui.button(format!("{}  ·  {} × {}", crate::i18n::t(name), w, h)).clicked() {
                                 self.resize_page(*w, *h);
@@ -281,23 +281,23 @@ impl EditorApp {
                         }
                     });
                     ui.add_space(4.0);
-                    if ui.add_enabled_ui(self.can_undo(), |ui| crate::icons::button(ui, "undo", "<", "Deshacer (Ctrl+Z)")).inner.clicked() {
+                    if ui.add_enabled_ui(self.can_undo(), |ui| crate::icons::button(ui, "undo", "<", "Undo (Ctrl+Z)")).inner.clicked() {
                         self.undo();
                     }
-                    if ui.add_enabled_ui(self.can_redo(), |ui| crate::icons::button(ui, "redo", ">", "Rehacer (Ctrl+Y)")).inner.clicked() {
+                    if ui.add_enabled_ui(self.can_redo(), |ui| crate::icons::button(ui, "redo", ">", "Redo (Ctrl+Y)")).inner.clicked() {
                         self.redo();
                     }
                     ui.add_space(4.0);
-                    let play = crate::i18n::t(if self.preview { "Detener" } else { "Probar" });
+                    let play = crate::i18n::t(if self.preview { "Stop" } else { "Test" });
                     let tinta = if self.preview { Color32::WHITE } else { TEXT() };
                     let play_btn = crate::icons::btn_tint(if self.preview { "stop" } else { "play" }, RichText::new(play).strong().color(tinta), tinta).fill(if self.preview { theme::OK() } else { FIELD() });
-                    if ui.add(play_btn).on_hover_text(crate::i18n::t("Modo prueba: clic ejecuta el código y puedes simular otras pantallas (F5)")).clicked() {
+                    if ui.add(play_btn).on_hover_text(crate::i18n::t("Test mode: click runs the code and you can simulate other screens (F5)")).clicked() {
                         self.set_preview(!self.preview);
                     }
                     if self.preview {
                         let cur = match self.preview_screen {
                             Some(s) => format!("{} × {}", s[0], s[1]),
-                            None => crate::i18n::t("Resolución de referencia"),
+                            None => crate::i18n::t("Reference resolution"),
                         };
                         egui::ComboBox::from_id_salt("screen").selected_text(cur).width(190.0).show_ui(ui, |ui| {
                             for (name, w, h) in SCREEN_PRESETS {
@@ -310,27 +310,27 @@ impl EditorApp {
                         self.comunidad_boton_perfil(ui);
                         ui.add_space(4.0);
                         self.actualizador_boton(ui);
-                        let export = crate::icons::btn_tint("export", RichText::new(crate::i18n::t("Exportar a Unity")).strong().color(Color32::WHITE), Color32::WHITE).fill(ACCENT()).corner_radius(6.0);
-                        let tip = if self.settings.unity_project.is_empty() { "Elige la carpeta de tu proyecto de Unity (Ctrl+E)".to_string() } else { format!("Exporta a {} (Ctrl+E)", self.settings.unity_project) };
+                        let export = crate::icons::btn_tint("export", RichText::new(crate::i18n::t("Export to Unity")).strong().color(Color32::WHITE), Color32::WHITE).fill(ACCENT()).corner_radius(6.0);
+                        let tip = if self.settings.unity_project.is_empty() { "Choose your Unity project folder (Ctrl+E)".to_string() } else { format!("Exporta a {} (Ctrl+E)", self.settings.unity_project) };
                         if ui.add(export).on_hover_text(tip).clicked() {
                             self.export_to_unity(false);
                         }
-                        if ui.add(crate::icons::btn("code", crate::i18n::t("Código…"))).on_hover_text(crate::i18n::t("Ver y copiar JSON, UXML/USS, IMGUI y scripts (Ctrl+Shift+E)")).clicked() {
+                        if ui.add(crate::icons::btn("code", crate::i18n::t("Code…"))).on_hover_text(crate::i18n::t("View and copy JSON, UXML/USS, IMGUI and scripts (Ctrl+Shift+E)")).clicked() {
                             self.export_open = true;
                         }
-                        if ui.add(crate::icons::btn("save", crate::i18n::t("Guardar"))).on_hover_text(crate::i18n::t("Guardar como proyecto o como plantilla")).clicked() {
+                        if ui.add(crate::icons::btn("save", crate::i18n::t("Save"))).on_hover_text(crate::i18n::t("Save as project or as template")).clicked() {
                             self.save_open = true;
                         }
-                        if ui.button(crate::i18n::t("Tutorial")).on_hover_text(crate::i18n::t("Abre el tutorial para novatos y profesionales (F1)")).clicked() {
+                        if ui.button(crate::i18n::t("Tutorial")).on_hover_text(crate::i18n::t("Open the beginner and pro tutorial (F1)")).clicked() {
                             self.abrir_tutorial(crate::tutorial::Pista::Novato);
                         }
-                        if ui.button(crate::i18n::t("Temas")).on_hover_text(crate::i18n::t("Colores, esquinas y fuente de la app; temas de la comunidad")).clicked() {
+                        if ui.button(crate::i18n::t("Themes")).on_hover_text(crate::i18n::t("App colours, corners and font; community themes")).clicked() {
                             self.temas_abierto = true;
                         }
-                        if ui.add(crate::icons::btn("check", crate::i18n::t("Revisar"))).on_hover_text(crate::i18n::t("Revisa legibilidad, contraste, tamaño táctil e imágenes que faltan antes de exportar")).clicked() {
+                        if ui.add(crate::icons::btn("check", crate::i18n::t("Review"))).on_hover_text(crate::i18n::t("Checks readability, contrast, touch size and missing images before exporting")).clicked() {
                             self.revision_abierta = true;
                         }
-                        if ui.button(crate::i18n::t("Accesibilidad")).on_hover_text(crate::i18n::t("Idioma, tamaño de la interfaz, alto contraste y movimiento reducido")).clicked() {
+                        if ui.button(crate::i18n::t("Accessibility")).on_hover_text(crate::i18n::t("Language, interface size, high contrast and reduced motion")).clicked() {
                             self.accesibilidad_abierta = true;
                         }
                         ui.add_space(6.0);
@@ -348,7 +348,7 @@ impl EditorApp {
             .resizable(false)
             .frame(egui::Frame::new().fill(PANEL_DARK()).inner_margin(Margin::symmetric(4, 8)).stroke(Stroke::new(1.0, BORDER())))
             .show(ui, |ui| {
-                let tabs = [(Tab::Layers, "Jerarquía"), (Tab::Elements, "Elementos"), (Tab::Templates, "Plantillas"), (Tab::Text, "Texto"), (Tab::Images, "Imágenes"), (Tab::Plugins, "Plugins"), (Tab::Comunidad, "Comunidad")];
+                let tabs = [(Tab::Layers, "Hierarchy"), (Tab::Elements, "Elements"), (Tab::Templates, "Templates"), (Tab::Text, "Text"), (Tab::Images, "Images"), (Tab::Plugins, "Plugins"), (Tab::Comunidad, "Community")];
                 ui.vertical_centered(|ui| {
                     for (t, label) in tabs {
                         let active = self.tab == t && self.drawer_open;
@@ -392,7 +392,7 @@ impl EditorApp {
                 ui.horizontal(|ui| {
                     let (r, _) = ui.allocate_exact_size(Vec2::splat(18.0), Sense::hover());
                     crate::icons::paint_or(ui, "search", r, MUTED(), "?");
-                    ui.add(egui::TextEdit::singleline(&mut self.search).hint_text(crate::i18n::t("Buscar…")).desired_width(f32::INFINITY).margin(Margin::symmetric(8, 5)));
+                    ui.add(egui::TextEdit::singleline(&mut self.search).hint_text(crate::i18n::t("Search…")).desired_width(f32::INFINITY).margin(Margin::symmetric(8, 5)));
                 });
                 egui::ScrollArea::vertical().auto_shrink([false, false]).show(ui, |ui| match self.tab {
                     Tab::Templates => self.tab_templates(ui),
@@ -420,8 +420,8 @@ impl EditorApp {
     }
 
     fn tab_templates(&mut self, ui: &mut egui::Ui) {
-        section(ui, "Plantillas de interfaz");
-        hint(ui, &crate::i18n::t("Clic para reemplazar el diseño (Ctrl+Z deshace). Todas usan jerarquía, anclas y Layout Groups."));
+        section(ui, "Interface templates");
+        hint(ui, &crate::i18n::t("Click to replace the design (Ctrl+Z undoes). All use hierarchy, anchors and Layout Groups."));
         ui.add_space(6.0);
         let (w, h) = (self.doc.width, self.doc.height);
         let mut chosen = None;
@@ -449,18 +449,18 @@ impl EditorApp {
             self.load_template(i);
         }
 
-        section(ui, "Mis plantillas");
+        section(ui, "My templates");
         ui.horizontal(|ui| {
-            if ui.add(crate::icons::btn("plus", crate::i18n::t("Subir plantilla"))).on_hover_text(crate::i18n::t("Archivos .json guardados con este editor")).clicked() {
+            if ui.add(crate::icons::btn("plus", crate::i18n::t("Upload template"))).on_hover_text(crate::i18n::t(".json files saved with this editor")).clicked() {
                 self.upload_templates();
             }
-            if ui.add(crate::icons::btn("save", crate::i18n::t("Guardar diseño actual"))).clicked() {
+            if ui.add(crate::icons::btn("save", crate::i18n::t("Save current design"))).clicked() {
                 self.save_open = true;
             }
         });
         ui.add_space(6.0);
         if self.library.templates.is_empty() {
-            hint(ui, &crate::i18n::t("Aún no tienes plantillas propias. Guarda tu diseño como plantilla o sube una."));
+            hint(ui, &crate::i18n::t("You don't have any templates yet. Save your design as a template or upload one."));
         }
         let mut load = None;
         let mut remove = None;
@@ -477,11 +477,11 @@ impl EditorApp {
                     load = Some(t.doc.clone());
                 }
                 resp.context_menu(|ui| {
-                    if ui.button(crate::i18n::t("Usar plantilla")).clicked() {
+                    if ui.button(crate::i18n::t("Use template")).clicked() {
                         load = Some(t.doc.clone());
                         ui.close();
                     }
-                    if ui.add(crate::icons::btn("trash", crate::i18n::t("Eliminar de mi biblioteca"))).clicked() {
+                    if ui.add(crate::icons::btn("trash", crate::i18n::t("Remove from my library"))).clicked() {
                         remove = Some(t.path.clone());
                         ui.close();
                     }
@@ -500,16 +500,16 @@ impl EditorApp {
     }
 
     fn my_elements(&mut self, ui: &mut egui::Ui) {
-        section(ui, "Mis elementos (prefabs reutilizables)");
+        section(ui, "My elements (reusable prefabs)");
         ui.horizontal_wrapped(|ui| {
-            if ui.add(crate::icons::btn("plus", crate::i18n::t("Subir elemento"))).on_hover_text(crate::i18n::t("Imágenes PNG/JPG (íconos con transparencia) o elementos .json")).clicked() {
+            if ui.add(crate::icons::btn("plus", crate::i18n::t("Upload element"))).on_hover_text(crate::i18n::t("PNG/JPG images (icons with transparency) or .json elements")).clicked() {
                 self.upload_elements();
             }
         });
         if !self.sel.is_empty() {
             ui.horizontal(|ui| {
-                ui.add(egui::TextEdit::singleline(&mut self.element_name).hint_text(crate::i18n::t("Nombre")).desired_width(120.0));
-                if ui.button(crate::i18n::t("Guardar selección")).on_hover_text(crate::i18n::t("Guarda lo seleccionado (con sus hijos) para reutilizarlo")).clicked() {
+                ui.add(egui::TextEdit::singleline(&mut self.element_name).hint_text(crate::i18n::t("Name")).desired_width(120.0));
+                if ui.button(crate::i18n::t("Save selection")).on_hover_text(crate::i18n::t("Saves the selection (with its children) for reuse")).clicked() {
                     let n = std::mem::take(&mut self.element_name);
                     self.save_selection_as_element(&n);
                 }
@@ -517,7 +517,7 @@ impl EditorApp {
         }
         ui.add_space(6.0);
         if self.library.elements.is_empty() {
-            hint(ui, &crate::i18n::t("Sube imágenes o guarda una selección para tenerla aquí."));
+            hint(ui, &crate::i18n::t("Upload images or save a selection to have it here."));
         }
         // The list is borrowed (not cloned every frame) and returned at the end.
         let items = std::mem::take(&mut self.library.elements);
@@ -545,7 +545,7 @@ impl EditorApp {
                     }
                 }
                 resp.context_menu(|ui| {
-                    if ui.add(crate::icons::btn("trash", crate::i18n::t("Eliminar de mi biblioteca"))).clicked() {
+                    if ui.add(crate::icons::btn("trash", crate::i18n::t("Remove from my library"))).clicked() {
                         remove = Some(it.path.clone());
                         ui.close();
                     }
@@ -563,7 +563,7 @@ impl EditorApp {
     fn tab_elements(&mut self, ui: &mut egui::Ui) {
         if let Some(p) = self.insert_parent().and_then(|p| self.doc.get(p)) {
             egui::Frame::new().fill(ACCENT_SOFT()).corner_radius(6.0).inner_margin(Margin::same(6)).show(ui, |ui| {
-                ui.label(RichText::new(format!("Se agregarán dentro de «{}»", p.name)).small().color(TEXT()));
+                ui.label(RichText::new(format!("They will be added inside “{}”", p.name)).small().color(TEXT()));
             });
         }
         let shapes: Vec<(&str, Element)> = {
@@ -590,7 +590,7 @@ impl EditorApp {
             bar.radius = 0.0;
             bar.w = 400.0;
             bar.h = 8.0;
-            vec![("Cuadrado", sq), ("Redondeado", rr), ("Círculo", ci), ("Contorno", ol), ("Línea", bar)]
+            vec![("Square", sq), ("Rounded", rr), ("Circle", ci), ("Outline", ol), ("Line", bar)]
         };
         let controls: Vec<(&str, Element)> = [Kind::Button, Kind::Toggle, Kind::Slider, Kind::InputField, Kind::Dropdown, Kind::Panel, Kind::Image, Kind::ScrollView]
             .iter()
@@ -598,7 +598,7 @@ impl EditorApp {
             .collect();
         let containers: Vec<(&str, Element)> = {
             let mut c = Element::new(0, Kind::Empty);
-            c.name = "Contenedor".into();
+            c.name = "Container".into();
             let mut row = Element::new(0, Kind::Empty);
             row.name = "Fila".into();
             row.w = 600.0;
@@ -613,26 +613,26 @@ impl EditorApp {
             col.layout.align = 1;
             col.layout.expand_w = true;
             let mut grid = Element::new(0, Kind::Panel);
-            grid.name = "Rejilla".into();
+            grid.name = "Grid".into();
             grid.w = 560.0;
             grid.h = 400.0;
             grid.fill = [255, 255, 255, 40];
             grid.layout.mode = LayoutMode::Grid;
             grid.layout.align = 1;
-            vec![("Contenedor", c), ("Fila (Horizontal)", row), ("Columna (Vertical)", col), ("Rejilla (Grid)", grid)]
+            vec![("Container", c), ("Row (Horizontal)", row), ("Column (Vertical)", col), ("Grid", grid)]
         };
         let presets: Vec<(&str, Element)> = {
             let mut pill = Element::new(0, Kind::Button);
-            pill.name = "Botón píldora".into();
-            pill.text = "Jugar".into();
+            pill.name = "Pill button".into();
+            pill.text = "Play".into();
             pill.fill = [225, 95, 30, 255];
             pill.radius = 44.0;
             pill.w = 360.0;
             pill.h = 88.0;
             pill.shadow.on = true;
             let mut ghost = Element::new(0, Kind::Button);
-            ghost.name = "Botón contorno".into();
-            ghost.text = "Opciones".into();
+            ghost.name = "Outline button".into();
+            ghost.text = "Options".into();
             ghost.fill = [0, 0, 0, 0];
             ghost.stroke = [124, 92, 255, 255];
             ghost.stroke_w = 4.0;
@@ -641,14 +641,14 @@ impl EditorApp {
             ghost.w = 360.0;
             ghost.h = 88.0;
             let mut close = Element::new(0, Kind::Button);
-            close.name = "Botón cerrar".into();
+            close.name = "Close button".into();
             close.text = "X".into();
             close.fill = [235, 70, 90, 255];
             close.radius = 35.0;
             close.w = 70.0;
             close.h = 70.0;
             let mut hp = Element::new(0, Kind::Slider);
-            hp.name = "Barra de vida".into();
+            hp.name = "Health bar".into();
             hp.fill = [235, 70, 90, 255];
             hp.fill2 = [60, 60, 70, 255];
             hp.value = 0.72;
@@ -656,11 +656,11 @@ impl EditorApp {
             hp.w = 460.0;
             hp.h = 34.0;
             let mut mana = hp.clone();
-            mana.name = "Barra de maná".into();
+            mana.name = "Mana bar".into();
             mana.fill = [70, 130, 255, 255];
             mana.value = 0.45;
             let mut card = Element::new(0, Kind::Panel);
-            card.name = "Tarjeta".into();
+            card.name = "Card".into();
             card.fill = [255, 255, 255, 255];
             card.radius = 24.0;
             card.shadow.on = true;
@@ -668,7 +668,7 @@ impl EditorApp {
             card.w = 420.0;
             card.h = 300.0;
             let mut glass = Element::new(0, Kind::Panel);
-            glass.name = "Panel translúcido".into();
+            glass.name = "Translucent panel".into();
             glass.fill = [10, 10, 20, 150];
             glass.stroke = [255, 255, 255, 60];
             glass.stroke_w = 2.0;
@@ -676,7 +676,7 @@ impl EditorApp {
             glass.w = 520.0;
             glass.h = 320.0;
             let mut badge = Element::new(0, Kind::Ellipse);
-            badge.name = "Insignia".into();
+            badge.name = "Badge".into();
             badge.fill = [235, 70, 90, 255];
             badge.text = "3".into();
             badge.font_size = 30.0;
@@ -685,7 +685,7 @@ impl EditorApp {
             badge.w = 56.0;
             badge.h = 56.0;
             let mut slot = Element::new(0, Kind::Panel);
-            slot.name = "Casilla".into();
+            slot.name = "Slot".into();
             slot.fill = [60, 64, 84, 255];
             slot.stroke = [110, 116, 150, 255];
             slot.stroke_w = 2.0;
@@ -693,18 +693,18 @@ impl EditorApp {
             slot.w = 140.0;
             slot.h = 140.0;
             vec![
-                ("Botón píldora", pill),
-                ("Botón contorno", ghost),
-                ("Botón cerrar", close),
-                ("Barra de vida", hp),
-                ("Barra de maná", mana),
-                ("Tarjeta", card),
-                ("Panel translúcido", glass),
-                ("Insignia", badge),
-                ("Casilla", slot),
+                ("Pill button", pill),
+                ("Outline button", ghost),
+                ("Close button", close),
+                ("Health bar", hp),
+                ("Mana bar", mana),
+                ("Card", card),
+                ("Translucent panel", glass),
+                ("Badge", badge),
+                ("Slot", slot),
             ]
         };
-        for (title, items) in [("Controles de UI (uGUI)", controls), ("Componentes listos", presets), ("Contenedores y Layout Groups", containers), ("Formas", shapes)] {
+        for (title, items) in [("UI controls (uGUI)", controls), ("Ready-made components", presets), ("Containers and Layout Groups", containers), ("Shapes", shapes)] {
             section(ui, title);
             ui.horizontal_wrapped(|ui| {
                 ui.spacing_mut().item_spacing = Vec2::new(8.0, 8.0);
@@ -737,13 +737,13 @@ impl EditorApp {
             });
         }
         ui.add_space(6.0);
-        hint(ui, &crate::i18n::t("Clic agrega al centro (o dentro del panel/contenedor seleccionado). Arrastra para soltar donde quieras: si sueltas sobre un panel queda como hijo."));
+        hint(ui, &crate::i18n::t("Click adds to the center (or inside the selected panel/container). Drag to drop wherever you want: if you drop it on a panel, it becomes a child."));
         self.my_elements(ui);
     }
 
     fn tab_text(&mut self, ui: &mut egui::Ui) {
         ui.add_space(6.0);
-        let add = crate::icons::btn_tint("text", RichText::new(crate::i18n::t("Agregar un cuadro de texto")).color(Color32::WHITE).strong(), Color32::WHITE).fill(ACCENT()).corner_radius(6.0).min_size(Vec2::new(ui.available_width(), 36.0));
+        let add = crate::icons::btn_tint("text", RichText::new(crate::i18n::t("Add a text box")).color(Color32::WHITE).strong(), Color32::WHITE).fill(ACCENT()).corner_radius(6.0).min_size(Vec2::new(ui.available_width(), 36.0));
         if ui.add(add).clicked() {
             let mut e = Element::new(0, Kind::Text);
             e.font_size = 32.0;
@@ -751,9 +751,9 @@ impl EditorApp {
             self.editing = self.sel.first().copied();
             self.editing_new = true;
         }
-        hint(ui, &crate::i18n::t("En Unity se crean con TextMeshPro (TextMeshProUGUI)."));
-        section(ui, "Estilos de texto");
-        let styles: [(&str, f32, bool, f32); 4] = [("Agregar un título", 80.0, true, 900.0), ("Agregar un subtítulo", 52.0, true, 700.0), ("Agregar texto de cuerpo", 30.0, false, 600.0), ("Etiqueta pequeña", 22.0, false, 360.0)];
+        hint(ui, &crate::i18n::t("In Unity they are created with TextMeshPro (TextMeshProUGUI)."));
+        section(ui, "Text styles");
+        let styles: [(&str, f32, bool, f32); 4] = [("Add a heading", 80.0, true, 900.0), ("Add a subheading", 52.0, true, 700.0), ("Add body text", 30.0, false, 600.0), ("Small label", 22.0, false, 360.0)];
         for (label, size, bold, w) in styles {
             if !self.matches(label) {
                 continue;
@@ -779,7 +779,7 @@ impl EditorApp {
             self.place_or_drag(&resp.on_hover_cursor(egui::CursorIcon::Grab), e);
             ui.add_space(4.0);
         }
-        section(ui, "Para botones y HUD");
+        section(ui, "For buttons and HUD");
         ui.horizontal_wrapped(|ui| {
             ui.spacing_mut().item_spacing = Vec2::new(8.0, 8.0);
             let mut score = Element::new(0, Kind::Text);
@@ -789,13 +789,13 @@ impl EditorApp {
             score.text_color = [255, 200, 60, 255];
             score.w = 360.0;
             let mut tag = Element::new(0, Kind::Button);
-            tag.text = "NUEVO".into();
+            tag.text = "NEW".into();
             tag.fill = [235, 70, 90, 255];
             tag.radius = 40.0;
             tag.w = 200.0;
             tag.h = 64.0;
             let mut timer = Element::new(0, Kind::Text);
-            timer.name = "Temporizador".into();
+            timer.name = "Timer".into();
             timer.text = "02:45".into();
             timer.font_size = 64.0;
             timer.bold = true;
@@ -803,7 +803,7 @@ impl EditorApp {
             timer.w = 240.0;
             timer.h = 84.0;
             let mut coins = Element::new(0, Kind::Text);
-            coins.name = "Monedas".into();
+            coins.name = "Coins".into();
             coins.text = "x 1 250".into();
             coins.font_size = 44.0;
             coins.bold = true;
@@ -812,7 +812,7 @@ impl EditorApp {
             coins.w = 260.0;
             coins.h = 60.0;
             let mut dmg = Element::new(0, Kind::Text);
-            dmg.name = "Daño".into();
+            dmg.name = "Damage".into();
             dmg.text = "-128".into();
             dmg.font_size = 56.0;
             dmg.bold = true;
@@ -830,7 +830,7 @@ impl EditorApp {
             combo.w = 420.0;
             combo.h = 80.0;
             let mut lvl = Element::new(0, Kind::Button);
-            lvl.name = "Nivel".into();
+            lvl.name = "Level".into();
             lvl.text = "NV. 12".into();
             lvl.font_size = 28.0;
             lvl.bold = true;
@@ -839,15 +839,15 @@ impl EditorApp {
             lvl.w = 140.0;
             lvl.h = 52.0;
             let mut sub = Element::new(0, Kind::Panel);
-            sub.name = "Subtítulo de diálogo".into();
-            sub.text = "¡Cuidado, viene por la izquierda!".into();
+            sub.name = "Dialogue subtitle".into();
+            sub.text = "Watch out, it's coming from the left!".into();
             sub.font_size = 32.0;
             sub.fill = [0, 0, 0, 170];
             sub.text_color = [255, 255, 255, 255];
             sub.radius = 10.0;
             sub.w = 820.0;
             sub.h = 70.0;
-            for (label, proto) in [("Marcador", score), ("Etiqueta", tag), ("Temporizador", timer), ("Monedas", coins), ("Daño", dmg), ("Combo", combo), ("Nivel", lvl), ("Subtítulo de diálogo", sub)] {
+            for (label, proto) in [("Score", score), ("Tag", tag), ("Timer", timer), ("Coins", coins), ("Damage", dmg), ("Combo", combo), ("Level", lvl), ("Dialogue subtitle", sub)] {
                 if !self.matches(label) {
                     continue;
                 }
@@ -862,13 +862,13 @@ impl EditorApp {
 
     fn tab_images(&mut self, ui: &mut egui::Ui) {
         ui.add_space(6.0);
-        let up = crate::icons::btn_tint("plus", RichText::new(crate::i18n::t("Subir imágenes")).color(Color32::WHITE).strong(), Color32::WHITE).fill(ACCENT()).corner_radius(6.0).min_size(Vec2::new(ui.available_width(), 36.0));
-        if ui.add(up).on_hover_text(crate::i18n::t("PNG, JPG, BMP, GIF o WEBP — se exportan como Sprites")).clicked() {
+        let up = crate::icons::btn_tint("plus", RichText::new(crate::i18n::t("Upload images")).color(Color32::WHITE).strong(), Color32::WHITE).fill(ACCENT()).corner_radius(6.0).min_size(Vec2::new(ui.available_width(), 36.0));
+        if ui.add(up).on_hover_text(crate::i18n::t("PNG, JPG, BMP, GIF or WEBP — exported as Sprites")).clicked() {
             self.upload_images();
         }
-        section(ui, "Tus imágenes");
+        section(ui, "Your images");
         if self.library.images.is_empty() {
-            hint(ui, &crate::i18n::t("Las imágenes que subas aparecerán aquí y se guardan para tus próximos diseños."));
+            hint(ui, &crate::i18n::t("The images you upload will appear here and are saved for your next designs."));
         }
         // The list is borrowed (not cloned every frame) and returned at the end.
         let images = std::mem::take(&mut self.library.images);
@@ -890,7 +890,7 @@ impl EditorApp {
                     self.insert_library_image(&im.file, None);
                 }
                 resp.context_menu(|ui| {
-                    if ui.add(crate::icons::btn("trash", crate::i18n::t("Eliminar de mi biblioteca"))).clicked() {
+                    if ui.add(crate::icons::btn("trash", crate::i18n::t("Remove from my library"))).clicked() {
                         remove = Some(crate::library::images_dir().join(&im.file));
                         ui.close();
                     }
@@ -903,26 +903,26 @@ impl EditorApp {
         if let Some(p) = remove {
             self.library.remove(&p);
         }
-        section(ui, "Degradados (marcadores de posición)");
-        hint(ui, &crate::i18n::t("En uGUI se exportan como un Sprite de degradado generado."));
+        section(ui, "Gradients (placeholders)");
+        hint(ui, &crate::i18n::t("In uGUI they are exported as a generated gradient Sprite."));
         ui.add_space(4.0);
         let pairs: [(Rgba, Rgba, &str); 16] = [
-            ([255, 126, 179, 255], [255, 117, 140, 255], "Atardecer"),
-            ([46, 32, 110, 255], [12, 120, 150, 255], "Noche"),
-            ([120, 190, 240, 255], [70, 140, 80, 255], "Paisaje"),
-            ([255, 214, 120, 255], [255, 120, 60, 255], "Fuego"),
+            ([255, 126, 179, 255], [255, 117, 140, 255], "Sunset"),
+            ([46, 32, 110, 255], [12, 120, 150, 255], "Night"),
+            ([120, 190, 240, 255], [70, 140, 80, 255], "Landscape"),
+            ([255, 214, 120, 255], [255, 120, 60, 255], "Fire"),
             ([0, 196, 204, 255], [124, 92, 255, 255], "Aurora"),
-            ([240, 240, 245, 255], [180, 185, 200, 255], "Niebla"),
-            ([30, 30, 40, 255], [90, 90, 110, 255], "Pizarra"),
-            ([140, 230, 160, 255], [30, 130, 90, 255], "Bosque"),
-            ([130, 220, 255, 255], [20, 60, 140, 255], "Océano"),
-            ([255, 240, 200, 255], [230, 170, 90, 255], "Desierto"),
-            ([255, 90, 200, 255], [40, 10, 90, 255], "Neón"),
-            ([230, 245, 255, 255], [150, 190, 230, 255], "Hielo"),
-            ([140, 30, 30, 255], [20, 5, 10, 255], "Volcán"),
-            ([255, 220, 240, 255], [200, 170, 255, 255], "Caramelo"),
-            ([90, 70, 50, 255], [40, 30, 20, 255], "Madera"),
-            ([10, 10, 14, 255], [10, 10, 14, 0], "Viñeta"),
+            ([240, 240, 245, 255], [180, 185, 200, 255], "Fog"),
+            ([30, 30, 40, 255], [90, 90, 110, 255], "Slate"),
+            ([140, 230, 160, 255], [30, 130, 90, 255], "Forest"),
+            ([130, 220, 255, 255], [20, 60, 140, 255], "Ocean"),
+            ([255, 240, 200, 255], [230, 170, 90, 255], "Desert"),
+            ([255, 90, 200, 255], [40, 10, 90, 255], "Neon"),
+            ([230, 245, 255, 255], [150, 190, 230, 255], "Ice"),
+            ([140, 30, 30, 255], [20, 5, 10, 255], "Volcano"),
+            ([255, 220, 240, 255], [200, 170, 255, 255], "Candy"),
+            ([90, 70, 50, 255], [40, 30, 20, 255], "Wood"),
+            ([10, 10, 14, 255], [10, 10, 14, 0], "Vignette"),
         ];
         ui.horizontal_wrapped(|ui| {
             ui.spacing_mut().item_spacing = Vec2::new(8.0, 8.0);
@@ -948,22 +948,22 @@ impl EditorApp {
 
     // ------------------------------------------------------------- hierarchy
     fn tab_layers(&mut self, ui: &mut egui::Ui) {
-        section(ui, &crate::i18n::tf("Jerarquía · {}", &[&self.doc.title]));
-        hint(ui, &crate::i18n::t("Igual que en Unity: lo de abajo se dibuja encima. Arrastra filas para reordenar o meter un elemento dentro de otro."));
+        section(ui, &crate::i18n::tf("Hierarchy · {}", &[&self.doc.title]));
+        hint(ui, &crate::i18n::t("As in Unity: items below are drawn on top. Drag rows to reorder or to nest an element inside another."));
         ui.add_space(4.0);
         ui.horizontal_wrapped(|ui| {
-            if ui.add(crate::icons::btn("empty", crate::i18n::t("Contenedor")).small()).on_hover_text(crate::i18n::t("RectTransform vacío (dentro de la selección si es un panel)")).clicked() {
+            if ui.add(crate::icons::btn("empty", crate::i18n::t("Container")).small()).on_hover_text(crate::i18n::t("Empty RectTransform (inside the selection if it is a panel)")).clicked() {
                 let mut c = Element::new(0, Kind::Empty);
-                c.name = "Contenedor".into();
+                c.name = "Container".into();
                 self.insert(c, None);
             }
-            if ui.add_enabled(!self.sel.is_empty(), egui::Button::new(crate::i18n::t("Agrupar")).small()).clicked() {
+            if ui.add_enabled(!self.sel.is_empty(), egui::Button::new(crate::i18n::t("Group")).small()).clicked() {
                 self.group_selection();
             }
-            if ui.add_enabled(self.selection_grouped(), egui::Button::new(crate::i18n::t("Desagrupar")).small()).clicked() {
+            if ui.add_enabled(self.selection_grouped(), egui::Button::new(crate::i18n::t("Ungroup")).small()).clicked() {
                 self.ungroup_selection();
             }
-            if ui.add_enabled(self.sel.iter().any(|s| self.doc.parent_of(*s).is_some()), crate::icons::btn("parent_up", crate::i18n::t("Sacar")).small()).on_hover_text(crate::i18n::t("Sacar del padre")).clicked() {
+            if ui.add_enabled(self.sel.iter().any(|s| self.doc.parent_of(*s).is_some()), crate::icons::btn("parent_up", crate::i18n::t("Take out")).small()).on_hover_text(crate::i18n::t("Unparent")).clicked() {
                 self.unparent_selection();
             }
         });
@@ -1059,11 +1059,11 @@ impl EditorApp {
                 crate::icons::paint_or(ui, if e.visible { "eye" } else { "eye_off" }, eye.shrink(2.0), if e.visible { MUTED() } else { theme::WARN() }, "o");
                 crate::icons::paint_or(ui, if e.locked { "lock" } else { "unlock" }, lock.shrink(2.0), if e.locked { theme::WARN() } else { MUTED() }, "L");
             }
-            if eye_r.on_hover_text(crate::i18n::t("Activo / inactivo (SetActive en Unity)")).clicked() {
+            if eye_r.on_hover_text(crate::i18n::t("Active / inactive (SetActive in Unity)")).clicked() {
                 if let Some(el) = self.doc.get_mut(id) {
                     el.visible = !el.visible;
                 }
-            } else if lock_r.on_hover_text(crate::i18n::t("Bloquear en el editor")).clicked() {
+            } else if lock_r.on_hover_text(crate::i18n::t("Lock in editor")).clicked() {
                 if let Some(el) = self.doc.get_mut(id) {
                     el.locked = !el.locked;
                 }
@@ -1091,26 +1091,26 @@ impl EditorApp {
                 if !self.is_selected(id) {
                     self.sel = vec![id];
                 }
-                if ui.button(crate::i18n::t("Renombrar")).clicked() {
+                if ui.button(crate::i18n::t("Rename")).clicked() {
                     self.renaming = Some(id);
                     ui.close();
                 }
-                if ui.add(crate::icons::btn("duplicate", crate::i18n::t("Duplicar"))).clicked() {
+                if ui.add(crate::icons::btn("duplicate", crate::i18n::t("Duplicate"))).clicked() {
                     self.duplicate_selection(30.0);
                     ui.close();
                 }
-                if ui.add(crate::icons::btn("empty", crate::i18n::t("Agrupar en Contenedor"))).clicked() {
+                if ui.add(crate::icons::btn("empty", crate::i18n::t("Group into Container"))).clicked() {
                     self.group_selection();
                     ui.close();
                 }
-                if self.doc.parent_of(id).is_some() && ui.button(crate::i18n::t("Sacar del padre")).clicked() {
+                if self.doc.parent_of(id).is_some() && ui.button(crate::i18n::t("Unparent")).clicked() {
                     self.unparent_selection();
                     ui.close();
                 }
-                if ui.button(crate::i18n::t("Añadir Contenedor hijo")).clicked() {
+                if ui.button(crate::i18n::t("Add child Container")).clicked() {
                     self.sel = vec![id];
                     let mut c = Element::new(0, Kind::Empty);
-                    c.name = "Contenedor".into();
+                    c.name = "Container".into();
                     if let Some(pe) = self.doc.get(id) {
                         c.w = pe.w * 0.8;
                         c.h = pe.h * 0.8;
@@ -1119,7 +1119,7 @@ impl EditorApp {
                     ui.close();
                 }
                 ui.separator();
-                if ui.add(crate::icons::btn("trash", crate::i18n::t("Eliminar"))).clicked() {
+                if ui.add(crate::icons::btn("trash", crate::i18n::t("Delete"))).clicked() {
                     self.delete_selection();
                     ui.close();
                 }
@@ -1127,7 +1127,7 @@ impl EditorApp {
             rects.push((id, r));
         }
         if self.doc.elements.is_empty() {
-            hint(ui, &crate::i18n::t("El diseño está vacío."));
+            hint(ui, &crate::i18n::t("The design is empty."));
         }
         let rest_h = ui.available_height().max(40.0);
         let (rest, _) = ui.allocate_exact_size(Vec2::new(w, rest_h), Sense::hover());
@@ -1189,21 +1189,21 @@ impl EditorApp {
                         if self.preview {
                             let (r, _) = ui.allocate_exact_size(Vec2::splat(16.0), Sense::hover());
                             crate::icons::paint_or(ui, "play", r, theme::OK(), ">");
-                            ui.label(RichText::new(crate::i18n::t("Modo prueba")).strong().color(theme::OK()));
-                            ui.label(RichText::new(crate::i18n::t("Los cambios que hace el código se descartan al salir.")).color(MUTED()));
-                            if ui.button(crate::i18n::t("Limpiar consola")).clicked() {
+                            ui.label(RichText::new(crate::i18n::t("Test mode")).strong().color(theme::OK()));
+                            ui.label(RichText::new(crate::i18n::t("Changes made by the code are discarded when you exit.")).color(MUTED()));
+                            if ui.button(crate::i18n::t("Clear console")).clicked() {
                                 self.console.clear();
                             }
-                            if ui.add(crate::icons::btn("stop", crate::i18n::t("Volver a editar"))).clicked() {
+                            if ui.add(crate::icons::btn("stop", crate::i18n::t("Back to editing"))).clicked() {
                                 self.set_preview(false);
                             }
                             return;
                         }
                         if self.sel.is_empty() {
-                            ui.label(crate::i18n::t("Fondo"));
+                            ui.label(crate::i18n::t("Background"));
                             rgba_edit(ui, &mut self.doc.background);
                             ui.separator();
-                            ui.label(RichText::new(crate::i18n::t("Clic selecciona · Ctrl+clic entra en grupos · doble clic edita texto · Espacio+arrastrar mueve la vista")).color(MUTED()));
+                            ui.label(RichText::new(crate::i18n::t("Click selects · Ctrl+click enters groups · double-click edits text · Space+drag pans the view")).color(MUTED()));
                             return;
                         }
                         let first_id = self.sel[0];
@@ -1218,14 +1218,14 @@ impl EditorApp {
                         if k.has_fill() {
                             rgba_edit(ui, &mut p.fill).on_hover_text(crate::i18n::t("Color (Image.color)"));
                             if matches!(k, Kind::Image | Kind::Slider) {
-                                rgba_edit(ui, &mut p.fill2).on_hover_text(if k == Kind::Image { "Segundo color del degradado" } else { "Color de la pista" });
+                                rgba_edit(ui, &mut p.fill2).on_hover_text(if k == Kind::Image { "Second gradient colour" } else { "Track colour" });
                             }
                             ui.separator();
-                            ui.label(crate::i18n::t("Borde"));
+                            ui.label(crate::i18n::t("Border"));
                             rgba_edit(ui, &mut p.stroke);
                             ui.add(egui::DragValue::new(&mut p.stroke_w).range(0.0..=40.0).speed(0.2).suffix(" px"));
                             if !matches!(k, Kind::Ellipse | Kind::Slider | Kind::Toggle) {
-                                ui.label(crate::i18n::t("Esquinas"));
+                                ui.label(crate::i18n::t("Corners"));
                                 ui.add(egui::DragValue::new(&mut p.radius).range(0.0..=500.0).speed(0.5));
                             }
                         }
@@ -1234,41 +1234,41 @@ impl EditorApp {
                             if ui.small_button(crate::i18n::t("−")).clicked() {
                                 p.font_size = (p.font_size - 2.0).max(4.0);
                             }
-                            ui.add(egui::DragValue::new(&mut p.font_size).range(4.0..=400.0).speed(0.5)).on_hover_text(crate::i18n::t("Tamaño de letra"));
+                            ui.add(egui::DragValue::new(&mut p.font_size).range(4.0..=400.0).speed(0.5)).on_hover_text(crate::i18n::t("Font size"));
                             if ui.small_button(crate::i18n::t("+")).clicked() {
                                 p.font_size += 2.0;
                             }
-                            rgba_edit(ui, &mut p.text_color).on_hover_text(crate::i18n::t("Color del texto"));
-                            ui.toggle_value(&mut p.bold, RichText::new(crate::i18n::t("B")).strong()).on_hover_text(crate::i18n::t("Negrita"));
-                            ui.toggle_value(&mut p.italic, RichText::new(crate::i18n::t("I")).italics()).on_hover_text(crate::i18n::t("Cursiva"));
-                            ui.toggle_value(&mut p.underline, RichText::new(crate::i18n::t("U")).underline()).on_hover_text(crate::i18n::t("Subrayado"));
-                            let font_label = if p.font.is_empty() { crate::i18n::t("Predeterminada") } else { p.font.clone() };
+                            rgba_edit(ui, &mut p.text_color).on_hover_text(crate::i18n::t("Text color"));
+                            ui.toggle_value(&mut p.bold, RichText::new(crate::i18n::t("B")).strong()).on_hover_text(crate::i18n::t("Bold"));
+                            ui.toggle_value(&mut p.italic, RichText::new(crate::i18n::t("I")).italics()).on_hover_text(crate::i18n::t("Italic"));
+                            ui.toggle_value(&mut p.underline, RichText::new(crate::i18n::t("U")).underline()).on_hover_text(crate::i18n::t("Underline"));
+                            let font_label = if p.font.is_empty() { crate::i18n::t("Default") } else { p.font.clone() };
                             egui::ComboBox::from_id_salt("font_pick")
                                 .selected_text(font_label)
                                 .width(120.0)
                                 .show_ui(ui, |ui| {
-                                    ui.selectable_value(&mut p.font, String::new(), crate::i18n::t("Predeterminada"));
-                                    ui.selectable_value(&mut p.font, "Monoespaciada".to_string(), RichText::new(crate::i18n::t("Monoespaciada")).monospace());
+                                    ui.selectable_value(&mut p.font, String::new(), crate::i18n::t("Default"));
+                                    ui.selectable_value(&mut p.font, "Monospace".to_string(), RichText::new(crate::i18n::t("Monospace")).monospace());
                                     for f in render::available_fonts() {
                                         let fam = egui::FontFamily::Name(f.as_str().into());
                                         ui.selectable_value(&mut p.font, f.clone(), RichText::new(f).family(fam));
                                     }
                                     ui.separator();
-                                    if ui.button(crate::i18n::t("+ Añadir fuente…")).clicked() {
+                                    if ui.button(crate::i18n::t("+ Add font…")).clicked() {
                                         add_font_clicked = true;
                                     }
                                 })
                                 .response
-                                .on_hover_text(crate::i18n::t("Fuente (se exporta como TMP Font Asset)"));
+                                .on_hover_text(crate::i18n::t("Font (exported as TMP Font Asset)"));
                             ui.separator();
-                            for (i, (icon, tip)) in [("align_left", "Izquierda"), ("align_center", "Centro"), ("align_right", "Derecha")].iter().enumerate() {
+                            for (i, (icon, tip)) in [("align_left", "Left"), ("align_center", "Center"), ("align_right", "Right")].iter().enumerate() {
                                 if crate::icons::toggle(ui, p.align == i as u8, icon, &tip[..1], tip).clicked() {
                                     p.align = i as u8;
                                 }
                             }
                             if k != Kind::Text {
                                 ui.add_space(3.0);
-                                for (i, (icon, tip)) in [("align_top", "Arriba"), ("align_middle", "Medio"), ("align_bottom", "Abajo")].iter().enumerate() {
+                                for (i, (icon, tip)) in [("align_top", "Top"), ("align_middle", "Middle"), ("align_bottom", "Bottom")].iter().enumerate() {
                                     if crate::icons::toggle(ui, p.valign == i as u8, icon, &tip[..1], tip).clicked() {
                                         p.valign = i as u8;
                                     }
@@ -1277,7 +1277,7 @@ impl EditorApp {
                         }
                         ui.separator();
                         let mut pct = p.opacity * 100.0;
-                        if ui.add(egui::DragValue::new(&mut pct).range(0.0..=100.0).speed(0.5).prefix("◐ ").suffix("%").max_decimals(0)).on_hover_text(crate::i18n::t("Opacidad")).changed() {
+                        if ui.add(egui::DragValue::new(&mut pct).range(0.0..=100.0).speed(0.5).prefix("◐ ").suffix("%").max_decimals(0)).on_hover_text(crate::i18n::t("Opacity")).changed() {
                             p.opacity = pct / 100.0;
                         }
                         ui.separator();
@@ -1321,7 +1321,7 @@ impl EditorApp {
                 ui.horizontal(|ui| {
                     ui.label(RichText::new(crate::i18n::t("Inspector")).strong().size(14.0));
                     ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
-                        if crate::icons::button(ui, "close", "x", "Cerrar el inspector").clicked() {
+                        if crate::icons::button(ui, "close", "x", "Close the inspector").clicked() {
                             self.inspector_open = false;
                         }
                     });
@@ -1345,28 +1345,28 @@ impl EditorApp {
             egui::Grid::new("page").num_columns(2).spacing([8.0, 6.0]).show(ui, |ui| {
                 let mut w = self.doc.width;
                 let mut h = self.doc.height;
-                ui.label(crate::i18n::t("Referencia X"));
+                ui.label(crate::i18n::t("Reference X"));
                 let rw = ui.add(egui::DragValue::new(&mut w).range(64.0..=8192.0).suffix(" px"));
                 ui.end_row();
-                ui.label(crate::i18n::t("Referencia Y"));
+                ui.label(crate::i18n::t("Reference Y"));
                 let rh = ui.add(egui::DragValue::new(&mut h).range(64.0..=8192.0).suffix(" px"));
                 ui.end_row();
                 if (rw.changed() || rh.changed()) && (w != self.doc.width || h != self.doc.height) {
                     self.resize_page(w.round(), h.round());
                 }
                 ui.label(crate::i18n::t("Match"));
-                ui.add(egui::Slider::new(&mut self.doc.canvas_match, 0.0..=1.0).text(crate::i18n::t("Ancho / Alto")));
+                ui.add(egui::Slider::new(&mut self.doc.canvas_match, 0.0..=1.0).text(crate::i18n::t("Width / Height")));
                 ui.end_row();
-                ui.label(crate::i18n::t("Fondo"));
+                ui.label(crate::i18n::t("Background"));
                 rgba_edit(ui, &mut self.doc.background);
                 ui.end_row();
                 ui.label(crate::i18n::t("Pixel art"));
-                ui.checkbox(&mut self.doc.pixel_art, crate::i18n::t("Sin suavizado, píxeles enteros"))
-                    .on_hover_text(crate::i18n::t("Imágenes con filtro de vecino más cercano, posiciones y tamaños en píxeles enteros. En Unity: Canvas Pixel Perfect y sprites con filtro Point sin compresión."));
+                ui.checkbox(&mut self.doc.pixel_art, crate::i18n::t("No smoothing, whole pixels"))
+                    .on_hover_text(crate::i18n::t("Images with nearest-neighbor filtering, positions and sizes in whole pixels. In Unity: Canvas Pixel Perfect and sprites with Point filter and no compression."));
                 ui.end_row();
             });
             let mut preset = None;
-            egui::ComboBox::from_id_salt("res_presets").selected_text(crate::i18n::t("Resoluciones comunes…")).width(ui.available_width() - 8.0).show_ui(ui, |ui| {
+            egui::ComboBox::from_id_salt("res_presets").selected_text(crate::i18n::t("Common resolutions…")).width(ui.available_width() - 8.0).show_ui(ui, |ui| {
                 for (name, w, h) in SIZE_PRESETS {
                     if ui.button(format!("{}  ·  {} × {}", crate::i18n::t(name), w, h)).clicked() {
                         preset = Some((*w, *h));
@@ -1378,39 +1378,39 @@ impl EditorApp {
             }
             swatch_row(ui, &mut self.doc.background);
         });
-        component(ui, "unity_export", &crate::i18n::t("Proyecto de Unity"), true, |ui| {
+        component(ui, "unity_export", &crate::i18n::t("Unity project"), true, |ui| {
             if self.settings.unity_project.is_empty() {
-                hint(ui, &crate::i18n::t("Aún no elegiste un proyecto. «Exportar a Unity» te pedirá la carpeta (la que contiene Assets)."));
+                hint(ui, &crate::i18n::t("No project selected yet. “Export to Unity” will ask for the folder (the one containing Assets)."));
             } else {
                 ui.label(RichText::new(&self.settings.unity_project).small().monospace());
             }
             ui.horizontal(|ui| {
-                if ui.add(crate::icons::btn("export", crate::i18n::t("Elegir proyecto…"))).clicked() {
+                if ui.add(crate::icons::btn("export", crate::i18n::t("Choose project…"))).clicked() {
                     self.export_to_unity(true);
                 }
-                if ui.add(crate::icons::btn("code", crate::i18n::t("Ver código…"))).clicked() {
+                if ui.add(crate::icons::btn("code", crate::i18n::t("View code…"))).clicked() {
                     self.export_open = true;
                 }
             });
         });
-        component(ui, "shortcuts", &crate::i18n::t("Atajos"), false, |ui| {
+        component(ui, "shortcuts", &crate::i18n::t("Shortcuts"), false, |ui| {
             for (k, d) in [
-                ("Clic / Shift+clic", "Seleccionar / sumar"),
-                ("Ctrl+clic", "Seleccionar dentro de un grupo"),
-                ("Esc", "Seleccionar el padre"),
-                ("Arrastrar vacío", "Selección por área"),
-                ("Doble clic", "Editar texto"),
-                ("Esquinas", "Escalar (Shift: libre)"),
-                ("Tirador de giro", "Girar (Shift: 15°)"),
-                ("Alt+arrastrar", "Duplicar y mover"),
-                ("Ctrl+G / Ctrl+Shift+G", "Agrupar / desagrupar"),
-                ("Ctrl+D / Supr", "Duplicar / borrar"),
-                ("Ctrl+Z / Ctrl+Y", "Deshacer / rehacer"),
-                ("Flechas", "Mover 1 px (Shift: 10)"),
-                ("Ctrl+rueda", "Zoom"),
-                ("Ctrl+S", "Guardar proyecto"),
-                ("Ctrl+E", "Exportar a Unity"),
-                ("F5", "Probar / simular pantallas"),
+                ("Click / Shift+click", "Select / add"),
+                ("Ctrl+click", "Select inside a group"),
+                ("Esc", "Select the parent"),
+                ("Drag on empty space", "Area selection"),
+                ("Double-click", "Edit text"),
+                ("Corners", "Scale (Shift: free)"),
+                ("Rotation handle", "Rotate (Shift: 15°)"),
+                ("Alt+drag", "Duplicate and move"),
+                ("Ctrl+G / Ctrl+Shift+G", "Group / ungroup"),
+                ("Ctrl+D / Del", "Duplicate / delete"),
+                ("Ctrl+Z / Ctrl+Y", "Undo / redo"),
+                ("Arrows", "Move 1 px (Shift: 10)"),
+                ("Ctrl+wheel", "Zoom"),
+                ("Ctrl+S", "Save project"),
+                ("Ctrl+E", "Export to Unity"),
+                ("F5", "Test / simulate screens"),
                 ("F1", "Tutorial"),
             ] {
                 ui.horizontal(|ui| {
@@ -1425,46 +1425,46 @@ impl EditorApp {
         component(ui, "arrange", if multi { "Alinear y ordenar" } else { "Alinear al padre y ordenar" }, true, |ui| {
             ui.columns(3, |c| {
                 let b = |ui: &mut egui::Ui, t: &str| ui.add_sized([ui.available_width(), 22.0], egui::Button::new(t)).clicked();
-                if b(&mut c[0], "Izquierda") {
+                if b(&mut c[0], "Left") {
                     self.align(0, 0)
                 }
-                if b(&mut c[1], "Centro") {
+                if b(&mut c[1], "Center") {
                     self.align(0, 1)
                 }
-                if b(&mut c[2], "Derecha") {
+                if b(&mut c[2], "Right") {
                     self.align(0, 2)
                 }
-                if b(&mut c[0], "Arriba") {
+                if b(&mut c[0], "Top") {
                     self.align(1, 0)
                 }
-                if b(&mut c[1], "Medio") {
+                if b(&mut c[1], "Middle") {
                     self.align(1, 1)
                 }
-                if b(&mut c[2], "Abajo") {
+                if b(&mut c[2], "Bottom") {
                     self.align(1, 2)
                 }
             });
             if self.sel.len() >= 3 {
                 ui.columns(2, |c| {
-                    if c[0].button(crate::i18n::t("Distribuir horiz.")).clicked() {
+                    if c[0].button(crate::i18n::t("Distribute horiz.")).clicked() {
                         self.distribute(0);
                     }
-                    if c[1].button(crate::i18n::t("Distribuir vert.")).clicked() {
+                    if c[1].button(crate::i18n::t("Distribute vert.")).clicked() {
                         self.distribute(1);
                     }
                 });
             }
             ui.columns(4, |c| {
-                if c[0].button(crate::i18n::t("Atrás")).on_hover_text(crate::i18n::t("Un lugar antes entre hermanos (Ctrl+[)")).clicked() {
+                if c[0].button(crate::i18n::t("Backward")).on_hover_text(crate::i18n::t("One place earlier among siblings (Ctrl+[)")).clicked() {
                     self.reorder(None, -1);
                 }
-                if c[1].button(crate::i18n::t("Adelante")).on_hover_text(crate::i18n::t("Ctrl+]")).clicked() {
+                if c[1].button(crate::i18n::t("Forward")).on_hover_text(crate::i18n::t("Ctrl+]")).clicked() {
                     self.reorder(None, 1);
                 }
-                if c[2].button(crate::i18n::t("Al fondo")).clicked() {
+                if c[2].button(crate::i18n::t("To back")).clicked() {
                     self.reorder(Some(false), 0);
                 }
-                if c[3].button(crate::i18n::t("Al frente")).clicked() {
+                if c[3].button(crate::i18n::t("To front")).clicked() {
                     self.reorder(Some(true), 0);
                 }
             });
@@ -1472,10 +1472,10 @@ impl EditorApp {
     }
 
     fn multi_settings(&mut self, ui: &mut egui::Ui) {
-        ui.label(RichText::new(format!("{} {}", self.sel.len(), crate::i18n::t("elementos seleccionados"))).color(MUTED()));
+        ui.label(RichText::new(format!("{} {}", self.sel.len(), crate::i18n::t("elements selected"))).color(MUTED()));
         self.arrange(ui, true);
         ui.add_space(6.0);
-        if ui.button(crate::i18n::t("Agrupar en Contenedor (Ctrl+G)")).clicked() {
+        if ui.button(crate::i18n::t("Group into Container (Ctrl+G)")).clicked() {
             self.group_selection();
         }
     }
@@ -1495,11 +1495,11 @@ impl EditorApp {
 
         // header (GameObject)
         ui.horizontal(|ui| {
-            if crate::icons::toggle(ui, !e.visible, if e.visible { "eye" } else { "eye_off" }, "o", "Activo / inactivo (GameObject.SetActive)").clicked() {
+            if crate::icons::toggle(ui, !e.visible, if e.visible { "eye" } else { "eye_off" }, "o", "Active / inactive (GameObject.SetActive)").clicked() {
                 e.visible = !e.visible;
             }
             ui.add(egui::TextEdit::singleline(&mut e.name).desired_width(ui.available_width() - 30.0));
-            if crate::icons::toggle(ui, e.locked, if e.locked { "lock" } else { "unlock" }, "L", "Bloquear en el editor").clicked() {
+            if crate::icons::toggle(ui, e.locked, if e.locked { "lock" } else { "unlock" }, "L", "Lock in editor").clicked() {
                 e.locked = !e.locked;
             }
         });
@@ -1513,23 +1513,23 @@ impl EditorApp {
             });
             ui.label(RichText::new(e.kind.unity_component()).small().color(MUTED()));
         });
-        ui.label(RichText::new(&path).small().monospace().color(MUTED())).on_hover_text(crate::i18n::t("Ruta dentro del Canvas en Unity"));
+        ui.label(RichText::new(&path).small().monospace().color(MUTED())).on_hover_text(crate::i18n::t("Path inside the Canvas in Unity"));
 
         // RectTransform
         let mut preset_click: Option<([f32; 2], [f32; 2], bool, bool)> = None;
         component(ui, "rt", &crate::i18n::t("Rect Transform"), true, |ui| {
             if driven {
                 egui::Frame::new().fill(ACCENT_SOFT()).corner_radius(4.0).inner_margin(Margin::same(5)).show(ui, |ui| {
-                    ui.label(RichText::new(crate::i18n::tf("Algunos valores los controla el Layout Group de «{}».", &[&parent_name.clone().unwrap_or_default()])).small());
+                    ui.label(RichText::new(crate::i18n::tf("Some values are controlled by the Layout Group of “{}”.", &[&parent_name.clone().unwrap_or_default()])).small());
                 });
             }
             ui.horizontal(|ui| {
                 preset_click = anchor_presets(ui, &e);
                 ui.vertical(|ui| {
-                    hint(ui, &crate::i18n::t("Clic: anclas"));
-                    hint(ui, &crate::i18n::t("Shift: + pivote"));
-                    hint(ui, &crate::i18n::t("Alt: + posición"));
-                    ui.label(RichText::new(crate::i18n::tf("Padre: {}", &[&parent_name.clone().unwrap_or_else(|| "Canvas".into())])).small().color(MUTED()));
+                    hint(ui, &crate::i18n::t("Click: anchors"));
+                    hint(ui, &crate::i18n::t("Shift: + pivot"));
+                    hint(ui, &crate::i18n::t("Alt: + position"));
+                    ui.label(RichText::new(crate::i18n::tf("Parent: {}", &[&parent_name.clone().unwrap_or_else(|| "Canvas".into())])).small().color(MUTED()));
                 });
             });
             ui.add_space(4.0);
@@ -1595,7 +1595,7 @@ impl EditorApp {
                 ui.add(egui::DragValue::new(&mut rt.rotation_z).speed(0.5).suffix("°"));
                 ui.end_row();
             });
-            egui::CollapsingHeader::new(RichText::new(crate::i18n::t("Medidas en el lienzo (px)")).small()).id_salt("world").show(ui, |ui| {
+            egui::CollapsingHeader::new(RichText::new(crate::i18n::t("Canvas size (px)")).small()).id_salt("world").show(ui, |ui| {
                 egui::Grid::new("worldgrid").num_columns(4).spacing([6.0, 4.0]).show(ui, |ui| {
                     let mut x = world.cx - world.w / 2.0;
                     let mut y = world.cy - world.h / 2.0;
@@ -1631,34 +1631,34 @@ impl EditorApp {
                     rgba_edit(ui, &mut e.fill);
                     ui.end_row();
                     if e.kind == Kind::Image && e.image.is_empty() {
-                        ui.label(crate::i18n::t("Degradado hasta"));
+                        ui.label(crate::i18n::t("Gradient to"));
                         rgba_edit(ui, &mut e.fill2);
                         ui.end_row();
                     }
                     if e.kind == Kind::Image {
                         ui.label(crate::i18n::t("Sprite"));
                         ui.horizontal(|ui| {
-                            if ui.button(crate::i18n::t(if e.image.is_empty() { "Elegir imagen…" } else { "Cambiar…" })).clicked() {
+                            if ui.button(crate::i18n::t(if e.image.is_empty() { "Choose image…" } else { "Change…" })).clicked() {
                                 pick_image = true;
                             }
-                            if !e.image.is_empty() && ui.small_button(crate::i18n::t("Quitar")).clicked() {
+                            if !e.image.is_empty() && ui.small_button(crate::i18n::t("Remove")).clicked() {
                                 e.image.clear();
                             }
                         });
                         ui.end_row();
                     }
                     if e.kind != Kind::Ellipse {
-                        ui.label(crate::i18n::t("Radio de esquinas"));
-                        ui.add(egui::DragValue::new(&mut e.radius).range(0.0..=500.0).speed(0.5).suffix(" px")).on_hover_text(crate::i18n::t("Se exporta como Sprite 9-slice generado"));
+                        ui.label(crate::i18n::t("Corner radius"));
+                        ui.add(egui::DragValue::new(&mut e.radius).range(0.0..=500.0).speed(0.5).suffix(" px")).on_hover_text(crate::i18n::t("Exported as a generated 9-slice Sprite"));
                         ui.end_row();
                     }
-                    ui.label(crate::i18n::t("Borde"));
+                    ui.label(crate::i18n::t("Border"));
                     ui.horizontal(|ui| {
                         rgba_edit(ui, &mut e.stroke);
                         ui.add(egui::DragValue::new(&mut e.stroke_w).range(0.0..=60.0).speed(0.2).suffix(" px"));
                     });
                     ui.end_row();
-                    ui.label(crate::i18n::t("Opacidad"));
+                    ui.label(crate::i18n::t("Opacity"));
                     ui.add(egui::Slider::new(&mut e.opacity, 0.0..=1.0));
                     ui.end_row();
                     ui.label(crate::i18n::t("Raycast Target"));
@@ -1671,7 +1671,7 @@ impl EditorApp {
 
         // Text
         if e.kind.has_text() {
-            let title = if e.kind == Kind::Dropdown { "TMP_Dropdown · opciones" } else { "TextMeshPro · texto" };
+            let title = if e.kind == Kind::Dropdown { "TMP_Dropdown · options" } else { "TextMeshPro · text" };
             component(ui, "txt", title, true, |ui| {
                 if e.kind == Kind::Dropdown {
                     // While typing, the text is stored as is (with the empty line after pressing Enter);
@@ -1679,7 +1679,7 @@ impl EditorApp {
                     #[allow(deprecated)]
                     let buf_id = egui::Id::new(("dd_opts", e.id));
                     let mut opts = ui.data(|d| d.get_temp::<String>(buf_id)).unwrap_or_else(|| e.options.join("\n"));
-                    hint(ui, &crate::i18n::t("Una opción por línea"));
+                    hint(ui, &crate::i18n::t("One option per line"));
                     let r = ui.add(egui::TextEdit::multiline(&mut opts).desired_rows(3).desired_width(f32::INFINITY));
                     if r.changed() {
                         e.options = opts.lines().map(|l| l.to_string()).filter(|l| !l.trim().is_empty()).collect();
@@ -1700,45 +1700,45 @@ impl EditorApp {
                     }
                 } else {
                     if e.kind == Kind::InputField {
-                        hint(ui, &crate::i18n::t("Texto de ejemplo (Placeholder)"));
+                        hint(ui, &crate::i18n::t("Placeholder text"));
                     }
                     ui.add(egui::TextEdit::multiline(&mut e.text).desired_rows(2).desired_width(f32::INFINITY));
                 }
                 egui::Grid::new("txtgrid").num_columns(2).spacing([8.0, 5.0]).show(ui, |ui| {
-                    ui.label(crate::i18n::t("Tamaño"));
+                    ui.label(crate::i18n::t("Size"));
                     ui.add(egui::DragValue::new(&mut e.font_size).range(4.0..=400.0).speed(0.5));
                     ui.end_row();
                     ui.label(crate::i18n::t("Color"));
                     rgba_edit(ui, &mut e.text_color);
                     ui.end_row();
-                    ui.label(crate::i18n::t("Estilo"));
+                    ui.label(crate::i18n::t("Style"));
                     ui.horizontal(|ui| {
                         ui.toggle_value(&mut e.bold, RichText::new(crate::i18n::t("B")).strong());
                         ui.toggle_value(&mut e.italic, RichText::new(crate::i18n::t("I")).italics());
                         ui.toggle_value(&mut e.underline, RichText::new(crate::i18n::t("U")).underline());
                     });
                     ui.end_row();
-                    ui.label(crate::i18n::t("Alineación"));
+                    ui.label(crate::i18n::t("Alignment"));
                     ui.horizontal(|ui| {
                         for (i, t) in ["align_left", "align_center", "align_right"].iter().enumerate() {
-                            if crate::icons::toggle(ui, e.align == i as u8, t, "-", ["Izquierda", "Centro", "Derecha"][i]).clicked() {
+                            if crate::icons::toggle(ui, e.align == i as u8, t, "-", ["Left", "Center", "Right"][i]).clicked() {
                                 e.align = i as u8;
                             }
                         }
                         if e.kind != Kind::Text {
                             ui.add_space(4.0);
                             for (i, t) in ["align_top", "align_middle", "align_bottom"].iter().enumerate() {
-                                if crate::icons::toggle(ui, e.valign == i as u8, t, "|", ["Arriba", "Medio", "Abajo"][i]).clicked() {
+                                if crate::icons::toggle(ui, e.valign == i as u8, t, "|", ["Top", "Middle", "Bottom"][i]).clicked() {
                                     e.valign = i as u8;
                                 }
                             }
                         }
                     });
                     ui.end_row();
-                    ui.label(crate::i18n::t("Fuente"));
-                    let font_label = if e.font.is_empty() { crate::i18n::t("Predeterminada") } else { e.font.clone() };
+                    ui.label(crate::i18n::t("Font"));
+                    let font_label = if e.font.is_empty() { crate::i18n::t("Default") } else { e.font.clone() };
                     egui::ComboBox::from_id_salt("font_pick_insp").selected_text(font_label).width(150.0).show_ui(ui, |ui| {
-                        ui.selectable_value(&mut e.font, String::new(), crate::i18n::t("Predeterminada"));
+                        ui.selectable_value(&mut e.font, String::new(), crate::i18n::t("Default"));
                         for f in render::available_fonts() {
                             let fam = egui::FontFamily::Name(f.as_str().into());
                             ui.selectable_value(&mut e.font, f.clone(), RichText::new(f).family(fam));
@@ -1757,7 +1757,7 @@ impl EditorApp {
                     e.value = if on { 1.0 } else { 0.0 };
                 }
                 ui.horizontal(|ui| {
-                    ui.label(crate::i18n::t("Color de la casilla"));
+                    ui.label(crate::i18n::t("Checkbox color"));
                     rgba_edit(ui, &mut e.fill);
                 });
                 ui.checkbox(&mut e.interactable, crate::i18n::t("Interactable"));
@@ -1765,33 +1765,33 @@ impl EditorApp {
             Kind::Slider => component(ui, "sld", &crate::i18n::t("Slider"), true, |ui| {
                 ui.add(egui::Slider::new(&mut e.value, 0.0..=1.0).text(crate::i18n::t("Value")));
                 ui.horizontal(|ui| {
-                    ui.label(crate::i18n::t("Relleno"));
+                    ui.label(crate::i18n::t("Padding"));
                     rgba_edit(ui, &mut e.fill);
-                    ui.label(crate::i18n::t("Pista"));
+                    ui.label(crate::i18n::t("Hint"));
                     rgba_edit(ui, &mut e.fill2);
                 });
-                ui.checkbox(&mut e.interactable, crate::i18n::t("Interactable")).on_hover_text(crate::i18n::t("Desactívalo para barras de vida o progreso"));
+                ui.checkbox(&mut e.interactable, crate::i18n::t("Interactable")).on_hover_text(crate::i18n::t("Turn it off for health or progress bars"));
             }),
             k if k.selectable() => component(ui, "sel", &crate::i18n::t("Selectable"), true, |ui| {
                 ui.checkbox(&mut e.interactable, crate::i18n::t("Interactable"));
             }),
             Kind::ScrollView => component(ui, "scroll", &crate::i18n::t("Scroll Rect"), true, |ui| {
-                hint(ui, &crate::i18n::t("Desplazamiento vertical. Los hijos van al Content (Viewport/Content); su alto crece para que todos quepan."));
+                hint(ui, &crate::i18n::t("Vertical scrolling. Children go into Content (Viewport/Content); its height grows so they all fit."));
             }),
             _ => {}
         }
 
         // Mask + Shadow
-        component(ui, "effects", &crate::i18n::t("Máscara y efectos"), e.mask || e.shadow.on, |ui| {
+        component(ui, "effects", &crate::i18n::t("Mask and effects"), e.mask || e.shadow.on, |ui| {
             if e.kind != Kind::ScrollView {
-                ui.checkbox(&mut e.mask, crate::i18n::t("Rect Mask 2D (recorta a los hijos)"));
+                ui.checkbox(&mut e.mask, crate::i18n::t("Rect Mask 2D (clips children)"));
             }
             if e.kind.has_fill() {
                 ui.checkbox(&mut e.shadow.on, crate::i18n::t("Shadow"));
                 if e.shadow.on {
                     ui.horizontal(|ui| {
                         rgba_edit(ui, &mut e.shadow.color);
-                        ui.label(crate::i18n::t("Distancia"));
+                        ui.label(crate::i18n::t("Distance"));
                         ui.add(egui::DragValue::new(&mut e.shadow.offset[0]).speed(0.5).prefix("x "));
                         ui.add(egui::DragValue::new(&mut e.shadow.offset[1]).speed(0.5).prefix("y "));
                     });
@@ -1807,7 +1807,7 @@ impl EditorApp {
                 }
             });
             if e.layout.mode == LayoutMode::None {
-                hint(ui, &crate::i18n::t("Organiza automáticamente a los hijos directos, como en Unity."));
+                hint(ui, &crate::i18n::t("Automatically arranges direct children, as in Unity."));
                 return;
             }
             egui::Grid::new("lgrid").num_columns(4).spacing([6.0, 4.0]).show(ui, |ui| {
@@ -1839,26 +1839,26 @@ impl EditorApp {
                 align_grid(ui, &mut e.layout.align);
             });
             if e.layout.mode != LayoutMode::Grid {
-                ui.checkbox(&mut e.layout.expand_w, crate::i18n::t("Control + Expand ancho"));
-                ui.checkbox(&mut e.layout.expand_h, crate::i18n::t("Control + Expand alto"));
+                ui.checkbox(&mut e.layout.expand_w, crate::i18n::t("Control + Expand width"));
+                ui.checkbox(&mut e.layout.expand_h, crate::i18n::t("Control + Expand height"));
             }
         });
 
         // click code
         let mut run_now = false;
         let mut go_test = false;
-        component(ui, "code", &crate::i18n::t("Al hacer clic (código de prueba)"), !e.on_click.trim().is_empty(), |ui| {
-            hint(ui, &crate::i18n::t("Se ejecuta en Probar. Al exportar queda como comentario en el método OnClick del script View."));
-            ui.add(egui::TextEdit::multiline(&mut e.on_click).code_editor().desired_rows(4).desired_width(f32::INFINITY).hint_text(crate::i18n::t("mensaje(\"¡Hola!\");\nocultar(\"Ventana\");")));
+        component(ui, "code", &crate::i18n::t("On click (test code)"), !e.on_click.trim().is_empty(), |ui| {
+            hint(ui, &crate::i18n::t("Runs in Test. When exported, it becomes a comment in the OnClick method of the View script."));
+            ui.add(egui::TextEdit::multiline(&mut e.on_click).code_editor().desired_rows(4).desired_width(f32::INFINITY).hint_text(crate::i18n::t("mensaje(\"Hello!\");\nocultar(\"Window\");")));
             ui.horizontal(|ui| {
-                if ui.add_enabled(!e.on_click.trim().is_empty(), crate::icons::btn("play", crate::i18n::t("Ejecutar ahora"))).clicked() {
+                if ui.add_enabled(!e.on_click.trim().is_empty(), crate::icons::btn("play", crate::i18n::t("Run now"))).clicked() {
                     run_now = true;
                 }
-                if ui.button(crate::i18n::t("Probar diseño")).on_hover_text(crate::i18n::t("F5")).clicked() {
+                if ui.button(crate::i18n::t("Test design")).on_hover_text(crate::i18n::t("F5")).clicked() {
                     go_test = true;
                 }
             });
-            egui::CollapsingHeader::new(RichText::new(crate::i18n::t("Funciones disponibles")).small()).id_salt("code_help").show(ui, |ui| {
+            egui::CollapsingHeader::new(RichText::new(crate::i18n::t("Available functions")).small()).id_salt("code_help").show(ui, |ui| {
                 ui.label(RichText::new(crate::script::HELP).monospace().size(10.5));
             });
             if !self.console.is_empty() {
@@ -1917,16 +1917,16 @@ impl EditorApp {
             }
         }
         if pick_image {
-            let file = rfd::FileDialog::new().set_title("Elegir imagen").add_filter("Imágenes", crate::library::IMAGE_EXTS).pick_file();
+            let file = rfd::FileDialog::new().set_title("Choose image").add_filter("Images", crate::library::IMAGE_EXTS).pick_file();
             if let Some(f) = file {
                 match self.library.add_image(&f) {
                     Ok(name) => {
                         if let Some(el) = self.doc.get_mut(id) {
                             el.image = name;
                         }
-                        self.status = crate::i18n::t("Imagen cambiada");
+                        self.status = crate::i18n::t("Image changed");
                     }
-                    Err(err) => self.status = crate::i18n::tf("No se pudo usar la imagen: {}", &[&err.to_string()]),
+                    Err(err) => self.status = crate::i18n::tf("Could not use the image: {}", &[&err.to_string()]),
                 }
             }
         }
@@ -1948,7 +1948,7 @@ impl EditorApp {
             .show(ui, |ui| {
                 ui.horizontal_centered(|ui| {
                     ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
-                        if ui.small_button(crate::i18n::t("Ajustar")).on_hover_text(crate::i18n::t("Ctrl+0")).clicked() {
+                        if ui.small_button(crate::i18n::t("Snap")).on_hover_text(crate::i18n::t("Ctrl+0")).clicked() {
                             self.fit_pending = true;
                         }
                         ui.label(RichText::new(format!("{:.0}%", self.zoom * 100.0)).size(11.5));
@@ -1957,7 +1957,7 @@ impl EditorApp {
                             self.zoom = z;
                         }
                         ui.separator();
-                        ui.label(RichText::new(format!("{} {} · {} {}", self.doc.elements.len(), crate::i18n::t("elementos"), self.sel.len(), crate::i18n::t("seleccionados"))).size(11.5).color(MUTED()));
+                        ui.label(RichText::new(format!("{} {} · {} {}", self.doc.elements.len(), crate::i18n::t("elements"), self.sel.len(), crate::i18n::t("selected"))).size(11.5).color(MUTED()));
                         ui.separator();
                         ui.with_layout(Layout::left_to_right(Align::Center), |ui| {
                             ui.add(egui::Label::new(RichText::new(crate::i18n::t(&self.status)).size(11.5).color(MUTED())).truncate());
@@ -1974,30 +1974,30 @@ impl EditorApp {
         }
         let mut open = true;
         let mut close = false;
-        egui::Window::new(crate::i18n::t("Guardar")).open(&mut open).collapsible(false).resizable(false).default_width(380.0).anchor(egui::Align2::CENTER_CENTER, [0.0, 0.0]).show(ctx, |ui| {
-            ui.label(RichText::new(crate::i18n::t("Como proyecto")).strong());
-            hint(ui, &crate::i18n::t("Un archivo que puedes volver a abrir y seguir editando."));
+        egui::Window::new(crate::i18n::t("Save")).open(&mut open).collapsible(false).resizable(false).default_width(380.0).anchor(egui::Align2::CENTER_CENTER, [0.0, 0.0]).show(ctx, |ui| {
+            ui.label(RichText::new(crate::i18n::t("As project")).strong());
+            hint(ui, &crate::i18n::t("A file you can reopen and keep editing."));
             ui.horizontal(|ui| {
-                if ui.add(crate::icons::btn("save", crate::i18n::t("Guardar proyecto"))).on_hover_text(&self.project_path).clicked() {
+                if ui.add(crate::icons::btn("save", crate::i18n::t("Save project"))).on_hover_text(&self.project_path).clicked() {
                     if std::path::Path::new(&self.project_path).is_absolute() { self.save_project() } else { self.save_project_as() }
                     close = true;
                 }
-                if ui.button(crate::i18n::t("Guardar como…")).clicked() {
+                if ui.button(crate::i18n::t("Save as…")).clicked() {
                     self.save_project_as();
                     close = true;
                 }
             });
             ui.separator();
-            ui.label(RichText::new(crate::i18n::t("Como plantilla")).strong());
-            hint(ui, &crate::i18n::t("Aparecerá en Plantillas › Mis plantillas para empezar nuevos diseños."));
+            ui.label(RichText::new(crate::i18n::t("As template")).strong());
+            hint(ui, &crate::i18n::t("It will appear in Templates › My templates to start new designs."));
             if self.template_name.is_empty() {
                 self.template_name = self.doc.title.clone();
             }
             ui.horizontal(|ui| {
-                ui.label(crate::i18n::t("Nombre"));
+                ui.label(crate::i18n::t("Name"));
                 ui.add(egui::TextEdit::singleline(&mut self.template_name).desired_width(200.0));
             });
-            if ui.add(crate::icons::btn("tab_templates", crate::i18n::t("Guardar como plantilla"))).clicked() {
+            if ui.add(crate::icons::btn("tab_templates", crate::i18n::t("Save as template"))).clicked() {
                 let n = std::mem::take(&mut self.template_name);
                 self.save_as_template(&n);
                 self.tab = Tab::Templates;
@@ -2017,25 +2017,25 @@ impl EditorApp {
         }
         let mut open = true;
         let cls = crate::export::class_name(&self.doc.title);
-        egui::Window::new(crate::i18n::t("Exportar a Unity")).open(&mut open).default_size([760.0, 600.0]).collapsible(false).show(ctx, |ui| {
+        egui::Window::new(crate::i18n::t("Export to Unity")).open(&mut open).default_size([760.0, 600.0]).collapsible(false).show(ctx, |ui| {
             egui::Frame::new().fill(PANEL_DARK()).corner_radius(6.0).inner_margin(Margin::same(8)).show(ui, |ui| {
                 ui.horizontal(|ui| {
-                    ui.label(RichText::new(crate::i18n::t("Proyecto:")).strong());
-                    let shown = if self.settings.unity_project.is_empty() { "(sin elegir)".to_string() } else { self.settings.unity_project.clone() };
+                    ui.label(RichText::new(crate::i18n::t("Project:")).strong());
+                    let shown = if self.settings.unity_project.is_empty() { "(not chosen)".to_string() } else { self.settings.unity_project.clone() };
                     ui.label(RichText::new(shown).monospace().size(11.5));
                 });
                 ui.horizontal(|ui| {
-                    if ui.add(crate::icons::btn_tint("export", RichText::new(crate::i18n::t("Exportar todo al proyecto")).strong().color(Color32::WHITE), Color32::WHITE).fill(ACCENT())).clicked() {
+                    if ui.add(crate::icons::btn_tint("export", RichText::new(crate::i18n::t("Export everything to project")).strong().color(Color32::WHITE), Color32::WHITE).fill(ACCENT())).clicked() {
                         self.export_to_unity(false);
                     }
-                    if ui.button(crate::i18n::t("Cambiar proyecto…")).clicked() {
+                    if ui.button(crate::i18n::t("Change project…")).clicked() {
                         self.export_to_unity(true);
                     }
                 });
                 hint(
                     ui,
                     &format!(
-                        "Escribe en Assets/EditorGUI: Editor/EditorGuiImporter.cs, Designs/{c}.json, Sprites, Fonts, UI Toolkit/{c}.uxml+.uss y Scripts/{c}OnGUI.cs, {c}ViewBase.cs, {c}View.cs. Al volver a Unity se genera Prefabs/{c}.prefab (uGUI + TextMeshPro) automáticamente.",
+                        "Writes to Assets/EditorGUI: Editor/EditorGuiImporter.cs, Designs/{c}.json, Sprites, Fonts, UI Toolkit/{c}.uxml+.uss and Scripts/{c}OnGUI.cs, {c}ViewBase.cs, {c}View.cs. When you return to Unity, Prefabs/{c}.prefab (uGUI + TextMeshPro) is generated automatically.",
                         c = cls
                     ),
                 );
@@ -2057,22 +2057,22 @@ impl EditorApp {
                 _ => (crate::export::IMPORTER_CS.to_string(), "EditorGuiImporter.cs".to_string(), "cs"),
             };
             let help = match self.export_tab {
-                0 => "Diseño para el importador. Unity lo convierte en prefab (Tools › Lienzo UI).",
-                1 | 2 => "Usa un UIDocument con PanelSettings en «Scale With Screen Size» y esta resolución de referencia.",
-                3 => "Componente autónomo: dibuja la interfaz con UnityEngine.GUI dentro de OnGUI (sin Canvas).",
-                4 => "Referencias tipadas y eventos onClick/onValueChanged. Hereda en <Clase>View para tu lógica.",
-                _ => "Va en Assets/EditorGUI/Editor/. Construye el prefab con uGUI + TextMeshPro.",
+                0 => "Design for the importer. Unity turns it into a prefab (Tools › Lienzo UI).",
+                1 | 2 => "Uses a UIDocument with PanelSettings set to “Scale With Screen Size” and this reference resolution.",
+                3 => "Standalone component: draws the interface with UnityEngine.GUI inside OnGUI (no Canvas).",
+                4 => "Typed references and onClick/onValueChanged events. Inherit in <Class>View for your logic.",
+                _ => "Goes in Assets/EditorGUI/Editor/. Builds the prefab with uGUI + TextMeshPro.",
             };
             hint(ui, help);
             ui.horizontal(|ui| {
-                if ui.add(crate::icons::btn("duplicate", crate::i18n::t("Copiar"))).clicked() {
+                if ui.add(crate::icons::btn("duplicate", crate::i18n::t("Copy"))).clicked() {
                     ui.ctx().copy_text(text.clone());
-                    self.status = crate::i18n::t("Copiado al portapapeles");
+                    self.status = crate::i18n::t("Copied to the clipboard");
                 }
-                if ui.add(crate::icons::btn("save", crate::i18n::t("Guardar archivo…"))).clicked() {
-                    self.save_text_file(&crate::i18n::t("Guardar archivo"), &file, ext, &text);
+                if ui.add(crate::icons::btn("save", crate::i18n::t("Save file…"))).clicked() {
+                    self.save_text_file(&crate::i18n::t("Save file"), &file, ext, &text);
                 }
-                ui.label(RichText::new(format!("{} líneas", text.lines().count())).small().color(MUTED()));
+                ui.label(RichText::new(format!("{} lines", text.lines().count())).small().color(MUTED()));
             });
             egui::ScrollArea::both().max_height(ui.available_height() - 6.0).auto_shrink([false, false]).show(ui, |ui| {
                 let mut t = text;

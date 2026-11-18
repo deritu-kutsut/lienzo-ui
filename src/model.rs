@@ -44,16 +44,16 @@ impl Kind {
     pub fn label(self) -> &'static str {
         match self {
             Kind::Panel => "Panel",
-            Kind::Ellipse => "Círculo",
-            Kind::Image => "Imagen",
-            Kind::Text => "Texto",
-            Kind::Button => "Botón",
+            Kind::Ellipse => "Circle",
+            Kind::Image => "Image",
+            Kind::Text => "Text",
+            Kind::Button => "Button",
             Kind::Toggle => "Toggle",
             Kind::Slider => "Slider",
-            Kind::InputField => "Campo de texto",
-            Kind::Dropdown => "Desplegable",
-            Kind::ScrollView => "Vista con scroll",
-            Kind::Empty => "Contenedor",
+            Kind::InputField => "Input field",
+            Kind::Dropdown => "Dropdown",
+            Kind::ScrollView => "Scroll view",
+            Kind::Empty => "Container",
         }
     }
     pub fn unity_type(self) -> &'static str {
@@ -143,7 +143,7 @@ pub enum LayoutMode {
 impl LayoutMode {
     pub fn label(self) -> &'static str {
         match self {
-            LayoutMode::None => "Ninguno",
+            LayoutMode::None => "None",
             LayoutMode::Horizontal => "Horizontal Layout Group",
             LayoutMode::Vertical => "Vertical Layout Group",
             LayoutMode::Grid => "Grid Layout Group",
@@ -382,7 +382,7 @@ impl Element {
                 e.radius = 12.0;
             }
             Kind::Text => {
-                e.text = "Escribe tu texto".into();
+                e.text = "Type your text".into();
                 e.font_size = 40.0;
                 e.w = 420.0;
                 e.h = 60.0;
@@ -390,7 +390,7 @@ impl Element {
                 e.raycast = false;
             }
             Kind::Button => {
-                e.text = "Botón".into();
+                e.text = "Button".into();
                 e.font_size = 30.0;
                 e.text_color = [255, 255, 255, 255];
                 e.bold = true;
@@ -400,7 +400,7 @@ impl Element {
                 e.h = 84.0;
             }
             Kind::Toggle => {
-                e.text = "Opción".into();
+                e.text = "Option".into();
                 e.font_size = 28.0;
                 e.align = 0;
                 e.fill = [124, 92, 255, 255];
@@ -416,7 +416,7 @@ impl Element {
                 e.value = 0.6;
             }
             Kind::InputField => {
-                e.text = "Escribe aquí...".into();
+                e.text = "Type here...".into();
                 e.font_size = 26.0;
                 e.align = 0;
                 e.text_color = [140, 140, 150, 255];
@@ -428,8 +428,8 @@ impl Element {
                 e.h = 70.0;
             }
             Kind::Dropdown => {
-                e.options = vec!["Opción A".into(), "Opción B".into(), "Opción C".into()];
-                e.text = "Opción A".into();
+                e.options = vec!["Option A".into(), "Option B".into(), "Option C".into()];
+                e.text = "Option A".into();
                 e.value = 0.0;
                 e.font_size = 26.0;
                 e.align = 0;
@@ -614,7 +614,7 @@ pub struct Doc {
 
 impl Doc {
     pub fn empty(width: f32, height: f32) -> Self {
-        Doc { title: "Diseño sin título".into(), width, height, background: [255, 255, 255, 255], elements: Vec::new(), next_id: 1, canvas_match: 0.5, pixel_art: false }
+        Doc { title: "Untitled design".into(), width, height, background: [255, 255, 255, 255], elements: Vec::new(), next_id: 1, canvas_match: 0.5, pixel_art: false }
     }
 
     /// Append an element (new id). Call [`Doc::normalize`] if it has a parent.
@@ -1067,7 +1067,7 @@ impl Doc {
             }
             let b = bounds_of(self.elements.iter().filter(|e| members.contains(&e.id)));
             let mut holder = Element::new(0, Kind::Empty);
-            holder.name = format!("Grupo {}", n + 1);
+            holder.name = format!("Group {}", n + 1);
             holder.x = b[0];
             holder.y = b[1];
             holder.w = (b[2] - b[0]).max(1.0);
@@ -1205,19 +1205,19 @@ pub fn hex(c: Rgba) -> String {
 
 /// The numbers are stable (the command line and the MCP use them): new ones are added at the end.
 pub const TEMPLATES: &[&str] = &[
-    "Menú principal",
-    "HUD de juego",
-    "Ventana de diálogo",
-    "Ajustes",
-    "Inventario",
-    "En blanco",
-    "Menú de pausa",
-    "Fin de partida",
-    "Selección de nivel",
-    "Pantalla de carga",
-    "Diálogo de personaje",
-    "Clasificación",
-    "Selección de personaje",
+    "Main menu",
+    "Game HUD",
+    "Dialog window",
+    "Settings",
+    "Inventory",
+    "Blank",
+    "Pause menu",
+    "Game over",
+    "Level select",
+    "Loading screen",
+    "Character dialogue",
+    "Leaderboard",
+    "Character select",
 ];
 
 pub fn blank_template() -> usize {
@@ -1280,44 +1280,44 @@ fn template_at(index: usize, width: f32, height: f32) -> Doc {
     let (w, h) = (width, height);
     match index {
         0 => {
-            d.title = "Menú principal".into();
+            d.title = "Main menu".into();
             d.background = [24, 22, 48, 255];
-            put(&mut d, None, Kind::Image, "Fondo", [0.0, 0.0, w, h], |e| {
+            put(&mut d, None, Kind::Image, "Background", [0.0, 0.0, w, h], |e| {
                 e.fill = [46, 32, 110, 255];
                 e.fill2 = [12, 120, 150, 255];
                 e.radius = 0.0;
                 e.raycast = false;
                 anchor(e, [0.0, 0.0], [1.0, 1.0]);
             });
-            put(&mut d, None, Kind::Ellipse, "Luna", [w * 0.72, h * 0.12, 260.0, 260.0], |e| {
+            put(&mut d, None, Kind::Ellipse, "Moon", [w * 0.72, h * 0.12, 260.0, 260.0], |e| {
                 e.fill = [255, 214, 120, 200];
                 e.raycast = false;
                 anchor(e, [1.0, 1.0], [1.0, 1.0]);
             });
-            let head = put(&mut d, None, Kind::Empty, "Cabecera", [w / 2.0 - 500.0, h * 0.12, 1000.0, 190.0], |e| anchor(e, [0.5, 1.0], [0.5, 1.0]));
-            put(&mut d, Some(head), Kind::Text, "Título", [w / 2.0 - 500.0, h * 0.12, 1000.0, 120.0], |e| {
-                e.text = "AVENTURA ESTELAR".into();
+            let head = put(&mut d, None, Kind::Empty, "Header", [w / 2.0 - 500.0, h * 0.12, 1000.0, 190.0], |e| anchor(e, [0.5, 1.0], [0.5, 1.0]));
+            put(&mut d, Some(head), Kind::Text, "Title", [w / 2.0 - 500.0, h * 0.12, 1000.0, 120.0], |e| {
+                e.text = "STAR ADVENTURE".into();
                 e.font_size = 96.0;
                 e.bold = true;
                 e.text_color = [255, 255, 255, 255];
                 anchor(e, [0.0, 1.0], [1.0, 1.0]);
             });
-            put(&mut d, Some(head), Kind::Text, "Subtítulo", [w / 2.0 - 400.0, h * 0.12 + 135.0, 800.0, 50.0], |e| {
-                e.text = "Una demo de interfaz".into();
+            put(&mut d, Some(head), Kind::Text, "Subtitle", [w / 2.0 - 400.0, h * 0.12 + 135.0, 800.0, 50.0], |e| {
+                e.text = "An interface demo".into();
                 e.font_size = 36.0;
                 e.text_color = [190, 230, 255, 255];
                 anchor(e, [0.5, 0.0], [0.5, 0.0]);
             });
-            let menu = put(&mut d, None, Kind::Empty, "Menú", [w / 2.0 - 220.0, h * 0.42, 440.0, 470.0], |e| {
+            let menu = put(&mut d, None, Kind::Empty, "Menu", [w / 2.0 - 220.0, h * 0.42, 440.0, 470.0], |e| {
                 e.layout.mode = LayoutMode::Vertical;
                 e.layout.spacing = [0.0, 22.0];
                 e.layout.padding = [20.0, 20.0, 10.0, 10.0];
                 e.layout.align = 1;
                 e.layout.expand_w = true;
             });
-            let labels = ["Jugar", "Opciones", "Créditos", "Salir"];
+            let labels = ["Play", "Options", "Credits", "Exit"];
             for (i, l) in labels.iter().enumerate() {
-                put(&mut d, Some(menu), Kind::Button, &format!("Botón {}", l), [0.0, 0.0, 400.0, 88.0], |e| {
+                put(&mut d, Some(menu), Kind::Button, &format!("{} button", l), [0.0, 0.0, 400.0, 88.0], |e| {
                     e.text = l.to_string();
                     e.fill = if i == 0 { [225, 95, 30, 255] } else { [124, 92, 255, 255] };
                     e.radius = 44.0;
@@ -1325,13 +1325,13 @@ fn template_at(index: usize, width: f32, height: f32) -> Doc {
                         e.shadow.on = true;
                     }
                     e.on_click = match i {
-                        0 => "texto(\"Subtítulo\", \"¡Cargando nivel 1...!\");\ncolor(yo, \"#46BE78\");\nmensaje(\"Clic en \" + yo);".into(),
-                        3 => "alternar(\"Luna\");\nmensaje(\"La luna cambió de visibilidad\");".into(),
-                        _ => format!("mensaje(\"Abrir menú: {}\");", l),
+                        0 => "texto(\"Subtitle\", \"Loading level 1...!\");\ncolor(yo, \"#46BE78\");\nmensaje(\"Click on \" + yo);".into(),
+                        3 => "alternar(\"Moon\");\nmensaje(\"The moon changed visibility\");".into(),
+                        _ => format!("mensaje(\"Open menu: {}\");", l),
                     };
                 });
             }
-            put(&mut d, None, Kind::Text, "Versión", [w - 260.0, h - 70.0, 220.0, 40.0], |e| {
+            put(&mut d, None, Kind::Text, "Version", [w - 260.0, h - 70.0, 220.0, 40.0], |e| {
                 e.text = "v1.0".into();
                 e.font_size = 24.0;
                 e.align = 2;
@@ -1341,26 +1341,26 @@ fn template_at(index: usize, width: f32, height: f32) -> Doc {
             });
         }
         1 => {
-            d.title = "HUD de juego".into();
+            d.title = "Game HUD".into();
             d.background = [70, 120, 90, 255];
-            put(&mut d, None, Kind::Image, "Escena (vista previa)", [0.0, 0.0, w, h], |e| {
+            put(&mut d, None, Kind::Image, "Scene (preview)", [0.0, 0.0, w, h], |e| {
                 e.fill = [120, 190, 240, 255];
                 e.fill2 = [70, 140, 80, 255];
                 e.radius = 0.0;
                 e.raycast = false;
                 anchor(e, [0.0, 0.0], [1.0, 1.0]);
             });
-            let top = put(&mut d, None, Kind::Empty, "Barra superior", [0.0, 0.0, w, 170.0], |e| {
+            let top = put(&mut d, None, Kind::Empty, "Top bar", [0.0, 0.0, w, 170.0], |e| {
                 anchor(e, [0.0, 1.0], [1.0, 1.0]);
                 e.pivot = [0.5, 1.0];
             });
-            let frame = put(&mut d, Some(top), Kind::Panel, "Marco vida", [40.0, 40.0, 520.0, 110.0], |e| {
+            let frame = put(&mut d, Some(top), Kind::Panel, "Health frame", [40.0, 40.0, 520.0, 110.0], |e| {
                 e.fill = [10, 10, 20, 160];
                 anchor(e, [0.0, 1.0], [0.0, 1.0]);
                 e.pivot = [0.0, 1.0];
             });
-            put(&mut d, Some(frame), Kind::Text, "Etiqueta vida", [70.0, 50.0, 300.0, 40.0], |e| {
-                e.text = "VIDA 72/100".into();
+            put(&mut d, Some(frame), Kind::Text, "Health label", [70.0, 50.0, 300.0, 40.0], |e| {
+                e.text = "HEALTH 72/100".into();
                 e.font_size = 28.0;
                 e.bold = true;
                 e.align = 0;
@@ -1368,7 +1368,7 @@ fn template_at(index: usize, width: f32, height: f32) -> Doc {
                 anchor(e, [0.0, 1.0], [0.0, 1.0]);
                 e.pivot = [0.0, 1.0];
             });
-            put(&mut d, Some(frame), Kind::Slider, "Barra de vida", [70.0, 95.0, 460.0, 34.0], |e| {
+            put(&mut d, Some(frame), Kind::Slider, "Health bar", [70.0, 95.0, 460.0, 34.0], |e| {
                 e.fill = [235, 70, 90, 255];
                 e.fill2 = [60, 60, 70, 255];
                 e.value = 0.72;
@@ -1376,7 +1376,7 @@ fn template_at(index: usize, width: f32, height: f32) -> Doc {
                 anchor(e, [0.0, 0.0], [1.0, 0.0]);
                 e.pivot = [0.5, 0.0];
             });
-            put(&mut d, Some(top), Kind::Text, "Puntos", [w - 440.0, 50.0, 400.0, 60.0], |e| {
+            put(&mut d, Some(top), Kind::Text, "Points", [w - 440.0, 50.0, 400.0, 60.0], |e| {
                 e.text = "12 450".into();
                 e.font_size = 52.0;
                 e.bold = true;
@@ -1385,7 +1385,7 @@ fn template_at(index: usize, width: f32, height: f32) -> Doc {
                 anchor(e, [1.0, 1.0], [1.0, 1.0]);
                 e.pivot = [1.0, 1.0];
             });
-            let bar = put(&mut d, None, Kind::Panel, "Barra de acciones", [w / 2.0 - 290.0, h - 170.0, 580.0, 140.0], |e| {
+            let bar = put(&mut d, None, Kind::Panel, "Action bar", [w / 2.0 - 290.0, h - 170.0, 580.0, 140.0], |e| {
                 e.fill = [10, 10, 20, 120];
                 e.radius = 20.0;
                 anchor(e, [0.5, 0.0], [0.5, 0.0]);
@@ -1395,7 +1395,7 @@ fn template_at(index: usize, width: f32, height: f32) -> Doc {
                 e.layout.align = 4;
             });
             for i in 0..4 {
-                put(&mut d, Some(bar), Kind::Panel, &format!("Ranura {}", i + 1), [0.0, 0.0, 112.0, 112.0], |e| {
+                put(&mut d, Some(bar), Kind::Panel, &format!("Slot {}", i + 1), [0.0, 0.0, 112.0, 112.0], |e| {
                     e.fill = [10, 10, 20, 150];
                     e.stroke = [255, 255, 255, 200];
                     e.stroke_w = 3.0;
@@ -1407,7 +1407,7 @@ fn template_at(index: usize, width: f32, height: f32) -> Doc {
                     e.valign = 2;
                 });
             }
-            put(&mut d, None, Kind::Ellipse, "Minimapa", [w - 300.0, h - 300.0, 260.0, 260.0], |e| {
+            put(&mut d, None, Kind::Ellipse, "Minimap", [w - 300.0, h - 300.0, 260.0, 260.0], |e| {
                 e.fill = [20, 40, 30, 200];
                 e.stroke = [255, 255, 255, 220];
                 e.stroke_w = 4.0;
@@ -1416,33 +1416,33 @@ fn template_at(index: usize, width: f32, height: f32) -> Doc {
             });
         }
         2 => {
-            d.title = "Ventana de diálogo".into();
+            d.title = "Dialog window".into();
             d.background = [40, 44, 60, 255];
-            put(&mut d, None, Kind::Panel, "Oscurecer", [0.0, 0.0, w, h], |e| {
+            put(&mut d, None, Kind::Panel, "Dim", [0.0, 0.0, w, h], |e| {
                 e.fill = [0, 0, 0, 120];
                 e.radius = 0.0;
                 anchor(e, [0.0, 0.0], [1.0, 1.0]);
             });
-            let win = put(&mut d, None, Kind::Panel, "Ventana", [w / 2.0 - 450.0, h / 2.0 - 260.0, 900.0, 520.0], |e| {
+            let win = put(&mut d, None, Kind::Panel, "Window", [w / 2.0 - 450.0, h / 2.0 - 260.0, 900.0, 520.0], |e| {
                 e.fill = [255, 255, 255, 255];
                 e.radius = 32.0;
                 e.shadow.on = true;
                 e.shadow.offset = [0.0, -10.0];
             });
-            put(&mut d, Some(win), Kind::Text, "Título ventana", [w / 2.0 - 400.0, h / 2.0 - 215.0, 800.0, 70.0], |e| {
-                e.text = "¿Guardar la partida?".into();
+            put(&mut d, Some(win), Kind::Text, "Window title", [w / 2.0 - 400.0, h / 2.0 - 215.0, 800.0, 70.0], |e| {
+                e.text = "Save the game?".into();
                 e.font_size = 52.0;
                 e.bold = true;
                 anchor(e, [0.0, 1.0], [1.0, 1.0]);
                 e.pivot = [0.5, 1.0];
             });
-            put(&mut d, Some(win), Kind::Text, "Mensaje", [w / 2.0 - 380.0, h / 2.0 - 120.0, 760.0, 100.0], |e| {
-                e.text = "Tu progreso se guardará en la ranura 1. Puedes continuar más tarde.".into();
+            put(&mut d, Some(win), Kind::Text, "Message", [w / 2.0 - 380.0, h / 2.0 - 120.0, 760.0, 100.0], |e| {
+                e.text = "Your progress will be saved in slot 1. You can continue later.".into();
                 e.font_size = 30.0;
                 e.text_color = [90, 90, 105, 255];
                 anchor(e, [0.0, 0.5], [1.0, 0.5]);
             });
-            let row = put(&mut d, Some(win), Kind::Empty, "Botones", [w / 2.0 - 410.0, h / 2.0 + 100.0, 820.0, 120.0], |e| {
+            let row = put(&mut d, Some(win), Kind::Empty, "Buttons", [w / 2.0 - 410.0, h / 2.0 + 100.0, 820.0, 120.0], |e| {
                 anchor(e, [0.0, 0.0], [1.0, 0.0]);
                 e.pivot = [0.5, 0.0];
                 e.layout.mode = LayoutMode::Horizontal;
@@ -1451,41 +1451,41 @@ fn template_at(index: usize, width: f32, height: f32) -> Doc {
                 e.layout.expand_w = true;
                 e.layout.expand_h = true;
             });
-            put(&mut d, Some(row), Kind::Button, "Botón cancelar", [0.0, 0.0, 360.0, 90.0], |e| {
-                e.text = "Cancelar".into();
+            put(&mut d, Some(row), Kind::Button, "Cancel button", [0.0, 0.0, 360.0, 90.0], |e| {
+                e.text = "Cancel".into();
                 e.fill = [235, 235, 242, 255];
                 e.text_color = [40, 40, 50, 255];
-                e.on_click = "ocultar(\"Ventana\");\nocultar(\"Oscurecer\");".into();
+                e.on_click = "ocultar(\"Window\");\nocultar(\"Dim\");".into();
             });
-            put(&mut d, Some(row), Kind::Button, "Botón aceptar", [0.0, 0.0, 360.0, 90.0], |e| {
-                e.text = "Guardar".into();
-                e.on_click = "texto(\"Mensaje\", \"¡Partida guardada!\");".into();
+            put(&mut d, Some(row), Kind::Button, "Accept button", [0.0, 0.0, 360.0, 90.0], |e| {
+                e.text = "Save".into();
+                e.on_click = "texto(\"Message\", \"Game saved!\");".into();
             });
         }
         3 => {
-            d.title = "Ajustes".into();
+            d.title = "Settings".into();
             d.background = [236, 238, 245, 255];
-            put(&mut d, None, Kind::Text, "Título", [120.0, 70.0, 800.0, 90.0], |e| {
-                e.text = "Ajustes".into();
+            put(&mut d, None, Kind::Text, "Title", [120.0, 70.0, 800.0, 90.0], |e| {
+                e.text = "Settings".into();
                 e.font_size = 72.0;
                 e.bold = true;
                 e.align = 0;
                 anchor(e, [0.0, 1.0], [0.0, 1.0]);
                 e.pivot = [0.0, 1.0];
             });
-            let card = put(&mut d, None, Kind::Panel, "Tarjeta", [120.0, 190.0, w - 240.0, h - 400.0], |e| {
+            let card = put(&mut d, None, Kind::Panel, "Card", [120.0, 190.0, w - 240.0, h - 400.0], |e| {
                 e.fill = [255, 255, 255, 255];
                 e.radius = 24.0;
                 e.shadow.on = true;
                 e.shadow.color = [0, 0, 0, 40];
                 anchor(e, [0.0, 0.0], [1.0, 1.0]);
             });
-            let list = put(&mut d, Some(card), Kind::ScrollView, "Opciones", [150.0, 220.0, w - 300.0, h - 460.0], |e| {
+            let list = put(&mut d, Some(card), Kind::ScrollView, "Options", [150.0, 220.0, w - 300.0, h - 460.0], |e| {
                 e.fill = [255, 255, 255, 0];
                 e.stroke_w = 0.0;
                 anchor(e, [0.0, 0.0], [1.0, 1.0]);
             });
-            let rows = ["Volumen música", "Volumen efectos", "Brillo"];
+            let rows = ["Music volume", "Effects volume", "Brightness"];
             for (i, r) in rows.iter().enumerate() {
                 let y = 250.0 + i as f32 * 110.0;
                 put(&mut d, Some(list), Kind::Text, r, [180.0, y, 500.0, 50.0], |e| {
@@ -1499,38 +1499,38 @@ fn template_at(index: usize, width: f32, height: f32) -> Doc {
                     anchor(e, [0.0, 1.0], [1.0, 1.0]);
                 });
             }
-            put(&mut d, Some(list), Kind::Toggle, "Pantalla completa", [180.0, 590.0, 500.0, 50.0], |e| {
-                e.text = "Pantalla completa".into();
+            put(&mut d, Some(list), Kind::Toggle, "Fullscreen", [180.0, 590.0, 500.0, 50.0], |e| {
+                e.text = "Fullscreen".into();
                 e.font_size = 34.0;
                 anchor(e, [0.0, 1.0], [0.0, 1.0]);
             });
-            put(&mut d, Some(list), Kind::Dropdown, "Calidad", [720.0, 580.0, 420.0, 70.0], |e| {
-                e.options = vec!["Baja".into(), "Media".into(), "Alta".into(), "Ultra".into()];
+            put(&mut d, Some(list), Kind::Dropdown, "Quality", [720.0, 580.0, 420.0, 70.0], |e| {
+                e.options = vec!["Low".into(), "Medium".into(), "High".into(), "Ultra".into()];
                 e.value = 2.0;
                 anchor(e, [0.0, 1.0], [0.0, 1.0]);
             });
-            put(&mut d, Some(list), Kind::InputField, "Nombre jugador", [180.0, 690.0, 600.0, 76.0], |e| {
-                e.text = "Nombre del jugador".into();
+            put(&mut d, Some(list), Kind::InputField, "Player name", [180.0, 690.0, 600.0, 76.0], |e| {
+                e.text = "Player name".into();
                 anchor(e, [0.0, 1.0], [0.0, 1.0]);
             });
-            put(&mut d, None, Kind::Button, "Botón volver", [120.0, h - 170.0, 300.0, 84.0], |e| {
-                e.text = "Volver".into();
+            put(&mut d, None, Kind::Button, "Back button", [120.0, h - 170.0, 300.0, 84.0], |e| {
+                e.text = "Back".into();
                 anchor(e, [0.0, 0.0], [0.0, 0.0]);
-                e.on_click = "mensaje(\"Volver al menú\");".into();
+                e.on_click = "mensaje(\"Back to the menu\");".into();
             });
         }
         4 => {
-            d.title = "Inventario".into();
+            d.title = "Inventory".into();
             d.background = [28, 30, 40, 255];
-            let win = put(&mut d, None, Kind::Panel, "Inventario", [w / 2.0 - 420.0, h / 2.0 - 380.0, 840.0, 760.0], |e| {
+            let win = put(&mut d, None, Kind::Panel, "Inventory", [w / 2.0 - 420.0, h / 2.0 - 380.0, 840.0, 760.0], |e| {
                 e.fill = [44, 47, 62, 255];
                 e.radius = 28.0;
                 e.stroke = [90, 96, 130, 255];
                 e.stroke_w = 3.0;
                 e.shadow.on = true;
             });
-            put(&mut d, Some(win), Kind::Text, "Título", [w / 2.0 - 380.0, h / 2.0 - 350.0, 600.0, 70.0], |e| {
-                e.text = "Inventario".into();
+            put(&mut d, Some(win), Kind::Text, "Title", [w / 2.0 - 380.0, h / 2.0 - 350.0, 600.0, 70.0], |e| {
+                e.text = "Inventory".into();
                 e.font_size = 52.0;
                 e.bold = true;
                 e.align = 0;
@@ -1538,16 +1538,16 @@ fn template_at(index: usize, width: f32, height: f32) -> Doc {
                 anchor(e, [0.0, 1.0], [0.0, 1.0]);
                 e.pivot = [0.0, 1.0];
             });
-            put(&mut d, Some(win), Kind::Button, "Cerrar", [w / 2.0 + 320.0, h / 2.0 - 350.0, 70.0, 70.0], |e| {
+            put(&mut d, Some(win), Kind::Button, "Close", [w / 2.0 + 320.0, h / 2.0 - 350.0, 70.0, 70.0], |e| {
                 e.text = "X".into();
                 e.font_size = 32.0;
                 e.radius = 35.0;
                 e.fill = [235, 70, 90, 255];
                 anchor(e, [1.0, 1.0], [1.0, 1.0]);
                 e.pivot = [1.0, 1.0];
-                e.on_click = "ocultar(\"Inventario\");".into();
+                e.on_click = "ocultar(\"Inventory\");".into();
             });
-            let grid = put(&mut d, Some(win), Kind::Panel, "Rejilla", [w / 2.0 - 380.0, h / 2.0 - 250.0, 760.0, 600.0], |e| {
+            let grid = put(&mut d, Some(win), Kind::Panel, "Grid", [w / 2.0 - 380.0, h / 2.0 - 250.0, 760.0, 600.0], |e| {
                 e.fill = [30, 32, 44, 255];
                 e.radius = 18.0;
                 anchor(e, [0.0, 0.0], [1.0, 1.0]);
@@ -1558,7 +1558,7 @@ fn template_at(index: usize, width: f32, height: f32) -> Doc {
                 e.layout.align = 1;
             });
             for i in 0..12 {
-                put(&mut d, Some(grid), Kind::Panel, &format!("Casilla {}", i + 1), [0.0, 0.0, 160.0, 160.0], |e| {
+                put(&mut d, Some(grid), Kind::Panel, &format!("Slot {}", i + 1), [0.0, 0.0, 160.0, 160.0], |e| {
                     e.fill = [60, 64, 84, 255];
                     e.radius = 14.0;
                     e.stroke = [110, 116, 150, 255];
@@ -1567,21 +1567,21 @@ fn template_at(index: usize, width: f32, height: f32) -> Doc {
             }
         }
         6 => {
-            d.title = "Menú de pausa".into();
+            d.title = "Pause menu".into();
             d.background = [70, 120, 90, 255];
-            put(&mut d, None, Kind::Image, "Juego (vista previa)", [0.0, 0.0, w, h], |e| {
+            put(&mut d, None, Kind::Image, "Game (preview)", [0.0, 0.0, w, h], |e| {
                 e.fill = [120, 190, 240, 255];
                 e.fill2 = [70, 140, 80, 255];
                 e.radius = 0.0;
                 e.raycast = false;
                 anchor(e, [0.0, 0.0], [1.0, 1.0]);
             });
-            put(&mut d, None, Kind::Panel, "Oscurecer", [0.0, 0.0, w, h], |e| {
+            put(&mut d, None, Kind::Panel, "Dim", [0.0, 0.0, w, h], |e| {
                 e.fill = [8, 8, 16, 170];
                 e.radius = 0.0;
                 anchor(e, [0.0, 0.0], [1.0, 1.0]);
             });
-            let win = put(&mut d, None, Kind::Panel, "Pausa", [w / 2.0 - 280.0, h / 2.0 - 330.0, 560.0, 660.0], |e| {
+            let win = put(&mut d, None, Kind::Panel, "Pause", [w / 2.0 - 280.0, h / 2.0 - 330.0, 560.0, 660.0], |e| {
                 e.fill = [30, 32, 48, 240];
                 e.stroke = [124, 92, 255, 255];
                 e.stroke_w = 3.0;
@@ -1593,44 +1593,44 @@ fn template_at(index: usize, width: f32, height: f32) -> Doc {
                 e.layout.align = 1;
                 e.layout.expand_w = true;
             });
-            put(&mut d, Some(win), Kind::Text, "Título", [0.0, 0.0, 460.0, 100.0], |e| {
-                e.text = "PAUSA".into();
+            put(&mut d, Some(win), Kind::Text, "Title", [0.0, 0.0, 460.0, 100.0], |e| {
+                e.text = "PAUSED".into();
                 e.font_size = 72.0;
                 e.bold = true;
                 e.text_color = [255, 255, 255, 255];
             });
-            let opts = ["Continuar", "Reiniciar nivel", "Opciones", "Salir al menú"];
+            let opts = ["Continue", "Restart level", "Options", "Exit to menu"];
             for (i, l) in opts.iter().enumerate() {
-                put(&mut d, Some(win), Kind::Button, &format!("Botón {}", l), [0.0, 0.0, 460.0, 84.0], |e| {
+                put(&mut d, Some(win), Kind::Button, &format!("{} button", l), [0.0, 0.0, 460.0, 84.0], |e| {
                     e.text = l.to_string();
                     e.radius = 42.0;
                     e.fill = if i == 0 { [35, 140, 85, 255] } else if i == 3 { [235, 70, 90, 255] } else { [124, 92, 255, 255] };
                     e.on_click = match i {
-                        0 => "ocultar(\"Pausa\");\nocultar(\"Oscurecer\");".into(),
+                        0 => "ocultar(\"Pause\");\nocultar(\"Dim\");".into(),
                         _ => format!("mensaje(\"{}\");", l),
                     };
                 });
             }
         }
         7 => {
-            d.title = "Fin de partida".into();
+            d.title = "Game over".into();
             d.background = [20, 10, 18, 255];
-            put(&mut d, None, Kind::Image, "Fondo", [0.0, 0.0, w, h], |e| {
+            put(&mut d, None, Kind::Image, "Background", [0.0, 0.0, w, h], |e| {
                 e.fill = [90, 20, 40, 255];
                 e.fill2 = [15, 8, 20, 255];
                 e.radius = 0.0;
                 e.raycast = false;
                 anchor(e, [0.0, 0.0], [1.0, 1.0]);
             });
-            put(&mut d, None, Kind::Text, "Título", [w / 2.0 - 600.0, h * 0.14, 1200.0, 150.0], |e| {
-                e.text = "FIN DE LA PARTIDA".into();
+            put(&mut d, None, Kind::Text, "Title", [w / 2.0 - 600.0, h * 0.14, 1200.0, 150.0], |e| {
+                e.text = "GAME OVER".into();
                 e.font_size = 120.0;
                 e.bold = true;
                 e.text_color = [255, 90, 110, 255];
                 e.shadow.on = true;
                 anchor(e, [0.5, 1.0], [0.5, 1.0]);
             });
-            let card = put(&mut d, None, Kind::Panel, "Resultados", [w / 2.0 - 360.0, h * 0.36, 720.0, 330.0], |e| {
+            let card = put(&mut d, None, Kind::Panel, "Results", [w / 2.0 - 360.0, h * 0.36, 720.0, 330.0], |e| {
                 e.fill = [255, 255, 255, 24];
                 e.stroke = [255, 255, 255, 60];
                 e.stroke_w = 2.0;
@@ -1641,15 +1641,15 @@ fn template_at(index: usize, width: f32, height: f32) -> Doc {
                 e.layout.align = 1;
                 e.layout.expand_w = true;
             });
-            for (n, v, c) in [("Puntuación", "12 450", [255, 240, 150, 255]), ("Mejor marca", "18 900", [190, 230, 255, 255]), ("Tiempo", "04:32", [255, 255, 255, 255])] {
+            for (n, v, c) in [("Score", "12 450", [255, 240, 150, 255]), ("Best score", "18 900", [190, 230, 255, 255]), ("Time", "04:32", [255, 255, 255, 255])] {
                 put(&mut d, Some(card), Kind::Text, n, [0.0, 0.0, 640.0, 70.0], |e| {
                     e.text = format!("{}: {}", n, v);
                     e.font_size = 44.0;
-                    e.bold = n == "Puntuación";
+                    e.bold = n == "Score";
                     e.text_color = c;
                 });
             }
-            let row = put(&mut d, None, Kind::Empty, "Botones", [w / 2.0 - 420.0, h * 0.72, 840.0, 110.0], |e| {
+            let row = put(&mut d, None, Kind::Empty, "Buttons", [w / 2.0 - 420.0, h * 0.72, 840.0, 110.0], |e| {
                 anchor(e, [0.5, 0.0], [0.5, 0.0]);
                 e.layout.mode = LayoutMode::Horizontal;
                 e.layout.spacing = [30.0, 0.0];
@@ -1657,25 +1657,25 @@ fn template_at(index: usize, width: f32, height: f32) -> Doc {
                 e.layout.expand_w = true;
                 e.layout.expand_h = true;
             });
-            put(&mut d, Some(row), Kind::Button, "Botón reintentar", [0.0, 0.0, 400.0, 100.0], |e| {
-                e.text = "Reintentar".into();
+            put(&mut d, Some(row), Kind::Button, "Retry button", [0.0, 0.0, 400.0, 100.0], |e| {
+                e.text = "Retry".into();
                 e.fill = [225, 95, 30, 255];
                 e.radius = 50.0;
                 e.shadow.on = true;
-                e.on_click = "texto(\"Título\", \"¡OTRA VEZ!\");".into();
+                e.on_click = "texto(\"Title\", \"ONE MORE TIME!\");".into();
             });
-            put(&mut d, Some(row), Kind::Button, "Botón menú", [0.0, 0.0, 400.0, 100.0], |e| {
-                e.text = "Menú principal".into();
+            put(&mut d, Some(row), Kind::Button, "Menu button", [0.0, 0.0, 400.0, 100.0], |e| {
+                e.text = "Main menu".into();
                 e.fill = [60, 60, 80, 255];
                 e.radius = 50.0;
-                e.on_click = "mensaje(\"Volver al menú\");".into();
+                e.on_click = "mensaje(\"Back to the menu\");".into();
             });
         }
         8 => {
-            d.title = "Selección de nivel".into();
+            d.title = "Level select".into();
             d.background = [18, 24, 44, 255];
-            put(&mut d, None, Kind::Text, "Título", [80.0, 50.0, 900.0, 100.0], |e| {
-                e.text = "Elige un nivel".into();
+            put(&mut d, None, Kind::Text, "Title", [80.0, 50.0, 900.0, 100.0], |e| {
+                e.text = "Choose a level".into();
                 e.font_size = 72.0;
                 e.bold = true;
                 e.align = 0;
@@ -1683,8 +1683,8 @@ fn template_at(index: usize, width: f32, height: f32) -> Doc {
                 anchor(e, [0.0, 1.0], [0.0, 1.0]);
                 e.pivot = [0.0, 1.0];
             });
-            put(&mut d, None, Kind::Text, "Estrellas", [w - 480.0, 70.0, 400.0, 60.0], |e| {
-                e.text = "Estrellas: 14 / 36".into();
+            put(&mut d, None, Kind::Text, "Stars", [w - 480.0, 70.0, 400.0, 60.0], |e| {
+                e.text = "Stars: 14 / 36".into();
                 e.font_size = 44.0;
                 e.bold = true;
                 e.align = 2;
@@ -1692,7 +1692,7 @@ fn template_at(index: usize, width: f32, height: f32) -> Doc {
                 anchor(e, [1.0, 1.0], [1.0, 1.0]);
                 e.pivot = [1.0, 1.0];
             });
-            let grid = put(&mut d, None, Kind::Empty, "Niveles", [w / 2.0 - 640.0, 200.0, 1280.0, h - 380.0], |e| {
+            let grid = put(&mut d, None, Kind::Empty, "Levels", [w / 2.0 - 640.0, 200.0, 1280.0, h - 380.0], |e| {
                 anchor(e, [0.5, 0.0], [0.5, 1.0]);
                 e.layout.mode = LayoutMode::Grid;
                 e.layout.cell = [200.0, 200.0];
@@ -1702,7 +1702,7 @@ fn template_at(index: usize, width: f32, height: f32) -> Doc {
             });
             for i in 0..12 {
                 let open = i < 5;
-                put(&mut d, Some(grid), Kind::Button, &format!("Nivel {}", i + 1), [0.0, 0.0, 200.0, 200.0], |e| {
+                put(&mut d, Some(grid), Kind::Button, &format!("Level {}", i + 1), [0.0, 0.0, 200.0, 200.0], |e| {
                     e.text = if open { format!("{}", i + 1) } else { "-".to_string() };
                     e.font_size = 64.0;
                     e.bold = true;
@@ -1711,54 +1711,54 @@ fn template_at(index: usize, width: f32, height: f32) -> Doc {
                     e.text_color = if open { [255, 255, 255, 255] } else { [120, 126, 150, 255] };
                     e.interactable = open;
                     if open {
-                        e.on_click = format!("mensaje(\"Cargar nivel {}\");", i + 1);
+                        e.on_click = format!("mensaje(\"Load level {}\");", i + 1);
                     }
                 });
             }
-            put(&mut d, None, Kind::Button, "Botón volver", [80.0, h - 140.0, 260.0, 80.0], |e| {
-                e.text = "Volver".into();
+            put(&mut d, None, Kind::Button, "Back button", [80.0, h - 140.0, 260.0, 80.0], |e| {
+                e.text = "Back".into();
                 e.fill = [60, 60, 80, 255];
                 anchor(e, [0.0, 0.0], [0.0, 0.0]);
                 e.pivot = [0.0, 0.0];
             });
         }
         9 => {
-            d.title = "Pantalla de carga".into();
+            d.title = "Loading screen".into();
             d.background = [10, 12, 20, 255];
-            put(&mut d, None, Kind::Image, "Fondo", [0.0, 0.0, w, h], |e| {
+            put(&mut d, None, Kind::Image, "Background", [0.0, 0.0, w, h], |e| {
                 e.fill = [46, 32, 110, 255];
                 e.fill2 = [10, 12, 20, 255];
                 e.radius = 0.0;
                 e.raycast = false;
                 anchor(e, [0.0, 0.0], [1.0, 1.0]);
             });
-            put(&mut d, None, Kind::Text, "Nombre del nivel", [w / 2.0 - 600.0, h * 0.3, 1200.0, 110.0], |e| {
-                e.text = "Las Cuevas de Cristal".into();
+            put(&mut d, None, Kind::Text, "Level name", [w / 2.0 - 600.0, h * 0.3, 1200.0, 110.0], |e| {
+                e.text = "The Crystal Caves".into();
                 e.font_size = 84.0;
                 e.bold = true;
                 e.text_color = [255, 255, 255, 255];
             });
-            put(&mut d, None, Kind::Text, "Consejo", [w / 2.0 - 650.0, h * 0.3 + 130.0, 1300.0, 60.0], |e| {
-                e.text = "Consejo: mantén pulsado el salto para llegar más alto.".into();
+            put(&mut d, None, Kind::Text, "Tip", [w / 2.0 - 650.0, h * 0.3 + 130.0, 1300.0, 60.0], |e| {
+                e.text = "Tip: hold the jump button to reach higher.".into();
                 e.font_size = 32.0;
                 e.italic = true;
                 e.text_color = [190, 200, 230, 255];
             });
-            put(&mut d, None, Kind::Slider, "Barra de carga", [w / 2.0 - 600.0, h - 220.0, 1200.0, 30.0], |e| {
+            put(&mut d, None, Kind::Slider, "Loading bar", [w / 2.0 - 600.0, h - 220.0, 1200.0, 30.0], |e| {
                 e.fill = [0, 196, 204, 255];
                 e.fill2 = [40, 44, 64, 255];
                 e.value = 0.64;
                 e.interactable = false;
                 anchor(e, [0.5, 0.0], [0.5, 0.0]);
             });
-            put(&mut d, None, Kind::Text, "Porcentaje", [w / 2.0 - 600.0, h - 170.0, 1200.0, 50.0], |e| {
-                e.text = "Cargando... 64 %".into();
+            put(&mut d, None, Kind::Text, "Percentage", [w / 2.0 - 600.0, h - 170.0, 1200.0, 50.0], |e| {
+                e.text = "Loading... 64 %".into();
                 e.font_size = 30.0;
                 e.align = 2;
                 e.text_color = [200, 210, 240, 255];
                 anchor(e, [0.5, 0.0], [0.5, 0.0]);
             });
-            put(&mut d, None, Kind::Ellipse, "Indicador", [w - 150.0, h - 150.0, 80.0, 80.0], |e| {
+            put(&mut d, None, Kind::Ellipse, "Indicator", [w - 150.0, h - 150.0, 80.0, 80.0], |e| {
                 e.fill = [0, 0, 0, 0];
                 e.stroke = [0, 196, 204, 255];
                 e.stroke_w = 8.0;
@@ -1767,16 +1767,16 @@ fn template_at(index: usize, width: f32, height: f32) -> Doc {
             });
         }
         10 => {
-            d.title = "Diálogo de personaje".into();
+            d.title = "Character dialogue".into();
             d.background = [70, 120, 90, 255];
-            put(&mut d, None, Kind::Image, "Juego (vista previa)", [0.0, 0.0, w, h], |e| {
+            put(&mut d, None, Kind::Image, "Game (preview)", [0.0, 0.0, w, h], |e| {
                 e.fill = [255, 200, 150, 255];
                 e.fill2 = [120, 80, 130, 255];
                 e.radius = 0.0;
                 e.raycast = false;
                 anchor(e, [0.0, 0.0], [1.0, 1.0]);
             });
-            let caja = put(&mut d, None, Kind::Panel, "Caja de diálogo", [60.0, h - 360.0, w - 120.0, 300.0], |e| {
+            let caja = put(&mut d, None, Kind::Panel, "Dialogue box", [60.0, h - 360.0, w - 120.0, 300.0], |e| {
                 e.fill = [16, 16, 28, 230];
                 e.stroke = [255, 255, 255, 200];
                 e.stroke_w = 3.0;
@@ -1784,7 +1784,7 @@ fn template_at(index: usize, width: f32, height: f32) -> Doc {
                 anchor(e, [0.0, 0.0], [1.0, 0.0]);
                 e.pivot = [0.5, 0.0];
             });
-            put(&mut d, Some(caja), Kind::Panel, "Retrato", [100.0, h - 330.0, 240.0, 240.0], |e| {
+            put(&mut d, Some(caja), Kind::Panel, "Portrait", [100.0, h - 330.0, 240.0, 240.0], |e| {
                 e.fill = [124, 92, 255, 255];
                 e.fill2 = [0, 196, 204, 255];
                 e.radius = 120.0;
@@ -1792,8 +1792,8 @@ fn template_at(index: usize, width: f32, height: f32) -> Doc {
                 e.stroke_w = 4.0;
                 anchor(e, [0.0, 0.5], [0.0, 0.5]);
             });
-            put(&mut d, Some(caja), Kind::Text, "Nombre", [380.0, h - 335.0, 600.0, 60.0], |e| {
-                e.text = "Anciana del bosque".into();
+            put(&mut d, Some(caja), Kind::Text, "Name", [380.0, h - 335.0, 600.0, 60.0], |e| {
+                e.text = "Old woman of the forest".into();
                 e.font_size = 40.0;
                 e.bold = true;
                 e.align = 0;
@@ -1801,34 +1801,34 @@ fn template_at(index: usize, width: f32, height: f32) -> Doc {
                 anchor(e, [0.0, 1.0], [0.0, 1.0]);
                 e.pivot = [0.0, 1.0];
             });
-            put(&mut d, Some(caja), Kind::Text, "Línea", [380.0, h - 265.0, w - 560.0, 130.0], |e| {
-                e.text = "Viajero, el puente del norte cayó anoche. Si buscas el templo, tendrás que cruzar por las cuevas.".into();
+            put(&mut d, Some(caja), Kind::Text, "Line", [380.0, h - 265.0, w - 560.0, 130.0], |e| {
+                e.text = "Traveler, the north bridge fell last night. If you are looking for the temple, you will have to cross through the caves.".into();
                 e.font_size = 34.0;
                 e.align = 0;
                 e.valign = 0;
                 e.text_color = [240, 240, 250, 255];
                 anchor(e, [0.0, 0.0], [1.0, 1.0]);
             });
-            put(&mut d, Some(caja), Kind::Button, "Botón continuar", [w - 340.0, h - 140.0, 230.0, 72.0], |e| {
-                e.text = "Continuar".into();
+            put(&mut d, Some(caja), Kind::Button, "Continue button", [w - 340.0, h - 140.0, 230.0, 72.0], |e| {
+                e.text = "Continue".into();
                 e.font_size = 28.0;
                 e.radius = 30.0;
                 anchor(e, [1.0, 0.0], [1.0, 0.0]);
-                e.on_click = "texto(\"Línea\", \"Ten cuidado con los murciélagos. Y no olvides tu antorcha.\");".into();
+                e.on_click = "texto(\"Line\", \"Be careful with the bats. And don't forget your torch.\");".into();
             });
         }
         11 => {
-            d.title = "Clasificación".into();
+            d.title = "Leaderboard".into();
             d.background = [20, 22, 34, 255];
-            put(&mut d, None, Kind::Text, "Título", [w / 2.0 - 500.0, 60.0, 1000.0, 100.0], |e| {
-                e.text = "Clasificación".into();
+            put(&mut d, None, Kind::Text, "Title", [w / 2.0 - 500.0, 60.0, 1000.0, 100.0], |e| {
+                e.text = "Leaderboard".into();
                 e.font_size = 76.0;
                 e.bold = true;
                 e.text_color = [255, 255, 255, 255];
                 anchor(e, [0.5, 1.0], [0.5, 1.0]);
                 e.pivot = [0.5, 1.0];
             });
-            let list = put(&mut d, None, Kind::ScrollView, "Lista", [w / 2.0 - 500.0, 200.0, 1000.0, h - 330.0], |e| {
+            let list = put(&mut d, None, Kind::ScrollView, "List", [w / 2.0 - 500.0, 200.0, 1000.0, h - 330.0], |e| {
                 e.fill = [32, 35, 52, 255];
                 e.stroke_w = 0.0;
                 e.radius = 20.0;
@@ -1839,31 +1839,31 @@ fn template_at(index: usize, width: f32, height: f32) -> Doc {
                 e.layout.align = 1;
                 e.layout.expand_w = true;
             });
-            let rows = [("Nébula", 98210), ("Kairo", 91440), ("Tú", 87300), ("Mirla", 80150), ("Sombra", 76020), ("Pixel", 70990)];
+            let rows = [("Nebula", 98210), ("Kairo", 91440), ("You", 87300), ("Mirla", 80150), ("Shadow", 76020), ("Pixel", 70990)];
             for (i, (n, p)) in rows.iter().enumerate() {
                 let medal = [[255, 200, 60, 255], [200, 205, 215, 255], [205, 127, 50, 255]];
-                put(&mut d, Some(list), Kind::Panel, &format!("Fila {}", i + 1), [0.0, 0.0, 950.0, 84.0], |e| {
-                    e.fill = if *n == "Tú" { [124, 92, 255, 255] } else { [44, 48, 70, 255] };
+                put(&mut d, Some(list), Kind::Panel, &format!("Row {}", i + 1), [0.0, 0.0, 950.0, 84.0], |e| {
+                    e.fill = if *n == "You" { [124, 92, 255, 255] } else { [44, 48, 70, 255] };
                     e.radius = 14.0;
                     e.text = format!("{}.  {:<12}  {} pts", i + 1, n, p);
                     e.font_size = 34.0;
-                    e.bold = i < 3 || *n == "Tú";
-                    e.text_color = if *n == "Tú" { [255, 255, 255, 255] } else if i < 3 { medal[i] } else { [235, 235, 245, 255] };
+                    e.bold = i < 3 || *n == "You";
+                    e.text_color = if *n == "You" { [255, 255, 255, 255] } else if i < 3 { medal[i] } else { [235, 235, 245, 255] };
                     e.align = 0;
                 });
             }
-            put(&mut d, None, Kind::Button, "Botón volver", [80.0, h - 120.0, 260.0, 80.0], |e| {
-                e.text = "Volver".into();
+            put(&mut d, None, Kind::Button, "Back button", [80.0, h - 120.0, 260.0, 80.0], |e| {
+                e.text = "Back".into();
                 e.fill = [60, 60, 80, 255];
                 anchor(e, [0.0, 0.0], [0.0, 0.0]);
                 e.pivot = [0.0, 0.0];
             });
         }
         12 => {
-            d.title = "Selección de personaje".into();
+            d.title = "Character select".into();
             d.background = [16, 18, 30, 255];
-            put(&mut d, None, Kind::Text, "Título", [w / 2.0 - 600.0, 50.0, 1200.0, 100.0], |e| {
-                e.text = "Elige tu personaje".into();
+            put(&mut d, None, Kind::Text, "Title", [w / 2.0 - 600.0, 50.0, 1200.0, 100.0], |e| {
+                e.text = "Choose your character".into();
                 e.font_size = 72.0;
                 e.bold = true;
                 e.text_color = [255, 255, 255, 255];
@@ -1876,9 +1876,9 @@ fn template_at(index: usize, width: f32, height: f32) -> Doc {
                 e.layout.spacing = [40.0, 0.0];
                 e.layout.align = 4;
             });
-            let chars = [("Guerrera", [235, 70, 90, 255], "Fuerza alta"), ("Mago", [124, 92, 255, 255], "Magia alta"), ("Arquero", [70, 190, 120, 255], "Precisión alta"), ("Pícara", [225, 95, 30, 255], "Sigilo alto")];
+            let chars = [("Warrior", [235, 70, 90, 255], "High strength"), ("Mage", [124, 92, 255, 255], "High magic"), ("Archer", [70, 190, 120, 255], "High precision"), ("Rogue", [225, 95, 30, 255], "High stealth")];
             for (i, (n, c, stat)) in chars.iter().enumerate() {
-                let card = put(&mut d, Some(row), Kind::Panel, &format!("Tarjeta {}", n), [0.0, 0.0, 370.0, 600.0], |e| {
+                let card = put(&mut d, Some(row), Kind::Panel, &format!("Card {}", n), [0.0, 0.0, 370.0, 600.0], |e| {
                     e.fill = [36, 40, 60, 255];
                     e.radius = 26.0;
                     e.stroke = if i == 1 { [255, 214, 90, 255] } else { [70, 76, 104, 255] };
@@ -1890,30 +1890,30 @@ fn template_at(index: usize, width: f32, height: f32) -> Doc {
                     e.layout.align = 1;
                     e.layout.expand_w = true;
                 });
-                put(&mut d, Some(card), Kind::Panel, &format!("Retrato {}", n), [0.0, 0.0, 320.0, 360.0], |e| {
+                put(&mut d, Some(card), Kind::Panel, &format!("Portrait {}", n), [0.0, 0.0, 320.0, 360.0], |e| {
                     e.fill = *c;
                     e.fill2 = [20, 20, 30, 255];
                     e.radius = 18.0;
                 });
-                put(&mut d, Some(card), Kind::Text, &format!("Nombre {}", n), [0.0, 0.0, 320.0, 60.0], |e| {
+                put(&mut d, Some(card), Kind::Text, &format!("Name {}", n), [0.0, 0.0, 320.0, 60.0], |e| {
                     e.text = n.to_string();
                     e.font_size = 44.0;
                     e.bold = true;
                     e.text_color = [255, 255, 255, 255];
                 });
-                put(&mut d, Some(card), Kind::Text, &format!("Atributo {}", n), [0.0, 0.0, 320.0, 44.0], |e| {
+                put(&mut d, Some(card), Kind::Text, &format!("Attribute {}", n), [0.0, 0.0, 320.0, 44.0], |e| {
                     e.text = stat.to_string();
                     e.font_size = 30.0;
                     e.text_color = [200, 206, 230, 255];
                 });
             }
-            put(&mut d, None, Kind::Button, "Botón confirmar", [w / 2.0 - 220.0, h - 190.0, 440.0, 100.0], |e| {
+            put(&mut d, None, Kind::Button, "Confirm button", [w / 2.0 - 220.0, h - 190.0, 440.0, 100.0], |e| {
                 e.text = "Confirmar".into();
                 e.fill = [225, 95, 30, 255];
                 e.radius = 50.0;
                 e.shadow.on = true;
                 anchor(e, [0.5, 0.0], [0.5, 0.0]);
-                e.on_click = "mensaje(\"Personaje elegido: Mago\");".into();
+                e.on_click = "mensaje(\"Character chosen: Mage\");".into();
             });
         }
         _ => {}
@@ -2018,7 +2018,7 @@ mod tests {
         let d = template(1, 1920.0, 1080.0);
         let (sim, s) = d.simulate_screen([1080.0, 1920.0]);
         assert!(s > 0.0);
-        let pts = sim.elements.iter().find(|e| e.name == "Puntos").unwrap();
+        let pts = sim.elements.iter().find(|e| e.name == "Points").unwrap();
         // still glued 40 px from the right edge of the (narrower) virtual canvas
         assert!(close(sim.width - (pts.x + pts.w), 40.0), "{} {}", sim.width, pts.x + pts.w);
     }
@@ -2042,7 +2042,7 @@ mod tests {
         assert!(close(b.x, 260.0) && close(b.y, 10.0));
         // grid
         let t = template(4, 1920.0, 1080.0);
-        let cells: Vec<&Element> = t.elements.iter().filter(|e| e.name.starts_with("Casilla")).collect();
+        let cells: Vec<&Element> = t.elements.iter().filter(|e| e.name.starts_with("Slot")).collect();
         assert_eq!(cells.len(), 12);
         assert!(close(cells[1].x - cells[0].x, 184.0));
     }
@@ -2174,7 +2174,7 @@ mod template_tests {
             assert_eq!(all.contains(&e.id), d.shown(e.id), "{}", e.name);
         }
         assert_eq!(template_order().last(), Some(blank_template()));
-        assert_eq!(TEMPLATES[blank_template()], "En blanco");
+        assert_eq!(TEMPLATES[blank_template()], "Blank");
         for &(w, h) in &[(1920.0, 1080.0), (1280.0, 720.0), (2560.0, 1440.0), (1080.0, 1920.0), (800.0, 600.0)] {
             for i in 0..TEMPLATES.len() {
                 let d = template(i, w, h);
@@ -2182,17 +2182,17 @@ mod template_tests {
                     assert!(d.elements.is_empty());
                     continue;
                 }
-                assert!(!d.elements.is_empty(), "{} vacía", TEMPLATES[i]);
-                assert_eq!(d.title, TEMPLATES[i], "el título coincide con el nombre");
+                assert!(!d.elements.is_empty(), "{} empty", TEMPLATES[i]);
+                assert_eq!(d.title, TEMPLATES[i], "the title matches the name");
                 let mut ids = std::collections::HashSet::new();
                 for e in &d.elements {
                     assert!(ids.insert(e.id), "{}: id repetido", TEMPLATES[i]);
-                    assert!(e.w > 0.0 && e.h > 0.0 && e.w.is_finite() && e.h.is_finite(), "{}: {} sin tamaño", TEMPLATES[i], e.name);
+                    assert!(e.w > 0.0 && e.h > 0.0 && e.w.is_finite() && e.h.is_finite(), "{}: {} has no size", TEMPLATES[i], e.name);
                     if let Some(p) = e.parent {
                         assert!(d.get(p).is_some(), "{}: padre perdido", TEMPLATES[i]);
                     }
                     // Nothing goes outside the page (margin for shadows/borders).
-                    assert!(e.x >= -1.0 && e.y >= -1.0 && e.x + e.w <= w + 1.0 && e.y + e.h <= h + 1.0, "{} @{}x{}: «{}» fuera de la página {:?}", TEMPLATES[i], w, h, e.name, [e.x, e.y, e.w, e.h]);
+                    assert!(e.x >= -1.0 && e.y >= -1.0 && e.x + e.w <= w + 1.0 && e.y + e.h <= h + 1.0, "{} @{}x{}: “{}” outside the page {:?}", TEMPLATES[i], w, h, e.name, [e.x, e.y, e.w, e.h]);
                 }
             }
         }

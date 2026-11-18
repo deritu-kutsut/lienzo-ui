@@ -95,7 +95,7 @@ fn dentro(carpeta: &Path, rel: &str) -> Result<PathBuf, String> {
     // Only normal names: on Windows "\carpeta" or "C:x" are not absolute but `join` takes them out of the folder.
     let normal = rel_path.components().all(|c| matches!(c, std::path::Component::Normal(_) | std::path::Component::CurDir));
     if rel.is_empty() || rel_path.is_absolute() || rel_path.has_root() || !normal {
-        return Err(format!("ruta no permitida en el plugin: {}", rel));
+        return Err(format!("path not allowed in the plugin: {}", rel));
     }
     Ok(carpeta.join(rel_path))
 }
@@ -196,8 +196,8 @@ fn llamar(carpeta: &Path, script: &str, funcion: &str, doc: &Doc) -> Result<(rha
 pub fn ejecutar_comando(carpeta: &Path, c: &Accion, doc: &Doc) -> Result<(Doc, Vec<String>), String> {
     let (r, msgs) = llamar(carpeta, &c.script, "ejecutar", doc)?;
     // Rhai works with f64 and the model with f32: it goes through JSON, which converts the numbers.
-    let json: serde_json::Value = rhai::serde::from_dynamic(&r).map_err(|e| format!("{}: el diseño devuelto no es válido ({})", c.script, e))?;
-    let mut nuevo: Doc = serde_json::from_value(json).map_err(|e| format!("{}: el diseño devuelto no es válido ({})", c.script, e))?;
+    let json: serde_json::Value = rhai::serde::from_dynamic(&r).map_err(|e| format!("{}: the returned design is not valid ({})", c.script, e))?;
+    let mut nuevo: Doc = serde_json::from_value(json).map_err(|e| format!("{}: the returned design is not valid ({})", c.script, e))?;
     nuevo.migrate_groups();
     Ok((nuevo, msgs))
 }
@@ -205,7 +205,7 @@ pub fn ejecutar_comando(carpeta: &Path, c: &Accion, doc: &Doc) -> Result<(Doc, V
 /// Runs an exporter: returns the file's text.
 pub fn ejecutar_exportador(carpeta: &Path, x: &Exportador, doc: &Doc) -> Result<String, String> {
     let (r, _) = llamar(carpeta, &x.script, "exportar", doc)?;
-    r.into_string().map_err(|tipo| format!("{}: exportar() debe devolver texto, devolvió {}", x.script, tipo))
+    r.into_string().map_err(|tipo| format!("{}: exportar() must return text, it returned {}", x.script, tipo))
 }
 
 impl EditorApp {
@@ -213,21 +213,21 @@ impl EditorApp {
         ui.horizontal(|ui| {
             ui.label(RichText::new(t("Plugins")).strong());
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                if ui.small_button(t("Recargar")).clicked() {
+                if ui.small_button(t("Reload")).clicked() {
                     self.plugins = cargar_todos();
-                    self.status = format!("{}: {}", t("Plugins cargados"), self.plugins.len());
+                    self.status = format!("{}: {}", t("Loaded plugins"), self.plugins.len());
                 }
-                if ui.small_button(t("Abrir carpeta")).on_hover_text(carpeta_usuario().display().to_string()).clicked() {
+                if ui.small_button(t("Open folder")).on_hover_text(carpeta_usuario().display().to_string()).clicked() {
                     let c = carpeta_usuario();
                     let _ = std::fs::create_dir_all(&c);
                     let _ = std::process::Command::new(if cfg!(windows) { "explorer" } else if cfg!(target_os = "macos") { "open" } else { "xdg-open" }).arg(&c).spawn();
                 }
             });
         });
-        ui.label(RichText::new(t("Añaden comandos, exportadores y plantillas. Guía: docs/PLUGINS.md")).small().color(MUTED()));
+        ui.label(RichText::new(t("They add commands, exporters and templates. Guide: docs/PLUGINS.md")).small().color(MUTED()));
         ui.add_space(6.0);
         if self.plugins.is_empty() {
-            ui.label(RichText::new(t("No hay plugins instalados. Copia una carpeta con plugin.json en la carpeta de plugins y pulsa Recargar.")).color(MUTED()));
+            ui.label(RichText::new(t("No plugins installed. Copy a folder with plugin.json into the plugins folder and press Reload.")).color(MUTED()));
             return;
         }
         let mut accion: Option<(usize, u8, usize)> = None; // (plugin, kind 0 command / 1 exporter / 2 template, index)
@@ -236,7 +236,7 @@ impl EditorApp {
                 ui.set_width(ui.available_width());
                 ui.label(RichText::new(format!("{}  {}", p.nombre, p.version)).strong());
                 if !p.autor.is_empty() {
-                    ui.label(RichText::new(format!("{} {}", t("por"), p.autor)).small().color(MUTED()));
+                    ui.label(RichText::new(format!("{} {}", t("by"), p.autor)).small().color(MUTED()));
                 }
                 if !p.descripcion.is_empty() {
                     ui.label(RichText::new(&p.descripcion).small());
@@ -271,9 +271,9 @@ impl EditorApp {
                     Ok((nuevo, msgs)) => {
                         self.doc = nuevo;
                         self.sel.clear();
-                        self.status = format!("{} «{}»{}", t("Plugin ejecutado:"), p.comandos[j].nombre, if msgs.is_empty() { String::new() } else { format!(" · {}", msgs.join(" · ")) });
+                        self.status = format!("{} “{}”{}", t("Plugin executed:"), p.comandos[j].nombre, if msgs.is_empty() { String::new() } else { format!(" · {}", msgs.join(" · ")) });
                     }
-                    Err(e) => self.status = format!("{} {}", t("Error del plugin:"), e),
+                    Err(e) => self.status = format!("{} {}", t("Plugin error:"), e),
                 },
                 1 => match ejecutar_exportador(&p.carpeta, &p.exportadores[j], &self.doc) {
                     Ok(texto) => {
@@ -281,7 +281,7 @@ impl EditorApp {
                         let nombre = format!("{}.{}", crate::export::class_name(&self.doc.title), x.extension);
                         self.save_text_file(&x.nombre, &nombre, &x.extension, &texto);
                     }
-                    Err(e) => self.status = format!("{} {}", t("Error del plugin:"), e),
+                    Err(e) => self.status = format!("{} {}", t("Plugin error:"), e),
                 },
                 _ => {
                     let f = &p.plantillas[j];
@@ -289,9 +289,9 @@ impl EditorApp {
                         Ok(d) => {
                             // Same as a custom template: leaves test mode and locks the backgrounds.
                             self.load_user_template(&d);
-                            self.status = format!("{} {}", t("Plantilla del plugin aplicada (Ctrl+Z para deshacer):"), f.display());
+                            self.status = format!("{} {}", t("Plugin template applied (Ctrl+Z to undo):"), f.display());
                         }
-                        Err(e) => self.status = format!("{} {}", t("Error del plugin:"), e),
+                        Err(e) => self.status = format!("{} {}", t("Plugin error:"), e),
                     }
                 }
             }
@@ -320,7 +320,7 @@ mod tests {
         let p = cargar(&carpeta_ejemplos().join("ajustar-cuadricula"));
         let mut doc = crate::model::template(0, 1920.0, 1080.0);
         doc.elements[1].x = 13.0;
-        let (nuevo, _) = ejecutar_comando(&p.carpeta, &p.comandos[0], &doc).expect("el comando debe funcionar");
+        let (nuevo, _) = ejecutar_comando(&p.carpeta, &p.comandos[0], &doc).expect("the command must work");
         assert_eq!(nuevo.elements.len(), doc.elements.len());
         assert!(nuevo.elements.iter().all(|e| e.x % 8.0 == 0.0 && e.y % 8.0 == 0.0));
     }
@@ -329,9 +329,9 @@ mod tests {
     fn exportador_csv() {
         let p = cargar(&carpeta_ejemplos().join("textos-csv"));
         let doc = crate::model::template(0, 1920.0, 1080.0);
-        let csv = ejecutar_exportador(&p.carpeta, &p.exportadores[0], &doc).expect("el exportador debe funcionar");
+        let csv = ejecutar_exportador(&p.carpeta, &p.exportadores[0], &doc).expect("the exporter must work");
         assert!(csv.starts_with("elemento,texto"));
-        assert!(csv.contains("Jugar"));
+        assert!(csv.contains("Play"));
     }
 
     #[test]
@@ -360,10 +360,10 @@ mod rutas_tests {
     fn rutas_que_salen_de_la_carpeta() {
         let c = Path::new("plugins/x");
         for mala in ["", "../a.rhai", "a/../../b.rhai", "/etc/a.rhai", "\\Users\\a.rhai", "C:a.rhai", "C:\\a.rhai"] {
-            assert!(dentro(c, mala).is_err(), "debería rechazar {:?}", mala);
+            assert!(dentro(c, mala).is_err(), "should reject {:?}", mala);
         }
         for buena in ["a.rhai", "sub/a.rhai", "./a.rhai"] {
-            assert!(dentro(c, buena).is_ok(), "debería aceptar {:?}", buena);
+            assert!(dentro(c, buena).is_ok(), "should accept {:?}", buena);
         }
     }
 }

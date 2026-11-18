@@ -344,7 +344,7 @@ impl EditorApp {
         let modal = egui::Modal::new(id).frame(marco).show(ctx, |ui| {
             ui.set_width(760.0);
             ui.horizontal(|ui| {
-                for (p, nombre, a) in [(Pista::Novato, "Tutorial para novatos", 3u8), (Pista::Profesional, "Tutorial para profesionales", 4u8)] {
+                for (p, nombre, a) in [(Pista::Novato, "Beginner tutorial", 3u8), (Pista::Profesional, "Pro tutorial", 4u8)] {
                     let sel = t.pista == p;
                     let txt = RichText::new(crate::i18n::t(nombre)).size(14.5).color(if sel { ACCENT() } else { MUTED() });
                     if ui.add(egui::Button::selectable(sel, txt)).clicked() {
@@ -352,14 +352,14 @@ impl EditorApp {
                     }
                 }
                 ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
-                    if ui.button(crate::i18n::t("Saltar e ir al editor")).clicked() {
+                    if ui.button(crate::i18n::t("Skip and go to editor")).clicked() {
                         accion = Some(2);
                     }
                 });
             });
             ui.add(egui::Separator::default().spacing(14.0));
-            let pista = crate::i18n::t(if t.pista == Pista::Novato { "NOVATOS" } else { "PROFESIONALES" });
-            ui.label(RichText::new(format!("{} · {} {} / {}", pista, crate::i18n::t("PASO"), pagina + 1, lista.len())).size(11.5).strong().color(ACCENT()));
+            let pista = crate::i18n::t(if t.pista == Pista::Novato { "BEGINNERS" } else { "PROFESSIONALS" });
+            ui.label(RichText::new(format!("{} · {} {} / {}", pista, crate::i18n::t("STEP"), pagina + 1, lista.len())).size(11.5).strong().color(ACCENT()));
             ui.add_space(4.0);
             ui.label(RichText::new(lista[pagina].titulo).size(24.0).strong().color(TEXT()));
             ui.add_space(10.0);
@@ -369,7 +369,7 @@ impl EditorApp {
             });
             ui.add_space(12.0);
             ui.horizontal(|ui| {
-                if ui.add_enabled(pagina > 0, egui::Button::new(crate::i18n::t("Anterior")).min_size(Vec2::new(96.0, 30.0))).clicked() {
+                if ui.add_enabled(pagina > 0, egui::Button::new(crate::i18n::t("Previous")).min_size(Vec2::new(96.0, 30.0))).clicked() {
                     accion = Some(0);
                 }
                 let ancho = ui.available_width();
@@ -380,7 +380,7 @@ impl EditorApp {
                     ui.painter().circle_filled(r.center(), 4.0, if i == pagina { ACCENT() } else { LINE() });
                 }
                 ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
-                    let texto = crate::i18n::t(if ultima { "Abrir el editor" } else { "Siguiente" });
+                    let texto = crate::i18n::t(if ultima { "Open the editor" } else { "Next" });
                     let b = egui::Button::new(RichText::new(texto).strong().color(Color32::WHITE)).fill(ACCENT()).min_size(Vec2::new(130.0, 30.0));
                     if ui.add(b).clicked() {
                         accion = Some(1);
@@ -418,8 +418,8 @@ mod tests {
 
     #[test]
     fn ambas_pistas_tienen_contenido() {
-        assert_eq!(NOVATO.len(), NOVATO_EN.len(), "la pista de novatos en inglés debe tener las mismas páginas");
-        assert_eq!(PROFESIONAL.len(), PROFESIONAL_EN.len(), "la pista de profesionales en inglés debe tener las mismas páginas");
+        assert_eq!(NOVATO.len(), NOVATO_EN.len(), "the English beginner track must have the same pages");
+        assert_eq!(PROFESIONAL.len(), PROFESIONAL_EN.len(), "the English pro track must have the same pages");
         assert!(NOVATO.len() >= 3 && PROFESIONAL.len() >= 3);
         for p in NOVATO.iter().chain(PROFESIONAL) {
             assert!(!p.titulo.trim().is_empty() && !p.texto.trim().is_empty());
@@ -429,17 +429,17 @@ mod tests {
     #[test]
     fn cada_idioma_tiene_su_tutorial_completo() {
         for (codigo, json) in TUTORIALES {
-            let t: TutorialJson = serde_json::from_str(json).unwrap_or_else(|e| panic!("{}.json no es válido: {}", codigo, e));
-            assert_eq!(t.novato.len(), NOVATO.len(), "{}: páginas de novatos", codigo);
-            assert_eq!(t.profesional.len(), PROFESIONAL.len(), "{}: páginas de profesionales", codigo);
+            let t: TutorialJson = serde_json::from_str(json).unwrap_or_else(|e| panic!("{}.json is not valid: {}", codigo, e));
+            assert_eq!(t.novato.len(), NOVATO.len(), "{}: beginner pages", codigo);
+            assert_eq!(t.profesional.len(), PROFESIONAL.len(), "{}: pro pages", codigo);
             for p in t.novato.iter().chain(&t.profesional) {
-                assert!(!p.titulo.trim().is_empty() && !p.texto.trim().is_empty(), "{}: página vacía", codigo);
+                assert!(!p.titulo.trim().is_empty() && !p.texto.trim().is_empty(), "{}: empty page", codigo);
             }
-            assert!(OTROS.contains_key(codigo), "{} no se cargó", codigo);
+            assert!(OTROS.contains_key(codigo), "{} was not loaded", codigo);
         }
         // Every interface language has its own tutorial (Spanish and English are in the code).
         for (codigo, _, _) in crate::i18n::IDIOMAS {
-            assert!(matches!(*codigo, "es" | "en") || TUTORIALES.iter().any(|(c, _)| c == codigo), "{} sin tutorial", codigo);
+            assert!(matches!(*codigo, "es" | "en") || TUTORIALES.iter().any(|(c, _)| c == codigo), "{} has no tutorial", codigo);
         }
     }
 }

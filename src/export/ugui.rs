@@ -116,13 +116,13 @@ mod tests {
         assert!(!s.contains("null"), "JsonUtility can't read nulls");
         let v: serde_json::Value = serde_json::from_str(&s).unwrap();
         let els = v["elements"].as_array().unwrap();
-        let win = els.iter().position(|e| e["name"] == "Ventana").unwrap();
-        let title = els.iter().find(|e| e["name"] == "Título ventana").unwrap();
+        let win = els.iter().position(|e| e["name"] == "Window").unwrap();
+        let title = els.iter().find(|e| e["name"] == "Window title").unwrap();
         assert_eq!(title["parent"].as_i64().unwrap(), win as i64);
         // parents always come before their children
         for (i, e) in els.iter().enumerate() {
             assert!(e["parent"].as_i64().unwrap() < i as i64);
         }
-        assert_eq!(v["canvas"]["className"], "VentanaDeDialogo");
+        assert_eq!(v["canvas"]["className"], "DialogWindow");
     }
 }
