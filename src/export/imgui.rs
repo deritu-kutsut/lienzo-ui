@@ -4,7 +4,7 @@
 //! GUI.BeginScrollView / BeginGroup). Rectangles are computed from the same
 //! anchors as uGUI, so the layout adapts to any screen size.
 
-use super::{cf, class_name, comment_lines, content_height, cs_str, export_rt, image_file_name, radius_of, sanitize_line};
+use super::{cf, class_name, comment_lines, cs_str, image_file_name, radius_of, sanitize_line, ExportCtx};
 use crate::model::{Doc, Element, Kind, Rgba};
 use std::collections::{HashMap, HashSet};
 use std::fmt::Write;
@@ -52,6 +52,7 @@ fn idents(doc: &Doc) -> HashMap<u64, String> {
 
 struct Gen<'a> {
     doc: &'a Doc,
+    ctx: &'a ExportCtx<'a>,
     ids: HashMap<u64, String>,
     fields: String,
     styles: String,
@@ -70,10 +71,10 @@ impl<'a> Gen<'a> {
     }
 
     fn el(&mut self, id: u64, pr: &str, pm: &str, in_clip: bool, ind: usize) {
-        let Some(e) = self.doc.get(id).cloned() else { return };
+        let Some(e) = self.ctx.get(id).cloned() else { return };
         let n = self.ids[&id].clone();
         let pad = "    ".repeat(ind);
-        let rt = export_rt(self.doc, &e);
+        let rt = self.ctx.rt(&e);
         let op = e.opacity;
         let b = &mut self.body;
         let _ = writeln!(self.fields, "    public bool show{} = {};", n, e.visible);
@@ -245,10 +246,10 @@ impl<'a> Gen<'a> {
             let _ = writeln!(self.body, "{}GUI.enabled = true;", p2);
         }
         // children
-        let kids = self.doc.children(Some(id));
+        let kids = self.ctx.children(Some(id)).to_vec();
         if !kids.is_empty() {
             if e.kind == Kind::ScrollView {
-                let ch = content_height(self.doc, &e);
+                let ch = self.ctx.content_height(&e);
                 let _ = writeln!(self.fields, "    Vector2 scroll{};", n);
                 let _ = writeln!(self.body, "{}var c{n} = new Rect(0f, 0f, {r}.width - 18f, Mathf.Max({ch}, {r}.height));", p2, ch = cf(ch));
                 let _ = writeln!(self.body, "{}scroll{n} = GUI.BeginScrollView({r}, scroll{n}, c{n}, false, false);", p2);
@@ -278,8 +279,9 @@ impl<'a> Gen<'a> {
 
 pub fn script(doc: &Doc) -> String {
     let cls = format!("{}OnGUI", class_name(&doc.title));
-    let mut g = Gen { doc, ids: idents(doc), fields: String::new(), styles: String::new(), body: String::new(), methods: String::new(), nstyle: 0 };
-    for id in doc.children(None) {
+    let ctx = ExportCtx::new(doc);
+    let mut g = Gen { doc, ctx: &ctx, ids: idents(doc), fields: String::new(), styles: String::new(), body: String::new(), methods: String::new(), nstyle: 0 };
+    for &id in ctx.children(None) {
         g.el(id, "root", "m0", false, 2);
     }
     let bg = if doc.has_background() { format!("        if (drawBackground) Box(root, {}, 0f);\n", color(doc.background, 1.0)) } else { String::new() };

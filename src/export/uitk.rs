@@ -1,7 +1,7 @@
 //! UI Toolkit export: UXML (structure) + USS (style). Anchors become
 //! left/right/top/bottom percentages plus pixel margins, layout groups become flexbox.
 
-use super::{class_name, css_comment, css_url_part, xml_comment, content_height, export_rt, f, image_asset_path, radius_of, unity_names, xml_attr};
+use super::{class_name, css_comment, css_url_part, xml_comment, f, image_asset_path, radius_of, unity_names, xml_attr, ExportCtx};
 use crate::model::{Doc, Element, Kind, LayoutMode, Rgba};
 
 fn rgba(c: Rgba, op: f32) -> String {
@@ -34,15 +34,16 @@ pub fn uxml(doc: &Doc) -> String {
     out.push_str(&format!("    <!-- PanelSettings recomendado: Scale Mode = Scale With Screen Size, Reference Resolution = {} x {}, Match = {} -->\n", doc.width, doc.height, f(doc.canvas_match)));
     out.push_str(&format!("    <Style src=\"{}.uss\" />\n", cls));
     out.push_str(&format!("    <ui:VisualElement name=\"{}\" class=\"eg-root\" picking-mode=\"Ignore\">\n", xml_attr(&cls)));
-    for id in doc.children(None) {
-        write_el(doc, &names, id, 2, &mut out);
+    let ctx = ExportCtx::new(doc);
+    for &id in ctx.children(None) {
+        write_el(&ctx, &names, id, 2, &mut out);
     }
     out.push_str("    </ui:VisualElement>\n</ui:UXML>\n");
     out
 }
 
-fn write_el(doc: &Doc, names: &std::collections::HashMap<u64, String>, id: u64, depth: usize, out: &mut String) {
-    let Some(e) = doc.get(id) else { return };
+fn write_el(ctx: &ExportCtx, names: &std::collections::HashMap<u64, String>, id: u64, depth: usize, out: &mut String) {
+    let Some(e) = ctx.get(id) else { return };
     let ind = "    ".repeat(depth);
     let t = tag(e);
     let mut attrs = format!("name=\"{}\" class=\"{}\"", xml_attr(names.get(&id).map(|s| s.as_str()).unwrap_or("")), class_of(e));
@@ -61,7 +62,7 @@ fn write_el(doc: &Doc, names: &std::collections::HashMap<u64, String>, id: u64, 
     if !e.raycast && matches!(e.kind, Kind::Text | Kind::Empty | Kind::Panel | Kind::Image | Kind::Ellipse) {
         attrs.push_str(" picking-mode=\"Ignore\"");
     }
-    let kids = doc.children(Some(id));
+    let kids = ctx.children(Some(id));
     // label inside containers (Panel / Image / circle with text)
     let inner_label = matches!(e.kind, Kind::Panel | Kind::Image | Kind::Ellipse) && !e.text.is_empty();
     if kids.is_empty() && !inner_label {
@@ -72,8 +73,8 @@ fn write_el(doc: &Doc, names: &std::collections::HashMap<u64, String>, id: u64, 
     if inner_label {
         out.push_str(&format!("{}    <ui:Label text=\"{}\" class=\"{}-label\" picking-mode=\"Ignore\" />\n", ind, xml_attr(&e.text), class_of(e)));
     }
-    for k in kids {
-        write_el(doc, names, k, depth + 1, out);
+    for &k in kids {
+        write_el(ctx, names, k, depth + 1, out);
     }
     out.push_str(&format!("{}</{}>\n", ind, t));
 }
@@ -121,15 +122,16 @@ pub fn uss(doc: &Doc) -> String {
         o.push_str(&format!("    background-color: {};\n", rgba(doc.background, 1.0)));
     }
     o.push_str("}\n\n");
+    let ctx = ExportCtx::new(doc);
     for e in &doc.elements {
-        o.push_str(&rule(doc, e));
+        o.push_str(&rule(&ctx, e));
     }
     o
 }
 
-fn rule(doc: &Doc, e: &Element) -> String {
+fn rule(ctx: &ExportCtx, e: &Element) -> String {
     let mut s = Vec::<String>::new();
-    let parent_layout = doc.parent_of(e.id).and_then(|p| doc.get(p)).map(|p| p.layout.clone());
+    let parent_layout = ctx.parent(e).map(|p| p.layout.clone());
     let in_flow = parent_layout.as_ref().map(|l| l.mode != LayoutMode::None).unwrap_or(false);
     s.push("margin: 0".into());
     s.push("padding: 0".into());
@@ -164,7 +166,7 @@ fn rule(doc: &Doc, e: &Element) -> String {
             s.push("align-self: stretch".into());
         }
         // spacing as margins between siblings (first child has none)
-        let first = doc.children(doc.parent_of(e.id)).first().copied() == Some(e.id);
+        let first = ctx.children(ctx.parent(e).map(|p| p.id)).first().copied() == Some(e.id);
         match l.mode {
             LayoutMode::Horizontal if !first => s.push(format!("margin-left: {}px", f(l.spacing[0]))),
             LayoutMode::Vertical if !first => s.push(format!("margin-top: {}px", f(l.spacing[1]))),
@@ -177,15 +179,14 @@ fn rule(doc: &Doc, e: &Element) -> String {
             _ => {}
         }
     } else {
-        let rt = export_rt(doc, e);
+        let rt = ctx.rt(e);
         s.push("position: absolute".into());
         let mut omin = rt.offset_min();
         let mut omax = rt.offset_max();
         // In UI Toolkit an absolute child is placed inside the parent's border; in uGUI the outline does not
         // take up space. The border is compensated so sizes and positions match Unity uGUI.
-        let border = e
-            .parent
-            .and_then(|p| doc.elements.iter().find(|x| x.id == p))
+        let border = ctx
+            .parent(e)
             .filter(|p| p.kind.has_fill() && !matches!(p.kind, Kind::Toggle | Kind::Slider))
             .map(|p| p.stroke_w.max(0.0))
             .unwrap_or(0.0);
@@ -329,7 +330,7 @@ fn rule(doc: &Doc, e: &Element) -> String {
         ));
     }
     if e.kind == Kind::ScrollView {
-        out.push_str(&format!(".{} .unity-scroll-view__content-container {{\n    min-height: {}px;\n}}\n", class_of(e), f(content_height(doc, e))));
+        out.push_str(&format!(".{} .unity-scroll-view__content-container {{\n    min-height: {}px;\n}}\n", class_of(e), f(ctx.content_height(e))));
     }
     out.push('\n');
     out

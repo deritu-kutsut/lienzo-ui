@@ -71,8 +71,8 @@ pub enum Drop {
 pub struct EditorApp {
     pub doc: Doc,
     pub sel: Vec<u64>,
-    undo: Vec<Doc>,
-    redo: Vec<Doc>,
+    pub(crate) undo: Vec<Doc>,
+    pub(crate) redo: Vec<Doc>,
     committed: Doc,
     settle: u32,
     pub zoom: f32,
@@ -85,6 +85,12 @@ pub struct EditorApp {
     pub drawer_open: bool,
     pub inspector_open: bool,
     pub clipboard: Vec<Element>,
+    /// Portrait overrides of the copied elements (landscape view: pasting carries them along).
+    pub clipboard_ov: Vec<ElementOverride>,
+    /// Portrait view: element created / duplicated / pasted since the last fold -> the element it was copied from.
+    pub portrait_src: std::collections::HashMap<u64, u64>,
+    /// Portrait view: elements created from scratch (or grouped) since the last fold.
+    pub portrait_new: std::collections::HashSet<u64>,
     pub guides: Vec<Guide>,
     pub drag_label: Option<String>,
     pub hover: Option<u64>,
@@ -110,6 +116,8 @@ pub struct EditorApp {
     pub save_open: bool,
     /// Warnings of the last «Import from Unity…» (shown in a window until closed).
     pub import_warnings: Vec<String>,
+    /// Unity project folder detected from the last imported file (this session only; images of the imported design resolve against it).
+    pub detected_unity_project: Option<String>,
     pub template_name: String,
     pub element_name: String,
     /// Thumbnails of the built-in templates for the current page size (generated once).
@@ -121,6 +129,7 @@ pub struct EditorApp {
     pub community: crate::community::Community,
     pub accessibility_open: bool,
     pub review_open: bool,
+    pub review_cache: Option<crate::review::ReviewCache>,
     pub themes_open: bool,
     pub updater: crate::updater::Updater,
     pub long_screenshot: bool,
@@ -190,6 +199,9 @@ impl EditorApp {
             drawer_open: true,
             inspector_open: true,
             clipboard: Vec::new(),
+            clipboard_ov: Vec::new(),
+            portrait_src: Default::default(),
+            portrait_new: Default::default(),
             guides: Vec::new(),
             drag_label: None,
             hover: None,
@@ -213,6 +225,7 @@ impl EditorApp {
             settings,
             save_open: false,
             import_warnings: Vec::new(),
+            detected_unity_project: None,
             template_name: String::new(),
             element_name: String::new(),
             template_thumbs: None,
@@ -222,6 +235,7 @@ impl EditorApp {
             community: crate::community::Community::new(),
             accessibility_open: false,
             review_open: false,
+            review_cache: None,
             themes_open: false,
             updater: crate::updater::Updater::new(),
             long_screenshot: false,
@@ -384,9 +398,11 @@ impl EditorApp {
             return;
         }
         if self.doc != self.folded {
-            fold_portrait_edit(real, &self.folded, &self.doc);
+            fold_portrait_edit_with(real, &self.folded, &self.doc, &self.portrait_src, &self.portrait_new);
             self.folded = self.doc.clone();
         }
+        self.portrait_src.clear();
+        self.portrait_new.clear();
     }
 
     /// Edit the full design (landscape values, canvas, portrait layout...) from any view. In the portrait view the
@@ -562,6 +578,9 @@ impl EditorApp {
         e.parent = parent;
         let kind = e.kind;
         let id = self.doc.add(e);
+        if self.real.is_some() {
+            self.portrait_new.insert(id);
+        }
         self.doc.normalize();
         if let Some(el) = self.doc.get_mut(id) {
             if el.name.is_empty() || el.name == kind.label() {
@@ -613,7 +632,14 @@ impl EditorApp {
             if let Some(first) = items.first_mut() {
                 first.name = format!("{} (copia)", first.name);
             }
-            let roots = self.doc.insert_items(&items, parent);
+            let (roots, map) = self.doc.insert_items_map(&items, parent);
+            if self.real.is_some() {
+                // portrait view: the copies start from the landscape values of what they were copied from
+                self.portrait_src.extend(map.iter().map(|(old, new)| (*new, *old)));
+            } else if self.doc.portrait.is_some() {
+                let ovs = self.doc.overrides_of(&map.keys().copied().collect::<Vec<_>>());
+                self.doc.copy_overrides(&ovs, &map, offset, offset);
+            }
             // place right after the original among its siblings
             let mut sibs: Vec<u64> = self.doc.children(parent).into_iter().filter(|s| !roots.contains(s)).collect();
             let at = sibs.iter().position(|s| *s == t).map(|i| i + 1).unwrap_or(sibs.len());
@@ -629,6 +655,8 @@ impl EditorApp {
 
     pub fn copy(&mut self) {
         self.clipboard = self.doc.collect_subtrees(&self.sel);
+        let ids: Vec<u64> = self.clipboard.iter().map(|e| e.id).collect();
+        self.clipboard_ov = self.real_doc().overrides_of(&ids);
         if !self.clipboard.is_empty() {
             self.status = crate::i18n::tf("Copied {} element(s)", &[&self.doc.top_level(&self.sel).len().to_string()]);
         }
@@ -649,7 +677,15 @@ impl EditorApp {
                 parent = self.doc.parent_of(p);
             }
         }
-        self.sel = self.doc.insert_items(&items, parent);
+        let (roots, map) = self.doc.insert_items_map(&items, parent);
+        self.sel = roots;
+        if self.real.is_some() {
+            self.portrait_src.extend(map.iter().filter(|(old, _)| self.real.as_ref().is_some_and(|r| r.get(**old).is_some())).map(|(old, new)| (*new, *old)));
+        } else if self.doc.portrait.is_some() {
+            let ovs = std::mem::take(&mut self.clipboard_ov);
+            self.doc.copy_overrides(&ovs, &map, 40.0, 40.0);
+            self.clipboard_ov = ovs;
+        }
         self.doc.sanitize();
         self.status = crate::i18n::t("Pasted");
     }
@@ -672,6 +708,9 @@ impl EditorApp {
         g.h = (b[3] - b[1]).max(1.0);
         g.parent = parent;
         let gid = self.doc.add(g);
+        if self.real.is_some() {
+            self.portrait_new.insert(gid);
+        }
         let mut sibs: Vec<u64> = self.doc.children(parent).into_iter().filter(|s| *s != gid).collect();
         let at = sibs.iter().position(|s| *s == tops[0]).unwrap_or(sibs.len());
         sibs.insert(at, gid);
@@ -1089,13 +1128,23 @@ impl EditorApp {
         let Some(path) = rfd::FileDialog::new().set_title("Import from Unity").add_filter("Unity UI", &["prefab", "json"]).pick_file() else { return };
         match crate::unity_import::import_file(&path) {
             Ok(imp) => {
-                if let Some(root) = crate::library::find_unity_project(&path) {
-                    if self.settings.unity_project.is_empty() {
-                        self.settings.unity_project = root.to_string_lossy().to_string();
-                        self.settings.save();
+                // The file was opened by the user from disk: absolute image paths are allowed.
+                crate::library::set_trusted_source(true);
+                // Images resolve against the project that holds the imported file (this session only);
+                // the saved setting is only filled when it was empty, and the status line says which root was found.
+                let detected = crate::library::find_unity_project(&path).map(|r| r.to_string_lossy().to_string());
+                match &detected {
+                    Some(root) => {
+                        crate::library::set_unity_project(root);
+                        if self.settings.unity_project.is_empty() {
+                            self.settings.unity_project = root.clone();
+                            self.settings.save();
+                        }
                     }
+                    None => crate::library::set_unity_project(&self.settings.unity_project),
                 }
-                crate::library::set_unity_project(&self.settings.unity_project);
+                crate::library::set_design_folder(&path);
+                self.detected_unity_project = detected;
                 self.set_preview(false);
                 self.leave_portrait();
                 self.doc = imp.doc;
@@ -1104,8 +1153,11 @@ impl EditorApp {
                 self.editing = None;
                 self.fit_pending = true;
                 let n = imp.warnings.len();
-                self.import_warnings = imp.warnings;
-                self.status = crate::i18n::tf("Imported {} ({} warnings). Save it as a project to keep it.", &[&path.file_name().map(|n| n.to_string_lossy().to_string()).unwrap_or_default(), &n.to_string()]);
+                self.import_warnings = imp.warnings.iter().map(|w| crate::unity_import::clean_msg(w)).collect();
+                self.status = crate::i18n::tf("Imported {} ({} warnings). Save it as a project to keep it.", &[&crate::unity_import::clean_msg(&path.file_name().map(|n| n.to_string_lossy().to_string()).unwrap_or_default()), &n.to_string()]);
+                if let Some(root) = &self.detected_unity_project {
+                    self.status = format!("{} {}", self.status, crate::i18n::tf("Unity project detected: {}", &[&crate::unity_import::clean_msg(root)]));
+                }
             }
             Err(e) => self.status = crate::i18n::tf("Could not import: {}", &[&e]),
         }
@@ -1386,6 +1438,15 @@ fn layout_eq(a: &model::LayoutGroup, b: &model::LayoutGroup) -> bool {
 ///
 /// Children of a layout group keep following their group: their box is never turned into an override.
 pub fn fold_portrait_edit(real: &mut Doc, old: &Doc, new: &Doc) {
+    fold_portrait_edit_with(real, old, new, &Default::default(), &Default::default());
+}
+
+/// [`fold_portrait_edit`] that also knows which new elements were copied from an existing one (`sources`: new id -> id of
+/// the element it was copied from) and which were created from scratch or grouped (`created`). Such an element takes its
+/// landscape values from the landscape source (or from the defaults of its kind; a group takes its landscape box from
+/// the landscape boxes of its children) and only what differs becomes a portrait override: portrait values never leak
+/// into the landscape layout.
+pub fn fold_portrait_edit_with(real: &mut Doc, old: &Doc, new: &Doc, sources: &std::collections::HashMap<u64, u64>, created: &std::collections::HashSet<u64>) {
     if !near(new.width, old.width) || !near(new.height, old.height) {
         let (lw, lh) = (real.height, real.width);
         let p = real.portrait.get_or_insert_with(|| crate::docext::PortraitLayout { width: lw, height: lh, overrides: Vec::new() });
@@ -1402,6 +1463,10 @@ pub fn fold_portrait_edit(real: &mut Doc, old: &Doc, new: &Doc) {
 
     let mut overrides: std::collections::HashMap<u64, ElementOverride> = real.portrait.as_ref().map(|p| p.overrides.iter().cloned().map(|o| (o.id, o)).collect()).unwrap_or_default();
     let mut landscape: std::collections::HashMap<u64, Element> = real.elements.drain(..).map(|e| (e.id, e)).collect();
+    // landscape values of the sources (copies and groups) before they are consumed below
+    let wanted: std::collections::HashSet<u64> = sources.values().copied().collect();
+    let land_src: std::collections::HashMap<u64, Element> = landscape.iter().filter(|(id, _)| wanted.contains(*id)).map(|(k, v)| (*k, v.clone())).collect();
+    let land_all: std::collections::HashMap<u64, [f32; 4]> = landscape.iter().map(|(k, e)| (*k, [e.x, e.y, e.x + e.w, e.y + e.h])).collect();
     let old_by: std::collections::HashMap<u64, &Element> = old.elements.iter().map(|e| (e.id, e)).collect();
     let (lw, lh) = (real.width, real.height);
     let mut out = Vec::with_capacity(new.elements.len());
@@ -1462,21 +1527,81 @@ pub fn fold_portrait_edit(real: &mut Doc, old: &Doc, new: &Doc) {
                 // An element created while the portrait view is open: its landscape box is the portrait box kept
                 // inside the landscape page, and the portrait box is an override.
                 let mut m = ne.clone();
-                m.w = ne.w.min(lw).max(0.0);
-                m.h = ne.h.min(lh).max(0.0);
-                m.x = ne.x.clamp(0.0, (lw - m.w).max(0.0));
-                m.y = ne.y.clamp(0.0, (lh - m.h).max(0.0));
-                if !near(m.x, ne.x) {
-                    ov.x = Some(ne.x);
+                let from = sources.get(&id).and_then(|s| land_src.get(s).map(|le| (*s, le)));
+                if let Some((sid, le)) = from {
+                    // a copy: starts from the landscape values of its source, moved by the same shift
+                    let (dx, dy) = old_by.get(&sid).map(|o| (ne.x - o.x, ne.y - o.y)).unwrap_or((0.0, 0.0));
+                    m.x = le.x + dx;
+                    m.y = le.y + dy;
+                    m.w = le.w;
+                    m.h = le.h;
+                    m.rot = le.rot;
+                    m.anchor_min = le.anchor_min;
+                    m.anchor_max = le.anchor_max;
+                    m.pivot = le.pivot;
+                    m.visible = le.visible;
+                    m.font_size = le.font_size;
+                    m.layout = le.layout.clone();
+                } else if created.contains(&id) {
+                    let d = Element::new(id, ne.kind);
+                    m.rot = d.rot;
+                    m.anchor_min = d.anchor_min;
+                    m.anchor_max = d.anchor_max;
+                    m.pivot = d.pivot;
+                    m.visible = d.visible;
+                    m.font_size = d.font_size;
+                    m.layout = d.layout.clone();
+                    // a new group: its landscape box wraps the landscape boxes of its children
+                    let kids: Vec<[f32; 4]> = new.elements.iter().filter(|k| k.parent == Some(id)).filter_map(|k| land_all.get(&k.id).copied()).collect();
+                    if ne.kind == Kind::Empty && !kids.is_empty() {
+                        let b = kids.iter().fold([f32::MAX, f32::MAX, f32::MIN, f32::MIN], |a, k| [a[0].min(k[0]), a[1].min(k[1]), a[2].max(k[2]), a[3].max(k[3])]);
+                        m.x = b[0];
+                        m.y = b[1];
+                        m.w = (b[2] - b[0]).max(1.0);
+                        m.h = (b[3] - b[1]).max(1.0);
+                    }
                 }
-                if !near(m.y, ne.y) {
-                    ov.y = Some(ne.y);
+                let keep_box = from.is_some() || (created.contains(&id) && ne.kind == Kind::Empty && new.elements.iter().any(|k| k.parent == Some(id) && land_all.contains_key(&k.id)));
+                if !keep_box {
+                    m.w = ne.w.min(lw).max(0.0);
+                    m.h = ne.h.min(lh).max(0.0);
+                    m.x = ne.x.clamp(0.0, (lw - m.w).max(0.0));
+                    m.y = ne.y.clamp(0.0, (lh - m.h).max(0.0));
                 }
-                if !near(m.w, ne.w) {
-                    ov.w = Some(ne.w);
+                // everything of the portrait element that differs from what the landscape got is an override
+                let driven_new = new.driven_by_layout(id);
+                if !driven_new {
+                    for (a, b, set) in [(m.x, ne.x, 0), (m.y, ne.y, 1), (m.w, ne.w, 2), (m.h, ne.h, 3)] {
+                        if !near(a, b) {
+                            match set {
+                                0 => ov.x = Some(b),
+                                1 => ov.y = Some(b),
+                                2 => ov.w = Some(b),
+                                _ => ov.h = Some(b),
+                            }
+                        }
+                    }
                 }
-                if !near(m.h, ne.h) {
-                    ov.h = Some(ne.h);
+                if !near(m.rot, ne.rot) {
+                    ov.rot = Some(ne.rot);
+                }
+                if !near(m.font_size, ne.font_size) {
+                    ov.font_size = Some(ne.font_size);
+                }
+                if !near2(m.anchor_min, ne.anchor_min) {
+                    ov.anchor_min = Some(ne.anchor_min);
+                }
+                if !near2(m.anchor_max, ne.anchor_max) {
+                    ov.anchor_max = Some(ne.anchor_max);
+                }
+                if !near2(m.pivot, ne.pivot) {
+                    ov.pivot = Some(ne.pivot);
+                }
+                if m.visible != ne.visible {
+                    ov.visible = Some(ne.visible);
+                }
+                if !layout_eq(&m.layout, &ne.layout) {
+                    ov.layout = Some(ne.layout.clone());
                 }
                 m
             }

@@ -676,6 +676,17 @@ impl Default for Doc {
     }
 }
 
+/// Deepest parent chain a design may have (deeper elements are detached to the root when loading / normalising).
+pub const MAX_DEPTH: usize = 128;
+/// Most elements a design may have.
+pub const MAX_ELEMENTS: usize = 20_000;
+/// Element ids are kept below 2^52 so every id is an exact integer in JSON (JavaScript, Unity JsonUtility).
+pub const MAX_ID: u64 = 1 << 52;
+/// Anchors / pivots (and their portrait overrides) are clamped to this absolute value.
+pub const ANCHOR_LIMIT: f32 = 1.0e4;
+/// Element position / size limit in page pixels.
+pub const COORD_LIMIT: f32 = 1.0e6;
+
 impl Doc {
     /// A new design: like the default but IMGUI output is off.
     pub fn empty(width: f32, height: f32) -> Self {
@@ -684,11 +695,42 @@ impl Doc {
 
     /// Append an element (new id). Call [`Doc::normalize`] if it has a parent.
     pub fn add(&mut self, mut e: Element) -> u64 {
-        e.id = self.next_id;
-        self.next_id += 1;
+        e.id = self.take_id();
         let id = e.id;
         self.elements.push(e);
         id
+    }
+
+    /// Hands out a fresh element id (`next_id` saturates well below 2^53).
+    pub fn take_id(&mut self) -> u64 {
+        let id = self.next_id.clamp(1, MAX_ID * 2);
+        self.next_id = (id + 1).min(MAX_ID * 2);
+        id
+    }
+
+    /// Map element id → position in `elements` (first element wins on duplicate ids).
+    pub fn index_map(&self) -> HashMap<u64, usize> {
+        let mut m = HashMap::with_capacity(self.elements.len());
+        for (i, e) in self.elements.iter().enumerate() {
+            m.entry(e.id).or_insert(i);
+        }
+        m
+    }
+
+    /// Parent (as an element position) of every element; `None` for roots and for parents that do not exist.
+    pub fn parent_indices(&self, idx: &HashMap<u64, usize>) -> Vec<Option<usize>> {
+        self.elements.iter().enumerate().map(|(i, e)| e.parent.and_then(|p| idx.get(&p).copied()).filter(|&p| p != i)).collect()
+    }
+
+    /// Direct children of every parent (`None` = root elements), in list order. O(n).
+    pub fn child_map(&self) -> HashMap<Option<u64>, Vec<u64>> {
+        let ids: HashSet<u64> = self.elements.iter().map(|e| e.id).collect();
+        let mut m: HashMap<Option<u64>, Vec<u64>> = HashMap::new();
+        for e in &self.elements {
+            let p = e.parent.filter(|p| ids.contains(p));
+            m.entry(p).or_default().push(e.id);
+        }
+        m
     }
 
     pub fn index_of(&self, id: u64) -> Option<usize> {
@@ -739,25 +781,38 @@ impl Doc {
 
     /// Direct children in sibling order (`None` = root elements).
     pub fn children(&self, parent: Option<u64>) -> Vec<u64> {
-        self.elements.iter().filter(|e| self.parent_of(e.id) == parent).map(|e| e.id).collect()
+        match parent {
+            Some(p) => {
+                if self.get(p).is_none() {
+                    return Vec::new();
+                }
+                self.elements.iter().filter(|e| e.parent == Some(p)).map(|e| e.id).collect()
+            }
+            None => {
+                let ids: HashSet<u64> = self.elements.iter().map(|e| e.id).collect();
+                self.elements.iter().filter(|e| e.parent.is_none_or(|p| !ids.contains(&p))).map(|e| e.id).collect()
+            }
+        }
     }
 
     pub fn has_children(&self, id: u64) -> bool {
         self.elements.iter().any(|e| e.parent == Some(id))
     }
 
-    /// All descendants in depth-first order (not including `id`).
+    /// All descendants in depth-first order (not including `id`). Iterative (any depth) and O(n).
     pub fn descendants(&self, id: u64) -> Vec<u64> {
+        let map = self.child_map();
         let mut out = Vec::new();
-        let mut stack: Vec<u64> = self.children(Some(id)).into_iter().rev().collect();
+        let mut seen: HashSet<u64> = HashSet::new();
+        let mut stack: Vec<u64> = map.get(&Some(id)).map(|v| v.iter().rev().copied().collect()).unwrap_or_default();
         while let Some(c) = stack.pop() {
             // A file with cyclic parents must not hang the app: each element is visited only once.
-            if c == id || out.contains(&c) {
+            if c == id || !seen.insert(c) {
                 continue;
             }
             out.push(c);
-            for k in self.children(Some(c)).into_iter().rev() {
-                stack.push(k);
+            if let Some(k) = map.get(&Some(c)) {
+                stack.extend(k.iter().rev().copied());
             }
         }
         out
@@ -772,13 +827,14 @@ impl Doc {
     /// Parent first, root last.
     pub fn ancestors(&self, id: u64) -> Vec<u64> {
         let mut out = Vec::new();
-        let mut cur = self.parent_of(id);
+        let mut cur = self.get(id).and_then(|e| e.parent);
         while let Some(p) = cur {
+            let Some(pe) = self.get(p) else { break };
             if out.contains(&p) || out.len() > self.elements.len() {
                 break;
             }
             out.push(p);
-            cur = self.parent_of(p);
+            cur = pe.parent;
         }
         out
     }
@@ -850,35 +906,7 @@ impl Doc {
     }
 
     fn normalize_with(&mut self, order: Option<(Option<u64>, &[u64])>) {
-        let ids: HashSet<u64> = self.elements.iter().map(|e| e.id).collect();
-        for e in self.elements.iter_mut() {
-            if let Some(p) = e.parent {
-                if p == e.id || !ids.contains(&p) {
-                    e.parent = None;
-                }
-            }
-        }
-        // break cycles
-        let parents: HashMap<u64, Option<u64>> = self.elements.iter().map(|e| (e.id, e.parent)).collect();
-        let mut cut = Vec::new();
-        for e in &self.elements {
-            let mut cur = e.parent;
-            let mut steps = 0;
-            while let Some(c) = cur {
-                if c == e.id {
-                    cut.push(e.id);
-                    break;
-                }
-                steps += 1;
-                if steps > parents.len() {
-                    break;
-                }
-                cur = parents.get(&c).copied().flatten();
-            }
-        }
-        for e in self.elements.iter_mut().filter(|e| cut.contains(&e.id)) {
-            e.parent = None;
-        }
+        self.repair_parents();
         // sibling lists (vec order, optionally overridden for one parent)
         let mut kids: HashMap<Option<u64>, Vec<usize>> = HashMap::new();
         for (i, e) in self.elements.iter().enumerate() {
@@ -896,22 +924,84 @@ impl Doc {
             }
         }
         let mut out_idx = Vec::with_capacity(self.elements.len());
-        fn visit(key: Option<u64>, kids: &HashMap<Option<u64>, Vec<usize>>, els: &[Element], out: &mut Vec<usize>) {
-            if let Some(list) = kids.get(&key) {
-                for &i in list {
-                    out.push(i);
-                    visit(Some(els[i].id), kids, els, out);
-                }
+        let mut visited = vec![false; self.elements.len()];
+        let mut stack: Vec<usize> = kids.get(&None).map(|l| l.iter().rev().copied().collect()).unwrap_or_default();
+        while let Some(i) = stack.pop() {
+            if std::mem::replace(&mut visited[i], true) {
+                continue;
+            }
+            out_idx.push(i);
+            if let Some(l) = kids.get(&Some(self.elements[i].id)) {
+                stack.extend(l.iter().rev().copied());
             }
         }
-        visit(None, &kids, &self.elements, &mut out_idx);
         let mut old: Vec<Option<Element>> = std::mem::take(&mut self.elements).into_iter().map(Some).collect();
         self.elements = out_idx.into_iter().filter_map(|i| old[i].take()).collect();
         let max = self.elements.iter().map(|e| e.id).max().unwrap_or(0);
         if self.next_id <= max {
-            self.next_id = max + 1;
+            self.next_id = max.saturating_add(1);
         }
         self.prune_overrides();
+    }
+
+    /// Repairs the parent links, iteratively and in O(n): missing / self parents become roots, the members of a
+    /// cycle become roots, and elements deeper than [`MAX_DEPTH`] are detached to the root (each element that
+    /// would be at depth 129 becomes a root, and its subtree counts from there; elements are visited by
+    /// increasing depth, ties in list order, so the result is deterministic).
+    pub fn repair_parents(&mut self) {
+        let n = self.elements.len();
+        let idx = self.index_map();
+        let mut par = self.parent_indices(&idx);
+        let mut state = vec![0u8; n];
+        let mut depth = vec![0usize; n];
+        let mut stack: Vec<usize> = Vec::new();
+        for s in 0..n {
+            if state[s] != 0 {
+                continue;
+            }
+            stack.clear();
+            let mut cur = Some(s);
+            while let Some(c) = cur {
+                if state[c] == 2 {
+                    break;
+                }
+                if state[c] == 1 {
+                    // a cycle: every member becomes a root
+                    if let Some(pos) = stack.iter().position(|&x| x == c) {
+                        for &m in &stack[pos..] {
+                            par[m] = None;
+                        }
+                    }
+                    break;
+                }
+                state[c] = 1;
+                stack.push(c);
+                cur = par[c];
+            }
+            for &c in stack.iter().rev() {
+                depth[c] = par[c].map(|p| depth[p] + 1).unwrap_or(0);
+                state[c] = 2;
+            }
+        }
+        if depth.iter().any(|&d| d > MAX_DEPTH) {
+            let mut order: Vec<usize> = (0..n).collect();
+            order.sort_by_key(|&i| depth[i]);
+            let mut nd = vec![0usize; n];
+            for i in order {
+                nd[i] = par[i].map(|p| nd[p] + 1).unwrap_or(0);
+                if nd[i] > MAX_DEPTH {
+                    par[i] = None;
+                    nd[i] = 0;
+                }
+            }
+        }
+        let ids: Vec<u64> = self.elements.iter().map(|e| e.id).collect();
+        for (i, e) in self.elements.iter_mut().enumerate() {
+            let want = par[i].map(|p| ids[p]);
+            if e.parent != want {
+                e.parent = want;
+            }
+        }
     }
 
     /// Reorder the children of `parent` (ids not listed keep their relative order after).
@@ -939,20 +1029,35 @@ impl Doc {
     }
 
     /// After the box of `id` (or the page for `None`) changed from `old`,
-    /// move its children so they keep their RectTransform (anchors), recursively.
+    /// move its children so they keep their RectTransform (anchors), recursively (iterative, any depth).
     pub fn reapply_children(&mut self, id: Option<u64>, old: Frame) {
-        let new = self.frame_of(id);
-        if new.close_to(&old) {
-            return;
-        }
-        for c in self.children(id) {
-            let Some(e) = self.get(c) else { continue };
-            let rt = rect_transform_in(e, &old);
-            let old_c = e.frame();
-            if let Some(e) = self.get_mut(c) {
-                apply_rect_transform(e, &rt, &new);
+        let map = self.child_map();
+        let idx = self.index_map();
+        let mut seen: HashSet<u64> = HashSet::new();
+        let mut stack = vec![(id, old)];
+        while let Some((id, old)) = stack.pop() {
+            let new = match id {
+                Some(i) => match idx.get(&i) {
+                    Some(&k) => self.elements[k].frame(),
+                    None => self.page_frame(),
+                },
+                None => self.page_frame(),
+            };
+            if new.close_to(&old) {
+                continue;
             }
-            self.reapply_children(Some(c), old_c);
+            let Some(kids) = map.get(&id) else { continue };
+            for &c in kids {
+                if !seen.insert(c) {
+                    continue;
+                }
+                let Some(&k) = idx.get(&c) else { continue };
+                let e = &self.elements[k];
+                let rt = rect_transform_in(e, &old);
+                let old_c = e.frame();
+                apply_rect_transform(&mut self.elements[k], &rt, &new);
+                stack.push((Some(c), old_c));
+            }
         }
     }
 
@@ -988,11 +1093,17 @@ impl Doc {
     /// `parent`, with fresh ids. Elements whose parent is not in `items` become
     /// children of `parent`. Returns the new ids of those top elements.
     pub fn insert_items(&mut self, items: &[Element], parent: Option<u64>) -> Vec<u64> {
+        self.insert_items_map(items, parent).0
+    }
+
+    /// Like [`Doc::insert_items`], also returning the map old id -> new id of every inserted element
+    /// (to carry per-element data such as portrait overrides along).
+    pub fn insert_items_map(&mut self, items: &[Element], parent: Option<u64>) -> (Vec<u64>, HashMap<u64, u64>) {
         let inside: HashSet<u64> = items.iter().map(|e| e.id).collect();
         let mut map: HashMap<u64, u64> = HashMap::new();
         for e in items {
-            map.insert(e.id, self.next_id);
-            self.next_id += 1;
+            let nid = self.take_id();
+            map.insert(e.id, nid);
         }
         let mut roots = Vec::new();
         for e in items {
@@ -1009,7 +1120,7 @@ impl Doc {
             self.elements.push(n);
         }
         self.normalize();
-        roots
+        (roots, map)
     }
 
     /// Elements of `ids` plus all their descendants, in document order (for copy / library).
@@ -1031,19 +1142,44 @@ impl Doc {
     /// Fixes what a hand-edited or foreign file may bring broken: duplicate ids, `next_id` below
     /// some id, cyclic parents (or self-parents) and non-numeric coordinates.
     pub fn sanitize(&mut self) {
-        let mut seen = std::collections::HashSet::new();
+        self.elements.truncate(MAX_ELEMENTS);
+        // ids: 1..=MAX_ID and unique. Elements with an id out of range (0, u64::MAX…) or repeating an earlier one are
+        // renumbered; parent links and portrait overrides that named an out-of-range id follow its new number.
         let mut max_id = 0u64;
         for e in &self.elements {
-            max_id = max_id.max(e.id);
+            if e.id <= MAX_ID {
+                max_id = max_id.max(e.id);
+            }
+        }
+        if self.next_id > MAX_ID * 2 || self.next_id == 0 {
+            self.next_id = max_id + 1;
         }
         self.next_id = self.next_id.max(max_id + 1);
+        let mut seen = HashSet::new();
+        let mut remap: HashMap<u64, u64> = HashMap::new();
         for i in 0..self.elements.len() {
             let id = self.elements[i].id;
-            if id == 0 || !seen.insert(id) {
-                let new = self.next_id;
-                self.next_id += 1;
+            if id == 0 || id > MAX_ID || !seen.insert(id) {
+                let new = self.take_id();
+                if id > MAX_ID {
+                    remap.entry(id).or_insert(new);
+                }
                 self.elements[i].id = new;
                 seen.insert(new);
+            }
+        }
+        if !remap.is_empty() {
+            for e in self.elements.iter_mut() {
+                if let Some(n) = e.parent.and_then(|p| remap.get(&p)) {
+                    e.parent = Some(*n);
+                }
+            }
+            if let Some(p) = self.portrait.as_mut() {
+                for o in p.overrides.iter_mut() {
+                    if let Some(n) = remap.get(&o.id) {
+                        o.id = *n;
+                    }
+                }
             }
         }
         // U+2028/U+2029/U+0085 and lone \r are line breaks for C#: they would end a `//`
@@ -1060,8 +1196,11 @@ impl Doc {
                     *v = 0.0;
                 }
             }
-            e.w = e.w.max(0.0);
-            e.h = e.h.max(0.0);
+            e.x = e.x.clamp(-COORD_LIMIT, COORD_LIMIT);
+            e.y = e.y.clamp(-COORD_LIMIT, COORD_LIMIT);
+            e.w = e.w.clamp(0.0, COORD_LIMIT);
+            e.h = e.h.clamp(0.0, COORD_LIMIT);
+            e.value = e.value.clamp(-COORD_LIMIT, COORD_LIMIT);
             e.rot %= 360.0;
             e.stroke_w = e.stroke_w.clamp(0.0, 1000.0);
             e.radius = e.radius.clamp(0.0, 10_000.0);
@@ -1080,10 +1219,11 @@ impl Doc {
         }
         clear(&mut self.title, false);
         for e in self.elements.iter_mut() {
-            for v in e.anchor_min.iter_mut().chain(e.anchor_max.iter_mut()).chain(e.pivot.iter_mut()).chain(e.shadow.offset.iter_mut()) {
-                if !v.is_finite() {
-                    *v = 0.5;
-                }
+            for v in e.anchor_min.iter_mut().chain(e.anchor_max.iter_mut()).chain(e.pivot.iter_mut()) {
+                *v = if v.is_finite() { v.clamp(-ANCHOR_LIMIT, ANCHOR_LIMIT) } else { 0.5 };
+            }
+            for v in e.shadow.offset.iter_mut() {
+                *v = if v.is_finite() { v.clamp(-ANCHOR_LIMIT, ANCHOR_LIMIT) } else { 0.5 };
             }
             let l = &mut e.layout;
             for v in l.padding.iter_mut().chain(l.spacing.iter_mut()) {
@@ -1093,7 +1233,8 @@ impl Doc {
                 *v = if v.is_finite() { v.clamp(1.0, 10_000.0) } else { 100.0 };
             }
         }
-        self.next_id = self.next_id.max(1);
+        self.next_id = self.next_id.clamp(1, MAX_ID * 2);
+        self.canvas_match = if self.canvas_match.is_finite() { self.canvas_match.clamp(0.0, 1.0) } else { 0.5 };
         self.sanitize_ext();
         // Page: with no size, or a huge one, the canvas ends up NaN or unscaled.
         if !self.width.is_finite() || self.width < 1.0 {
@@ -1104,22 +1245,7 @@ impl Doc {
         }
         self.width = self.width.min(16_384.0);
         self.height = self.height.min(16_384.0);
-        for i in 0..self.elements.len() {
-            let mut cur = self.elements[i].parent;
-            let mut steps = 0usize;
-            let mut broken = false;
-            while let Some(p) = cur {
-                if p == self.elements[i].id || steps > self.elements.len() {
-                    broken = true;
-                    break;
-                }
-                cur = self.get(p).and_then(|e| e.parent);
-                steps += 1;
-            }
-            if broken {
-                self.elements[i].parent = None;
-            }
-        }
+        self.repair_parents();
     }
 
     /// Convert old flat groups into Empty parent elements.
@@ -1146,8 +1272,7 @@ impl Doc {
             holder.w = (b[2] - b[0]).max(1.0);
             holder.h = (b[3] - b[1]).max(1.0);
             let first = self.index_of(members[0]).unwrap_or(0);
-            holder.id = self.next_id;
-            self.next_id += 1;
+            holder.id = self.take_id();
             let hid = holder.id;
             self.elements.insert(first, holder);
             for e in self.elements.iter_mut().filter(|e| members.contains(&e.id)) {

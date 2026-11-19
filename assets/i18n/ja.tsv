@@ -936,3 +936,4 @@ Import from Unity	Unity からインポート
 Imported {} ({} warnings). Save it as a project to keep it.	{} をインポートしました（警告 {} 件）。保持するにはプロジェクトとして保存してください。
 Could not import: {}	インポートできませんでした: {}
 {} things could not be mapped exactly:	{} 件を正確に変換できませんでした:
+{} (portrait)	{}（縦向き）

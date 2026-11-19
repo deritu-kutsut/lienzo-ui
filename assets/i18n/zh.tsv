@@ -936,3 +936,4 @@ Import from Unity	从 Unity 导入
 Imported {} ({} warnings). Save it as a project to keep it.	已导入 {}（{} 条警告）。请另存为项目以保留。
 Could not import: {}	无法导入：{}
 {} things could not be mapped exactly:	有 {} 项无法精确转换：
+{} (portrait)	{}（竖屏）

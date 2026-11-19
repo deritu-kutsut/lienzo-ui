@@ -23,6 +23,30 @@ function start(env) {
   return { srv, request, call: (name, args) => request("tools/call", { name, arguments: args }) };
 }
 
+/** Raw access to a server: sends lines as they are and collects every message it prints (for protocol tests). */
+function startRaw(env) {
+  const srv = spawn(process.execPath, [SERVER], { stdio: ["pipe", "pipe", "inherit"], env: { ...process.env, LIENZO_DESIGNS: "", LIENZO_DISENOS: "", ...env } });
+  const all = [];
+  const waiters = [];
+  readline.createInterface({ input: srv.stdout }).on("line", (l) => {
+    let m;
+    try { m = JSON.parse(l); } catch { m = { unparsable: l }; }
+    all.push(m);
+    for (const w of [...waiters]) if (w.test(m)) { waiters.splice(waiters.indexOf(w), 1); w.done(); }
+  });
+  return {
+    srv,
+    send: (line) => srv.stdin.write(line + "\n"),
+    /** Resolves with every message received since the last call, once one matches `test` (or after 5 s, with what there is). */
+    until: (test) => new Promise((resolve) => {
+      const finish = () => { clearTimeout(t); resolve(all.splice(0, all.length)); };
+      const w = { test, done: finish };
+      const t = setTimeout(() => { waiters.splice(waiters.indexOf(w), 1); finish(); }, 5000);
+      if (all.some(test)) finish(); else waiters.push(w);
+    }),
+  };
+}
+
 const { srv, request, call } = start({ LIENZO_DESIGNS: DESIGNS });
 const text = (r) => r.result?.content?.[0]?.text ?? "";
 const isError = (r) => r.result?.isError === true || !!r.error;
@@ -133,6 +157,109 @@ ok("English parameter wins over the Spanish one", text(await call("read_design",
   ok(`default designs folder is <repo>/${expected}`, info.includes(path.join(ROOT, expected)), info.split("\n")[1]);
   none.srv.kill();
 }
+console.log("Protocol robustness (never crash, proper JSON-RPC errors):");
+{
+  const raw = startRaw({ LIENZO_DESIGNS: DESIGNS });
+  let seq = 1000;
+  /** Sends a raw line, then a ping; returns every message received up to the ping's answer (so we know the server is alive). */
+  const exchange = async (payload) => {
+    const pingId = seq++;
+    raw.send(payload);
+    raw.send(JSON.stringify({ jsonrpc: "2.0", id: pingId, method: "ping" }));
+    const got = await raw.until((m) => m.id === pingId);
+    return got;
+  };
+  const errors = (msgs) => msgs.filter((m) => m.error);
+  const wellFormed = (m) => m.jsonrpc === "2.0" && "id" in m && typeof m.error?.code === "number" && typeof m.error?.message === "string";
+  for (const [label, payload] of [
+    ["null", "null"], ["[null]", "[null]"], ["a number", "42"], ["a string", '"hi"'], ["true", "true"], ["an empty batch", "[]"],
+    ["method that is not text", '{"jsonrpc":"2.0","id":1,"method":5}'], ["an object as id", '{"jsonrpc":"2.0","id":{},"method":"ping"}'],
+    ["params that is a string", '{"jsonrpc":"2.0","id":2,"method":"tools/list","params":"x"}'],
+  ]) {
+    const got = await exchange(payload);
+    ok(`${label}: JSON-RPC error and the server stays alive`, got.length >= 2 && errors(got).length >= 1 && errors(got).every(wellFormed), JSON.stringify(got).slice(0, 200));
+  }
+  {
+    const got = await exchange('[null,{"jsonrpc":"2.0","id":7,"method":"ping"},[1],42]');
+    ok("a batch with null and non-objects: errors for the bad ones, the good one is answered", errors(got).length >= 3 && got.some((m) => m.id === 7 && m.result) && errors(got).every(wellFormed), JSON.stringify(got).slice(0, 300));
+  }
+  {
+    const got = await exchange('{"jsonrpc":"2.0","method":"tools/call","params":{"name":"list_designs"}}');
+    ok("tools/call without an id is refused (an error, never a result without id)", errors(got).length === 1 && !got.some((m) => m.result && m.id === undefined), JSON.stringify(got).slice(0, 200));
+  }
+  for (const [label, params] of [["a name that is not text", { name: 5 }], ["no name", {}], ["arguments as text", { name: "list_designs", arguments: "abc" }], ["arguments as a list", { name: "read_design", arguments: [1] }]]) {
+    raw.send(JSON.stringify({ jsonrpc: "2.0", id: 50, method: "tools/call", params }));
+    const got = await raw.until((m) => m.id === 50);
+    const r = got.find((m) => m.id === 50);
+    ok(`tools/call with ${label}: error, no crash`, !!r && (!!r.error || r.result?.isError === true), JSON.stringify(r));
+  }
+  const init = (v) => exchange(JSON.stringify({ jsonrpc: "2.0", id: 60, method: "initialize", params: { protocolVersion: v } })).then((g) => g.find((m) => m.id === 60)?.result);
+  const cargo = fs.readFileSync(path.join(ROOT, "Cargo.toml"), "utf8").match(/^version\s*=\s*"([^"]+)"/m)[1];
+  const r1 = await init("2024-11-05");
+  ok("protocolVersion: a supported client version is echoed", r1?.protocolVersion === "2024-11-05");
+  ok("protocolVersion: an unknown one gets the newest supported", (await init("1999-01-01"))?.protocolVersion === "2025-06-18");
+  ok("protocolVersion: a non-text one gets the newest supported", (await init(5))?.protocolVersion === "2025-06-18");
+  ok(`serverInfo.version comes from Cargo.toml (${cargo})`, r1?.serverInfo?.version === cargo, r1?.serverInfo?.version);
+  raw.srv.kill();
+}
+
+console.log("add_element / duplicate_element validate like modify_element:");
+{
+  const base = { file: "Shop", type: "Button", name: "V1", x: 10, y: 10, w: 50, h: 20 };
+  const before = text(await call("read_design", { file: "Shop" }));
+  for (const [label, patch] of [
+    ["x as text", { x: "10" }], ["y as null", { y: null }], ["w = 0", { w: 0 }], ["w negative", { w: -5 }], ["h too large", { h: 1e9 }], ["x out of range", { x: 1e9 }],
+    ["text as number", { text: 5 }], ["text as object", { text: { a: 1 } }], ["parent as object", { parent: {} }], ["parent as boolean", { parent: true }],
+    ["type as number", { type: 5 }], ["type unknown", { type: "Nope" }], ["name as number", { name: 5 }], ["color invalid", { color: "red" }], ["image on a Button", { image: process.execPath }],
+    ["huge text", { text: "t".repeat(6000) }], ["UNC image", { type: "Image", image: "\\\\server\\share\\a.png" }], ["UNC image with slashes", { type: "Image", image: "//server/share/a.png" }],
+  ]) ok(`add_element rejects ${label}`, isError(await call("add_element", { ...base, ...patch })));
+  ok("add_element rejects a design that does not exist after validating (no crash)", isError(await call("add_element", { ...base, file: "NoSuchDesign" })));
+  ok("add_element Spanish alias validates too", isError(await call("agregar_elemento", { archivo: "Shop", tipo: "Button", nombre: "V2", x: "1", y: 1, w: 10, h: 10 })));
+  ok("add_element valid call still works", !isError(await call("add_element", { ...base, name: "V-ok" })));
+  const dup = { file: "Shop", element: "Close", new_name: "D1" };
+  for (const [label, patch] of [
+    ["dx as text", { dx: "5" }], ["dy as null", { dy: null }], ["dx out of range", { dx: 1e12 }], ["dy as object", { dy: {} }], ["text as number", { text: 7 }],
+    ["element as object", { element: {} }], ["element as list", { element: ["Close"] }], ["new_name as number", { new_name: 5 }], ["huge text", { text: "t".repeat(6000) }],
+  ]) ok(`duplicate_element rejects ${label}`, isError(await call("duplicate_element", { ...dup, ...patch })));
+  ok("duplicate_element Spanish alias validates too", isError(await call("duplicar_elemento", { archivo: "Shop", elemento: "Close", nuevo_nombre: "D2", dx: "3" })));
+  ok("duplicate_element valid call still works", !isError(await call("duplicate_element", { ...dup, new_name: "D-ok", dx: 5, dy: -5, text: "Copy" })));
+  const after = text(await call("read_design", { file: "Shop" }));
+  ok("rejected calls did not change the design", !/\bV1\b|\bV2\b|\bD1\b|\bD2\b/.test(after) && after.includes("V-ok") && after.includes("D-ok") && before.split("\n").length < after.split("\n").length);
+  ok("modify_element rejects UNC image paths", isError(await call("modify_element", { file: "Shop", element: "V-ok", changes: { image: "\\\\server\\share\\a.png" } })));
+}
+
+console.log("create_design validates before creating anything:");
+for (const [label, title] of [["a title that is a number", 123], ["a title of 100 characters", "x".repeat(100)], ["a title with control characters", "a\u0007b"]]) {
+  const r = await call("create_design", { file: "BadTitle", template: 0, title });
+  ok(`create_design rejects ${label}, no file is left`, isError(r) && !fs.existsSync(path.join(DESIGNS, "BadTitle.editorgui.json")), text(r));
+}
+
+console.log("App failures (fake app):");
+{
+  const fakeDir = fs.mkdtempSync(path.join(os.tmpdir(), "lienzo-mcp-fake-"));
+  const fake = path.join(fakeDir, "fake-app.mjs");
+  const argsOut = path.join(fakeDir, "args.json");
+  fs.writeFileSync(fake, 'import fs from "node:fs";\nfs.writeFileSync(process.env.FAKE_OUT, JSON.stringify(process.argv.slice(2)));\nif (process.env.FAKE_MODE === "hang") setInterval(() => {}, 1000); else console.log("fake ok");\n');
+  const hang = start({ LIENZO_DESIGNS: DESIGNS, LIENZO_UI: fake, LIENZO_TIMEOUT_MS: "800", FAKE_MODE: "hang", FAKE_OUT: argsOut });
+  const r = await hang.call("review_design", { file: "Shop" });
+  ok("review_design errors (not an empty string) when the app times out", isError(r) && /did not answer/.test(text(r)), JSON.stringify(r.result ?? r.error));
+  const s2 = await hang.call("screenshot", { file: "Shop" });
+  ok("screenshot errors when the app times out", isError(s2));
+  hang.srv.kill();
+  const fine = start({ LIENZO_DESIGNS: DESIGNS, LIENZO_UI: fake, FAKE_OUT: argsOut });
+  const project = fs.mkdtempSync(path.join(os.tmpdir(), "lienzo-mcp-unity-"));
+  fs.mkdirSync(path.join(project, "Assets"));
+  const rel = path.relative(process.cwd(), project);
+  ok("export_unity accepts a relative project path", !isError(await fine.call("export_unity", { file: "Shop", unity_project: rel })), rel);
+  const sent = JSON.parse(fs.readFileSync(argsOut, "utf8"));
+  ok("export_unity passes the ABSOLUTE project path to the app", sent.includes(path.resolve(rel)) && path.isAbsolute(sent[sent.indexOf("--export") + 1]), JSON.stringify(sent));
+  ok("export_unity rejects UNC project paths", isError(await fine.call("export_unity", { file: "Shop", unity_project: "\\\\server\\share\\proj" })));
+  ok("export_unity rejects a folder without Assets", isError(await fine.call("export_unity", { file: "Shop", unity_project: fakeDir })));
+  fine.srv.kill();
+  fs.rmSync(fakeDir, { recursive: true, force: true });
+  fs.rmSync(project, { recursive: true, force: true });
+}
+
 srv.stdin.write("{not json}\n");
 ok("invalid JSON does not bring the server down", (await request("ping", {})).result !== undefined);
 

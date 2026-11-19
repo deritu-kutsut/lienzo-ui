@@ -936,3 +936,4 @@ Import from Unity	Unity에서 가져오기
 Imported {} ({} warnings). Save it as a project to keep it.	{} 가져옴(경고 {}개). 유지하려면 프로젝트로 저장하세요.
 Could not import: {}	가져올 수 없습니다: {}
 {} things could not be mapped exactly:	{}개 항목을 정확히 변환하지 못했습니다:
+{} (portrait)	{} (세로)

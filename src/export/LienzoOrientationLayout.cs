@@ -32,6 +32,9 @@ public class LienzoOrientationLayout : MonoBehaviour
         public float fontSize;
         public bool hasLayout;
         public LayoutState layout = new LayoutState();
+        /// ScrollView content height (Entry.content); hasContent = this state sets it.
+        public bool hasContent;
+        public float contentHeight;
     }
 
     [Serializable]
@@ -41,6 +44,8 @@ public class LienzoOrientationLayout : MonoBehaviour
         public TMP_Text[] texts;
         /// Object that carries the layout group (a ScrollView's content, or the target itself).
         public Transform layoutHolder;
+        /// A ScrollView's Content: its height can differ per orientation (it depends on the children's boxes).
+        public RectTransform content;
         public State landscape = new State();
         public State portrait = new State();
     }
@@ -69,9 +74,11 @@ public class LienzoOrientationLayout : MonoBehaviour
         if (entries == null) return;
         foreach (var e in entries)
         {
-            if (e == null || e.target == null) continue;
+            if (e == null) continue;
             var s = portrait ? e.portrait : e.landscape;
             if (s == null) continue;
+            if (s.hasContent && e.content != null) e.content.sizeDelta = new Vector2(e.content.sizeDelta.x, s.contentHeight);
+            if (e.target == null) continue;
             if (s.hasRect)
             {
                 e.target.anchorMin = s.anchorMin;

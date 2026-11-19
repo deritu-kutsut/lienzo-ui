@@ -30,6 +30,10 @@ const MAX_META_FILES: usize = 400_000;
 const MAX_PREFABS: usize = 50_000;
 const MAX_WARNINGS: usize = 400;
 const MAX_ITEMS: usize = 100_000;
+const MAX_JOIN_LINES: usize = 256;
+const MAX_COMPS_PER_GO: usize = 256;
+const MAX_ELEMENT_TEXT: usize = 4096;
+const MAX_TOTAL_TEXT: usize = 8 * 1024 * 1024;
 
 // ===========================================================================
 // 1. Unity YAML reader
@@ -241,11 +245,13 @@ fn decode_quoted(inner: &str, q: char) -> String {
 struct Parser<'a> {
     lines: Vec<Line<'a>>,
     pos: usize,
+    /// Scalars that were cut (too long / too many joined lines).
+    truncated: usize,
 }
 
 impl<'a> Parser<'a> {
     fn new(text: &'a str) -> Self {
-        Parser { lines: lines_of(text), pos: 0 }
+        Parser { lines: lines_of(text), pos: 0, truncated: 0 }
     }
 
     fn node(&mut self, min: usize, depth: usize) -> Y {
@@ -333,18 +339,27 @@ impl<'a> Parser<'a> {
     }
 
     /// A value that starts on the current line (`text`); continuation lines have an indent >= `cont_min`.
+    /// Multi-line scalars are scanned incrementally (only the newly joined line is looked at, the
+    /// quote / escape / depth state is carried), joined at most `MAX_JOIN_LINES` lines and `MAX_STR` bytes.
     fn value_from(&mut self, text: &str, cont_min: usize, depth: usize) -> Y {
         let first = text.chars().next().unwrap_or(' ');
         match first {
             '{' | '[' => {
                 let mut buf = text.to_string();
-                let mut guard = 0;
-                while !flow_balanced(&buf) && guard < 100_000 && buf.len() < MAX_STR * 16 {
+                let mut st = FlowState::default();
+                st.feed(text);
+                let mut joined = 0;
+                while !st.balanced() {
+                    if joined >= MAX_JOIN_LINES || buf.len() >= MAX_STR {
+                        self.truncated += 1;
+                        break;
+                    }
                     let Some(&(_, l)) = self.lines.get(self.pos) else { break };
                     buf.push(' ');
                     buf.push_str(l);
+                    st.feed(l);
                     self.pos += 1;
-                    guard += 1;
+                    joined += 1;
                 }
                 let chars: Vec<char> = buf.chars().collect();
                 let mut i = 0;
@@ -352,22 +367,28 @@ impl<'a> Parser<'a> {
             }
             '"' | '\'' => {
                 let mut buf = text.to_string();
+                let mut from = 1usize; // bytes before this index were already scanned
+                let mut esc = false;
+                let mut joined = 0;
                 loop {
-                    if let Some(end) = close_index(&buf, first) {
+                    if let Some(end) = find_close(&buf, from, first, &mut esc) {
                         return Y::S(decode_quoted(&buf[1..end], first));
                     }
-                    match self.lines.get(self.pos) {
-                        Some(&(_, l)) if buf.len() < MAX_STR * 4 => {
-                            if first == '"' && buf.ends_with('\\') {
-                                buf.pop();
-                            } else {
-                                buf.push(' ');
-                            }
-                            buf.push_str(l);
-                            self.pos += 1;
-                        }
-                        _ => return Y::S(decode_quoted(&buf[1..], first)),
+                    if joined >= MAX_JOIN_LINES || buf.len() >= MAX_STR {
+                        self.truncated += 1;
+                        return Y::S(decode_quoted(&buf[1..], first));
                     }
+                    let Some(&(_, l)) = self.lines.get(self.pos) else { return Y::S(decode_quoted(&buf[1..], first)) };
+                    if first == '"' && esc {
+                        buf.pop(); // backslash at the end of the line: the lines are joined without a space
+                        esc = false;
+                    } else {
+                        buf.push(' ');
+                    }
+                    from = buf.len();
+                    buf.push_str(l);
+                    self.pos += 1;
+                    joined += 1;
                 }
             }
             '|' | '>' => {
@@ -382,7 +403,7 @@ impl<'a> Parser<'a> {
                     buf.push_str(l);
                     self.pos += 1;
                 }
-                Y::S(buf.chars().take(MAX_STR).collect())
+                self.cut_scalar(buf)
             }
             _ => {
                 let mut buf = text.to_string();
@@ -394,35 +415,80 @@ impl<'a> Parser<'a> {
                     buf.push_str(l);
                     self.pos += 1;
                 }
-                Y::S(buf.chars().take(MAX_STR).collect())
+                self.cut_scalar(buf)
             }
         }
+    }
+
+    fn cut_scalar(&mut self, buf: String) -> Y {
+        if buf.len() > MAX_STR {
+            let mut n = 0usize;
+            let cut: String = buf.chars().take_while(|c| { n += c.len_utf8(); n <= MAX_STR }).collect();
+            self.truncated += 1;
+            return Y::S(cut);
+        }
+        Y::S(buf)
     }
 }
 
-fn flow_balanced(s: &str) -> bool {
-    let mut depth = 0i64;
-    let mut quote: Option<char> = None;
-    let mut esc = false;
-    for c in s.chars() {
-        if let Some(q) = quote {
-            if esc {
-                esc = false;
-            } else if q == '"' && c == '\\' {
-                esc = true;
-            } else if c == q {
-                quote = None;
+/// Bytes read from the closing quote search of a quoted scalar, starting at byte `from` of `s`
+/// (the opening quote is at index 0). `esc` carries a pending backslash between calls.
+fn find_close(s: &str, from: usize, q: char, esc: &mut bool) -> Option<usize> {
+    let mut it = s[from..].char_indices().peekable();
+    while let Some((i, c)) = it.next() {
+        if q == '"' {
+            if *esc {
+                *esc = false;
+                continue;
             }
-            continue;
+            if c == '\\' {
+                *esc = true;
+                continue;
+            }
         }
-        match c {
-            '"' | '\'' => quote = Some(c),
-            '{' | '[' => depth += 1,
-            '}' | ']' => depth -= 1,
-            _ => {}
+        if c == q {
+            if q == '\'' && matches!(it.peek(), Some((_, '\''))) {
+                it.next();
+            } else {
+                return Some(from + i);
+            }
         }
     }
-    depth <= 0 && quote.is_none()
+    None
+}
+
+/// Quote / escape / bracket depth of a flow collection, carried across appended lines.
+#[derive(Default)]
+struct FlowState {
+    depth: i64,
+    quote: Option<char>,
+    esc: bool,
+}
+
+impl FlowState {
+    fn feed(&mut self, s: &str) {
+        for c in s.chars() {
+            if let Some(q) = self.quote {
+                if self.esc {
+                    self.esc = false;
+                } else if q == '"' && c == '\\' {
+                    self.esc = true;
+                } else if c == q {
+                    self.quote = None;
+                }
+                continue;
+            }
+            match c {
+                '"' | '\'' => self.quote = Some(c),
+                '{' | '[' => self.depth += 1,
+                '}' | ']' => self.depth -= 1,
+                _ => {}
+            }
+        }
+    }
+    fn balanced(&self) -> bool {
+        self.depth <= 0 && self.quote.is_none()
+    }
 }
 
 fn skip_ws(s: &[char], i: &mut usize) {
@@ -604,6 +670,7 @@ struct Scene {
     order: Vec<i64>,
     duplicates: usize,
     instances: usize,
+    truncated: usize,
 }
 
 const PARSED_CLASSES: [u32; 6] = [1, 4, 223, 224, 225, 114];
@@ -623,7 +690,7 @@ fn quick_go(body: &str) -> i64 {
 
 fn load_scene(text: &str) -> Result<Scene, String> {
     let docs = split_docs(text)?;
-    let mut sc = Scene { objs: HashMap::new(), order: Vec::new(), duplicates: 0, instances: 0 };
+    let mut sc = Scene { objs: HashMap::new(), order: Vec::new(), duplicates: 0, instances: 0, truncated: 0 };
     for d in docs {
         if d.class == 1001 {
             sc.instances += 1;
@@ -640,6 +707,7 @@ fn load_scene(text: &str) -> Result<Scene, String> {
         let (y, go) = if PARSED_CLASSES.contains(&d.class) {
             let mut p = Parser::new(d.body);
             let root = p.node(0, 0);
+            sc.truncated += p.truncated;
             let inner = root.first_value().cloned().unwrap_or(Y::Null);
             let go = if d.class == 1 { d.file } else { rid(&inner, "m_GameObject") };
             (inner, go)
@@ -664,7 +732,7 @@ impl Scene {
         let mut v: Vec<i64> = Vec::new();
         let mut seen: HashSet<i64> = HashSet::new();
         if let Some(o) = self.objs.get(&go) {
-            for c in o.y.get("m_Component").map(|y| y.seq()).unwrap_or(&[]) {
+            for c in o.y.get("m_Component").map(|y| y.seq()).unwrap_or(&[]).iter().take(MAX_COMPS_PER_GO) {
                 let id = c.get("component").map(file_id_of).unwrap_or_else(|| file_id_of(c));
                 if self.objs.get(&id).is_some_and(|c| c.go == go) && seen.insert(id) {
                     v.push(id);
@@ -672,6 +740,10 @@ impl Scene {
             }
         }
         v
+    }
+    /// How many components the GameObject lists beyond what is read (`MAX_COMPS_PER_GO`).
+    fn comp_overflow(&self, go: i64) -> usize {
+        self.objs.get(&go).map(|o| o.y.get("m_Component").map(|y| y.seq().len()).unwrap_or(0).saturating_sub(MAX_COMPS_PER_GO)).unwrap_or(0)
     }
     fn rt_of_go(&self, go: i64) -> Option<i64> {
         self.comp_ids(go).into_iter().find(|c| self.is_transform(*c))
@@ -1227,6 +1299,16 @@ fn parse_tex_meta(root: &Y) -> TexInfo {
 // 5. Warnings
 // ===========================================================================
 
+/// A warning text safe to print in a terminal and show in the UI: control characters (ESC, BEL...),
+/// line separators and bidi overrides removed, length capped. GameObject names, script names, GUIDs
+/// and file names come from the file and may contain anything.
+pub(crate) fn clean_msg(s: &str) -> String {
+    s.chars()
+        .filter(|c| !c.is_control() && !matches!(*c, '\u{2028}' | '\u{2029}' | '\u{202A}'..='\u{202E}' | '\u{2066}'..='\u{2069}'))
+        .take(400)
+        .collect()
+}
+
 #[derive(Default)]
 struct Warn {
     list: Vec<String>,
@@ -1237,13 +1319,15 @@ struct Warn {
 
 impl Warn {
     fn add(&mut self, s: impl Into<String>) {
-        let s = s.into();
+        let s = clean_msg(&s.into());
         if self.list.len() < MAX_WARNINGS && self.seen.insert(s.clone()) {
             self.list.push(s);
         }
     }
     /// One warning per `key`, naming the first GameObject and counting the others.
     fn group(&mut self, key: &str, go: &str) {
+        let go = clean_msg(go);
+        let go = go.as_str();
         match self.index.get(key) {
             Some(&i) => self.groups[i].2 += 1,
             None => {
@@ -1281,6 +1365,25 @@ struct Ctx<'a> {
     onclick: usize,
     too_many: bool,
     too_deep: bool,
+    /// Text bytes kept so far (budget `MAX_TOTAL_TEXT`) and values cut or dropped.
+    text_bytes: usize,
+    text_cut: usize,
+}
+
+impl Ctx<'_> {
+    /// Caps a text value: at most `MAX_ELEMENT_TEXT` bytes each and `MAX_TOTAL_TEXT` for the whole import.
+    fn cap_text(&mut self, t: &mut String) {
+        if t.len() > MAX_ELEMENT_TEXT {
+            let mut n = 0usize;
+            *t = t.chars().take_while(|c| { n += c.len_utf8(); n <= MAX_ELEMENT_TEXT }).collect();
+            self.text_cut += 1;
+        }
+        if self.text_bytes + t.len() > MAX_TOTAL_TEXT {
+            t.clear();
+            self.text_cut += 1;
+        }
+        self.text_bytes += t.len();
+    }
 }
 
 struct Txt {
@@ -1312,6 +1415,7 @@ struct RtData {
     rt: RectTransform,
     scale: [f32; 2],
     tilt: bool,
+    mirrored: bool,
 }
 
 fn read_rt(y: &Y) -> RtData {
@@ -1339,14 +1443,17 @@ fn read_rt(y: &Y) -> RtData {
         tilt = q[0].abs() > 1e-3 || q[1].abs() > 1e-3;
     }
     let mut scale = [1.0f32, 1.0];
+    let mut mirrored = false;
     if let Some(m) = y.get("m_LocalScale") {
         for (i, k) in ["x", "y"].iter().enumerate() {
             if let Some(v) = nf(m, k) {
-                scale[i] = clampv(v, 1000.0).abs();
+                let v = clampv(v, 1000.0);
+                mirrored |= v < 0.0;
+                scale[i] = v.abs();
             }
         }
     }
-    RtData { rt, scale, tilt }
+    RtData { rt, scale, tilt, mirrored }
 }
 
 /// Places a RectTransform in its parent frame (world frame of the page). `pcs` is the accumulated scale of the ancestors.
@@ -1783,6 +1890,7 @@ fn build(sc: &Scene, cx: &mut Ctx, rt_id: i64, go: i64, alpha_in: f32) -> Built 
         Kind::Panel | Kind::Image => {
             // Lienzo exports a caption of a panel as a stretched child called "Texto"
             if let Some(t) = label_child(cx, &mut absorbed, Some("Texto")) {
+                cx.w.group("Child named 'Texto' absorbed as the caption of its parent (Lienzo export convention)", &name_raw);
                 apply_txt(&mut e, &t, &mut cx.fonts);
             }
         }
@@ -1845,6 +1953,7 @@ fn build(sc: &Scene, cx: &mut Ctx, rt_id: i64, go: i64, alpha_in: f32) -> Built 
                     if let Some(ic) = find(&gc, &[CK::Image]) {
                         e.fill2 = read_image(ic).color;
                     }
+                    cx.w.group("Child named 'Background' absorbed as the track of its Slider", &name_raw);
                     absorbed.insert(*k);
                 }
             }
@@ -1908,6 +2017,7 @@ fn build(sc: &Scene, cx: &mut Ctx, rt_id: i64, go: i64, alpha_in: f32) -> Built 
             for k in &kids {
                 let g = sc.objs.get(k).map(|o| o.go).unwrap_or(0);
                 if sc.go_name(g) == "Arrow" {
+                    cx.w.group("Child named 'Arrow' absorbed into its Dropdown", &name_raw);
                     absorbed.insert(*k);
                 }
             }
@@ -1967,6 +2077,7 @@ fn build(sc: &Scene, cx: &mut Ctx, rt_id: i64, go: i64, alpha_in: f32) -> Built 
             if let Some(ic) = find(&kc, &[CK::Image]) {
                 let im = read_image(ic);
                 e.stroke = im.color;
+                cx.w.group("Child named 'Borde' absorbed as the border ring of its parent (Lienzo export convention)", &name_raw);
                 absorbed.insert(*k);
                 let ring = match &im.sprite {
                     Some((fid, guid)) => match cx.assets.resolve_sprite(*fid, guid) {
@@ -2043,6 +2154,14 @@ fn build(sc: &Scene, cx: &mut Ctx, rt_id: i64, go: i64, alpha_in: f32) -> Built 
     if alpha < 1.0 {
         e.opacity = (e.opacity * alpha).clamp(0.0, 1.0);
     }
+    let overflow = sc.comp_overflow(go);
+    if overflow > 0 {
+        cx.w.group(&format!("GameObject lists more than {} components: the other {} were ignored", MAX_COMPS_PER_GO, overflow), &name_raw);
+    }
+    cx.cap_text(&mut e.text);
+    for o in e.options.iter_mut() {
+        cx.cap_text(o);
+    }
     Built { e, absorbed, content, alpha, ring_n }
 }
 
@@ -2098,6 +2217,9 @@ fn walk(sc: &Scene, cx: &mut Ctx, rt_id: i64, parent: Option<u64>, pf: Frame, pc
     if data.tilt {
         cx.w.group("3D rotation (X / Y) ignored, only the Z rotation was imported", &b.e.name.clone());
     }
+    if data.mirrored {
+        cx.w.group("Negative scale (mirrored) imported as a positive scale: the flip is lost", &b.e.name.clone());
+    }
     if data.scale != [1.0, 1.0] {
         cx.w.group("RectTransform scale folded into the size and position", &b.e.name.clone());
     }
@@ -2115,6 +2237,8 @@ fn walk(sc: &Scene, cx: &mut Ctx, rt_id: i64, parent: Option<u64>, pf: Frame, pc
 
     // children
     let mut handled: HashSet<i64> = b.absorbed.clone();
+    // ScrollView: the content's children are emitted where the viewport sits among the siblings (m_Children order)
+    let mut content_walk: Option<(i64, i64, Frame, [f32; 2])> = None;
     if let Some(ct) = b.content {
         // chain ScrollView -> ... -> Content, placed one by one
         let mut chain = Vec::new();
@@ -2136,17 +2260,33 @@ fn walk(sc: &Scene, cx: &mut Ctx, rt_id: i64, parent: Option<u64>, pf: Frame, pc
                 (f, c) = place(&d, &f, c);
             }
             cx.visited.extend(chain.iter().copied());
-            for k in sc.kids(ct, &cx.by_father) {
-                walk(sc, cx, k, Some(id), f, c, alpha, depth + 1, None);
+            if let Some(&first) = chain.first() {
+                content_walk = Some((first, ct, f, c));
             }
         }
         handled.extend(chain);
     }
+    let mut content_done = content_walk.is_none();
+    let do_content = |cx: &mut Ctx, cw: &Option<(i64, i64, Frame, [f32; 2])>| {
+        if let Some((_, ct, f, c)) = cw {
+            for k in sc.kids(*ct, &cx.by_father) {
+                walk(sc, cx, k, Some(id), *f, *c, alpha, depth + 1, None);
+            }
+        }
+    };
     for k in sc.kids(rt_id, &cx.by_father) {
+        if !content_done && content_walk.as_ref().is_some_and(|c| c.0 == k) {
+            content_done = true;
+            do_content(cx, &content_walk);
+            continue;
+        }
         if handled.contains(&k) {
             continue;
         }
         walk(sc, cx, k, Some(id), frame, cs, alpha, depth + 1, None);
+    }
+    if !content_done {
+        do_content(cx, &content_walk);
     }
 }
 
@@ -2194,6 +2334,8 @@ pub(crate) fn import_prefab_text(text: &str, title: &str, assets: &mut Assets) -
         onclick: 0,
         too_many: false,
         too_deep: false,
+        text_bytes: 0,
+        text_cut: 0,
     };
     cx.doc.title = clean_label(title, 128).unwrap_or_else(|| "Imported design".to_string());
     // A Unity canvas has no background: keep the page transparent so no "Fondo del lienzo" is exported.
@@ -2201,6 +2343,9 @@ pub(crate) fn import_prefab_text(text: &str, title: &str, assets: &mut Assets) -
 
     if sc.duplicates > 0 {
         cx.w.add(format!("{} duplicate fileID document(s) ignored (the first one of each was used)", sc.duplicates));
+    }
+    if sc.truncated > 0 {
+        cx.w.add(format!("{} text value(s) were cut (longer than 64 KB or spanning more than {} lines)", sc.truncated, MAX_JOIN_LINES));
     }
     if sc.instances > 0 {
         cx.w.add(format!("{} nested prefab instance(s) / stripped object(s) are not expanded: open the nested prefabs separately", sc.instances));
@@ -2373,6 +2518,10 @@ pub(crate) fn import_prefab_text(text: &str, title: &str, assets: &mut Assets) -
         let list = cx.missing_guids.join(", ");
         let n = cx.missing_count;
         cx.w.add(format!("{} sprite reference(s) could not be resolved to an asset (no matching .meta in the project); e.g. GUID {}", n, list));
+    }
+    if cx.text_cut > 0 {
+        let n = cx.text_cut;
+        cx.w.add(format!("{} text value(s) were cut or dropped (limit {} KB per element and {} MB in total)", n, MAX_ELEMENT_TEXT / 1024, MAX_TOTAL_TEXT / (1024 * 1024)));
     }
     if cx.onclick > 0 {
         let n = cx.onclick;
@@ -2581,7 +2730,16 @@ pub(crate) fn import_export_json(text: &str, title_hint: &str) -> Result<Importe
         e.preserve_aspect = jb(im, "preserveAspect").unwrap_or(false);
         e.radius = jf(im, "radius").unwrap_or(0.0).max(0.0);
         if let Some(src) = js(im, "source").filter(|s| !s.is_empty()) {
-            e.image = if src.starts_with("Assets/") || src.starts_with("Packages/") { format!("unity:{}", src) } else { src.to_string() };
+            // only a project-relative Assets/Packages path or a bare file name: nothing that can reach outside
+            // (absolute, UNC, drive, `..`, separators) is ever turned into a file read
+            let rel = src.split('#').next().unwrap_or("");
+            if crate::library::valid_unity_rel(rel) {
+                e.image = format!("unity:{}", src);
+            } else if crate::library::valid_image_file_name(src) {
+                e.image = src.to_string();
+            } else {
+                warnings.add(format!("Element '{}': image source '{}' is not an Assets/ or Packages/ path nor a plain file name: dropped", e.name, src.chars().take(80).collect::<String>()));
+            }
         }
         let ol = j.get("outline").unwrap_or(&empty);
         if let Some(c) = jcolor(ol, "color") {
@@ -2812,7 +2970,7 @@ pub fn import_unity_project_report(dir: &Path, out_dir: &Path) -> Result<Project
     let mut rep = ProjectReport::default();
     let mut used: HashSet<String> = HashSet::new();
     for p in prefabs {
-        let rel = p.strip_prefix(dir).unwrap_or(&p).to_string_lossy().replace('\\', "/");
+        let rel = clean_msg(&p.strip_prefix(dir).unwrap_or(&p).to_string_lossy().replace('\\', "/"));
         let text = match read_bounded(&p) {
             Ok(t) => t,
             Err(e) => {
@@ -2840,18 +2998,38 @@ pub fn import_unity_project_report(dir: &Path, out_dir: &Path) -> Result<Project
             continue;
         }
         let base = sanitize_file_name(&title_of(&p));
+        let json = serde_json::to_string_pretty(&imp.doc).map_err(|e| e.to_string())?;
+        // never overwrite: create_new, and a numeric suffix when the name is taken (by this run or by an existing file)
         let mut name = base.clone();
         let mut n = 2;
-        while !used.insert(name.to_lowercase()) {
-            name = format!("{}_{}", base, n);
-            n += 1;
+        let mut collided = false;
+        let file = loop {
+            if !used.insert(name.to_lowercase()) {
+                name = format!("{}_{}", base, n);
+                n += 1;
+                continue;
+            }
+            let file = format!("{}.editorgui.json", name);
+            let target = out_dir.join(&file);
+            match std::fs::OpenOptions::new().write(true).create_new(true).open(&target) {
+                Ok(mut f) => {
+                    use std::io::Write;
+                    f.write_all(json.as_bytes()).map_err(|e| format!("{}: {}", target.display(), e))?;
+                    break file;
+                }
+                Err(e) if e.kind() == std::io::ErrorKind::AlreadyExists && n < 10_000 => {
+                    collided = true;
+                    name = format!("{}_{}", base, n);
+                    n += 1;
+                }
+                Err(e) => return Err(format!("{}: {}", target.display(), e)),
+            }
+        };
+        if collided {
+            rep.warnings.push((clean_msg(&rel), clean_msg(&format!("{}.editorgui.json already existed in the output folder: written as {} (nothing was overwritten)", base, file))));
         }
-        let file = format!("{}.editorgui.json", name);
-        let json = serde_json::to_string_pretty(&imp.doc).map_err(|e| e.to_string())?;
-        let target = out_dir.join(&file);
-        std::fs::write(&target, json).map_err(|e| format!("{}: {}", target.display(), e))?;
         for w in imp.warnings {
-            rep.warnings.push((rel.clone(), w));
+            rep.warnings.push((clean_msg(&rel), w));
         }
         rep.written.push((file, imp.doc.elements.len()));
     }

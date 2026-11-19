@@ -28,6 +28,8 @@ mod unity_import;
 #[cfg(test)]
 mod docext_tests;
 #[cfg(test)]
+mod hardening_tests;
+#[cfg(test)]
 mod unity_import_tests;
 
 use eframe::egui;

@@ -20,8 +20,24 @@ import path from "node:path";
 import readline from "node:readline";
 import { fileURLToPath } from "node:url";
 
-const VERSION = "1.0.0";
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+/** Version of the server = version of the app: Cargo.toml in the repository, or mcp/package.json inside the release package. */
+function readVersion() {
+  const here = path.dirname(fileURLToPath(import.meta.url));
+  try {
+    const m = fs.readFileSync(path.join(ROOT, "Cargo.toml"), "utf8").match(/^\s*version\s*=\s*"([^"]+)"/m);
+    if (m) return m[1];
+  } catch { /* not in the repository */ }
+  try {
+    const v = JSON.parse(fs.readFileSync(path.join(here, "package.json"), "utf8")).version;
+    if (typeof v === "string" && v) return v;
+  } catch { /* no package metadata */ }
+  return "unknown";
+}
+const VERSION = readVersion();
+/** Protocol versions this server understands, newest first (initialize answers with the client's when it is one of them). */
+const PROTOCOL_VERSIONS = ["2025-06-18", "2025-03-26", "2024-11-05"];
+const isObject = (v) => v !== null && typeof v === "object" && !Array.isArray(v);
 /** Designs folder: LIENZO_DESIGNS, else the legacy LIENZO_DISENOS, else <repo>/designs (or an old <repo>/disenos if that is what exists). */
 function designsFolder() {
   const env = process.env.LIENZO_DESIGNS || process.env.LIENZO_DISENOS;
@@ -53,6 +69,8 @@ const LEGACY_PARAMS = {
 };
 /** Renames old Spanish parameters to the English ones (the English name wins if both are given). */
 function normalizeArgs(args) {
+  if (args === undefined || args === null) args = {};
+  if (!isObject(args)) throw new Error("'arguments' must be an object.");
   const out = Object.create(null);
   for (const [k, v] of Object.entries(args || {})) {
     const key = Object.hasOwn(LEGACY_PARAMS, k) ? LEGACY_PARAMS[k] : k;
@@ -78,15 +96,22 @@ function appBinary() {
   return found;
 }
 
+/** Runs the app headless. `timedOut` is true when it was killed for taking too long (callers must treat that as an error).
+ *  LIENZO_UI may be a .js/.mjs script (run with this Node): used by the tests with a fake app. LIENZO_TIMEOUT_MS shortens the timeout. */
 function runApp(args, timeoutMs = 120_000) {
   return new Promise((resolve) => {
-    const p = spawn(appBinary(), args, { cwd: ROOT, windowsHide: true });
-    let out = "", err = "";
+    const override = Number(process.env.LIENZO_TIMEOUT_MS);
+    if (Number.isFinite(override) && override > 0) timeoutMs = override;
+    let bin;
+    try { bin = appBinary(); } catch (e) { return resolve({ code: -1, out: "", err: e.message, timedOut: false }); }
+    const script = /\.m?js$/i.test(bin);
+    const p = spawn(script ? process.execPath : bin, script ? [bin, ...args] : args, { cwd: ROOT, windowsHide: true });
+    let out = "", err = "", timedOut = false;
     p.stdout.on("data", (d) => (out += d));
     p.stderr.on("data", (d) => (err += d));
-    const t = setTimeout(() => p.kill(), timeoutMs);
-    p.on("error", (e) => { clearTimeout(t); resolve({ code: -1, out, err: String(e) }); });
-    p.on("close", (code) => { clearTimeout(t); resolve({ code, out: out.trim(), err: err.trim() }); });
+    const t = setTimeout(() => { timedOut = true; p.kill(); }, timeoutMs);
+    p.on("error", (e) => { clearTimeout(t); resolve({ code: -1, out, err: String(e), timedOut }); });
+    p.on("close", (code) => { clearTimeout(t); resolve({ code, out: out.trim(), err: err.trim(), timedOut }); });
   });
 }
 
@@ -117,6 +142,24 @@ function validateRange(k, v) {
   if (r && (v < r[0] || v > r[1] || (r[2] && v === r[0]))) throw new Error(`${k} out of range (${r[2] ? ">" : "≥"} ${r[0]} and ≤ ${r[1]}).`);
 }
 
+/** Number argument: finite, of type number and inside the same RANGES as modify_element. */
+function numberArg(k, v) {
+  if (typeof v !== "number" || !Number.isFinite(v)) throw new Error(`${k} must be a number`);
+  validateRange(k, v);
+  return v;
+}
+/** Optional text argument: must be a string (never coerced) and within the size limit. */
+function textArg(k, v, max) {
+  if (v === undefined) return undefined;
+  if (typeof v !== "string") throw new Error(`${k} must be string`);
+  return limit(k, v, max);
+}
+/** Element reference (name or id): a non-empty string or a finite number. */
+function refArg(k, v) {
+  if ((typeof v === "string" && v !== "") || (typeof v === "number" && Number.isFinite(v))) return v;
+  throw new Error(`${k} must be the name (text) or the id (number) of an element`);
+}
+
 function save(abs, doc) {
   fs.writeFileSync(abs, JSON.stringify(doc, null, 2), "utf8");
 }
@@ -132,6 +175,8 @@ function color(v) {
 /** Valid image path: absolute, PNG or JPG and existing (or "" to remove it). */
 function imagePath(v) {
   if (typeof v !== "string") throw new Error("image must be the absolute path of a PNG or JPG, or \"\" to remove it");
+  // UNC / network paths (reading them can leak credentials) and NTFS streams are never accepted
+  if (/^[\\/]{2}/.test(v) || v.slice(2).includes(":") || v.includes("\0")) throw new Error("image: network (UNC) paths, streams and special paths are not allowed.");
   if (v && (!path.isAbsolute(v) || !/\.(png|jpe?g)$/i.test(v) || !fs.existsSync(v))) throw new Error(`image: does not exist or is not a PNG/JPG: ${v}`);
   return v;
 }
@@ -193,13 +238,15 @@ const TOOLS = [
     },
     run: async ({ file, template, title }) => {
       const abs = designPath(file);
-      if (fs.existsSync(abs)) throw new Error(`${path.basename(abs)} already exists.`);
+      // everything is validated BEFORE the app is started or any file is created
       if (!Number.isInteger(template) || template < 0) throw new Error("'template' must be an integer ≥ 0.");
+      if (title !== undefined && (typeof title !== "string" || title.length > 80 || /[\u0000-\u001f\u007f]/.test(title))) throw new Error("'title' must be text of up to 80 characters.");
+      if (fs.existsSync(abs)) throw new Error(`${path.basename(abs)} already exists.`);
       fs.mkdirSync(DESIGNS, { recursive: true });
       const r = await runApp(["--template", String(template), "--save", abs]);
+      if (r.timedOut) throw new Error("The app did not answer in time while creating the design.");
       if (r.code !== 0) throw new Error(r.err || "Could not create the design.");
       if (title) {
-        if (typeof title !== "string" || title.length > 80) throw new Error("'title' must be text of up to 80 characters.");
         const doc = JSON.parse(fs.readFileSync(abs, "utf8"));
         doc.title = title;
         save(abs, doc);
@@ -234,7 +281,9 @@ const TOOLS = [
     run: async ({ file }) => {
       const { abs } = load(file);
       const r = await runApp(["--open", abs, "--review"]);
-      if (r.code === 2 || (!r.out && r.err)) throw new Error(r.err || "Could not review the design.");
+      if (r.timedOut) throw new Error("The app did not answer in time: the review was not completed.");
+      if (r.code === 2 || r.code === null || r.code === -1 || (!r.out && r.err)) throw new Error(r.err || "Could not review the design.");
+      if (!r.out.trim()) throw new Error("The review returned nothing.");
       return r.out.trim();
     },
   },
@@ -264,6 +313,7 @@ const TOOLS = [
       required: ["file", "element", "changes"],
     },
     run: ({ file, element, changes }) => {
+      refArg("element", element);
       const { abs, doc } = load(file);
       const e = find(doc, element);
       if (!changes || typeof changes !== "object" || Array.isArray(changes)) throw new Error("'changes' must be an object.");
@@ -307,15 +357,18 @@ const TOOLS = [
       required: ["file", "type", "name", "x", "y", "w", "h"],
     },
     run: ({ file, type, name, parent, x, y, w, h, text, image, color: c }) => {
-      const { abs, doc } = load(file);
-      if (!TYPES.includes(type)) throw new Error(`invalid type. Use: ${TYPES.join(", ")}`);
+      // same type and range rules as modify_element, checked before touching the design
+      if (typeof type !== "string" || !TYPES.includes(type)) throw new Error(`invalid type. Use: ${TYPES.join(", ")}`);
       if (typeof name !== "string" || !name.trim()) throw new Error("'name' is missing.");
       limit("name", name, LIMITS.name);
-      limit("text", text, LIMITS.text);
-      if (doc.elements.some((e) => e.name === name)) throw new Error(`An element «${name}» already exists.`);
-      for (const [k, v] of Object.entries({ x, y, w, h })) if (typeof v !== "number" || !Number.isFinite(v)) throw new Error(`${k} must be a number`);
-      if (w <= 0 || h <= 0) throw new Error("w and h must be greater than 0");
+      textArg("text", text, LIMITS.text);
+      for (const [k, v] of Object.entries({ x, y, w, h })) numberArg(k, v);
+      if (parent !== undefined) refArg("parent", parent);
       if (image !== undefined && type !== "Image") throw new Error("'image' is only used with type Image.");
+      if (image !== undefined) imagePath(image);
+      if (c !== undefined) color(c);
+      const { abs, doc } = load(file);
+      if (doc.elements.some((e) => e.name === name)) throw new Error(`An element «${name}» already exists.`);
       const p = parent !== undefined ? find(doc, parent) : null;
       // Base: an element of the same type (same defaults) or, if none, any existing one.
       const base = doc.elements.find((e) => e.kind === type) || doc.elements[0];
@@ -349,11 +402,16 @@ const TOOLS = [
       required: ["file", "element", "new_name"],
     },
     run: ({ file, element, new_name, dx = 0, dy = 0, text }) => {
-      const { abs, doc } = load(file);
-      const base = find(doc, element);
+      refArg("element", element);
       if (typeof new_name !== "string" || !new_name.trim()) throw new Error("'new_name' is missing.");
       limit("new_name", new_name, LIMITS.name);
-      limit("text", text, LIMITS.text);
+      textArg("text", text, LIMITS.text);
+      for (const [k, v] of Object.entries({ dx, dy })) {
+        if (typeof v !== "number" || !Number.isFinite(v)) throw new Error(`${k} must be a number`);
+        if (Math.abs(v) > 1e6) throw new Error(`${k} out of range (between -1000000 and 1000000).`);
+      }
+      const { abs, doc } = load(file);
+      const base = find(doc, element);
       if (doc.elements.some((x) => x.name === new_name)) throw new Error(`An element «${new_name}» already exists.`);
       const ids = descendants(doc, base.id);
       const idMap = new Map();
@@ -364,10 +422,11 @@ const TOOLS = [
         if (c.parent != null && idMap.has(c.parent)) c.parent = idMap.get(c.parent);
         if (c.group != null && idMap.has(c.group)) c.group = idMap.get(c.group);
         c.x += dx; c.y += dy;
+        validateRange("x", c.x); validateRange("y", c.y);
         return c;
       });
       copies[0].name = new_name;
-      if (text !== undefined) copies[0].text = String(text);
+      if (text !== undefined) copies[0].text = text;
       const pos = doc.elements.findIndex((x) => x.id === base.id);
       const last = Math.max(...doc.elements.map((x, i) => (ids.has(x.id) ? i : -1)));
       doc.elements.splice(Math.max(pos, last) + 1, 0, ...copies);
@@ -380,6 +439,7 @@ const TOOLS = [
     description: "Deletes an element and its children.",
     inputSchema: { type: "object", properties: { file: { type: "string" }, element: { type: "string" } }, required: ["file", "element"] },
     run: ({ file, element }) => {
+      refArg("element", element);
       const { abs, doc } = load(file);
       const e = find(doc, element);
       const ids = descendants(doc, e.id);
@@ -397,6 +457,7 @@ const TOOLS = [
       const out = path.join(DESIGNS, "screenshots", path.basename(abs, EXT) + ".png");
       fs.mkdirSync(path.dirname(out), { recursive: true });
       const r = await runApp(["--open", abs, "--no-tutorial", "--screenshot", out], 90_000);
+      if (r.timedOut) throw new Error("The app did not answer in time: no screenshot was taken.");
       if (r.code !== 0 || !fs.existsSync(out)) throw new Error("Could not take the screenshot. " + r.err);
       return `Screenshot saved to ${out}`;
     },
@@ -407,9 +468,15 @@ const TOOLS = [
     inputSchema: { type: "object", properties: { file: { type: "string" }, unity_project: { type: "string" } }, required: ["file", "unity_project"] },
     run: async ({ file, unity_project }) => {
       const { abs } = load(file);
-      if (typeof unity_project !== "string" || !fs.existsSync(path.join(unity_project, "Assets")))
+      if (typeof unity_project !== "string" || !unity_project.trim() || unity_project.includes("\0"))
         throw new Error("'unity_project' must be the folder of a Unity project (with an Assets folder).");
-      const r = await runApp(["--open", abs, "--export", unity_project]);
+      if (/^[\\/]{2}/.test(unity_project.trim())) throw new Error("'unity_project' cannot be a network (UNC) path.");
+      // resolved to an absolute path BEFORE looking for Assets, and the same absolute path is what the app receives
+      const project = path.resolve(unity_project);
+      if (!fs.existsSync(path.join(project, "Assets")))
+        throw new Error("'unity_project' must be the folder of a Unity project (with an Assets folder).");
+      const r = await runApp(["--open", abs, "--export", project]);
+      if (r.timedOut) throw new Error("The app did not answer in time: the export may be incomplete.");
       if (r.code !== 0) throw new Error(r.err || "Could not export.");
       return "Files written:\n" + r.out;
     },
@@ -431,13 +498,19 @@ function findTool(name) {
 }
 
 async function handle(m) {
-  const { id, method, params } = m;
+  if (!isObject(m)) return fail(null, -32600, "Invalid Request: a JSON-RPC message must be an object.");
+  const { id, method } = m;
+  const params = isObject(m.params) ? m.params : {};
   const isNotification = id === undefined || id === null;
   try {
+    if (id !== undefined && id !== null && typeof id !== "string" && typeof id !== "number") return fail(null, -32600, "Invalid Request: 'id' must be a string or a number.");
+    if (typeof method !== "string") return fail(isNotification ? null : id, -32600, "Invalid Request: 'method' must be a string.");
+    if (m.params !== undefined && m.params !== null && typeof m.params !== "object") return fail(isNotification ? null : id, -32602, "Invalid params: 'params' must be an object.");
     switch (method) {
       case "initialize":
+        if (isNotification) return;
         return respond(id, {
-          protocolVersion: params?.protocolVersion || "2025-06-18",
+          protocolVersion: PROTOCOL_VERSIONS.includes(params.protocolVersion) ? params.protocolVersion : PROTOCOL_VERSIONS[0],
           capabilities: { tools: { listChanged: false } },
           serverInfo: { name: "lienzo-ui", version: VERSION },
           instructions: "Lienzo UI server (interface editor for Unity). Start with lienzo_info.",
@@ -446,18 +519,23 @@ async function handle(m) {
       case "notifications/cancelled":
         return;
       case "ping":
+        if (isNotification) return;
         return respond(id, {});
       case "tools/list":
+        if (isNotification) return;
         return respond(id, { tools: TOOLS.map(({ name, description, inputSchema }) => ({ name, description, inputSchema })) });
       case "tools/call": {
-        const tool = findTool(params?.name);
-        if (!tool) return fail(id, -32602, `Unknown tool: ${params?.name}`);
+        // A call needs an id to be answered: without one it is refused (and never run).
+        if (isNotification) return fail(null, -32600, "Invalid Request: tools/call needs an 'id'.");
+        if (typeof params.name !== "string") return fail(id, -32602, "Invalid params: 'name' must be the tool name (text).");
+        const tool = findTool(params.name);
+        if (!tool) return fail(id, -32602, `Unknown tool: ${params.name}`);
         // Calls run one at a time: two simultaneous commands on the same design do not overwrite each other.
         const turn = queue.then(async () => {
           try {
-            respond(id, { content: [{ type: "text", text: String(await tool.run(normalizeArgs(params?.arguments))) }] });
+            respond(id, { content: [{ type: "text", text: String(await tool.run(normalizeArgs(params.arguments))) }] });
           } catch (e) {
-            respond(id, { content: [{ type: "text", text: `Error: ${e.message}` }], isError: true });
+            respond(id, { content: [{ type: "text", text: `Error: ${e?.message ?? e}` }], isError: true });
           }
         });
         queue = turn;
@@ -471,9 +549,18 @@ async function handle(m) {
   }
 }
 
+// Nothing may bring the server down: a stray rejection or exception is reported on stderr and the loop goes on.
+process.on("unhandledRejection", (e) => { try { console.error("lienzo-ui-mcp: unhandled rejection:", e); } catch { /* stderr closed */ } });
+process.on("uncaughtException", (e) => { try { console.error("lienzo-ui-mcp: uncaught exception:", e); } catch { /* stderr closed */ } });
+
+const handleSafely = (m) => handle(m).catch((e) => { try { console.error("lienzo-ui-mcp:", e); } catch { /* stderr closed */ } });
+
 readline.createInterface({ input: process.stdin }).on("line", (l) => {
   if (!l.trim()) return;
   let m;
   try { m = JSON.parse(l); } catch { return fail(null, -32700, "Invalid JSON"); }
-  if (Array.isArray(m)) m.forEach(handle); else handle(m);
+  if (Array.isArray(m)) {
+    if (!m.length) return fail(null, -32600, "Invalid Request: empty batch.");
+    m.forEach(handleSafely);
+  } else handleSafely(m);
 });

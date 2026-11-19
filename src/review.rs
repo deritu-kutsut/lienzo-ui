@@ -53,20 +53,42 @@ fn fill(e: &Element) -> Rgba {
     e.fill
 }
 
-fn visible(doc: &Doc, e: &Element) -> bool {
-    let mut cur = Some(e);
-    let mut steps = 0;
-    while let Some(x) = cur {
-        if !x.visible || x.opacity <= 0.01 {
-            return false;
+/// For every element (by position): visible itself and with every ancestor visible and not fully transparent.
+/// Iterative, O(n) (a parent chain of any depth is fine).
+fn visible_all(doc: &Doc) -> Vec<bool> {
+    let n = doc.elements.len();
+    let idx = doc.index_map();
+    let par = doc.parent_indices(&idx);
+    let mut state = vec![0u8; n]; // 0 new, 1 on the current chain, 2 resolved
+    let mut vis = vec![true; n];
+    let mut chain: Vec<usize> = Vec::new();
+    for s in 0..n {
+        if state[s] == 2 {
+            continue;
         }
-        steps += 1;
-        if steps > 256 {
-            break;
+        chain.clear();
+        let mut cur = Some(s);
+        let mut base = true;
+        while let Some(c) = cur {
+            if state[c] == 2 {
+                base = vis[c];
+                break;
+            }
+            if state[c] == 1 {
+                break; // cycle in a malformed file
+            }
+            state[c] = 1;
+            chain.push(c);
+            cur = par[c];
         }
-        cur = x.parent.and_then(|p| doc.get(p));
+        for &c in chain.iter().rev() {
+            let e = &doc.elements[c];
+            base = base && e.visible && e.opacity > 0.01;
+            vis[c] = base;
+            state[c] = 2;
+        }
     }
-    true
+    vis
 }
 
 fn has_own_background(e: &Element) -> bool {
@@ -74,7 +96,7 @@ fn has_own_background(e: &Element) -> bool {
 }
 
 /// Color the text of `idx` is seen against: its own fill if it has one, or whatever is underneath.
-fn background_of(doc: &Doc, idx: usize) -> Rgba {
+fn background_of(doc: &Doc, vis: &[bool], idx: usize) -> Rgba {
     let e = &doc.elements[idx];
     let (cx, cy) = (e.x + e.w / 2.0, e.y + e.h / 2.0);
     let mut color = doc.background;
@@ -83,7 +105,7 @@ fn background_of(doc: &Doc, idx: usize) -> Rgba {
         if i >= idx && !(i == idx && has_own_background(e)) {
             break;
         }
-        if o.kind == Kind::Text || o.kind == Kind::Empty || !o.image.is_empty() || !visible(doc, o) {
+        if o.kind == Kind::Text || o.kind == Kind::Empty || !o.image.is_empty() || !vis[i] {
             continue;
         }
         if cx >= o.x && cx <= o.x + o.w && cy >= o.y && cy <= o.y + o.h {
@@ -118,9 +140,11 @@ fn review_layout(doc: &Doc, portrait: bool) -> Vec<Problem> {
     for e in &doc.elements {
         *names.entry(e.name.as_str()).or_default() += 1;
     }
+    let vis = visible_all(doc);
+    let mut image_ok: std::collections::HashMap<&str, bool> = std::collections::HashMap::new();
     for (idx, e) in doc.elements.iter().enumerate() {
         let mut p = |level, template, data: Vec<String>| out.push(Problem { level, id: e.id, element: e.name.clone(), template, data });
-        if !visible(doc, e) {
+        if !vis[idx] {
             continue;
         }
         let with_text = !e.text.trim().is_empty() && matches!(e.kind, Kind::Text | Kind::Button | Kind::Panel | Kind::Ellipse | Kind::Toggle);
@@ -131,7 +155,7 @@ fn review_layout(doc: &Doc, portrait: bool) -> Vec<Problem> {
             }
             // WCAG does not require contrast for disabled controls.
             let disabled = !e.interactable && matches!(e.kind, Kind::Button | Kind::Toggle);
-            let background = background_of(doc, idx);
+            let background = background_of(doc, &vis, idx);
             let c = contrast(blend(e.text_color, background), background);
             // WCAG "large text": 18 pt (24 px) or 14 pt bold (≈18.7 px), at the reference scale.
             let big = e.font_size >= 24.0 * scale || (e.bold && e.font_size >= 18.7 * scale);
@@ -153,20 +177,21 @@ fn review_layout(doc: &Doc, portrait: bool) -> Vec<Problem> {
         } else if e.parent.is_none() && (e.x < -1.0 || e.y < -1.0 || e.x + e.w > doc.width + 1.0 || e.y + e.h > doc.height + 1.0) && e.rot.abs() < 0.01 {
             p(Level::Warning, "Partly outside the page", vec![]);
         }
-        if is_pressable(e) && names.get(e.name.as_str()).copied().unwrap_or(0) > 1 {
+        // Checks that do not depend on the layout (names, files) are made once, on the landscape design.
+        if !portrait && is_pressable(e) && names.get(e.name.as_str()).copied().unwrap_or(0) > 1 {
             p(Level::Warning, "Several elements share this name: GameObject.Find and scripts will only find the first one", vec![]);
         }
-        if e.kind == Kind::Image && !e.image.is_empty() && !crate::library::resolve_image(&e.image).exists() {
+        if !portrait && e.kind == Kind::Image && !e.image.is_empty() && !*image_ok.entry(e.image.as_str()).or_insert_with(|| crate::library::resolve_image(&e.image).exists()) {
             p(Level::Error, "Missing image “{}”: it will be exported empty", vec![e.image.clone()]);
         }
     }
     if portrait {
         for p in out.iter_mut() {
-            p.element = format!("{} (portrait)", p.element);
+            p.element = crate::i18n::tf("{} (portrait)", &[&p.element]);
         }
     } else {
         unity_name_problems(doc, &mut out);
-        font_problems(doc, &mut out, &font_cmap_by_name);
+        font_problems(doc, &vis, &mut out, &font_cmap_by_name);
     }
     out
 }
@@ -331,9 +356,9 @@ fn font_cmap_by_name(name: &str) -> Option<std::sync::Arc<Cmap>> {
 }
 
 /// Text that has a font of its own and uses characters that font lacks (« » — … often). Unknown fonts and the default are skipped.
-fn font_problems(doc: &Doc, out: &mut Vec<Problem>, cmap_of: &dyn Fn(&str) -> Option<std::sync::Arc<Cmap>>) {
-    for e in &doc.elements {
-        if e.font.is_empty() || !e.kind.has_text() || !visible(doc, e) {
+fn font_problems(doc: &Doc, vis: &[bool], out: &mut Vec<Problem>, cmap_of: &dyn Fn(&str) -> Option<std::sync::Arc<Cmap>>) {
+    for (i, e) in doc.elements.iter().enumerate() {
+        if e.font.is_empty() || !e.kind.has_text() || !vis[i] {
             continue;
         }
         let mut text = e.text.clone();
@@ -356,8 +381,9 @@ fn font_problems(doc: &Doc, out: &mut Vec<Problem>, cmap_of: &dyn Fn(&str) -> Op
 
 /// Invalid explicit Unity names, and siblings that resolve to the same GameObject name.
 fn unity_name_problems(doc: &Doc, out: &mut Vec<Problem>) {
-    let mut seen: std::collections::HashMap<(Option<u64>, String), u64> = std::collections::HashMap::new();
-    for e in &doc.elements {
+    let mut seen: std::collections::HashMap<(Option<usize>, String), u64> = std::collections::HashMap::new();
+    let par = doc.parent_indices(&doc.index_map());
+    for (i, e) in doc.elements.iter().enumerate() {
         let mut p = |template, data: Vec<String>| out.push(Problem { level: Level::Warning, id: e.id, element: e.name.clone(), template, data });
         if let Some(u) = e.unity_name.as_deref() {
             if !crate::docext::valid_unity_name(u) {
@@ -365,7 +391,7 @@ fn unity_name_problems(doc: &Doc, out: &mut Vec<Problem>) {
             }
         }
         let name = crate::export::base_unity_name(e);
-        if let Some(first) = seen.insert((doc.parent_of(e.id), name.clone()), e.id) {
+        if let Some(first) = seen.insert((par[i], name.clone()), e.id) {
             let _ = first;
             p("Two siblings resolve to the same Unity name “{}”: the exporter will rename this one", vec![name]);
         }
@@ -458,6 +484,13 @@ mod tests {
     }
 }
 
+/// The last result of the review shown in the window (see `review_window`).
+pub struct ReviewCache {
+    key: (usize, usize, usize, bool),
+    at: f64,
+    problems: Vec<Problem>,
+}
+
 impl crate::app::EditorApp {
     /// «Review design» window: list of problems; clicking selects the element.
     pub fn review_window(&mut self, ctx: &eframe::egui::Context) {
@@ -466,7 +499,18 @@ impl crate::app::EditorApp {
         if !self.review_open {
             return;
         }
-        let problems = review(self.doc_real());
+        let now = ctx.input(|i| i.time);
+        let key = (self.undo.len(), self.redo.len(), self.real_doc().elements.len(), self.orientation() == crate::docext::Orientation::Portrait);
+        // The review is not recomputed every frame: only when the design changed (undo history) or every 2 seconds.
+        let stale = match &self.review_cache {
+            Some(c) => c.key != key || now - c.at > 2.0,
+            None => true,
+        };
+        if stale {
+            let problems = review(self.doc_real());
+            self.review_cache = Some(ReviewCache { key, at: now, problems });
+        }
+        let problems = self.review_cache.as_ref().map(|c| c.problems.clone()).unwrap_or_default();
         let mut open = true;
         let mut choose = None;
         egui::Window::new(t("Review design")).open(&mut open).collapsible(false).default_width(460.0).show(ctx, |ui| {
@@ -650,7 +694,7 @@ mod font_tests {
         ok.font = "TestSans".into();
         d.add(ok);
         let mut out = Vec::new();
-        font_problems(&d, &mut out, &known);
+        font_problems(&d, &visible_all(&d), &mut out, &known);
         assert_eq!(out.len(), 1, "{:?}", out.iter().map(describe).collect::<Vec<_>>());
         assert_eq!(out[0].level, Level::Warning);
         let text = describe(&out[0]); // translated if another test switched the global language

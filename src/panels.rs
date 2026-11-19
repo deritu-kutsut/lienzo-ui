@@ -411,7 +411,7 @@ impl EditorApp {
                 ui.horizontal(|ui| {
                     let (r, _) = ui.allocate_exact_size(Vec2::splat(18.0), Sense::hover());
                     crate::icons::paint_or(ui, "search", r, MUTED(), "?");
-                    ui.add(egui::TextEdit::singleline(&mut self.search).hint_text(crate::i18n::t("Search…")).desired_width(f32::INFINITY).margin(Margin::symmetric(8, 5)));
+                    ui.add(egui::TextEdit::singleline(&mut self.search).hint_text(crate::i18n::t("Search…")).desired_width(ui.available_width()).margin(Margin::symmetric(8, 5)));
                 });
                 egui::ScrollArea::vertical().auto_shrink([false, false]).show(ui, |ui| match self.tab {
                     Tab::Templates => self.tab_templates(ui),
@@ -1358,6 +1358,8 @@ impl EditorApp {
                     });
                 });
                 egui::ScrollArea::vertical().auto_shrink([false, false]).show(ui, |ui| {
+                    // long (German, Russian…) texts wrap inside the panel instead of widening it
+                    ui.set_max_width(ui.available_width());
                     if self.sel.is_empty() {
                         self.page_settings(ui);
                     } else if self.sel.len() > 1 {
@@ -1390,7 +1392,10 @@ impl EditorApp {
                     self.resize_page(w.round(), h.round());
                 }
                 ui.label(crate::i18n::t("Match"));
-                ui.add(egui::Slider::new(&mut self.doc.canvas_match, 0.0..=1.0).text(crate::i18n::t("Width / Height")));
+                ui.vertical(|ui| {
+                    ui.add(egui::Slider::new(&mut self.doc.canvas_match, 0.0..=1.0));
+                    ui.label(RichText::new(crate::i18n::t("Width / Height")).small().color(MUTED()));
+                });
                 ui.end_row();
                 ui.label(crate::i18n::t("Background"));
                 ui.horizontal(|ui| {
@@ -1511,7 +1516,7 @@ impl EditorApp {
             let (dir_id, asm_id) = (ui.scope_id().with("unity_scripts_dir_buf"), ui.scope_id().with("unity_assembly_buf"));
             let mut dir = ui.data(|d| d.get_temp::<String>(dir_id)).unwrap_or_else(|| u.scripts_dir.clone().unwrap_or_default());
             ui.label(RichText::new(t("Scripts folder")).size(11.5).color(MUTED()));
-            let r = ui.add(egui::TextEdit::singleline(&mut dir).desired_width(f32::INFINITY).char_limit(260).hint_text("Assets/EditorGUI/Scripts"));
+            let r = ui.add(egui::TextEdit::singleline(&mut dir).desired_width(ui.available_width()).char_limit(260).hint_text("Assets/EditorGUI/Scripts"));
             let dir_ok = dir.is_empty() || docext::valid_scripts_dir(&dir);
             if r.changed() && dir_ok {
                 u.scripts_dir = if dir.is_empty() { None } else { Some(dir.clone()) };
@@ -1522,14 +1527,14 @@ impl EditorApp {
                 ui.data_mut(|d| d.remove::<String>(dir_id));
             }
             if !dir_ok {
-                ui.label(RichText::new(t("Invalid folder: it must start with Assets, use / and contain no “..”, no drive and no empty parts.")).small().color(red));
+                ui.label(RichText::new(t("Invalid folder: it must start with Assets, use / and contain no “..”, no drive, no empty parts, none of <>\"|?*, no trailing dot or space and no reserved names (CON, NUL, COM1…).")).small().color(red));
             } else {
                 hint(ui, &t("Where the generated scripts go (empty = the default folder)."));
             }
             let mut asm = ui.data(|d| d.get_temp::<String>(asm_id)).unwrap_or_else(|| u.assembly.clone().unwrap_or_default());
             ui.add_space(4.0);
             ui.label(RichText::new(t("Assembly name")).size(11.5).color(MUTED()));
-            let r = ui.add(egui::TextEdit::singleline(&mut asm).desired_width(f32::INFINITY).char_limit(128).hint_text(t("Assembly Definition of your game (optional)")));
+            let r = ui.add(egui::TextEdit::singleline(&mut asm).desired_width(ui.available_width()).char_limit(128).hint_text(t("Assembly Definition of your game (optional)")));
             let asm_ok = asm.is_empty() || docext::valid_assembly(&asm);
             if r.changed() && asm_ok {
                 u.assembly = if asm.is_empty() { None } else { Some(asm.clone()) };
@@ -1554,8 +1559,12 @@ impl EditorApp {
             ui.add_space(6.0);
             ui.label(RichText::new(t("Default font (TextMeshPro asset)")).size(11.5).color(MUTED()));
             let mut font = u.default_font.clone().unwrap_or_default();
-            if ui.add(egui::TextEdit::singleline(&mut font).desired_width(f32::INFINITY).char_limit(128).hint_text(t("Name of a font asset in your project"))).changed() {
+            let font_ok = docext::valid_font_name(&font);
+            if ui.add(egui::TextEdit::singleline(&mut font).desired_width(ui.available_width()).char_limit(128).hint_text(t("Name of a font asset in your project"))).changed() && docext::valid_font_name(&font) {
                 u.default_font = if font.trim().is_empty() { None } else { Some(font) };
+            }
+            if !font_ok {
+                ui.label(RichText::new(t("Invalid font name: it must not contain / \\ : or ..")).small().color(red));
             }
             ui.label(RichText::new(t("Fallback fonts")).size(11.5).color(MUTED()));
             let mut remove = None;
@@ -1578,7 +1587,7 @@ impl EditorApp {
                 let mut add = false;
                 ui.horizontal(|ui| {
                     let r = ui.add(egui::TextEdit::singleline(&mut new_font).desired_width(ui.available_width() - 70.0).char_limit(128).hint_text(t("Fallback font asset name")));
-                    add = ui.add_enabled(!new_font.trim().is_empty(), crate::icons::btn("plus", t("Add")).small()).clicked() || (r.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter)) && !new_font.trim().is_empty());
+                    add = ui.add_enabled(!new_font.trim().is_empty() && docext::valid_font_name(&new_font), crate::icons::btn("plus", t("Add")).small()).clicked() || (r.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter)) && !new_font.trim().is_empty());
                 });
                 if add {
                     u.fallback_fonts.push(new_font.trim().to_string());
@@ -1942,7 +1951,7 @@ impl EditorApp {
                     let buf_id = egui::Id::new(("dd_opts", e.id));
                     let mut opts = ui.data(|d| d.get_temp::<String>(buf_id)).unwrap_or_else(|| e.options.join("\n"));
                     hint(ui, &crate::i18n::t("One option per line"));
-                    let r = ui.add(egui::TextEdit::multiline(&mut opts).desired_rows(3).desired_width(f32::INFINITY));
+                    let r = ui.add(egui::TextEdit::multiline(&mut opts).desired_rows(3).desired_width(ui.available_width()));
                     if r.changed() {
                         e.options = opts.lines().map(|l| l.to_string()).filter(|l| !l.trim().is_empty()).collect();
                     }
@@ -1964,7 +1973,7 @@ impl EditorApp {
                     if e.kind == Kind::InputField {
                         hint(ui, &crate::i18n::t("Placeholder text"));
                     }
-                    ui.add(egui::TextEdit::multiline(&mut e.text).desired_rows(2).desired_width(f32::INFINITY));
+                    ui.add(egui::TextEdit::multiline(&mut e.text).desired_rows(2).desired_width(ui.available_width()));
                 }
                 egui::Grid::new("txtgrid").num_columns(2).spacing([8.0, 5.0]).show(ui, |ui| {
                     ui.label(crate::i18n::t("Size"));
@@ -2111,7 +2120,7 @@ impl EditorApp {
         let mut go_test = false;
         component(ui, "code", &crate::i18n::t("On click (test code)"), !e.on_click.trim().is_empty(), |ui| {
             hint(ui, &crate::i18n::t("Runs in Test. When exported, it becomes a comment in the OnClick method of the View script."));
-            ui.add(egui::TextEdit::multiline(&mut e.on_click).code_editor().desired_rows(4).desired_width(f32::INFINITY).hint_text(crate::i18n::t("message(\"Hello!\");\nhide(\"Window\");")));
+            ui.add(egui::TextEdit::multiline(&mut e.on_click).code_editor().desired_rows(4).desired_width(ui.available_width()).hint_text(crate::i18n::t("message(\"Hello!\");\nhide(\"Window\");")));
             ui.horizontal(|ui| {
                 if ui.add_enabled(!e.on_click.trim().is_empty(), crate::icons::btn("play", crate::i18n::t("Run now"))).clicked() {
                     run_now = true;
@@ -2239,7 +2248,7 @@ impl EditorApp {
             ui.label(crate::i18n::tf("{} things could not be mapped exactly:", &[&self.import_warnings.len().to_string()]));
             egui::ScrollArea::vertical().max_height(320.0).show(ui, |ui| {
                 for w in &self.import_warnings {
-                    ui.label(RichText::new(format!("• {}", w)).small().color(MUTED()));
+                    ui.label(RichText::new(format!("• {}", crate::unity_import::clean_msg(w))).small().color(MUTED()));
                 }
             });
         });
@@ -2357,7 +2366,7 @@ impl EditorApp {
             });
             egui::ScrollArea::both().max_height(ui.available_height() - 6.0).auto_shrink([false, false]).show(ui, |ui| {
                 let mut t = text;
-                ui.add(egui::TextEdit::multiline(&mut t).code_editor().desired_width(f32::INFINITY));
+                ui.add(egui::TextEdit::multiline(&mut t).code_editor().desired_width(ui.available_width()));
             });
         });
         if !open {

@@ -61,7 +61,75 @@ fn parse_hex(s: &str) -> Option<Rgba> {
 }
 
 type Shared = Rc<RefCell<Doc>>;
-type Log = Rc<RefCell<Vec<String>>>;
+/// Shared, bounded output of a script (see [`OutLog`]).
+pub type Log = Rc<RefCell<OutLog>>;
+
+/// Most lines and bytes a script may print (`print`, `debug`, `message`, plugin `log`). Past either limit the
+/// script is stopped: without this cap a loop of `print` calls could allocate until the process dies.
+pub const MAX_LOG_LINES: usize = 200;
+pub const MAX_LOG_BYTES: usize = 64 * 1024;
+/// A single message is cut to this many characters (cutting is not an error; the totals above are).
+const MAX_LINE_CHARS: usize = 1000;
+
+/// Bounded list of messages produced by a script. `overflow` turns true on the first message that does not fit,
+/// and `harden` stops the script at its next operation.
+#[derive(Default)]
+pub struct OutLog {
+    pub lines: Vec<String>,
+    bytes: usize,
+    pub overflow: bool,
+}
+
+impl OutLog {
+    pub fn new_shared() -> Log {
+        Rc::new(RefCell::new(OutLog::default()))
+    }
+
+    /// Adds a message; flags the overflow when a limit is exceeded.
+    pub fn push(&mut self, s: impl Into<String>) {
+        self.try_push(s);
+    }
+
+    /// Like `push`, returns false when the message did not fit.
+    pub fn try_push(&mut self, s: impl Into<String>) -> bool {
+        if self.overflow {
+            return false;
+        }
+        let mut s: String = s.into();
+        if s.chars().count() > MAX_LINE_CHARS {
+            s = s.chars().take(MAX_LINE_CHARS).collect::<String>() + "…";
+        }
+        if self.lines.len() >= MAX_LOG_LINES || self.bytes + s.len() > MAX_LOG_BYTES {
+            self.overflow = true;
+            return false;
+        }
+        self.bytes += s.len();
+        self.lines.push(s);
+        true
+    }
+
+    /// Adds a line ignoring the limits (the app's own error reports; at most a handful per run).
+    pub fn push_forced(&mut self, s: String) {
+        self.lines.push(s);
+    }
+}
+
+/// Joins messages into one status-bar string of at most `max_chars` characters.
+pub fn bounded_join(msgs: &[String], sep: &str, max_chars: usize) -> String {
+    let mut out = String::new();
+    for (i, m) in msgs.iter().enumerate() {
+        if i > 0 {
+            out.push_str(sep);
+        }
+        out.push_str(m);
+        if out.chars().count() > max_chars {
+            let mut cut: String = out.chars().take(max_chars).collect();
+            cut.push('…');
+            return cut;
+        }
+    }
+    out
+}
 
 fn with_el(doc: &Shared, log: &Log, name: &str, f: impl FnOnce(&mut Element)) {
     let mut d = doc.borrow_mut();
@@ -74,7 +142,14 @@ fn with_el(doc: &Shared, log: &Log, name: &str, f: impl FnOnce(&mut Element)) {
 /// Sandbox limits for a Rhai engine: no `import` (no file or network module resolver), bounded memory
 /// (strings, arrays/blobs, maps), bounded recursion and expression depth, bounded operations and a
 /// wall-clock deadline (`on_progress`) so no script can hang or exhaust memory.
+#[allow(dead_code)] // kept for callers that do not collect output
 pub fn harden(engine: &mut Engine, max_ops: u64, max_string: usize, max_items: usize, deadline_ms: u64) {
+    harden_with_log(engine, max_ops, max_string, max_items, deadline_ms, None);
+}
+
+/// Like [`harden`], and also stops the script as soon as `log` overflows (too much output).
+/// Rhai counts nested arrays/maps/strings in its size limits, so `a.push(a.clone())` style growth is cut by `max_items`/`max_string`.
+pub fn harden_with_log(engine: &mut Engine, max_ops: u64, max_string: usize, max_items: usize, deadline_ms: u64, log: Option<Log>) {
     engine.set_module_resolver(rhai::module_resolvers::DummyModuleResolver::new());
     engine.set_max_operations(max_ops);
     engine.set_max_string_size(max_string);
@@ -83,7 +158,15 @@ pub fn harden(engine: &mut Engine, max_ops: u64, max_string: usize, max_items: u
     engine.set_max_call_levels(32);
     engine.set_max_expr_depths(64, 32);
     let deadline = std::time::Instant::now() + std::time::Duration::from_millis(deadline_ms);
-    engine.on_progress(move |_| if std::time::Instant::now() > deadline { Some(Dynamic::from("time limit exceeded")) } else { None });
+    engine.on_progress(move |_| {
+        if std::time::Instant::now() > deadline {
+            Some(Dynamic::from("time limit exceeded"))
+        } else if log.as_ref().is_some_and(|l| l.try_borrow().map(|l| l.overflow).unwrap_or(false)) {
+            Some(Dynamic::from("too much output (message limit exceeded)"))
+        } else {
+            None
+        }
+    });
 }
 
 /// Run `code` as if element `id` was clicked. Changes are applied to `doc`;
@@ -91,9 +174,9 @@ pub fn harden(engine: &mut Engine, max_ops: u64, max_string: usize, max_items: u
 pub fn run(doc: &mut Doc, id: u64, code: &str, log: &mut Vec<String>) {
     let me = doc.get(id).map(|e| e.name.clone()).unwrap_or_default();
     let shared: Shared = Rc::new(RefCell::new(doc.clone()));
-    let out: Log = Rc::new(RefCell::new(Vec::new()));
+    let out: Log = OutLog::new_shared();
     let mut engine = Engine::new();
-    harden(&mut engine, 500_000, 100_000, 10_000, 2000);
+    harden_with_log(&mut engine, 500_000, 64 * 1024, 10_000, 2000, Some(out.clone()));
     {
         let o = out.clone();
         engine.on_print(move |s| o.borrow_mut().push(s.to_string()));
@@ -166,11 +249,16 @@ pub fn run(doc: &mut Doc, id: u64, code: &str, log: &mut Vec<String>) {
     scope.push_constant("yo", me.clone()); // old name
     let result = engine.run_with_scope(&mut scope, code);
     drop(engine);
-    if let Err(err) = result {
-        out.borrow_mut().push(format!("⚠ Error in the code of “{}”: {}", me, err));
+    {
+        let mut o = out.borrow_mut();
+        match result {
+            Err(err) => o.push_forced(format!("⚠ Error in the code of “{}”: {}", me, err)),
+            Ok(()) if o.overflow => o.push_forced(format!("⚠ Error in the code of “{}”: too much output (message limit exceeded)", me)),
+            Ok(()) => {}
+        }
     }
     *doc = shared.borrow().clone();
-    log.extend(out.borrow().iter().cloned());
+    log.extend(out.borrow().lines.iter().cloned());
 }
 
 #[cfg(test)]
@@ -314,5 +402,108 @@ mod sandbox_tests {
         let mut log = Vec::new();
         run(&mut doc, id, "let a = []; for i in 0..1000 { a.push(i); } message(a.len());", &mut log);
         assert_eq!(log, vec!["1000".to_string()]);
+    }
+}
+
+/// Test-only allocation counter (per thread), to assert peak memory without measuring the process RSS.
+#[cfg(test)]
+pub mod alloc_probe {
+    use std::alloc::{GlobalAlloc, Layout, System};
+    use std::cell::Cell;
+
+    pub struct Counting;
+
+    thread_local! {
+        static CUR: Cell<i64> = const { Cell::new(0) };
+        static PEAK: Cell<i64> = const { Cell::new(0) };
+    }
+
+    unsafe impl GlobalAlloc for Counting {
+        unsafe fn alloc(&self, l: Layout) -> *mut u8 {
+            let _ = CUR.try_with(|c| {
+                c.set(c.get() + l.size() as i64);
+                let _ = PEAK.try_with(|p| p.set(p.get().max(c.get())));
+            });
+            unsafe { System.alloc(l) }
+        }
+        unsafe fn dealloc(&self, p: *mut u8, l: Layout) {
+            let _ = CUR.try_with(|c| c.set(c.get() - l.size() as i64));
+            unsafe { System.dealloc(p, l) }
+        }
+        unsafe fn realloc(&self, p: *mut u8, l: Layout, new: usize) -> *mut u8 {
+            let _ = CUR.try_with(|c| {
+                c.set(c.get() + new as i64 - l.size() as i64);
+                let _ = PEAK.try_with(|p| p.set(p.get().max(c.get())));
+            });
+            unsafe { System.realloc(p, l, new) }
+        }
+    }
+
+    /// Runs `f` and returns the most memory (bytes) this thread held above the starting point.
+    pub fn peak_of<R>(f: impl FnOnce() -> R) -> (R, i64) {
+        let start = CUR.with(|c| c.get());
+        PEAK.with(|p| p.set(start));
+        let r = f();
+        (r, PEAK.with(|p| p.get()) - start)
+    }
+}
+
+#[cfg(test)]
+#[global_allocator]
+static COUNTING: alloc_probe::Counting = alloc_probe::Counting;
+
+#[cfg(test)]
+mod flood_tests {
+    use super::*;
+    use crate::model;
+    use std::time::{Duration, Instant};
+
+    const MB: i64 = 1024 * 1024;
+
+    fn run_measured(code: &str) -> (Vec<String>, i64, Duration) {
+        let mut doc = model::template(0, 1920.0, 1080.0);
+        let id = doc.elements[0].id;
+        let mut log = Vec::new();
+        let t = Instant::now();
+        let (_, peak) = alloc_probe::peak_of(|| run(&mut doc, id, code, &mut log));
+        (log, peak, t.elapsed())
+    }
+
+    #[test]
+    fn print_flood_is_cut_by_message_count_and_bytes() {
+        for code in ["loop { print(\"x\"); }", "loop { message(\"hello\"); }", "loop { debug(\"d\"); }", "loop { show(\"Nope\"); }", "let s = \"y\".repeat(60000); loop { print(s); }"] {
+            let (log, peak, t) = run_measured(code);
+            assert!(log.len() <= MAX_LOG_LINES + 1, "{}: {} lines", code, log.len());
+            assert!(log.iter().map(|l| l.len()).sum::<usize>() <= MAX_LOG_BYTES + 400, "{}", code);
+            assert!(log.last().is_some_and(|l| l.contains("Error in the code")), "{}: {:?}", code, log.last());
+            assert!(peak < 8 * MB, "{}: peak {} bytes", code, peak);
+            assert!(t < Duration::from_secs(5), "{}: {:?}", code, t);
+        }
+    }
+
+    #[test]
+    fn nested_clone_growth_and_huge_strings_fail_fast_with_small_peak() {
+        for code in [
+            "let a = []; loop { a.push(a.clone()); }",
+            "let a = [0]; loop { a += a; }",
+            "let m = #{}; loop { m.x = m.clone(); }",
+            "let s = \"abc\"; loop { s += s; }",
+            "let s = \"abc\"; loop { s = s + s; }",
+            "let a = []; let s = \"x\".repeat(60000); loop { a.push(s); }",
+            "let a = []; let s = \"x\".repeat(60000); for i in 0..9000 { a.push(s + i); }",
+        ] {
+            let (log, peak, t) = run_measured(code);
+            assert!(log.iter().any(|l| l.contains("Error in the code")), "{}: {:?}", code, log);
+            assert!(peak < 64 * MB, "{}: peak {} bytes", code, peak);
+            assert!(t < Duration::from_secs(5), "{}: {:?}", code, t);
+        }
+    }
+
+    #[test]
+    fn bounded_join_cuts_long_status_strings() {
+        let msgs: Vec<String> = (0..500).map(|i| format!("message number {}", i)).collect();
+        let s = bounded_join(&msgs, " · ", 300);
+        assert!(s.chars().count() <= 301, "{}", s.len());
+        assert_eq!(bounded_join(&["a".into(), "b".into()], "-", 300), "a-b");
     }
 }

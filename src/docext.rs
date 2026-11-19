@@ -18,6 +18,9 @@ fn yes() -> bool {
 fn no() -> Option<bool> {
     Some(false)
 }
+fn ser_imgui<S: serde::Serializer>(v: &Option<bool>, s: S) -> Result<S::Ok, S::Error> {
+    s.serialize_bool(v.unwrap_or(true))
+}
 fn plane_default() -> f32 {
     100.0
 }
@@ -126,7 +129,9 @@ pub struct GenerateOutputs {
     pub prefab: bool,
     #[serde(default = "yes")]
     pub uitk: bool,
-    #[serde(default = "no", skip_serializing_if = "Option::is_none")]
+    /// Always written as an explicit true/false when the `unity` block is serialized, so an old design (no block,
+    /// IMGUI on) that is touched keeps IMGUI on after save / reload.
+    #[serde(default = "no", serialize_with = "ser_imgui")]
     pub imgui: Option<bool>,
     #[serde(default = "yes")]
     pub view_scripts: bool,
@@ -180,8 +185,8 @@ impl UnitySettings {
     pub fn sanitize(&mut self) {
         self.scripts_dir = self.scripts_dir.take().and_then(|s| normalize_scripts_dir(&s));
         self.assembly = self.assembly.take().filter(|s| valid_assembly(s));
-        self.default_font = self.default_font.take().and_then(|s| clean_label(&s, 128));
-        self.fallback_fonts = std::mem::take(&mut self.fallback_fonts).into_iter().filter_map(|s| clean_label(&s, 128)).take(16).collect();
+        self.default_font = self.default_font.take().and_then(|s| clean_label(&s, 128)).filter(|s| valid_font_name(s));
+        self.fallback_fonts = std::mem::take(&mut self.fallback_fonts).into_iter().filter_map(|s| clean_label(&s, 128)).filter(|s| valid_font_name(s)).take(16).collect();
     }
 }
 
@@ -242,13 +247,15 @@ impl ElementOverride {
             if let Some(a) = v {
                 if a.iter().any(|x| !x.is_finite()) {
                     *v = None;
+                } else {
+                    *a = a.map(|x| x.clamp(-crate::model::ANCHOR_LIMIT, crate::model::ANCHOR_LIMIT));
                 }
             }
         }
-        num(&mut self.x, -1.0e6, 1.0e6);
-        num(&mut self.y, -1.0e6, 1.0e6);
-        num(&mut self.w, 0.0, 1.0e6);
-        num(&mut self.h, 0.0, 1.0e6);
+        num(&mut self.x, -crate::model::COORD_LIMIT, crate::model::COORD_LIMIT);
+        num(&mut self.y, -crate::model::COORD_LIMIT, crate::model::COORD_LIMIT);
+        num(&mut self.w, 0.0, crate::model::COORD_LIMIT);
+        num(&mut self.h, 0.0, crate::model::COORD_LIMIT);
         num(&mut self.rot, -360.0, 360.0);
         num(&mut self.font_size, 1.0, 1000.0);
         pair(&mut self.anchor_min);
@@ -339,9 +346,20 @@ pub fn clean_label(s: &str, max: usize) -> Option<String> {
 pub const MAX_UNITY_NAME: usize = 128;
 
 /// A GameObject name the exporter can use verbatim: not blank, no `/` (Transform.Find separator),
-/// no control or line-separator characters, at most 128 characters.
+/// no control or line-separator characters, at most 128 characters, and not one of the names the importer
+/// generates itself (`__border`, `__text`, `__tick`, `__safe_area`, `__canvas_background`).
 pub fn valid_unity_name(s: &str) -> bool {
-    !s.trim().is_empty() && s.chars().count() <= MAX_UNITY_NAME && !s.contains('/') && !s.chars().any(bad_char)
+    !s.trim().is_empty() && s.chars().count() <= MAX_UNITY_NAME && !s.contains('/') && !s.chars().any(bad_char) && !is_generated_name(s)
+}
+
+/// One of the GameObject names the importer creates for its own helper objects.
+pub fn is_generated_name(s: &str) -> bool {
+    crate::export::GEN_NAMES.contains(&s)
+}
+
+/// A font family name that cannot be turned into a path: no slash, backslash, colon or `..`.
+pub fn valid_font_name(s: &str) -> bool {
+    !s.contains(['/', '\\', ':']) && !s.contains("..")
 }
 
 /// Assembly definition name: `[A-Za-z_][A-Za-z0-9_.-]*`, at most 128 characters.
@@ -359,10 +377,17 @@ pub fn normalize_scripts_dir(s: &str) -> Option<String> {
         return None;
     }
     let parts: Vec<&str> = t.split('/').collect();
-    if parts[0] != "Assets" || parts.iter().any(|p| p.is_empty() || *p == "." || *p == ".." || p.ends_with(' ') || p.ends_with('.')) {
+    if parts[0] != "Assets" || parts.iter().any(|p| p.is_empty() || *p == "." || *p == ".." || p.ends_with(' ') || p.ends_with('.') || p.contains(['<', '>', '"', '|', '?', '*']) || reserved_device_name(p)) {
         return None;
     }
     Some(t.to_string())
+}
+
+/// `CON`, `PRN`, `AUX`, `NUL`, `COM1`-`COM9`, `LPT1`-`LPT9` (also with an extension: `CON.txt`) are not usable file names on Windows.
+pub fn reserved_device_name(segment: &str) -> bool {
+    let stem = segment.split('.').next().unwrap_or("").trim_end().to_ascii_uppercase();
+    matches!(stem.as_str(), "CON" | "PRN" | "AUX" | "NUL" | "CONIN$" | "CONOUT$")
+        || ((stem.starts_with("COM") || stem.starts_with("LPT")) && stem.len() == 4 && matches!(stem.as_bytes()[3], b'1'..=b'9'))
 }
 
 pub fn valid_scripts_dir(s: &str) -> bool {
@@ -388,6 +413,9 @@ impl Element {
             if s.iter().all(|v| *v == 0.0) { None } else { Some(s) }
         });
         self.ppu = self.ppu.take().filter(|v| v.is_finite()).map(|v| v.clamp(0.01, 10_000.0));
+        if !valid_font_name(&self.font) {
+            self.font.clear();
+        }
     }
 }
 
@@ -405,6 +433,9 @@ impl Doc {
     pub fn from_json_str(text: &str) -> Result<Doc, String> {
         let t = text.strip_prefix('\u{feff}').unwrap_or(text);
         let mut d: Doc = serde_json::from_str(t).map_err(|e| e.to_string())?;
+        if d.elements.len() > crate::model::MAX_ELEMENTS {
+            return Err(format!("the design has {} elements (the limit is {})", d.elements.len(), crate::model::MAX_ELEMENTS));
+        }
         d.migrate_groups();
         Ok(d)
     }
@@ -422,11 +453,14 @@ impl Doc {
             if let Some(p) = &self.portrait {
                 d.width = p.width;
                 d.height = p.height;
+                let idx = self.index_map();
                 for o in &p.overrides {
-                    if let Some(e) = d.get_mut(o.id) {
-                        o.apply(e);
+                    if let Some(&i) = idx.get(&o.id) {
+                        o.apply(&mut d.elements[i]);
                     }
                 }
+                // Layout groups of the portrait page place their children like Unity does.
+                d.apply_layouts();
             }
         }
         d.portrait = None;
@@ -450,6 +484,33 @@ impl Doc {
             None => p.overrides.push(ov),
         }
         true
+    }
+
+    /// Copies the portrait overrides of the elements in `map` (old id -> new id) to their copies, moving the
+    /// copied x / y by `(dx, dy)`. Used when elements are duplicated or pasted in the landscape view.
+    pub fn copy_overrides(&mut self, overrides: &[ElementOverride], map: &std::collections::HashMap<u64, u64>, dx: f32, dy: f32) {
+        if self.portrait.is_none() {
+            return;
+        }
+        let mut copies = Vec::new();
+        for o in overrides {
+            if let Some(&n) = map.get(&o.id) {
+                let mut c = o.clone();
+                c.id = n;
+                c.x = c.x.map(|v| v + dx);
+                c.y = c.y.map(|v| v + dy);
+                copies.push(c);
+            }
+        }
+        if let Some(p) = self.portrait.as_mut() {
+            p.overrides.extend(copies);
+        }
+        self.prune_overrides();
+    }
+
+    /// The portrait overrides of `ids` (for copy / paste).
+    pub fn overrides_of(&self, ids: &[u64]) -> Vec<ElementOverride> {
+        self.portrait.as_ref().map(|p| p.overrides.iter().filter(|o| ids.contains(&o.id)).cloned().collect()).unwrap_or_default()
     }
 
     /// Removes the portrait override of `id`. True if there was one.

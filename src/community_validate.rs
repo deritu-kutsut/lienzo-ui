@@ -22,6 +22,39 @@ const FORBIDDEN_EXTS: &[&str] = &[
     "rar", "7z", "gz", "tar", "iso", "svg", "html", "htm",
 ];
 
+/// Extensions a plugin exporter may write. Anything else (and anything in `FORBIDDEN_EXTS`) is refused.
+pub const EXPORT_EXTENSIONS: &[&str] = &["txt", "csv", "json", "xml", "md", "cs", "uxml", "uss", "tsv"];
+
+/// An exporter `extension`: lowercase `[a-z0-9]{1,5}`, in the allowlist and not forbidden.
+pub fn valid_export_extension(e: &str) -> bool {
+    (1..=5).contains(&e.len()) && e.bytes().all(|b| b.is_ascii_lowercase() || b.is_ascii_digit()) && EXPORT_EXTENSIONS.contains(&e) && !FORBIDDEN_EXTS.contains(&e)
+}
+
+/// Invisible / direction-changing characters that let a name look like another one (RLO, zero-width, BOM, ALM...).
+pub fn spoofing_char(c: char) -> bool {
+    matches!(c, '\u{200E}' | '\u{200F}' | '\u{061C}' | '\u{200B}'..='\u{200D}' | '\u{FEFF}' | '\u{2060}' | '\u{202A}'..='\u{202E}' | '\u{2066}'..='\u{2069}')
+}
+
+/// A name or title shown to other people: no control characters, no spoofing characters.
+pub fn valid_display_text(s: &str) -> bool {
+    !s.chars().any(|c| c.is_control() || spoofing_char(c) || c == '\u{2028}' || c == '\u{2029}')
+}
+
+/// Text from the server for printing in a terminal: control characters (ESC, BEL, CR, C1...) and spoofing characters removed.
+pub fn terminal_safe(s: &str) -> String {
+    s.chars().filter(|c| !c.is_control() && !spoofing_char(*c) && *c != '\u{2028}' && *c != '\u{2029}').collect()
+}
+
+/// `terminal_safe` applied to every string of a JSON value (in place).
+pub fn terminal_safe_json(v: &mut serde_json::Value) {
+    match v {
+        serde_json::Value::String(s) => *s = terminal_safe(s),
+        serde_json::Value::Array(a) => a.iter_mut().for_each(terminal_safe_json),
+        serde_json::Value::Object(o) => o.values_mut().for_each(terminal_safe_json),
+        _ => {}
+    }
+}
+
 pub fn sha256_hex(bytes: &[u8]) -> String {
     Sha256::digest(bytes).iter().map(|b| format!("{:02x}", b)).collect()
 }
@@ -107,7 +140,7 @@ fn external_url(s: &str) -> bool {
 
 /// The optional element fields (`unity_name`, `slice`, `ppu`, `sprite`, `image_mode`, `preserve_aspect`) are allowed,
 /// but with the right type and range.
-fn validate_element_fields(e: &serde_json::Value) -> Result<(), String> {
+pub fn validate_element_fields(e: &serde_json::Value) -> Result<(), String> {
     use serde_json::Value;
     let bad = |what: &str| Err(format!("Element field “{}” is not valid.", what));
     let Some(o) = e.as_object() else { return Ok(()) };
@@ -146,7 +179,7 @@ fn validate_element_fields(e: &serde_json::Value) -> Result<(), String> {
 }
 
 /// Optional Doc blocks (`canvas`, `unity`, `portrait`) of a template.
-fn validate_doc_fields(json: &serde_json::Value) -> Result<(), String> {
+pub fn validate_doc_fields(json: &serde_json::Value) -> Result<(), String> {
     use crate::docext::{CanvasSettings, PortraitLayout, UnitySettings};
     let Some(o) = json.as_object() else { return Ok(()) };
     if let Some(v) = o.get("canvas") {
@@ -216,8 +249,23 @@ fn validate_plugin(json: serde_json::Value) -> Result<Package, String> {
     if name.chars().count() < 3 || name.chars().count() > 60 {
         return Err("Manifest: invalid name.".into());
     }
+    if !valid_display_text(name) {
+        return Err("Manifest: the name has control or invisible characters.".into());
+    }
+    let mut manifest_texts = Vec::new();
+    texts(&p.manifest, &mut manifest_texts, 0);
+    if manifest_texts.iter().any(|s| s.chars().any(|c| bad_text_char(c) || spoofing_char(c))) {
+        return Err("Manifest: it has control or invisible characters.".into());
+    }
     if p.files.is_empty() || p.files.len() > 20 {
         return Err("A plugin has between 1 and 20 files.".into());
+    }
+    // Case-insensitive duplicates ("a.rhai" and "A.RHAI") would collide on Windows and macOS.
+    let mut seen = std::collections::HashSet::new();
+    for path in p.files.keys() {
+        if !seen.insert(path.to_lowercase()) {
+            return Err(format!("Duplicate file (names differ only in capitals): {}", path));
+        }
     }
     // Files the manifest runs as scripts (any extension) and the ones it offers as templates.
     let mut scripts = std::collections::HashSet::new();
@@ -226,6 +274,12 @@ fn validate_plugin(json: serde_json::Value) -> Result<Package, String> {
         for x in crate::plugins::manifest_key(&p.manifest, new, old).and_then(|v| v.as_array()).into_iter().flatten() {
             if let Some(s) = x.get("script").and_then(|s| s.as_str()) {
                 scripts.insert(s.to_string());
+            }
+            if new == "exporters" {
+                let e = x.get("extension").and_then(|e| e.as_str()).unwrap_or("");
+                if !valid_export_extension(e) {
+                    return Err(format!("Exporter extension not allowed: “{}” (allowed: {}).", terminal_safe(e).chars().take(12).collect::<String>(), EXPORT_EXTENSIONS.join(", ")));
+                }
             }
         }
     }
@@ -251,21 +305,29 @@ fn validate_plugin(json: serde_json::Value) -> Result<Package, String> {
             }
             continue;
         }
+        let is_script = scripts.contains(path.as_str());
         // every script is scanned, whatever its extension (a manifest can point a command to a .json file)
-        if (e != "json" || scripts.contains(path)) && suspicious(content) {
+        if (e != "json" || is_script) && suspicious(content) {
             return Err(format!("{}: contains forbidden instructions (eval, import, network, processes).", path));
         }
-        if e == "json" && !scripts.contains(path) {
-            let v: serde_json::Value = serde_json::from_str(content).map_err(|_| format!("{}: not valid JSON.", path))?;
-            if templates.contains(path) || v.get("elements").is_some() {
-                validate_design(v, true).map_err(|er| format!("{}: {}", path, er))?;
-            } else {
-                // any other data file: same text rules as a design
-                let mut t = Vec::new();
-                texts(&v, &mut t, 0);
-                if t.iter().any(|s| external_url(s) || s.chars().any(bad_text_char)) {
-                    return Err(format!("{}: contains external links or control characters.", path));
+        if e == "json" {
+            match serde_json::from_str::<serde_json::Value>(content) {
+                Ok(v) => {
+                    // A .json that is a template or looks like a design is ALWAYS validated as a design,
+                    // even when the manifest also lists it as a command script.
+                    if templates.contains(path.as_str()) || v.get("elements").is_some() {
+                        validate_design(v, true).map_err(|er| format!("{}: {}", path, er))?;
+                    } else if !is_script {
+                        // any other data file: same text rules as a design
+                        let mut t = Vec::new();
+                        texts(&v, &mut t, 0);
+                        if t.iter().any(|s| external_url(s) || s.chars().any(bad_text_char)) {
+                            return Err(format!("{}: contains external links or control characters.", path));
+                        }
+                    }
                 }
+                Err(_) if is_script && !templates.contains(path.as_str()) => {} // rhai code in a .json file: scanned above
+                Err(_) => return Err(format!("{}: not valid JSON.", path)),
             }
         }
     }
@@ -275,6 +337,45 @@ fn validate_plugin(json: serde_json::Value) -> Result<Package, String> {
         }
     }
     Ok(p)
+}
+
+/// Checks the design a plugin command returns (untrusted output). `input` is the design the command received:
+/// strings and image references that were already there are kept; NEW ones must pass the same rules as a
+/// downloaded design (no control characters, external links, absolute/UNC/drive paths or `..`).
+pub fn check_plugin_output(input: &serde_json::Value, output: &serde_json::Value) -> Result<(), String> {
+    let elements = output.get("elements").and_then(|e| e.as_array()).ok_or("The returned design has no “elements” list.")?;
+    if elements.len() > 5000 {
+        return Err("The returned design has too many elements.".into());
+    }
+    for e in elements {
+        validate_element_fields(e)?;
+    }
+    validate_doc_fields(output)?;
+    let mut old = Vec::new();
+    texts(input, &mut old, 0);
+    let known: std::collections::HashSet<String> = old.into_iter().collect();
+    let mut new = Vec::new();
+    texts(&serde_json::Value::Array(elements.clone()), &mut new, 0);
+    for s in new.iter().filter(|s| !known.contains(*s)) {
+        if external_url(s) {
+            return Err("The returned design contains external links.".into());
+        }
+        if s.chars().any(bad_text_char) {
+            return Err("The returned design contains control characters or line separators.".into());
+        }
+        if dangerous_path_basic(s) && (s.contains('/') || s.contains('\\')) {
+            return Err("The returned design contains absolute paths or paths with “..”.".into());
+        }
+    }
+    for e in elements {
+        for key in ["image"] {
+            let Some(r) = e.get(key).and_then(|v| v.as_str()).filter(|r| !r.is_empty() && !known.contains(*r)) else { continue };
+            if dangerous_path(r) || crate::library::is_unc_or_stream(r) {
+                return Err(format!("The returned design has an image reference that is not allowed: {}", terminal_safe(r).chars().take(40).collect::<String>()));
+            }
+        }
+    }
+    Ok(())
 }
 
 fn suspicious(code: &str) -> bool {
@@ -601,5 +702,85 @@ mod tests_format_fields {
         d["unity"] = json!({});
         d["canvas"] = json!({"render_mode":"Bogus"});
         assert!(validate_design(d, true).is_err());
+    }
+}
+
+#[cfg(test)]
+mod tests_audit {
+    use super::*;
+    use serde_json::json;
+
+    fn pkg(manifest: serde_json::Value, files: serde_json::Value) -> Vec<u8> {
+        json!({ "manifest": manifest, "files": files }).to_string().into_bytes()
+    }
+
+    #[test]
+    fn exporter_extension_allowlist() {
+        for ok in ["txt", "csv", "json", "xml", "md", "cs", "uxml", "uss", "tsv"] {
+            let m = json!({"name":"Exporter","exporters":[{"name":"x","extension":ok,"script":"a.rhai"}]});
+            assert!(validate("plugin", "p.json", &pkg(m, json!({"a.rhai":"fn export_text(d){ \"\" }"}))).is_ok(), "{}", ok);
+        }
+        for bad in ["exe", "bat", "ps1", "js", "svg", "html", "dll", "TXT", ".txt", "", "txt ", "toolong", "t\u{0}xt", "cmd", "abc", "tx t"] {
+            let m = json!({"name":"Exporter","exporters":[{"name":"x","extension":bad,"script":"a.rhai"}]});
+            assert!(validate("plugin", "p.json", &pkg(m, json!({"a.rhai":"fn export_text(d){ \"\" }"}))).is_err(), "{:?}", bad);
+        }
+        // a missing extension is not allowed either
+        let m = json!({"name":"Exporter","exporters":[{"name":"x","script":"a.rhai"}]});
+        assert!(validate("plugin", "p.json", &pkg(m, json!({"a.rhai":"fn export_text(d){ \"\" }"}))).is_err());
+    }
+
+    #[test]
+    fn json_design_is_validated_even_if_it_is_also_a_command_script() {
+        let m = json!({"name":"Sneaky","commands":[{"name":"x","script":"t.json"}]});
+        let evil = r#"{"elements":[{"text":"https://evil.example"}]}"#;
+        assert!(validate("plugin", "p.json", &pkg(m.clone(), json!({"t.json": evil}))).is_err());
+        let m2 = json!({"name":"Sneaky","commands":[{"name":"x","script":"a.rhai"}]});
+        let evil2 = r#"{"elements":[{"image":"C:/Users/x/a.png"}]}"#;
+        assert!(validate("plugin", "p.json", &pkg(m2, json!({"a.rhai":"fn run(d){d}","other.json": evil2}))).is_err(), "a design-looking json is validated even if not listed");
+        let m3 = json!({"name":"Sneaky","templates":["t.json"],"commands":[{"name":"x","script":"t.json"}]});
+        assert!(validate("plugin", "p.json", &pkg(m3, json!({"t.json": evil}))).is_err());
+    }
+
+    #[test]
+    fn case_insensitive_duplicate_files_are_rejected() {
+        let m = json!({"name":"Dupes","commands":[{"name":"x","script":"a.rhai"}]});
+        let b = pkg(m, json!({"a.rhai":"fn run(d){d}","A.rhai":"fn run(d){d}"}));
+        assert!(validate("plugin", "p.json", &b).unwrap_err().contains("Duplicate"));
+    }
+
+    #[test]
+    fn spoofing_characters_are_rejected_in_names() {
+        for c in ['\u{200E}', '\u{200F}', '\u{061C}', '\u{200B}', '\u{200C}', '\u{200D}', '\u{FEFF}', '\u{202E}'] {
+            let m = json!({"name": format!("Align{}x", c), "commands":[{"name":"x","script":"a.rhai"}]});
+            assert!(validate("plugin", "p.json", &pkg(m, json!({"a.rhai":"fn run(d){d}"}))).is_err(), "{:?}", c);
+            assert!(!valid_display_text(&format!("a{}b", c)));
+        }
+        assert!(valid_display_text("Plugin ñandú 日本語 – ok"));
+    }
+
+    #[test]
+    fn terminal_text_loses_control_characters() {
+        assert_eq!(terminal_safe("ok\u{1b}[31mred\u{7}\r\n\u{9b}x\u{202E}y"), "ok[31mredxy");
+        let mut v = json!({"a":["x\u{1b}[2J", {"b":"\u{7}b"}], "n": 5});
+        terminal_safe_json(&mut v);
+        assert_eq!(v, json!({"a":["x[2J", {"b":"b"}], "n": 5}));
+    }
+
+    #[test]
+    fn plugin_output_is_checked() {
+        let input = json!({"elements":[{"id":1,"text":"Hello","image":"C:/mine/a.png"}]});
+        let ok = json!({"elements":[{"id":1,"text":"Hello","image":"C:/mine/a.png"},{"id":2,"text":"New","image":"icons/b.png"}]});
+        assert!(check_plugin_output(&input, &ok).is_ok(), "existing absolute refs are kept, safe new ones are fine");
+        for bad in [
+            json!({"elements":[{"image":"..\\..\\x.png"}]}),
+            json!({"elements":[{"image":"C:/Users/x/y.png"}]}),
+            json!({"elements":[{"image":"\\\\server\\share\\a.png"}]}),
+            json!({"elements":[{"image":"//server/share/a.png"}]}),
+            json!({"elements":[{"text":"visit https://evil.example"}]}),
+            json!({"elements":[{"text":"a\u{1b}b"}]}),
+            json!({"elements":[{"slice":[1,2]}]}),
+        ] {
+            assert!(check_plugin_output(&input, &bad).is_err(), "{}", bad);
+        }
     }
 }

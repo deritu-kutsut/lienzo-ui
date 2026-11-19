@@ -19,7 +19,8 @@ lienzo-ui --import-unity-project MyUnityProject --out Imported    # every UI pre
 
 * `--import-unity <file>` works with `--save`, `--export` and `--review` like `--open` does. Warnings go to stderr, a summary to stdout.
 * `--import-unity-project <project folder> --out <folder>` walks `<project>/Assets`, converts every `.prefab` that has a RectTransform
-  hierarchy and writes `<name>.editorgui.json` into the output folder (nothing is written anywhere else). Prefabs without UI are skipped;
+  hierarchy and writes `<name>.editorgui.json` into the output folder (nothing is written anywhere else). Existing files are never overwritten:
+  on a name collision a numeric suffix is added (`Menu_2.editorgui.json`) and a warning says so. Prefabs without UI are skipped;
   the summary says how many were converted, skipped or failed.
 * Exit codes: `0` success, `1` the import failed (unreadable / invalid file, a prefab failed in project mode), `2` wrong usage.
 
@@ -45,6 +46,20 @@ turn sprite GUIDs into asset paths. A prefab inside a package folder (`package.j
 Sprites that Lienzo generated itself (`Sprites/Generated/rr_<radius>_<stroke>.png`, `ellipse_<n>.png`, `grad_<RRGGBBAA>_<RRGGBBAA>.png`)
 are turned back into what they were: a rounded panel (`radius`), a circle, a gradient. Unity's built-in sprites (UISprite, Background, Knob...)
 cannot be read from outside Unity: those images become plain colour panels (with `image_mode` kept) and one warning says how many.
+
+### How image references are resolved
+
+* `unity:Assets/...` and `unity:Packages/...` are resolved against the Unity project root. The path is validated component by component:
+  relative, only normal components (no `..`, no root, no empty component), the first one exactly `Assets` or `Packages` (case-sensitive, so
+  `AssetsEvil/...` fails), no `:` (drive letters, NTFS streams), no reserved device names. The file found must also stay inside the project
+  after resolving junctions / symlinks. Anything else is refused and reported as a missing image.
+* In the editor's «Import from Unity» dialog the root is the project that holds the imported file (used for this session; the saved
+  `unity_project` setting is only filled when it was empty, and the status line says "Unity project detected: ...").
+* Relative image names (no `unity:`) may not contain `..` or be rooted, and must stay inside the library images folder or the folder of
+  the open design. Absolute paths are only honoured for designs the user opened from disk (`library::set_trusted_source`); designs produced by
+  plugins or downloaded from the community must be loaded with the flag set to false.
+* In an exported Lienzo `Designs/*.json`, `image.source` is only accepted as `Assets/...` / `Packages/...` (turned into `unity:`) or a
+  plain file name; anything else (absolute, UNC, `..`, drive, subfolders) is dropped with a warning and never read.
 
 ## What maps to what
 
@@ -77,7 +92,9 @@ fields. Custom scripts are reported (with their class name when the project's `.
 | no component other than the RectTransform | Empty (container) |
 
 Lienzo's own prefab structure is recognised: the `Fondo del lienzo` child of the canvas is the page `background`, the `Borde` ring child
-becomes `stroke` / `stroke_w`, and the `Texto` child of a panel is its `text`.
+becomes `stroke` / `stroke_w`, and the `Texto` child of a panel is its `text`. These name-based matches (also `Arrow` of a Dropdown and
+`Background` of a Slider) are reported with a warning, since a child that happens to have such a name is absorbed. A ScrollView keeps the
+sibling order of `m_Children` (its content is emitted where the viewport sits).
 
 ## Warnings
 
@@ -90,14 +107,16 @@ Typical ones:
 * `Layout group controls the size of its children`: children driven by a layout group keep the sizes saved in the prefab, which may be 0.
 * `sprite reference(s) could not be resolved`: no `.meta` with that GUID was found (prefab outside a project, or the asset lives in a package).
 * `nested prefab instance(s) are not expanded`: a nested prefab instance (and prefab variants) is not followed; import the source prefab.
-* `3D rotation ignored`, `scale folded into the size`, `Filled image not supported`, `Vertical slider imported as horizontal`,
+* `3D rotation ignored`, `scale folded into the size`, `Negative scale (mirrored) imported as a positive scale`, `Filled image not supported`, `Vertical slider imported as horizontal`,
   `Border ring imported with an approximate stroke width`, `Mask imported as RectMask2D`, `CanvasGroup alpha folded`.
 
 ## Limits
 
 * Input files above 20 MB are refused, as are files with more than 100 000 YAML documents. Nesting deeper than 48 levels of YAML or 128 levels
-  of GameObjects, strings above 64 KB and designs above 5 000 elements are cut (with a warning). A hostile file cannot make the importer
-  panic or hang.
+  of GameObjects, designs above 5 000 elements, scalars above 64 KB or spanning more than 256 lines, more than 256 components per GameObject,
+  text above 4 KB per element and above 8 MB per import are cut (each with a warning). Multi-line scalars are scanned incrementally, so an
+  unclosed quote or bracket followed by hundreds of thousands of lines costs linear time. A hostile file cannot make the importer panic or hang.
+* Warnings are stripped of control characters (ESC, BEL, bidi overrides...) because names, script names, GUIDs and file names come from the file.
 * Only the `.prefab` text format is read (not binary-serialised assets, scenes or ScriptableObjects). Prefab variants only hold overrides: open the source prefab.
 * The Viewport of a ScrollView is taken as the full ScrollView box, like Lienzo's own export (the width a visible scrollbar takes away at runtime is not modelled).
 * Layout groups are not evaluated: elements keep the geometry saved in the prefab.

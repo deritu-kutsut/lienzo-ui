@@ -989,3 +989,177 @@ fn hostile_export_json_does_not_panic() {
         let _ = std::fs::remove_dir_all(&dir);
     }
 }
+
+// ---------------------------------------------------------------------------
+// Security audit regressions
+// ---------------------------------------------------------------------------
+
+#[test]
+fn unclosed_quote_and_flow_do_not_rescan_quadratically() {
+    let mut q = String::from("k: \"never closed\n");
+    for _ in 0..200_000 {
+        q += "  more text here\n";
+    }
+    let t = Instant::now();
+    let _ = parse_plain(&q);
+    assert!(t.elapsed() < Duration::from_secs(2), "unclosed quote took {:?}", t.elapsed());
+    let mut f = String::from("k: {\n");
+    for _ in 0..300_000 {
+        f += "{\n";
+    }
+    let t = Instant::now();
+    let _ = parse_plain(&f);
+    assert!(t.elapsed() < Duration::from_secs(2), "unclosed flow took {:?}", t.elapsed());
+    // a legitimate multi-line quoted scalar and flow still work
+    let y = parse_plain("a: \"one\n  two\"\nb: {x: 1,\n  y: 2}\nc: after\n");
+    assert_eq!(y.get("a").and_then(|v| v.s()), Some("one two"));
+    assert_eq!(y.get("b").and_then(|v| v.get("y")).and_then(|v| v.s()), Some("2"));
+    assert_eq!(y.get("c").and_then(|v| v.s()), Some("after"));
+}
+
+#[test]
+fn overlong_scalar_is_cut_with_a_warning() {
+    let big = "x".repeat(200_000);
+    let p = prefab(&[
+        go(1, "Root", &[11, 12], true),
+        Rt::new(11, 1, 0).kids(&[21]).size([1000.0, 800.0]).yaml(),
+        native(223, 12, 1, "  m_RenderMode: 0\n"),
+        go(2, "T", &[21, 22], true),
+        Rt::new(21, 2, 11).yaml(),
+        tmp(22, 2, &format!("\"{big}"), 20.0, [1.0, 1.0, 1.0, 1.0], ""),
+    ]);
+    let imp = import(&p);
+    assert!(imp.warnings.iter().any(|w| w.contains("cut")), "{:?}", imp.warnings);
+}
+
+#[test]
+fn text_is_capped_per_element_and_per_import() {
+    let shared = "y".repeat(60_000);
+    let n = 5000i64;
+    let kids: Vec<i64> = (0..n).map(|i| 1000 + i * 10).collect();
+    let mut parts = vec![go(1, "Root", &[11, 12], true), Rt::new(11, 1, 0).kids(&kids).size([1000.0, 800.0]).yaml(), native(223, 12, 1, "  m_RenderMode: 0\n")];
+    // one shared placeholder text of 60 KB
+    parts.push(go(2, "Shared", &[21, 22], true));
+    parts.push(Rt::new(21, 2, 11).yaml());
+    parts.push(tmp(22, 2, &shared, 20.0, [1.0, 1.0, 1.0, 1.0], ""));
+    for i in 0..n {
+        let b = 1000 + i * 10;
+        parts.push(go(b, &format!("I{i}"), &[b + 1, b + 2], true));
+        parts.push(Rt::new(b + 1, b, 11).yaml());
+        parts.push(mb(b + 2, b, "d199490a83bb2b844b9695cbf13b01ef", "", &format!("{}  m_Text: \n  m_TextComponent: {{fileID: 21}}\n  m_Placeholder: {{fileID: 21}}\n", selectable_fields(0, ""))));
+    }
+    let p = prefab(&parts);
+    let t = Instant::now();
+    let imp = import(&p);
+    assert!(t.elapsed() < Duration::from_secs(10), "{:?}", t.elapsed());
+    let json = serde_json::to_string(&imp.doc).unwrap();
+    assert!(json.len() < 20 * 1024 * 1024, "output {} bytes", json.len());
+    assert!(imp.doc.elements.iter().all(|e| e.text.len() <= 4096));
+    assert!(imp.warnings.iter().any(|w| w.contains("cut or dropped")), "{:?}", imp.warnings);
+}
+
+#[test]
+fn absurd_component_lists_are_bounded() {
+    let rts = 400i64;
+    let kids: Vec<i64> = (0..rts).map(|i| 100_000 + i * 10 + 1).collect();
+    let mut parts = vec![go(1, "Root", &[11, 12], true), Rt::new(11, 1, 0).kids(&kids).size([1000.0, 800.0]).yaml(), native(223, 12, 1, "  m_RenderMode: 0\n")];
+    for i in 0..rts {
+        let b = 100_000 + i * 10;
+        // 600 component references per GameObject (cap is 256) (all pointing at the same real component)
+        let comps: Vec<i64> = std::iter::repeat(b + 1).take(600).collect();
+        parts.push(go(b, &format!("N{i}"), &comps, true));
+        parts.push(Rt::new(b + 1, b, 11).yaml());
+    }
+    let p = prefab(&parts);
+    let t = Instant::now();
+    let _ = import(&p);
+    assert!(t.elapsed() < Duration::from_secs(2), "{:?}", t.elapsed());
+}
+
+#[test]
+fn project_import_never_overwrites_existing_files() {
+    let dir = tmpdir("noover");
+    let proj = dir.join("proj");
+    let out = dir.join("out");
+    std::fs::create_dir_all(proj.join("Assets/UI")).unwrap();
+    std::fs::create_dir_all(&out).unwrap();
+    std::fs::write(proj.join("Assets/UI/Menu.prefab"), menu_prefab()).unwrap();
+    std::fs::write(out.join("Menu.editorgui.json"), "precious").unwrap();
+    let rep = import_unity_project_report(&proj, &out).unwrap();
+    assert_eq!(std::fs::read_to_string(out.join("Menu.editorgui.json")).unwrap(), "precious");
+    assert_eq!(rep.written.len(), 1);
+    assert_eq!(rep.written[0].0, "Menu_2.editorgui.json");
+    assert!(rep.warnings.iter().any(|(_, w)| w.contains("already existed")), "{:?}", rep.warnings);
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
+#[test]
+fn json_image_sources_are_restricted() {
+    let mk = |src: &str| {
+        let j = serde_json::json!({"format":"editor-gui/ugui/2","elements":[{"id":1,"type":"Image","name":"I","image":{"source":src}}]}).to_string();
+        import_export_json(&j, "t").unwrap()
+    };
+    assert_eq!(mk("Assets/UI/a.png").doc.elements[0].image, "unity:Assets/UI/a.png");
+    assert_eq!(mk("Packages/x/a.png").doc.elements[0].image, "unity:Packages/x/a.png");
+    assert_eq!(mk("sword.png").doc.elements[0].image, "sword.png");
+    for bad in ["C:\\Windows\\win.ini", "/etc/passwd", "\\\\server\\share\\a.png", "//server/share/a.png", "../x.png", "Assets/../../x.png", "a/b.png", "C:foo.png", "AssetsEvil/a.png", "a.png:s"] {
+        let r = mk(bad);
+        assert_eq!(r.doc.elements[0].image, "", "{bad}");
+        assert!(r.warnings.iter().any(|w| w.contains("dropped")), "{bad}: {:?}", r.warnings);
+    }
+}
+
+#[test]
+fn warnings_are_clean_and_mirroring_and_name_absorption_are_reported() {
+    let p = prefab(&[
+        go(1, "Root", &[11, 12], true),
+        Rt::new(11, 1, 0).kids(&[21, 31]).size([1000.0, 800.0]).yaml(),
+        native(223, 12, 1, "  m_RenderMode: 0\n"),
+        go(2, "\"Evil\\x1b[31mred\\x07\"", &[21, 22], true),
+        Rt::new(21, 2, 11).scale(-1.0).yaml(),
+        image(22, 2, [1.0, 1.0, 1.0, 1.0], None, 0),
+        go(3, "Cap", &[31, 32], true),
+        Rt::new(31, 3, 11).kids(&[41]).yaml(),
+        image(32, 3, [1.0, 1.0, 1.0, 1.0], None, 0),
+        go(4, "Texto", &[41, 42], true),
+        Rt::new(41, 4, 31).stretch().yaml(),
+        tmp(42, 4, "Hello", 20.0, [0.0, 0.0, 0.0, 1.0], ""),
+    ]);
+    let imp = import(&p);
+    for w in &imp.warnings {
+        assert!(!w.chars().any(|c| c.is_control()), "{w:?}");
+    }
+    assert!(imp.warnings.iter().any(|w| w.contains("mirrored")), "{:?}", imp.warnings);
+    assert!(imp.warnings.iter().any(|w| w.contains("'Texto' absorbed")), "{:?}", imp.warnings);
+    assert!(imp.warnings.iter().any(|w| w.contains("Evil")), "the name is still reported: {:?}", imp.warnings);
+}
+
+#[test]
+fn scrollview_content_keeps_sibling_order() {
+    // m_Children of the root: Before, Items (scroll view), After
+    let p = prefab(&[
+        go(1, "Root", &[11, 12], true),
+        Rt::new(11, 1, 0).kids(&[21, 41, 31]).size([1000.0, 800.0]).yaml(),
+        native(223, 12, 1, "  m_RenderMode: 0\n"),
+        go(2, "Before", &[21, 22], true),
+        Rt::new(21, 2, 11).yaml(),
+        image(22, 2, [1.0, 1.0, 1.0, 1.0], None, 0),
+        go(3, "After", &[31, 32], true),
+        Rt::new(31, 3, 11).yaml(),
+        image(32, 3, [1.0, 1.0, 1.0, 1.0], None, 0),
+        go(210, "Items", &[41, 42, 43], true),
+        Rt::new(41, 210, 11).kids(&[51]).size([400.0, 300.0]).yaml(),
+        image(42, 210, [0.5, 0.5, 0.5, 1.0], None, 0),
+        mb(43, 210, G_SCROLL, "UnityEngine.UI::UnityEngine.UI.ScrollRect", "  m_Content: {fileID: 61}\n  m_Viewport: {fileID: 51}\n"),
+        go(211, "Viewport", &[51], true),
+        Rt::new(51, 211, 41).kids(&[61]).stretch().yaml(),
+        go(212, "Content", &[61], true),
+        Rt::new(61, 212, 51).kids(&[71]).anchors([0.0, 1.0], [1.0, 1.0]).pivot([0.0, 1.0]).size([0.0, 500.0]).yaml(),
+        go(213, "Item", &[71, 72], true),
+        Rt::new(71, 213, 61).size([100.0, 40.0]).yaml(),
+        image(72, 213, [1.0, 0.0, 1.0, 1.0], None, 0),
+    ]);
+    let imp = import(&p);
+    let names: Vec<&str> = imp.doc.elements.iter().map(|e| e.name.as_str()).collect();
+    assert_eq!(names, ["Before", "Items", "Item", "After"], "{names:?}");
+}

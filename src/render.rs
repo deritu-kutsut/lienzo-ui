@@ -657,17 +657,23 @@ pub fn paint_element_thumb(p: &Painter, e: &Element, rect: egui::Rect) {
 
 /// Checkerboard drawn behind a transparent page (background alpha 0 = transparent overlay).
 pub fn paint_checkerboard(p: &Painter, rect: egui::Rect) {
-    let cell = 12.0;
     p.rect_filled(rect, 0.0, Color32::from_gray(205));
     let dark = Color32::from_gray(170);
-    let (cols, rows) = ((rect.width() / cell).ceil() as i32, (rect.height() / cell).ceil() as i32);
-    // bounded: a huge zoom must not create millions of rectangles
-    if cols * rows > 40_000 {
+    // Only the visible part is tiled; when it would need too many tiles (huge zoom or a huge page) the tile size is
+    // doubled until it fits, so the pattern never disappears.
+    let vis = rect.intersect(p.clip_rect());
+    if !vis.is_positive() {
         return;
     }
-    for j in 0..rows {
-        for i in 0..cols {
-            if (i + j) % 2 == 0 {
+    let mut cell = 12.0f32;
+    while (vis.width() / cell).ceil() * (vis.height() / cell).ceil() > 20_000.0 {
+        cell *= 2.0;
+    }
+    let (i0, j0) = (((vis.min.x - rect.min.x) / cell).floor() as i32, ((vis.min.y - rect.min.y) / cell).floor() as i32);
+    let (i1, j1) = (((vis.max.x - rect.min.x) / cell).ceil() as i32, ((vis.max.y - rect.min.y) / cell).ceil() as i32);
+    for j in j0..j1 {
+        for i in i0..i1 {
+            if (i + j).rem_euclid(2) == 0 {
                 continue;
             }
             let min = rect.min + Vec2::new(i as f32 * cell, j as f32 * cell);

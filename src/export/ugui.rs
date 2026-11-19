@@ -1,7 +1,7 @@
 //! uGUI export: a flat JSON (parent = index in the list, never null so Unity's
 //! JsonUtility can read it) consumed by `EditorGuiImporter.cs`.
 
-use super::{class_name, content_height, element_sprite, export_rt, image_asset_path, radius_of, unity_image_ref, unity_names, view};
+use super::{class_name, element_sprite, image_asset_path, radius_of, unity_image_ref, unity_names, view, ExportCtx};
 use crate::docext::{ElementOverride, Orientation};
 use crate::model::{Doc, Kind, hex};
 use serde_json::json;
@@ -17,12 +17,13 @@ pub fn json(doc: &Doc, for_project: bool) -> String {
     let names = unity_names(doc);
     let index: HashMap<u64, usize> = doc.elements.iter().enumerate().map(|(i, e)| (e.id, i)).collect();
     let fields = view::field_names(doc);
+    let ctx = ExportCtx::new(doc);
     let elements: Vec<_> = doc
         .elements
         .iter()
         .map(|e| {
-            let rt = export_rt(doc, e);
-            let parent = doc.parent_of(e.id).and_then(|p| index.get(&p)).map(|i| *i as i64).unwrap_or(-1);
+            let rt = ctx.rt(e);
+            let parent = ctx.parent(e).and_then(|p| index.get(&p.id)).map(|i| *i as i64).unwrap_or(-1);
             let source = if e.image.is_empty() {
                 String::new()
             } else if let Some((asset, _)) = unity_image_ref(&e.image) {
@@ -89,7 +90,7 @@ pub fn json(doc: &Doc, for_project: bool) -> String {
                 },
                 "value": r2(e.value),
                 "options": e.options,
-                "contentHeight": if e.kind == Kind::ScrollView { r2(content_height(doc, e)) } else { 0.0 },
+                "contentHeight": if e.kind == Kind::ScrollView { r2(ctx.content_height(e)) } else { 0.0 },
                 "onClick": e.on_click,
             });
             // Optional data (never null: JsonUtility cannot read it); the Unity side reads what it knows.
@@ -149,14 +150,14 @@ fn layout_json(l: &crate::model::LayoutGroup) -> serde_json::Value {
 
 /// RectTransform of an element in the portrait layout, or `None` when the override does not move / resize it.
 /// Computed on the design resolved for portrait (page size, overrides applied), against the parent's portrait box.
-fn portrait_rect(doc: &Doc, ov: &ElementOverride) -> Option<serde_json::Value> {
+fn portrait_rect(pd: &Doc, pctx: &ExportCtx, ov: &ElementOverride) -> Option<serde_json::Value> {
     let geometry = ov.x.is_some() || ov.y.is_some() || ov.w.is_some() || ov.h.is_some() || ov.rot.is_some() || ov.anchor_min.is_some() || ov.anchor_max.is_some() || ov.pivot.is_some();
     if !geometry {
         return None;
     }
-    let pd = doc.resolved_for(Orientation::Portrait);
-    let e = pd.get(ov.id)?;
-    let rt = export_rt(&pd, e);
+    let e = pctx.get(ov.id)?;
+    let rt = pctx.rt(e);
+    let _ = pd;
     Some(json!({
         "anchorMin": [r2(rt.anchor_min[0]), r2(rt.anchor_min[1])],
         "anchorMax": [r2(rt.anchor_max[0]), r2(rt.anchor_max[1])],
@@ -202,6 +203,9 @@ fn doc_extras(doc: &Doc, v: &mut serde_json::Value) {
         v["unity"] = serde_json::Value::Object(o);
     }
     if let Some(p) = &doc.portrait {
+        // the portrait design is resolved once (not once per override)
+        let pd = doc.resolved_for(Orientation::Portrait);
+        let pctx = ExportCtx::new(&pd);
         let overrides: Vec<_> = p
             .overrides
             .iter()
@@ -225,7 +229,7 @@ fn doc_extras(doc: &Doc, v: &mut serde_json::Value) {
                     o.insert("layout".into(), layout_json(l));
                 }
                 // Real RectTransform values of the portrait state (what Unity needs), next to the raw ones above.
-                if let Some(rect) = portrait_rect(doc, ov) {
+                if let Some(rect) = portrait_rect(&pd, &pctx, ov) {
                     o.insert("rect".into(), rect);
                     o.insert("hasRect".into(), json!(true));
                 }
@@ -235,7 +239,21 @@ fn doc_extras(doc: &Doc, v: &mut serde_json::Value) {
                 serde_json::Value::Object(o)
             })
             .collect();
+        // A ScrollView's content height depends on the boxes of its children: portrait needs its own.
+        let heights: Vec<_> = pd
+            .elements
+            .iter()
+            .filter(|e| e.kind == Kind::ScrollView)
+            .filter_map(|e| {
+                let ph = pctx.content_height(e);
+                let lh = doc.get(e.id).map(|l| super::content_height(doc, l)).unwrap_or(ph);
+                if (ph - lh).abs() > 0.5 { Some(json!({ "id": e.id, "contentHeight": r2(ph) })) } else { None }
+            })
+            .collect();
         v["portrait"] = json!({ "width": r2(p.width), "height": r2(p.height), "overrides": overrides });
+        if !heights.is_empty() {
+            v["portrait"]["contentHeights"] = json!(heights);
+        }
     }
 }
 

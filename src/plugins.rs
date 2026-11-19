@@ -149,6 +149,10 @@ pub fn load(folder: &Path) -> Plugin {
         }
     }
     for x in m.exporters {
+        if !crate::community_validate::valid_export_extension(&x.extension) {
+            errors.push(format!("exporter “{}”: extension not allowed (allowed: {})", crate::community_validate::terminal_safe(&x.name), crate::community_validate::EXPORT_EXTENSIONS.join(", ")));
+            continue;
+        }
         match inside(folder, &x.script) {
             Ok(f) if f.exists() => p.exporters.push(x),
             Ok(f) => errors.push(format!("{} does not exist", f.display())),
@@ -179,18 +183,25 @@ pub fn load_all() -> Vec<Plugin> {
     v
 }
 
-/// Sandboxed Rhai engine with limits, plus a message output (`log("…")`).
-fn engine() -> (rhai::Engine, std::rc::Rc<std::cell::RefCell<Vec<String>>>) {
+/// Sandboxed Rhai engine with limits, plus a bounded message output (`log("…")`, `print`, `debug`).
+fn engine() -> (rhai::Engine, crate::script::Log) {
     let mut e = rhai::Engine::new();
-    // 5 s of wall-clock time and 5M operations: plenty for a command, never a hang. No imports, bounded arrays/blobs/maps.
-    crate::script::harden(&mut e, 5_000_000, 2_000_000, 200_000, 5000);
-    let log = std::rc::Rc::new(std::cell::RefCell::new(Vec::new()));
+    let log = crate::script::OutLog::new_shared();
+    // 5 s of wall-clock time and 5M operations, strings of 64 KB and arrays/maps of 10k items (nested data counts):
+    // plenty for a command, never a hang nor gigabytes of memory. No imports. Output is capped (see `script::OutLog`).
+    crate::script::harden_with_log(&mut e, 5_000_000, PLUGIN_MAX_STRING, PLUGIN_MAX_ITEMS, 5000, Some(log.clone()));
     let l2 = log.clone();
-    e.register_fn("log", move |s: &str| l2.borrow_mut().push(s.to_string()));
+    e.register_fn("log", move |s: &str| l2.borrow_mut().push(s));
     let l3 = log.clone();
-    e.on_print(move |s| l3.borrow_mut().push(s.to_string()));
+    e.on_print(move |s| l3.borrow_mut().push(s));
+    let l4 = log.clone();
+    e.on_debug(move |s, _, _| l4.borrow_mut().push(s));
     (e, log)
 }
+
+/// Limits of a plugin script (see `engine`).
+pub const PLUGIN_MAX_STRING: usize = 64 * 1024;
+pub const PLUGIN_MAX_ITEMS: usize = 10_000;
 
 /// Runs the first of `functions` that the script defines (the English name first, then the old Spanish one).
 fn call(folder: &Path, script: &str, functions: &[&str], doc: &Doc) -> Result<(rhai::Dynamic, Vec<String>), String> {
@@ -201,7 +212,10 @@ fn call(folder: &Path, script: &str, functions: &[&str], doc: &Doc) -> Result<(r
     let arg = rhai::serde::to_dynamic(doc).map_err(|e| e.to_string())?;
     let function = functions.iter().copied().find(|f| ast.iter_functions().any(|d| d.name == *f)).unwrap_or(functions[0]);
     let r = engine.call_fn::<rhai::Dynamic>(&mut rhai::Scope::new(), &ast, function, (arg,)).map_err(|e| format!("{}: {}", script, e))?;
-    let msgs = log.borrow().clone();
+    if log.borrow().overflow {
+        return Err(format!("{}: too much output (message limit exceeded)", script));
+    }
+    let msgs = log.borrow().lines.clone();
     Ok((r, msgs))
 }
 
@@ -211,8 +225,36 @@ pub fn run_command(folder: &Path, c: &Action, doc: &Doc) -> Result<(Doc, Vec<Str
     // Rhai works with f64 and the model with f32: it goes through JSON, which converts the numbers.
     let json: serde_json::Value = rhai::serde::from_dynamic(&r).map_err(|e| format!("{}: the returned design is not valid ({})", c.script, e))?;
     let mut new: Doc = serde_json::from_value(json).map_err(|e| format!("{}: the returned design is not valid ({})", c.script, e))?;
+    // The output of a plugin is untrusted: new strings and image references must be safe (see `check_plugin_output`).
+    let input = serde_json::to_value(doc).map_err(|e| e.to_string())?;
+    let output = serde_json::to_value(&new).map_err(|e| e.to_string())?;
+    crate::community_validate::check_plugin_output(&input, &output).map_err(|e| format!("{}: {}", c.script, e))?;
     new.migrate_groups();
     Ok((new, msgs))
+}
+
+/// Extension for the Save dialog: the one the plugin declares when it is allowed, otherwise `txt`.
+pub fn safe_extension(ext: &str) -> String {
+    let e = ext.trim().trim_start_matches('.').to_lowercase();
+    if crate::community_validate::valid_export_extension(&e) { e } else { "txt".into() }
+}
+
+/// Marks designs loaded while it lives as coming from an untrusted source (plugin output, plugin or community
+/// templates): absolute image paths are refused. Restores the previous state on drop.
+pub struct UntrustedSource(bool);
+
+impl UntrustedSource {
+    pub fn begin() -> Self {
+        let before = crate::library::trusted_source();
+        crate::library::set_trusted_source(false);
+        UntrustedSource(before)
+    }
+}
+
+impl Drop for UntrustedSource {
+    fn drop(&mut self) {
+        crate::library::set_trusted_source(self.0);
+    }
 }
 
 /// Runs an exporter: returns the file's text.
@@ -264,7 +306,7 @@ impl EditorApp {
                     }
                 }
                 for (j, x) in p.exporters.iter().enumerate() {
-                    if ui.add_sized([ui.available_width(), 24.0], crate::icons::btn("download", format!("{} (.{})", x.name, x.extension))).clicked() {
+                    if ui.add_sized([ui.available_width(), 24.0], crate::icons::btn("download", format!("{} (.{})", x.name, safe_extension(&x.extension)))).clicked() {
                         action = Some((i, 1, j));
                     }
                 }
@@ -282,17 +324,20 @@ impl EditorApp {
             match kind {
                 0 => match run_command(&p.folder, &p.commands[j], &self.doc) {
                     Ok((new, msgs)) => {
+                        let _untrusted = UntrustedSource::begin();
                         self.doc = new;
                         self.sel.clear();
-                        self.status = format!("{} “{}”{}", t("Plugin executed:"), p.commands[j].name, if msgs.is_empty() { String::new() } else { format!(" · {}", msgs.join(" · ")) });
+                        let shown = crate::script::bounded_join(&msgs, " · ", 400);
+                        self.status = format!("{} “{}”{}", t("Plugin executed:"), p.commands[j].name, if shown.is_empty() { String::new() } else { format!(" · {}", shown) });
                     }
                     Err(e) => self.status = format!("{} {}", t("Plugin error:"), e),
                 },
                 1 => match run_exporter(&p.folder, &p.exporters[j], &self.doc) {
                     Ok(text) => {
                         let x = &p.exporters[j];
-                        let name = format!("{}.{}", crate::export::class_name(&self.doc.title), x.extension);
-                        self.save_text_file(&x.name, &name, &x.extension, &text);
+                        let ext = safe_extension(&x.extension);
+                        let name = format!("{}.{}", crate::export::class_name(&self.doc.title), ext);
+                        self.save_text_file(&x.name, &name, &ext, &text);
                     }
                     Err(e) => self.status = format!("{} {}", t("Plugin error:"), e),
                 },
@@ -301,6 +346,7 @@ impl EditorApp {
                     match std::fs::read_to_string(f).map_err(|e| e.to_string()).and_then(|s| serde_json::from_str::<Doc>(&s).map_err(|e| e.to_string())) {
                         Ok(d) => {
                             // Same as a custom template: leaves test mode and locks the backgrounds.
+                            let _untrusted = UntrustedSource::begin();
                             self.load_user_template(&d);
                             self.status = format!("{} {}", t("Plugin template applied (Ctrl+Z to undo):"), f.display());
                         }
@@ -434,6 +480,59 @@ mod sandbox_tests {
             assert!(r.is_err(), "{}", body);
             assert!(t.elapsed() < std::time::Duration::from_secs(15), "{}", body);
         }
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+}
+
+#[cfg(test)]
+mod audit_tests {
+    use super::*;
+
+    fn temp(tag: &str) -> PathBuf {
+        let d = std::env::temp_dir().join(format!("lienzo-plugin-audit-{}-{}", tag, std::process::id()));
+        let _ = std::fs::remove_dir_all(&d);
+        std::fs::create_dir_all(&d).unwrap();
+        d
+    }
+
+    #[test]
+    fn local_plugin_with_dangerous_extension_is_refused() {
+        let dir = temp("ext");
+        std::fs::write(dir.join("plugin.json"), r#"{"name":"E","exporters":[{"name":"ok","extension":"csv","script":"a.rhai"},{"name":"bad","extension":"bat","script":"a.rhai"},{"name":"bad2","extension":"../x","script":"a.rhai"}]}"#).unwrap();
+        std::fs::write(dir.join("a.rhai"), "fn export_text(d){ \"\" }").unwrap();
+        let p = load(&dir);
+        assert_eq!(p.exporters.len(), 1);
+        assert_eq!(p.exporters[0].extension, "csv");
+        assert!(p.error.as_deref().is_some_and(|e| e.contains("extension not allowed")), "{:?}", p.error);
+        assert_eq!(safe_extension("BAT"), "txt");
+        assert_eq!(safe_extension(".CSV"), "csv");
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn print_flood_and_nested_growth_in_plugins_fail() {
+        let dir = temp("flood");
+        let doc = crate::model::template(0, 1920.0, 1080.0);
+        for (i, body) in ["loop { print(\"x\"); } d", "loop { log(\"x\"); } d", "let a = []; loop { a.push(a.clone()); } d", "let s = \"abc\"; loop { s += s; } d"].into_iter().enumerate() {
+            std::fs::write(dir.join(format!("f{}.rhai", i)), format!("fn run(d) {{ {} }}", body)).unwrap();
+            let t = std::time::Instant::now();
+            let r = call(&dir, &format!("f{}.rhai", i), &["run"], &doc);
+            assert!(r.is_err(), "{}", body);
+            assert!(t.elapsed() < std::time::Duration::from_secs(8), "{}", body);
+        }
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn command_output_with_unsafe_image_is_rejected() {
+        let dir = temp("out");
+        std::fs::write(dir.join("a.rhai"), "fn run(d) { d.elements[0].image = \"C:/Users/x/secret.png\"; d }").unwrap();
+        std::fs::write(dir.join("b.rhai"), "fn run(d) { d.elements[0].text = \"fine\"; d }").unwrap();
+        let doc = crate::model::template(0, 1920.0, 1080.0);
+        let bad = Action { name: "a".into(), description: String::new(), script: "a.rhai".into() };
+        let good = Action { name: "b".into(), description: String::new(), script: "b.rhai".into() };
+        assert!(run_command(&dir, &bad, &doc).is_err());
+        assert!(run_command(&dir, &good, &doc).is_ok());
         let _ = std::fs::remove_dir_all(&dir);
     }
 }

@@ -29,12 +29,14 @@
       "type": "array",
       "items": {
         "$ref": "#/$defs/Element"
-      }
+      },
+      "maxItems": 20000
     },
     "next_id": {
       "type": "integer",
       "minimum": 1,
-      "description": "Next free element id; default max(id)+1"
+      "description": "Next free element id; default max(id)+1 (at most 2^53)",
+      "maximum": 9007199254740992
     },
     "canvas_match": {
       "type": "number",
@@ -79,7 +81,7 @@
             "null"
           ],
           "maxLength": 260,
-          "description": "Project-relative folder starting with Assets"
+          "description": "Project-relative folder starting with Assets; no <>\"|?*, no trailing dot/space, no Windows device names (CON, NUL, COM1...) in any segment"
         },
         "assembly": {
           "type": [
@@ -115,12 +117,13 @@
             "null"
           ],
           "maxLength": 128,
-          "description": "TMP font asset name"
+          "description": "TMP font asset name (no / \\ : or ..)"
         },
         "fallback_fonts": {
           "type": "array",
           "items": {
-            "type": "string"
+            "type": "string",
+            "maxLength": 128
           },
           "maxItems": 16
         }
@@ -283,33 +286,40 @@
         "id": {
           "type": "integer",
           "minimum": 0,
-          "description": "id of the element this overrides"
+          "description": "id of the element this overrides",
+          "maximum": 4503599627370496
         },
         "x": {
           "type": [
             "number",
             "null"
-          ]
+          ],
+          "minimum": -1000000,
+          "maximum": 1000000
         },
         "y": {
           "type": [
             "number",
             "null"
-          ]
+          ],
+          "minimum": -1000000,
+          "maximum": 1000000
         },
         "w": {
           "type": [
             "number",
             "null"
           ],
-          "minimum": 0
+          "minimum": 0,
+          "maximum": 1000000
         },
         "h": {
           "type": [
             "number",
             "null"
           ],
-          "minimum": 0
+          "minimum": 0,
+          "maximum": 1000000
         },
         "rot": {
           "type": [
@@ -323,7 +333,9 @@
             "null"
           ],
           "items": {
-            "type": "number"
+            "type": "number",
+            "minimum": -10000,
+            "maximum": 10000
           },
           "minItems": 2,
           "maxItems": 2
@@ -334,7 +346,9 @@
             "null"
           ],
           "items": {
-            "type": "number"
+            "type": "number",
+            "minimum": -10000,
+            "maximum": 10000
           },
           "minItems": 2,
           "maxItems": 2
@@ -345,7 +359,9 @@
             "null"
           ],
           "items": {
-            "type": "number"
+            "type": "number",
+            "minimum": -10000,
+            "maximum": 10000
           },
           "minItems": 2,
           "maxItems": 2
@@ -382,7 +398,8 @@
         "id": {
           "type": "integer",
           "minimum": 0,
-          "description": "Unique element id (0 or missing: assigned on load)"
+          "description": "Unique element id, 1..2^52 (0, repeated or larger ids are renumbered on load)",
+          "maximum": 4503599627370496
         },
         "name": {
           "type": "string",
@@ -393,21 +410,27 @@
         },
         "x": {
           "type": "number",
-          "description": "Left edge of the unrotated box in page pixels (y down)"
+          "description": "Left edge of the unrotated box in page pixels (y down)",
+          "minimum": -1000000,
+          "maximum": 1000000
         },
         "y": {
           "type": "number",
-          "description": "Top edge"
+          "description": "Top edge",
+          "minimum": -1000000,
+          "maximum": 1000000
         },
         "w": {
           "type": "number",
           "minimum": 0,
-          "description": "Width, page pixels"
+          "description": "Width, page pixels",
+          "maximum": 1000000
         },
         "h": {
           "type": "number",
           "minimum": 0,
-          "description": "Height"
+          "description": "Height",
+          "maximum": 1000000
         },
         "rot": {
           "type": "number",
@@ -472,7 +495,8 @@
         },
         "font": {
           "type": "string",
-          "description": "Font family name; empty = default"
+          "description": "Font family name; empty = default. Must not contain / \\ : or ..",
+          "maxLength": 256
         },
         "on_click": {
           "type": "string",
@@ -484,7 +508,9 @@
         },
         "value": {
           "type": "number",
-          "description": "Slider/toggle/dropdown value"
+          "description": "Slider/toggle/dropdown value",
+          "minimum": -1000000,
+          "maximum": 1000000
         },
         "visible": {
           "type": "boolean"
@@ -506,12 +532,15 @@
             "null"
           ],
           "minimum": 0,
-          "description": "Parent element id; null = child of the Canvas"
+          "description": "Parent element id; null = child of the Canvas",
+          "maximum": 9007199254740992
         },
         "anchor_min": {
           "type": "array",
           "items": {
-            "type": "number"
+            "type": "number",
+            "minimum": -10000,
+            "maximum": 10000
           },
           "minItems": 2,
           "maxItems": 2,
@@ -520,7 +549,9 @@
         "anchor_max": {
           "type": "array",
           "items": {
-            "type": "number"
+            "type": "number",
+            "minimum": -10000,
+            "maximum": 10000
           },
           "minItems": 2,
           "maxItems": 2
@@ -528,7 +559,9 @@
         "pivot": {
           "type": "array",
           "items": {
-            "type": "number"
+            "type": "number",
+            "minimum": -10000,
+            "maximum": 10000
           },
           "minItems": 2,
           "maxItems": 2

@@ -107,31 +107,142 @@ pub fn is_unc_or_stream(name: &str) -> bool {
     n.starts_with("\\\\") || n.starts_with("//") || n.char_indices().any(|(i, c)| c == ':' && i != 1)
 }
 
-pub fn resolve_image(name: &str) -> PathBuf {
-    if is_unc_or_stream(name) {
-        // refused: a path that does not exist (the caller reports a missing image)
-        return images_dir().join("__blocked__");
+/// Whether designs opened right now come from a source the user trusts (a file the user opened from
+/// disk, a design built in the editor): only then may an image reference be an absolute path.
+/// SITES THAT MUST CALL `set_trusted_source(false)` before loading a design (owned by other code):
+/// plugin command output, community templates / downloaded designs, MCP-supplied designs.
+/// The file-open paths (app open dialog, `--open`) call `set_trusted_source(true)`.
+/// Default is `true` so existing local workflows keep working.
+static TRUSTED_SOURCE: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(true);
+
+pub fn set_trusted_source(trusted: bool) {
+    TRUSTED_SOURCE.store(trusted, std::sync::atomic::Ordering::Relaxed);
+}
+
+pub fn trusted_source() -> bool {
+    TRUSTED_SOURCE.load(std::sync::atomic::Ordering::Relaxed)
+}
+
+/// The path returned for a refused image reference (it never exists, so callers report a missing image).
+pub fn blocked_path() -> PathBuf {
+    images_dir().join("__blocked__")
+}
+
+const RESERVED_DEVICES: &[&str] = &["CON", "PRN", "AUX", "NUL", "CLOCK$", "CONIN$", "CONOUT$"];
+
+/// A path component that is safe on every platform: no stream/drive `:`, no control characters, no
+/// reserved Windows device names (`CON`, `NUL.png`, `COM1`...), no trailing dot or space.
+fn safe_component(c: &str) -> bool {
+    if c.is_empty() || c == "." || c == ".." || c.contains(':') || c.contains('\\') || c.chars().any(|ch| ch.is_control() || matches!(ch, '<' | '>' | '"' | '|' | '?' | '*')) {
+        return false;
     }
-    if let Some(rest) = name.strip_prefix("unity:") {
-        // «unity:Assets/UI/frame.png#sub-sprite»: a file inside the Unity project (never outside it).
-        let rel = rest.split('#').next().unwrap_or("");
-        let safe = !rel.is_empty() && !rel.contains("..") && !Path::new(rel).is_absolute() && rel.starts_with("Assets");
-        if let (true, Some(root)) = (safe, UNITY_PROJECT.lock().ok().and_then(|g| g.clone())) {
-            return root.join(rel);
-        }
-        return images_dir().join("__blocked__");
+    if c.ends_with('.') || c.ends_with(' ') {
+        return false;
+    }
+    let stem = c.split('.').next().unwrap_or("").trim_end().to_ascii_uppercase();
+    if RESERVED_DEVICES.contains(&stem.as_str()) {
+        return false;
+    }
+    let digits = |p: &str| stem.strip_prefix(p).map(|d| d.len() == 1 && d != "0" && d.chars().all(|x| x.is_ascii_digit())).unwrap_or(false);
+    !(digits("COM") || digits("LPT"))
+}
+
+/// `Assets/...` or `Packages/...` (case-sensitive, as Unity) made only of safe components.
+pub fn valid_unity_rel(rel: &str) -> bool {
+    let mut parts = rel.split('/');
+    matches!(parts.next(), Some("Assets") | Some("Packages")) && {
+        let mut n = 0;
+        parts.all(|c| {
+            n += 1;
+            safe_component(c)
+        }) && n > 0
+    }
+}
+
+/// A bare file name (no separators, no `..`, no stream/drive, no device name).
+pub fn valid_image_file_name(n: &str) -> bool {
+    !n.contains('/') && !n.contains('#') && safe_component(n)
+}
+
+/// Is `p` (canonicalized) inside `base` (canonicalized)?
+fn inside(p: &Path, base: &Path) -> bool {
+    match (std::fs::canonicalize(p), std::fs::canonicalize(base)) {
+        (Ok(p), Ok(b)) => p.starts_with(&b),
+        _ => false,
+    }
+}
+
+/// Relative name made only of normal components (`./` allowed), nothing rooted, no `:`.
+fn relative_name_ok(name: &str) -> bool {
+    use std::path::Component;
+    if name.is_empty() || name.contains(':') || name.chars().any(|c| c.is_control()) {
+        return false;
     }
     let p = Path::new(name);
-    if p.is_absolute() {
-        return p.to_path_buf();
-    }
-    if let Some(base) = DESIGN_FOLDER.lock().ok().and_then(|g| g.clone()) {
-        let candidate = base.join(name);
-        if candidate.exists() {
-            return candidate;
+    let mut any = false;
+    for c in p.components() {
+        match c {
+            Component::Normal(s) => {
+                any = true;
+                if !s.to_str().map(safe_component).unwrap_or(false) {
+                    return false;
+                }
+            }
+            Component::CurDir => {}
+            _ => return false,
         }
     }
-    images_dir().join(name)
+    any
+}
+
+/// Path of an element's image. Handled in this order:
+/// - `unity:Assets/...[#sub]` / `unity:Packages/...`: validated by path components and resolved
+///   against the Unity project root; the real (canonical) file must stay inside it (junctions).
+/// - UNC / device paths and alternate streams: refused.
+/// - absolute paths: only when the design comes from a trusted local source (`set_trusted_source`),
+///   or when they already point inside the library images folder or the open design's folder.
+/// - relative names: no `..`, nothing rooted; resolved in the open design's folder or the library
+///   images folder and the canonical file must stay inside it.
+/// Anything refused returns `blocked_path()`.
+pub fn resolve_image(name: &str) -> PathBuf {
+    if let Some(rest) = name.strip_prefix("unity:") {
+        let rel = rest.split('#').next().unwrap_or("");
+        if !valid_unity_rel(rel) {
+            return blocked_path();
+        }
+        let Some(root) = UNITY_PROJECT.lock().ok().and_then(|g| g.clone()) else { return blocked_path() };
+        let joined = root.join(rel);
+        if joined.exists() && !inside(&joined, &root) {
+            return blocked_path();
+        }
+        return joined;
+    }
+    if is_unc_or_stream(name) {
+        return blocked_path();
+    }
+    let design = DESIGN_FOLDER.lock().ok().and_then(|g| g.clone());
+    let p = Path::new(name);
+    if p.is_absolute() {
+        if trusted_source() || inside(p, &images_dir()) || design.as_ref().map(|d| inside(p, d)).unwrap_or(false) {
+            return p.to_path_buf();
+        }
+        return blocked_path();
+    }
+    if !relative_name_ok(name) {
+        return blocked_path();
+    }
+    if let Some(base) = design {
+        let candidate = base.join(name);
+        if candidate.exists() {
+            return if inside(&candidate, &base) { candidate } else { blocked_path() };
+        }
+    }
+    let lib = images_dir();
+    let candidate = lib.join(name);
+    if candidate.exists() && !inside(&candidate, &lib) {
+        return blocked_path();
+    }
+    candidate
 }
 
 fn ext_of(p: &Path) -> String {
@@ -429,6 +540,108 @@ mod tests {
         lib.remove(&tpl_path);
         assert_eq!(lib.templates.len(), 1);
         let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    static GLOBALS: std::sync::Mutex<()> = std::sync::Mutex::new(());
+
+    fn temp_dir(tag: &str) -> PathBuf {
+        let d = std::env::temp_dir().join(format!("lienzo-resolve-{}-{}", tag, std::process::id()));
+        let _ = std::fs::remove_dir_all(&d);
+        std::fs::create_dir_all(&d).unwrap();
+        d
+    }
+
+    #[test]
+    fn unity_and_relative_references_are_contained() {
+        let _g = GLOBALS.lock().unwrap_or_else(|e| e.into_inner());
+        let base = temp_dir("a");
+        let proj = base.join("proj");
+        std::fs::create_dir_all(proj.join("Assets/UI")).unwrap();
+        std::fs::create_dir_all(proj.join("ProjectSettings")).unwrap();
+        std::fs::write(proj.join("Assets/UI/a.png"), b"x").unwrap();
+        std::fs::write(base.join("secret.txt"), b"s").unwrap();
+        set_unity_project(proj.to_str().unwrap());
+        let blocked = blocked_path();
+        // valid
+        assert_eq!(resolve_image("unity:Assets/UI/a.png"), proj.join("Assets/UI/a.png"));
+        assert_eq!(resolve_image("unity:Assets/UI/a.png#sprite_1"), proj.join("Assets/UI/a.png"));
+        assert_eq!(resolve_image("unity:Packages/com.x/a.png"), proj.join("Packages/com.x/a.png"));
+        // blocked
+        for bad in [
+            "unity:Assets/../secret.txt",
+            "unity:AssetsEvil/a.png",
+            "unity:assets/UI/a.png",
+            "unity:C:foo",
+            "unity:Assets/C:foo/a.png",
+            "unity:Assets/UI/a.png:stream",
+            "unity:/Assets/a.png",
+            "unity:Assets//a.png",
+            "unity:Assets\\UI\\a.png",
+            "unity://server/share/a.png",
+            "unity:\\\\server\\share\\a.png",
+            "unity:Assets/NUL.png",
+            "unity:Assets/com1/a.png",
+            "unity:Assets",
+            "unity:",
+            "unity:Assets/",
+            "\\\\server\\share\\a.png",
+            "//server/share/a.png",
+            "a.png:stream",
+        ] {
+            assert_eq!(resolve_image(bad), blocked, "{bad}");
+        }
+        // relative names
+        for bad in ["..\\..\\secret.txt", "../secret.txt", "a/../../b.png", "C:foo.png", "/etc/passwd", "\\rooted.png", "sub/../x.png"] {
+            assert_eq!(resolve_image(bad), blocked, "{bad}");
+        }
+        assert_eq!(resolve_image("sword.png"), images_dir().join("sword.png"));
+        // design folder
+        std::fs::create_dir_all(base.join("design/pixel")).unwrap();
+        std::fs::write(base.join("design/pixel/s.png"), b"x").unwrap();
+        set_design_folder(&base.join("design/x.json"));
+        assert_ne!(resolve_image("pixel/s.png"), blocked);
+        assert!(resolve_image("pixel/s.png").exists());
+        // absolute: allowed only when trusted (or already inside the design folder)
+        let abs = base.join("secret.txt");
+        set_trusted_source(true);
+        assert_eq!(resolve_image(abs.to_str().unwrap()), abs);
+        set_trusted_source(false);
+        assert_eq!(resolve_image(abs.to_str().unwrap()), blocked);
+        let inside_design = base.join("design/pixel/s.png");
+        assert_eq!(resolve_image(inside_design.to_str().unwrap()), inside_design);
+        set_trusted_source(true);
+        if let Ok(mut g) = DESIGN_FOLDER.lock() {
+            *g = None;
+        }
+        set_unity_project("");
+        let _ = std::fs::remove_dir_all(&base);
+    }
+
+    #[test]
+    fn junction_escape_is_blocked() {
+        if !cfg!(windows) {
+            return;
+        }
+        let _g = GLOBALS.lock().unwrap_or_else(|e| e.into_inner());
+        let base = temp_dir("j");
+        let proj = base.join("proj");
+        std::fs::create_dir_all(proj.join("Assets")).unwrap();
+        let outside = base.join("outside");
+        std::fs::create_dir_all(&outside).unwrap();
+        std::fs::write(outside.join("s.png"), b"x").unwrap();
+        let link = proj.join("Assets").join("link");
+        let ok = std::process::Command::new("cmd").args(["/c", "mklink", "/J"]).arg(&link).arg(&outside).output().map(|o| o.status.success()).unwrap_or(false);
+        if !ok {
+            eprintln!("mklink /J not available: test skipped");
+            let _ = std::fs::remove_dir_all(&base);
+            return;
+        }
+        set_unity_project(proj.to_str().unwrap());
+        assert_eq!(resolve_image("unity:Assets/link/s.png"), blocked_path());
+        // remove the junction itself first so remove_dir_all never follows it
+        let _ = std::process::Command::new("cmd").args(["/c", "rmdir"]).arg(&link).output();
+        set_unity_project("");
+        let _ = std::fs::remove_dir_all(&base);
     }
 
     #[test]

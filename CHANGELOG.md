@@ -4,6 +4,19 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versio
 
 ## [Unreleased]
 
+### Security
+- **Scripts and plugins:** `print`, `message` and plugin `log` output is capped (200 messages / 64 KB) and stops the script when exceeded; plugin scripts have lower limits (texts 64 KB, lists and maps 10,000 items, nested data counts) so a script can no longer exhaust memory with printing, nested copies or giant strings; the status bar text of a plugin command is bounded.
+- **Plugins:** an exporter's `extension` must be one of `txt`, `csv`, `json`, `xml`, `md`, `cs`, `uxml`, `uss`, `tsv` (also for plugins on disk, and the Save dialog sanitizes it). Community plugin packages: every `.json` template or design-like file is validated even when it is also listed as a command script, file names that differ only in capitals are rejected, installs are atomic (temporary folder, then rename) and folder names can no longer collide (`community-<name>-<hash>`).
+- **Plugin commands and community downloads are untrusted:** the design a plugin command returns is checked (new control characters, external links, absolute/UNC/drive image paths and `..` are rejected), and community templates and plugin templates are loaded as untrusted sources.
+- **Sign-in:** the OAuth flow sends a random `state`, ignores callbacks that are not the answer to that login (a stray request no longer cancels the login), keeps working while connections are idle, and keeps PKCE.
+- **Terminal output:** text from the server printed by the command line (`--community-review list`, tokens, errors...) has control characters stripped. Names, titles and plugin names with invisible or direction-changing characters (zero-width, left-to-right/right-to-left marks, BOM...) are rejected.
+- **MCP server:** `null`, non-object messages and batches containing them return JSON-RPC errors instead of crashing (plus `unhandledRejection` handling); `add_element` and `duplicate_element` validate types and ranges like `modify_element`; `create_design` validates the title before creating anything; `review_design`, `screenshot` and `create_design` return an error when the app times out; `export_unity` resolves the project path first and refuses UNC paths; UNC image paths are rejected; `tools/call` without an id is refused; `protocolVersion` is negotiated and `serverInfo.version` is the app's version.
+- **Windows build:** control-flow guard, CET shadow-stack compatibility and an application manifest (per-monitor-v2 DPI, long paths, Windows 10/11, no elevation).
+
+### Changed
+- `publicar.sh` checks the version, the changelog and the repository state, builds the package from `git ls-files`, writes forward-slash zip entries, refuses an executable that contains build-machine paths, adds `THIRD_PARTY_LICENSES.txt`, can be re-run after a failure and has a `--dry-run` mode. `Cargo.toml` now has `license`, `repository` and `description`.
+- `docs/COMMUNITY.md` uses the current English names for functions, tables and flags.
+
 ## [1.5.0] - 2026-11-19
 
 Bringing existing Unity interfaces in, and exporting them the way a real game needs. Also includes the 1.4.2 security fixes below.

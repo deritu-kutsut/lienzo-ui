@@ -936,3 +936,4 @@ Import from Unity	Импорт из Unity
 Imported {} ({} warnings). Save it as a project to keep it.	Импортировано {} (предупреждений: {}). Сохраните как проект, чтобы сохранить результат.
 Could not import: {}	Не удалось импортировать: {}
 {} things could not be mapped exactly:	Не удалось точно преобразовать элементов: {}
+{} (portrait)	{} (портрет)

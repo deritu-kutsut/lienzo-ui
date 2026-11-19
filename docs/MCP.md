@@ -7,6 +7,8 @@
 - Tool names, parameters, messages and the designs folder are English (see [Legacy names](#legacy-names) for the old Spanish ones).
 - It needs the Lienzo UI executable: it looks for it in the repository folder (`lienzo-ui.exe`, `target/release`, `target/debug`) or in the `LIENZO_UI` variable.
 - Designs live in `designs/` (or in `LIENZO_DESIGNS`). Only `.editorgui.json` files in that folder are read and written, by plain file name.
+- The server answers `initialize` with the client's `protocolVersion` when it knows it (`2025-06-18`, `2025-03-26`, `2024-11-05`) and with the newest one otherwise; `serverInfo.version` is the app's version (read from `Cargo.toml`, or from `mcp/package.json` in the release package).
+- Malformed input never stops it: `null`, non-object messages, batches with `null`, a `tools/call` without an `id` and similar get a JSON-RPC error.
 
 ## Tools
 
@@ -33,10 +35,12 @@ Parameters (all tools take `file`, the design name without folders; `.editorgui.
 | `create_design` | `file`, `template` (number), `title` (optional) |
 | `adjust_design` | `file`, `title`, `pixel_art`, `background` (`"#RRGGBB"`), `match` (0-1) |
 | `modify_element` | `file`, `element` (name or id), `changes` (object: `text`, `x`, `y`, `w`, `h`, `fill`, `text_color`, `font_size`, `visible`, `image`…) |
-| `add_element` | `file`, `type`, `name`, `x`, `y`, `w`, `h`, optional `parent`, `text`, `image`, `color` |
+| `add_element` | `file`, `type`, `name`, `x`, `y`, `w`, `h`, optional `parent` (name or id), `text`, `image`, `color` |
 | `duplicate_element` | `file`, `element`, `new_name`, optional `dx`, `dy`, `text` |
 | `delete_element` | `file`, `element` |
-| `export_unity` | `file`, `unity_project` (the folder that contains `Assets`) |
+| `export_unity` | `file`, `unity_project` (the folder that contains `Assets`; a relative path is resolved first and the app receives the absolute one; network (UNC) paths are refused) |
+
+Values are checked with the same types and ranges everywhere (`x`, `y` within ±1,000,000; `w`, `h` greater than 0; `opacity` 0-1…): texts must be text (never converted from numbers), `parent` and `element` are a name or an id, `dx` and `dy` finite numbers. An `image` must be an absolute path to an existing PNG/JPG; UNC paths (`\\server\share`) are refused. If the app does not answer in time, `review_design`, `screenshot`, `create_design` and `export_unity` return an error instead of an empty result. `create_design` validates its arguments (including the title) before starting the app or creating the file.
 
 ## Setup
 

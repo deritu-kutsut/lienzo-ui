@@ -936,3 +936,4 @@ Import from Unity	Aus Unity importieren
 Imported {} ({} warnings). Save it as a project to keep it.	{} importiert ({} Warnungen). Speichere es als Projekt, um es zu behalten.
 Could not import: {}	Import nicht möglich: {}
 {} things could not be mapped exactly:	{} Dinge konnten nicht exakt übernommen werden:
+{} (portrait)	{} (Hochformat)

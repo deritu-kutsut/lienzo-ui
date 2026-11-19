@@ -87,8 +87,10 @@ Each element has, among others: `id`, `name`, `kind` (`"Panel"`, `"Image"`, `"Te
 ### Security and limits
 
 - No access to files, network or processes; `import` is disabled.
-- Operation limit (an infinite loop is cut off with an error) and size limit for texts, lists and maps.
-- If the returned design is not valid, nothing is applied and the error is shown.
+- Limits (an infinite loop or a runaway script is cut off with an error): 5 million operations, 5 seconds, texts of at most 64 KB, lists and maps of at most 10,000 items (nested data counts), and at most 200 messages / 64 KB of output in total (`log`, `print` and `debug`). Past the output limit the script stops with an error. An exporter's text is limited by the same 64 KB.
+- A command's result is untrusted: if the returned design is not valid, or it introduces control characters, external links, or image paths that are absolute, UNC (`\\server\share`), contain `..` or a drive/stream `:`, nothing is applied and the error is shown. Values that were already in your design are left alone.
+- An exporter's `extension` must be lowercase letters and digits (at most 5) from this list: `txt`, `csv`, `json`, `xml`, `md`, `cs`, `uxml`, `uss`, `tsv`. A plugin with another extension is reported in the Plugins tab and that exporter is not offered.
+- Plugins installed from the community go to a folder named `community-<name>-<hash>`: they are written to a temporary folder first and swapped in, so an interrupted install never leaves a half plugin.
 
 ## Included examples
 

@@ -109,6 +109,9 @@ impl Theme {
         if self.author.chars().count() > 60 {
             return Err("The theme author is too long.".into());
         }
+        if !crate::community_validate::valid_display_text(&self.name) || !crate::community_validate::valid_display_text(&self.author) {
+            return Err("The theme name or author has control or invisible characters.".into());
+        }
         let mut t = self.clone();
         for (field, name) in COLORS {
             let v = t.color_mut(field).map(|c| c.clone()).unwrap_or_default();

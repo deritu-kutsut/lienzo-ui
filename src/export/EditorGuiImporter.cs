@@ -35,6 +35,8 @@ namespace EditorGui
 
         /// userData of a sprite texture that Lienzo created / manages: its import settings may be rewritten.
         /// A texture without it that already exists in the project belongs to the user (only what the design sets is applied).
+        /// Design note: the marker is written to the .meta of the copies Lienzo puts in Assets/EditorGUI/Sprites; if a user
+        /// removes it from the meta (or the texture was imported before Lienzo), the importer will not touch its settings.
         const string OwnedMarker = "lienzo:sprite";
 
         // ------------------------------------------------------------------ JSON format
@@ -75,7 +77,8 @@ namespace EditorGui
         }
         [Serializable] public class Un { public string scriptsDir, assembly, defaultFont; public string[] fallbackFonts; }
         [Serializable] public class POv { public int id; public bool hasRect, hasVisible, visible, hasFontSize, hasLayout; public RT rect; public float fontSize; public Lay layout; }
-        [Serializable] public class Por { public float width, height; public POv[] overrides; }
+        [Serializable] public class PCH { public int id; public float contentHeight; }
+        [Serializable] public class Por { public float width, height; public POv[] overrides; public PCH[] contentHeights; }
         [Serializable] public class Doc { public string format; public Cv canvas; public El[] elements; public Un unity; public Por portrait; }
 
         // ------------------------------------------------------------------ menus
@@ -108,6 +111,21 @@ namespace EditorGui
         /// A MonoBehaviour type by exact name (global or any namespace), not abstract. Null if it has not compiled yet.
         public static Type FindType(string name) =>
             string.IsNullOrEmpty(name) ? null : TypeCache.GetTypesDerivedFrom<MonoBehaviour>().FirstOrDefault(x => x.Name == name && !x.IsAbstract);
+
+        /// The user's `<cls>View` (non-abstract MonoBehaviour) that derives from the generated `<cls>ViewBase`.
+        /// A type with that name that does not derive from the generated base is somebody else's class and is ignored.
+        public static Type FindViewType(string cls)
+        {
+            if (string.IsNullOrEmpty(cls)) return null;
+            var baseName = cls + "ViewBase";
+            return TypeCache.GetTypesDerivedFrom<MonoBehaviour>().FirstOrDefault(x => x.Name == cls + "View" && !x.IsAbstract && DerivesFromNamed(x, baseName));
+        }
+
+        static bool DerivesFromNamed(Type t, string baseName)
+        {
+            for (var b = t.BaseType; b != null; b = b.BaseType) if (b.Name == baseName) return true;
+            return false;
+        }
 
         public static Doc Load(string path) => JsonUtility.FromJson<Doc>(File.ReadAllText(path));
 
@@ -152,7 +170,7 @@ namespace EditorGui
             {
                 EditorSceneManager.ClosePreviewScene(scene);
             }
-            var vt = FindType((doc.canvas ?? new Cv()).className + "View");
+            var vt = FindViewType((doc.canvas ?? new Cv()).className);
             Debug.Log("[Lienzo UI] Prefab updated: " + prefabPath + (vt == null && !string.IsNullOrEmpty((doc.canvas ?? new Cv()).className) ? " (the " + doc.canvas.className + "View script is not compiled yet: the prefab is rebuilt when it is)" : ""));
             return prefabPath;
         }
@@ -174,6 +192,7 @@ namespace EditorGui
             missingGlyphs = new Dictionary<string, HashSet<uint>>();
             fallbacksDone = new HashSet<TMP_FontAsset>();
             warned = new HashSet<string>();
+            fontCache.Clear();
             var un = doc.unity ?? new Un();
             defaultFontName = string.IsNullOrEmpty(un.defaultFont) ? null : un.defaultFont;
             fallbackFontNames = un.fallbackFonts ?? new string[0];
@@ -302,7 +321,7 @@ namespace EditorGui
         static bool AttachView(GameObject go, string className, El[] els, Dictionary<int, GameObject> made)
         {
             if (string.IsNullOrEmpty(className)) return false;
-            var t = FindType(className + "View");
+            var t = FindViewType(className);
             if (t == null) return false;
             var view = go.AddComponent(t);
             var so = new SerializedObject(view);
@@ -415,6 +434,24 @@ namespace EditorGui
                 {
                     SetLayoutState(land, e.layout);
                     SetLayoutState(port, ov.layout ?? new Lay());
+                }
+            }
+            // ScrollViews whose content is taller / shorter in portrait: an entry per ScrollView holds the Content height per orientation.
+            if (por.contentHeights != null)
+            {
+                foreach (var ch in por.contentHeights)
+                {
+                    int idx = IndexOfId(els, ch.id);
+                    if (idx < 0 || !made.ContainsKey(idx) || !contentOf.TryGetValue(idx, out var content) || !(content is RectTransform crt)) continue;
+                    arr.arraySize++;
+                    var en = arr.GetArrayElementAtIndex(arr.arraySize - 1);
+                    en.FindPropertyRelative("content").objectReferenceValue = crt;
+                    var land = en.FindPropertyRelative("landscape");
+                    var port = en.FindPropertyRelative("portrait");
+                    land.FindPropertyRelative("hasContent").boolValue = true;
+                    land.FindPropertyRelative("contentHeight").floatValue = crt.sizeDelta.y;
+                    port.FindPropertyRelative("hasContent").boolValue = true;
+                    port.FindPropertyRelative("contentHeight").floatValue = ch.contentHeight;
                 }
             }
             so.ApplyModifiedPropertiesWithoutUndo();
@@ -877,7 +914,13 @@ namespace EditorGui
         static TMP_FontAsset FontAsset(string family)
         {
             if (string.IsNullOrEmpty(family) || family == "Monoespaciada" || family == "Monospace") return null;
-            if (fontCache.TryGetValue(family, out var cached) && cached != null) return cached;
+            // A font name is looked up as an asset name and used inside Assets/EditorGUI/Fonts: it must not be a path.
+            if (family.IndexOfAny(new[] { '/', '\\', ':' }) >= 0 || family.Contains(".."))
+            {
+                Warn("fontname:" + family, "[Lienzo UI] The font name \"" + family + "\" is not valid (it must not contain / \\ : or ..): the default font is used.");
+                return null;
+            }
+            if (fontCache.TryGetValue(family, out var cached)) return cached; // a remembered miss too: looked up once per build
             var fa = FindFontAsset(family);
             if (fa == null)
             {
@@ -926,6 +969,8 @@ namespace EditorGui
         }
 
         /// Adds the design's fallback fonts to a font asset that does not have them yet (never removes any).
+        /// Design note: this edits the font asset itself (it may belong to the user): it only appends missing
+        /// fallbacks, once per build, and saves the asset only if something was added.
         static void EnsureFallbacks(TMP_FontAsset fa)
         {
             if (fa == null || fallbackFontNames.Length == 0 || !fallbacksDone.Add(fa)) return;
@@ -1160,24 +1205,21 @@ namespace EditorGui
                 if (string.IsNullOrEmpty(sub)) sub = path.Substring(hash + 1);
                 path = path.Substring(0, hash);
             }
-            if (!(path.StartsWith("Assets/") || path.StartsWith("Packages/")))
+            // Only pictures that live inside the project: the exporter copies outside pictures into Assets/EditorGUI/Sprites.
+            // Absolute / UNC paths, `..` and `:` are refused (the JSON could come from anywhere).
+            bool packages = path.StartsWith("Packages/");
+            if (!(path.StartsWith("Assets/") || packages) || path.Contains("..") || path.Contains(":") || path.Any(char.IsControl))
             {
-                if (!File.Exists(path)) { Debug.LogWarning("[Lienzo UI] The image does not exist: " + path); return null; }
-                Directory.CreateDirectory(Root + "/Sprites");
-                var dest = Root + "/Sprites/" + Path.GetFileName(path);
-                if (!File.Exists(dest) || !File.ReadAllBytes(dest).SequenceEqual(File.ReadAllBytes(path)))
-                {
-                    File.Copy(path, dest, true);
-                    AssetDatabase.ImportAsset(dest, ImportAssetOptions.ForceSynchronousImport);
-                }
-                path = dest;
+                Warn("sprite:" + path, "[Lienzo UI] The image path \"" + path + "\" is not inside the project (only Assets/... paths are used): the image is left empty.");
+                return null;
             }
-            else if (AssetDatabase.LoadMainAssetAtPath(path) == null)
+            if (AssetDatabase.LoadMainAssetAtPath(path) == null)
             {
-                if (File.Exists(path)) AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceSynchronousImport);
+                // Packages are read-only: never reimported. Assets that exist on disk but are not imported yet are.
+                if (!packages && File.Exists(path)) AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceSynchronousImport);
                 if (AssetDatabase.LoadMainAssetAtPath(path) == null) { Debug.LogWarning("[Lienzo UI] The image does not exist in the project: " + path); return null; }
             }
-            ConfigureProjectSprite(path, e);
+            if (!packages) ConfigureProjectSprite(path, e);
             return LoadSprite(path, sub);
         }
 
@@ -1385,7 +1427,7 @@ namespace EditorGui
                 .Select(AssetDatabase.GUIDToAssetPath)
                 .Where(p => { var n = Path.GetFileNameWithoutExtension(p); return n == cls + "View" || n == cls + "ViewBase"; });
             if (!scripts.Any()) return true; // the design has no View scripts
-            return EditorGuiImporter.FindType(cls + "View") != null;
+            return EditorGuiImporter.FindViewType(cls) != null;
         }
 
         static void Process()
@@ -1420,7 +1462,7 @@ namespace EditorGui
             EditorGuiImporter.Doc doc;
             try { doc = EditorGuiImporter.Load(json); } catch { return false; }
             var cv = doc.canvas ?? new EditorGuiImporter.Cv();
-            var view = EditorGuiImporter.FindType(cv.className + "View");
+            var view = EditorGuiImporter.FindViewType(cv.className);
             if (view != null && go.GetComponent(view) == null) return true; // the View component is missing
             var safe = cv.safeArea ? EditorGuiImporter.FindType("LienzoSafeArea") : null;
             if (safe != null && go.GetComponentInChildren(safe, true) == null) return true;

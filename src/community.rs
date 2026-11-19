@@ -335,7 +335,7 @@ fn error_message(state: u16, body: &str) -> String {
         404 => "No encontrado.".into(),
         409 => "It already exists or was already processed.".into(),
         429 => "Demasiadas peticiones: espera un momento.".into(),
-        _ if msg.contains("Demasiadas subidas") || msg.contains("Daily limit") => msg.to_string(),
+        _ if msg.contains("Demasiadas subidas") || msg.contains("Daily limit") => val::terminal_safe(msg),
         _ if msg.contains("duplicate key") => "That name is already in use.".into(),
         s if s >= 500 => "The server is not available right now.".into(),
         s => format!("Error {}", s),
@@ -440,8 +440,57 @@ fn return_page(ok: bool) -> String {
     format!("HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=utf-8\r\nContent-Length: {}\r\nCache-Control: no-store\r\nReferrer-Policy: no-referrer\r\nX-Content-Type-Options: nosniff\r\nConnection: close\r\n\r\n{}", body.len(), body)
 }
 
-/// Sign-in with GitHub or Google: OAuth with PKCE. The browser returns to a temporary local port (127.0.0.1)
-/// and the app exchanges the code; no intermediary server sees the session.
+/// What a request to the temporary local port means for the sign-in.
+#[derive(Debug, PartialEq)]
+enum Callback {
+    /// Not the sign-in answer (favicon, scanners, a `state` that is not ours...): ignored, the login goes on.
+    Ignore,
+    /// The provider reported an error (the user canceled).
+    Failed,
+    /// An authorization code to exchange.
+    Code(String),
+}
+
+/// Reads the first line of an HTTP request (`GET /callback?code=... HTTP/1.1`) and decides what it means.
+/// `state` is the random value of this login: when the answer carries a `state`, it must be ours. (Supabase does not
+/// echo a `state` today; PKCE then still binds the code to this login because the exchange needs our verifier.)
+fn parse_callback(request_line: &str, state: &str) -> Callback {
+    let path = request_line.strip_prefix("GET ").and_then(|r| r.split(' ').next()).unwrap_or("");
+    let Some(query) = path.strip_prefix("/callback?") else { return Callback::Ignore };
+    let param = |k: &str| query.split('&').find_map(|p| p.strip_prefix(&format!("{}=", k)));
+    if param("state").is_some_and(|s| s != state) {
+        return Callback::Ignore;
+    }
+    if param("error").is_some() || param("error_description").is_some() {
+        return Callback::Failed;
+    }
+    match param("code").filter(|c| !c.is_empty() && c.len() < 300 && c.chars().all(|ch| ch.is_ascii_alphanumeric() || ch == '-' || ch == '_')) {
+        Some(code) => Callback::Code(code.to_string()),
+        None => Callback::Ignore,
+    }
+}
+
+/// Reads the request line of one connection (own thread: an idle or slow connection never blocks the accept loop).
+fn read_request_line(c: &mut std::net::TcpStream) -> Option<String> {
+    let _ = c.set_nonblocking(false);
+    let _ = c.set_read_timeout(Some(Duration::from_millis(1500)));
+    let end = std::time::Instant::now() + Duration::from_secs(4);
+    let mut buf = Vec::with_capacity(512);
+    let mut chunk = [0u8; 512];
+    while buf.len() < 4096 && !buf.contains(&b'\n') && std::time::Instant::now() < end {
+        match c.read(&mut chunk) {
+            Ok(0) => break,
+            Ok(n) => buf.extend_from_slice(&chunk[..n]),
+            Err(_) => return None, // idle / timed out
+        }
+    }
+    let text = String::from_utf8_lossy(&buf).to_string();
+    text.lines().next().map(|l| l.trim_end().to_string())
+}
+
+/// Sign-in with GitHub or Google: OAuth with PKCE and a `state` check. The browser returns to a temporary local port
+/// (127.0.0.1) and the app exchanges the code; no intermediary server sees the session. Requests that are not the
+/// answer to THIS login are ignored; idle connections do not block anything.
 fn oauth_flow(provider: &str, cancel: &AtomicBool) -> Result<Session, String> {
     if !["github", "google"].contains(&provider) {
         return Err("Provider not supported.".into());
@@ -450,53 +499,100 @@ fn oauth_flow(provider: &str, cancel: &AtomicBool) -> Result<Session, String> {
     listen.set_nonblocking(true).map_err(|e| e.to_string())?;
     let verifier = b64url(&random(48));
     let challenge = b64url(&Sha256::digest(verifier.as_bytes()));
+    let state = b64url(&random(24));
     let return_url = format!("http://127.0.0.1:{}/callback", LOCAL_PORT);
-    let url = format!("{}/auth/v1/authorize?provider={}&redirect_to={}&code_challenge={}&code_challenge_method=s256", URL, provider, encode(&return_url), challenge);
+    let url = format!("{}/auth/v1/authorize?provider={}&redirect_to={}&code_challenge={}&code_challenge_method=s256&state={}", URL, provider, encode(&return_url), challenge, state);
     webbrowser::open(&url).map_err(|_| "Could not open the browser.".to_string())?;
 
     let limit = std::time::Instant::now() + Duration::from_secs(180);
-    let code = loop {
+    let (tx, rx) = channel::<(Callback, std::net::TcpStream)>();
+    let in_flight = Arc::new(std::sync::atomic::AtomicUsize::new(0));
+    let mut last_error: Option<String> = None;
+    loop {
         if cancel.load(Ordering::Relaxed) {
             return Err("Sign-in canceled.".into());
         }
         if std::time::Instant::now() > limit {
-            return Err("Timed out waiting for sign-in.".into());
+            return Err(last_error.unwrap_or_else(|| "Timed out waiting for sign-in.".into()));
         }
         match listen.accept() {
             Ok((mut c, _)) => {
-                let _ = c.set_nonblocking(false);
-                let _ = c.set_read_timeout(Some(Duration::from_secs(5)));
-                let mut buf = [0u8; 4096];
-                let n = c.read(&mut buf).unwrap_or(0);
-                let request = String::from_utf8_lossy(&buf[..n]).to_string();
-                let line = request.lines().next().unwrap_or("");
-                let path = line.strip_prefix("GET ").and_then(|r| r.split(' ').next()).unwrap_or("");
-                let Some(query) = path.strip_prefix("/callback?") else {
-                    let _ = c.write_all(b"HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\nConnection: close\r\n\r\n");
-                    continue; // favicon or other requests: ignored
-                };
-                let param = |k: &str| query.split('&').find_map(|p| p.strip_prefix(&format!("{}=", k))).map(|v| v.to_string());
-                if param("error").is_some() || param("error_description").is_some() {
-                    let _ = c.write_all(return_page(false).as_bytes());
-                    return Err("Sign-in was canceled.".into());
+                if in_flight.load(Ordering::Relaxed) >= 16 {
+                    continue; // too many open connections: this one is dropped
                 }
-                match param("code").filter(|c| !c.is_empty() && c.len() < 300 && c.chars().all(|ch| ch.is_ascii_alphanumeric() || ch == '-' || ch == '_')) {
-                    Some(code) => {
-                        let _ = c.write_all(return_page(true).as_bytes());
-                        break code;
+                in_flight.fetch_add(1, Ordering::Relaxed);
+                let (tx, counter, st) = (tx.clone(), in_flight.clone(), state.clone());
+                std::thread::spawn(move || {
+                    if let Some(line) = read_request_line(&mut c) {
+                        let what = parse_callback(&line, &st);
+                        let _ = tx.send((what, c));
                     }
-                    None => {
+                    counter.fetch_sub(1, Ordering::Relaxed);
+                });
+                continue;
+            }
+            Err(e) if e.kind() == std::io::ErrorKind::WouldBlock => {}
+            Err(e) => return Err(e.to_string()),
+        }
+        match rx.recv_timeout(Duration::from_millis(150)) {
+            Ok((Callback::Ignore, mut c)) => {
+                let _ = c.write_all(b"HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\nConnection: close\r\n\r\n");
+            }
+            Ok((Callback::Failed, mut c)) => {
+                let _ = c.write_all(return_page(false).as_bytes());
+                return Err("Sign-in was canceled.".into());
+            }
+            Ok((Callback::Code(code), mut c)) => {
+                // A wrong code (not made for this login) fails the exchange: the login keeps waiting for the real one.
+                let attempt = json_post("/auth/v1/token?grant_type=pkce", None, &serde_json::json!({ "auth_code": code, "code_verifier": verifier }), &[]).and_then(|r| r.ok()).and_then(|r| session_from(&r.json::<serde_json::Value>()?));
+                match attempt {
+                    Ok(session) => {
+                        let _ = c.write_all(return_page(true).as_bytes());
+                        return Ok(session);
+                    }
+                    Err(e) => {
                         let _ = c.write_all(return_page(false).as_bytes());
-                        return Err("Invalid sign-in response.".into());
+                        last_error = Some(e);
                     }
                 }
             }
-            Err(e) if e.kind() == std::io::ErrorKind::WouldBlock => std::thread::sleep(Duration::from_millis(150)),
-            Err(e) => return Err(e.to_string()),
+            Err(_) => {}
         }
-    };
-    let r = json_post("/auth/v1/token?grant_type=pkce", None, &serde_json::json!({ "auth_code": code, "code_verifier": verifier }), &[])?.ok()?;
-    session_from(&r.json::<serde_json::Value>()?)
+    }
+}
+
+#[cfg(test)]
+mod oauth_tests {
+    use super::*;
+
+    #[test]
+    fn callback_requires_our_state_when_present_and_ignores_noise() {
+        let s = "abc_DEF-123";
+        assert_eq!(parse_callback("GET /callback?code=xyz123 HTTP/1.1", s), Callback::Code("xyz123".into()));
+        assert_eq!(parse_callback("GET /callback?code=xyz123&state=abc_DEF-123 HTTP/1.1", s), Callback::Code("xyz123".into()));
+        assert_eq!(parse_callback("GET /callback?code=xyz123&state=other HTTP/1.1", s), Callback::Ignore);
+        assert_eq!(parse_callback("GET /callback?error=access_denied&state=other HTTP/1.1", s), Callback::Ignore);
+        assert_eq!(parse_callback("GET /callback?error=access_denied HTTP/1.1", s), Callback::Failed);
+        for noise in ["GET /favicon.ico HTTP/1.1", "POST /callback?code=x HTTP/1.1", "", "garbage", "GET /callback?code= HTTP/1.1", "GET /callback?code=a%20b HTTP/1.1", "GET /callback HTTP/1.1"] {
+            assert_eq!(parse_callback(noise, s), Callback::Ignore, "{}", noise);
+        }
+    }
+
+    #[test]
+    fn idle_connection_is_dropped_by_the_reader() {
+        let l = std::net::TcpListener::bind(("127.0.0.1", 0)).unwrap();
+        let addr = l.local_addr().unwrap();
+        let idle = std::net::TcpStream::connect(addr).unwrap(); // never writes
+        let (mut srv, _) = l.accept().unwrap();
+        let t = std::time::Instant::now();
+        assert!(read_request_line(&mut srv).is_none());
+        assert!(t.elapsed() < Duration::from_secs(5));
+        drop(idle);
+        let mut ok = std::net::TcpStream::connect(addr).unwrap();
+        ok.write_all(b"GET /callback?code=abc HTTP/1.1\r\nHost: x\r\n\r\n").unwrap();
+        let (mut srv, _) = l.accept().unwrap();
+        assert_eq!(read_request_line(&mut srv).as_deref(), Some("GET /callback?code=abc HTTP/1.1"));
+    }
 }
 
 // ───────────────────────────── queries ─────────────────────────────
@@ -638,6 +734,9 @@ fn download(item: &Item, session: Option<&Session>) -> Result<Vec<u8>, String> {
 }
 
 fn upload_content(s: &Session, kind: &str, title: &str, description: &str, labels: Vec<String>, is_18: bool, name: &str, bytes: &[u8], extras: &[(&str, Vec<u8>)], tx: &Sender<Message>) -> Result<String, String> {
+    if !val::valid_display_text(title) {
+        return Err("The title has control or invisible characters (for example direction marks or zero-width spaces).".into());
+    }
     val::validate(kind, name, bytes)?;
     for (class, b) in extras {
         val::validate_png(class, b).map_err(|e| format!("{} ({})", e, class))?;
@@ -692,23 +791,72 @@ fn write_temp(name: &str, bytes: &[u8]) -> Result<PathBuf, String> {
     Ok(f)
 }
 
+/// Folder name of an installed community plugin. Injective on the exact name: the readable part only keeps
+/// `[a-z0-9]` (so "A b", "A_b" and "abc." never differ only by characters Windows folds or strips) and a hash
+/// of the exact name makes every distinct name a distinct folder.
+fn plugin_folder_name(name: &str) -> String {
+    let slug: String = name.chars().map(|c| if c.is_ascii_alphanumeric() { c.to_ascii_lowercase() } else { '-' }).collect::<String>().split('-').filter(|p| !p.is_empty()).collect::<Vec<_>>().join("-");
+    let slug: String = slug.chars().take(30).collect();
+    format!("community-{}-{}", if slug.is_empty() { "plugin".to_string() } else { slug }, &val::sha256_hex(name.as_bytes())[..8])
+}
+
+/// Installs a downloaded plugin. All files are written to a temporary folder next to the final one and swapped in
+/// with a rename, so a failure half way never leaves a half-written plugin (or deletes the previous version).
 fn install_plugin(bytes: &[u8]) -> Result<String, String> {
     let p: Package = val::read_package(bytes)?;
-    let name = crate::plugins::manifest_key(&p.manifest, "name", "nombre").and_then(|n| n.as_str()).unwrap_or("plugin");
-    let folder = crate::plugins::user_folder().join(format!("comunidad-{}", safe_name(name).to_lowercase()));
-    std::fs::create_dir_all(&folder).map_err(|e| e.to_string())?;
-    for (path, content) in &p.files {
-        if path.eq_ignore_ascii_case("plugin.json") {
-            continue; // never taken from the package: the validated manifest is serialized below
+    let name = crate::plugins::manifest_key(&p.manifest, "name", "nombre").and_then(|n| n.as_str()).unwrap_or("plugin").to_string();
+    let base = crate::plugins::user_folder();
+    let folder = base.join(plugin_folder_name(&name));
+    install_plugin_into(&p, &base, &folder)?;
+    // Older versions installed to "comunidad-<name>": the same plugin is not shown twice.
+    let legacy = base.join(format!("comunidad-{}", safe_name(&name).to_lowercase()));
+    if legacy != folder && legacy.join("plugin.json").exists() {
+        let same = std::fs::read_to_string(legacy.join("plugin.json")).ok().and_then(|s| serde_json::from_str::<serde_json::Value>(&s).ok()).is_some_and(|m| crate::plugins::manifest_key(&m, "name", "nombre").and_then(|n| n.as_str()) == Some(name.as_str()));
+        if same {
+            let _ = std::fs::remove_dir_all(&legacy);
         }
-        let destination = folder.join(path); // validated: no "..", no absolute paths, only .rhai/.json
-        if let Some(parent) = destination.parent() {
-            std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
-        }
-        std::fs::write(&destination, content).map_err(|e| e.to_string())?;
     }
-    std::fs::write(folder.join("plugin.json"), serde_json::to_string_pretty(&p.manifest).map_err(|e| e.to_string())?).map_err(|e| e.to_string())?;
-    Ok(name.to_string())
+    Ok(name)
+}
+
+fn install_plugin_into(p: &Package, base: &std::path::Path, folder: &std::path::Path) -> Result<(), String> {
+    std::fs::create_dir_all(base).map_err(|e| e.to_string())?;
+    let token = b64url(&random(6));
+    let temp = base.join(format!(".installing-{}", token));
+    let result = (|| -> Result<(), String> {
+        std::fs::create_dir_all(&temp).map_err(|e| e.to_string())?;
+        for (path, content) in &p.files {
+            if path.eq_ignore_ascii_case("plugin.json") {
+                continue; // never taken from the package: the validated manifest is serialized below
+            }
+            let destination = temp.join(path); // validated: no "..", no absolute paths, only .rhai/.json
+            if let Some(parent) = destination.parent() {
+                std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
+            }
+            std::fs::write(&destination, content).map_err(|e| e.to_string())?;
+        }
+        std::fs::write(temp.join("plugin.json"), serde_json::to_string_pretty(&p.manifest).map_err(|e| e.to_string())?).map_err(|e| e.to_string())?;
+        // swap: the old version (if any) is moved aside and only deleted once the new one is in place
+        let old = base.join(format!(".replaced-{}", token));
+        let had_old = folder.exists();
+        if had_old {
+            std::fs::rename(folder, &old).map_err(|e| e.to_string())?;
+        }
+        if let Err(e) = std::fs::rename(&temp, folder) {
+            if had_old {
+                let _ = std::fs::rename(&old, folder);
+            }
+            return Err(e.to_string());
+        }
+        if had_old {
+            let _ = std::fs::remove_dir_all(&old);
+        }
+        Ok(())
+    })();
+    if result.is_err() {
+        let _ = std::fs::remove_dir_all(&temp);
+    }
+    result
 }
 
 /// Turns a plugin folder into the package that gets uploaded.
@@ -949,12 +1097,14 @@ impl EditorApp {
                 format!("{} “{}” (Themes button to change it)", t("Theme installed and in use:"), n)
             }
             "template" => {
+                let _untrusted = crate::plugins::UntrustedSource::begin(); // downloaded: absolute image paths are refused
                 let f = write_temp(&format!("{}.json", safe_name(&item.title)), bytes)?;
                 let r = self.library.add_template_file(&f);
                 let _ = std::fs::remove_file(&f);
                 format!("{} “{}” (Templates › My templates)", t("Template installed:"), r?)
             }
             _ => {
+                let _untrusted = crate::plugins::UntrustedSource::begin();
                 let f = write_temp(&format!("{}.json", safe_name(&item.title)), bytes)?;
                 let r = self.library.add_element_file(&f);
                 let _ = std::fs::remove_file(&f);
@@ -1223,7 +1373,7 @@ impl EditorApp {
             });
             let f = &self.community.upload;
             let labels: Vec<String> = f.labels.split(',').map(|e| e.trim().to_lowercase()).filter(|e| !e.is_empty()).take(8).collect();
-            let ready = (3..=80).contains(&f.title.trim().chars().count()) && f.file.is_some() && self.community.busy == 0;
+            let ready = (3..=80).contains(&f.title.trim().chars().count()) && val::valid_display_text(&f.title) && f.file.is_some() && self.community.busy == 0;
             if ui.add_enabled(ready, egui::Button::new(t("Send for review"))).clicked() {
                 let f = &self.community.upload;
                 let (title, desc, is_18, path) = (f.title.trim().to_string(), f.description.chars().take(1000).collect::<String>(), f.is_18, f.file.clone().unwrap());
@@ -1384,7 +1534,7 @@ pub fn upload_cli(args: &[String]) -> i32 {
     let title = option("--title");
     let labels: Vec<String> = option("--labels").split(',').map(|e| e.trim().to_lowercase()).filter(|e| !e.is_empty()).take(8).collect();
     let is_18 = args.iter().any(|a| a == "--18");
-    if !val::KINDS.contains(&kind) || !path.exists() || title.trim().chars().count() < 3 {
+    if !val::KINDS.contains(&kind) || !path.exists() || title.trim().chars().count() < 3 || !val::valid_display_text(&title) {
         eprintln!("Usage: lienzo-ui --community-upload <plugin|image|font|template|element|theme> <file|folder> --title \"…\" [--description \"…\"] [--labels a,b] [--18] [--icon icon.png] [--preview preview.png]");
         return 2;
     }
@@ -1432,7 +1582,7 @@ pub fn upload_cli(args: &[String]) -> i32 {
             0
         }
         Err(e) => {
-            eprintln!("{}: {}", kind, e);
+            eprintln!("{}: {}", kind, val::terminal_safe(&e));
             1
         }
     }
@@ -1468,9 +1618,12 @@ pub fn retry_cli() -> i32 {
             continue;
         }
         match json_post("/functions/v1/moderate", Some(&s), &serde_json::json!({ "v": 2, "item": id }), &[]).and_then(|r| r.ok()).and_then(|r| r.json::<serde_json::Value>()) {
-            Ok(v) => println!("{}: {} ({})", title, v["status"].as_str().unwrap_or("?"), v["reason"].as_str().unwrap_or("")),
+            Ok(mut v) => {
+                val::terminal_safe_json(&mut v);
+                println!("{}: {} ({})", val::terminal_safe(title), v["status"].as_str().unwrap_or("?"), v["reason"].as_str().unwrap_or(""))
+            }
             Err(e) => {
-                eprintln!("{}: {}", title, e);
+                eprintln!("{}: {}", val::terminal_safe(title), val::terminal_safe(&e));
                 failures += 1;
             }
         }
@@ -1544,7 +1697,8 @@ pub fn review_cli(args: &[String]) -> i32 {
             return 1;
         }
     };
-    let v: serde_json::Value = r.json().unwrap_or_default();
+    let mut v: serde_json::Value = r.json().unwrap_or_default();
+    val::terminal_safe_json(&mut v); // titles, author names and reasons come from other people: no ESC/BEL/control characters in the terminal
     if !(200..300).contains(&r.state) {
         eprintln!("{}", v["error"].as_str().unwrap_or("Server error."));
         return 1;
@@ -2320,7 +2474,7 @@ pub fn social_cli(what: &str, id: &str) -> i32 {
     }
     let total = if what == "heart" { request("GET", &format!("/rest/v1/community_items?select=hearts&id=eq.{}", id), None, None, None, &[], 1 << 16) } else { request("GET", &format!("/rest/v1/public_profiles?select=followers&id=eq.{}", id), None, None, None, &[], 1 << 16) };
     if let Ok(t) = total.and_then(|r| r.ok()) {
-        println!("total now: {}", t.text());
+        println!("total now: {}", val::terminal_safe(&t.text()));
     }
     0
 }
@@ -2350,5 +2504,41 @@ mod image_tests {
         let mut exe = vec![0u8; 64];
         exe[..2].copy_from_slice(b"MZ");
         assert!(prepare_profile_image("avatar", &exe).is_err());
+    }
+}
+
+#[cfg(test)]
+mod install_tests {
+    use super::*;
+
+    #[test]
+    fn folder_names_are_unambiguous_and_windows_safe() {
+        let names = ["A b", "A_b", "abc.", "abc", "ABC", "a b", "a  b", "日本語", "", "con", "x/y", "x\\y"];
+        let folders: Vec<String> = names.iter().map(|n| plugin_folder_name(n)).collect();
+        let unique: std::collections::HashSet<&String> = folders.iter().collect();
+        assert_eq!(unique.len(), names.len(), "{:?}", folders);
+        for f in &folders {
+            assert!(f.chars().all(|c| c.is_ascii_alphanumeric() || c == '-') && !f.ends_with('-') && f.starts_with("community-"), "{}", f);
+        }
+    }
+
+    #[test]
+    fn install_swaps_atomically_and_failure_leaves_the_old_version() {
+        let base = std::env::temp_dir().join(format!("lienzo-install-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&base);
+        let manifest = serde_json::json!({"name":"Inst","commands":[{"name":"x","script":"a.rhai"}]});
+        let mk = |code: &str| Package { manifest: manifest.clone(), files: [("a.rhai".to_string(), code.to_string())].into() };
+        let folder = base.join(plugin_folder_name("Inst"));
+        install_plugin_into(&mk("fn run(d){ d } // v1"), &base, &folder).unwrap();
+        install_plugin_into(&mk("fn run(d){ d } // v2"), &base, &folder).unwrap();
+        assert!(std::fs::read_to_string(folder.join("a.rhai")).unwrap().contains("v2"));
+        assert!(folder.join("plugin.json").exists());
+        // a file that cannot be written (a file is in the way of a folder) fails without touching v2 and leaves no temp folder
+        let bad = Package { manifest: manifest.clone(), files: [("a.rhai".to_string(), "x".to_string()), ("a.rhai/inner.rhai".to_string(), "y".to_string())].into() };
+        assert!(install_plugin_into(&bad, &base, &folder).is_err());
+        assert!(std::fs::read_to_string(folder.join("a.rhai")).unwrap().contains("v2"));
+        let leftovers: Vec<_> = std::fs::read_dir(&base).unwrap().filter_map(|e| e.ok()).filter(|e| e.file_name().to_string_lossy().starts_with('.')).collect();
+        assert!(leftovers.is_empty(), "{:?}", leftovers.iter().map(|e| e.file_name()).collect::<Vec<_>>());
+        let _ = std::fs::remove_dir_all(&base);
     }
 }

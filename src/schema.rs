@@ -141,6 +141,9 @@ fn semantic(v: &Value, out: &mut Vec<String>) {
     let mut ids = std::collections::HashSet::new();
     let els = v.get("elements").and_then(|e| e.as_array()).cloned().unwrap_or_default();
     for (i, e) in els.iter().enumerate() {
+        if let Some(id) = e.get("id").and_then(|i| i.as_u64()).filter(|i| *i > crate::model::MAX_ID) {
+            out.push(format!("$.elements[{}].id: {} is above the maximum {}", i, id, crate::model::MAX_ID));
+        }
         if let Some(id) = e.get("id").and_then(|i| i.as_u64()).filter(|i| *i != 0) {
             if !ids.insert(id) {
                 out.push(format!("$.elements[{}].id: duplicate id {}", i, id));
@@ -148,7 +151,12 @@ fn semantic(v: &Value, out: &mut Vec<String>) {
         }
         if let Some(u) = e.get("unity_name").and_then(|u| u.as_str()) {
             if !crate::docext::valid_unity_name(u) {
-                out.push(format!("$.elements[{}].unity_name: invalid GameObject name (empty, contains '/' or control characters, or longer than 128)", i));
+                out.push(format!("$.elements[{}].unity_name: invalid GameObject name (empty, contains '/' or control characters, longer than 128, or one of the names the importer generates: __border, __text, __tick, __safe_area, __canvas_background)", i));
+            }
+        }
+        if let Some(f) = e.get("font").and_then(|f| f.as_str()) {
+            if !crate::docext::valid_font_name(f) {
+                out.push(format!("$.elements[{}].font: a font name must not contain '/', '\', ':' or '..'", i));
             }
         }
     }
@@ -162,7 +170,13 @@ fn semantic(v: &Value, out: &mut Vec<String>) {
     if let Some(u) = v.get("unity") {
         if let Some(s) = u.get("scripts_dir").and_then(|s| s.as_str()) {
             if !crate::docext::valid_scripts_dir(s) {
-                out.push("$.unity.scripts_dir: must be a relative path starting with Assets, with '/' separators, no '..', no drive letter".into());
+                out.push("$.unity.scripts_dir: must be a relative path starting with Assets, with '/' separators, no '..', no drive letter, none of <>\"|?*, no trailing dot or space and no Windows device names (CON, NUL, COM1...)".into());
+            }
+        }
+        let fonts = u.get("default_font").into_iter().chain(u.get("fallback_fonts").and_then(|f| f.as_array()).into_iter().flatten());
+        for f in fonts.filter_map(|f| f.as_str()) {
+            if !crate::docext::valid_font_name(f) {
+                out.push(format!("$.unity: the font name {:?} must not contain '/', '\', ':' or '..'", f));
             }
         }
         if let Some(s) = u.get("assembly").and_then(|s| s.as_str()) {
