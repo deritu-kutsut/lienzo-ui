@@ -162,6 +162,7 @@ mod tests {
 
     #[test]
     fn editor_history_is_bounded_and_notifies_once() {
+        let _l = crate::i18n::test_lock();
         let mut a = crate::app::EditorApp::new(None);
         a.settings.read_only = true;
         a.doc = big(10);
@@ -173,7 +174,9 @@ mod tests {
             a.commit_state(false);
         }
         assert_eq!(a.undo.len(), MAX_STEPS);
-        assert_eq!(a.status, crate::i18n::t("History trimmed: the oldest undo steps were dropped"));
+        // other tests (`EditorApp::new` applies the saved language) can switch the global language at any time: accept the notice in any of them
+        let notice = "History trimmed: the oldest undo steps were dropped";
+        assert!(crate::i18n::LANGUAGES.iter().any(|(c, _, _)| crate::i18n::t_in(c, notice) == a.status), "{:?}", a.status);
         a.status.clear();
         a.doc.elements[0].x = 9999.0;
         a.commit_state(false);

@@ -260,6 +260,36 @@ console.log("App failures (fake app):");
   fs.rmSync(project, { recursive: true, force: true });
 }
 
+{
+  // next_id is optional in FORMAT.md; unity_name & co. belong to one element and are not inherited by new ones
+  const f = path.join(DESIGNS, "Shop.editorgui.json");
+  const d = JSON.parse(fs.readFileSync(f, "utf8"));
+  delete d.next_id;
+  const base = d.elements.find((e) => e.kind === "Button");
+  Object.assign(base, { unity_name: "BtnBase", sprite: "Assets/x.png", slice: [1, 1, 1, 1], ppu: 50, image_mode: "Sliced" });
+  fs.writeFileSync(f, JSON.stringify(d));
+  const top = Math.max(...d.elements.map((e) => e.id));
+  ok("add_element works without next_id", !isError(await call("add_element", { file: "Shop", type: "Button", name: "NoNextId", x: 10, y: 10, w: 100, h: 40 })));
+  const d2 = JSON.parse(fs.readFileSync(f, "utf8"));
+  const added = d2.elements.find((e) => e.name === "NoNextId");
+  ok("add_element gets a free id", added && added.id > top && new Set(d2.elements.map((e) => e.id)).size === d2.elements.length);
+  ok("add_element does not copy unity_name, sprite, slice, ppu, image_mode", added && ["unity_name", "sprite", "slice", "ppu", "image_mode"].every((k) => !(k in added)));
+  ok("duplicate_element does not copy them either", !isError(await call("duplicate_element", { file: "Shop", element: base.name, new_name: "DupNoMeta" })));
+  const dup = JSON.parse(fs.readFileSync(f, "utf8")).elements.find((e) => e.name === "DupNoMeta");
+  ok("the duplicate has no unity_name, sprite, slice, ppu, image_mode", dup && ["unity_name", "sprite", "slice", "ppu", "image_mode"].every((k) => !(k in dup)));
+}
+{
+  // a huge line without a newline must not be buffered forever: one error, and the server keeps working
+  const big = start({ LIENZO_DESIGNS: DESIGNS });
+  const errP = new Promise((res) => big.srv.stdout.once("data", (b) => res(b.toString())));
+  big.srv.stdin.write("x".repeat(9 * 1024 * 1024));
+  const out = await errP;
+  ok("an oversized stdin line is rejected with an error", /too large/.test(out), out.slice(0, 100));
+  big.srv.stdin.write("\n");
+  ok("the server still answers after an oversized line", (await big.request("ping", {})).result !== undefined);
+  big.srv.kill();
+}
+
 srv.stdin.write("{not json}\n");
 ok("invalid JSON does not bring the server down", (await request("ping", {})).result !== undefined);
 

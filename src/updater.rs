@@ -323,9 +323,34 @@ pub fn clean_leftovers() {
     }
 }
 
+/// The executable to start once the editor has left. It is NOT started when "Restart now" is pressed: the new window
+/// would open (and read the recovery folder) while this one still has unsaved work to write and files to clean up.
+static RESTART_EXE: std::sync::Mutex<Option<std::path::PathBuf>> = std::sync::Mutex::new(None);
+
+/// Asks the editor to close and start `exe` afterwards (see [`launch_pending_restart`], called by `main` after the
+/// window loop and `on_exit` have finished). Nothing happens when `exe` is not a file.
 pub(crate) fn restart(ctx: &egui::Context, exe: &std::path::Path) {
-    if std::process::Command::new(exe).spawn().is_ok() {
+    if set_pending_restart(exe) {
         ctx.send_viewport_cmd(egui::ViewportCommand::Close);
+    }
+}
+
+pub(crate) fn set_pending_restart(exe: &std::path::Path) -> bool {
+    if !exe.is_file() {
+        return false;
+    }
+    if let Ok(mut g) = RESTART_EXE.lock() {
+        *g = Some(exe.to_path_buf());
+    }
+    true
+}
+
+/// Starts the executable chosen by [`restart`], if any. Returns true when a process was started.
+pub fn launch_pending_restart() -> bool {
+    let exe = RESTART_EXE.lock().ok().and_then(|mut g| g.take());
+    match exe {
+        Some(e) => std::process::Command::new(e).spawn().is_ok(),
+        None => false,
     }
 }
 
@@ -523,6 +548,13 @@ impl EditorApp {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn restart_is_deferred_until_the_editor_has_left() {
+        assert!(!super::launch_pending_restart(), "nothing pending: nothing starts");
+        assert!(!super::set_pending_restart(std::path::Path::new("definitely-not-an-exe-xyz.exe")), "a missing file never closes the editor");
+        assert!(!super::launch_pending_restart());
+    }
+
     use super::*;
     use std::io::Write;
 

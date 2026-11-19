@@ -1077,3 +1077,10 @@ Unsaved changes	未保存の変更
 You have unsaved changes. What do you want to do?	未保存の変更があります。どうしますか？
 Discard changes	変更を破棄
 Could not check the Terms of Use right now.	現在、利用規約を確認できませんでした。
+Autosave failed ({}). Your work is not being backed up: save the project.	自動保存に失敗しました（{}）。作業内容はバックアップされていません。プロジェクトを保存してください。
+The recovery copy is too large to open automatically; it stays in the recovery folder: {}	復元用コピーが大きすぎて自動では開けません。復元フォルダーに残っています: {}
+No application data folder was found: settings and recovery are stored in {}	アプリのデータフォルダーが見つかりません。設定と復元データは {} に保存されます
+Many issues: “Fix all” applies up to {} fixes per click, press it again for the rest.	問題が多いです：「すべて修正」は1回のクリックで最大 {} 件を修正します。残りはもう一度押してください。
+Fixed {} issue(s); {} more are left, press Fix all again (Ctrl+Z undoes)	{} 件の問題を修正しました。残り {} 件、もう一度「すべて修正」を押してください（Ctrl+Z で元に戻せます）
+Error {}	エラー {}
+Something went wrong in a background task. Try again.	バックグラウンドの処理で問題が発生しました。もう一度お試しください。

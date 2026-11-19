@@ -889,3 +889,15 @@ mod portrait_anchors {
         assert!(ms < limit, "{} ms", ms);
     }
 }
+
+#[test]
+fn manual_json_export_writes_no_local_absolute_paths() {
+    let mut d = Doc::empty(1920.0, 1080.0);
+    let mut e = Element::new(0, Kind::Image);
+    e.name = "Pic".into();
+    e.image = "C:/Users/someone/Pictures/pic.png".into();
+    d.add(e);
+    let s = export::ugui::json(&d, false);
+    assert!(!s.contains("C:/") && !s.contains("Users") && !s.contains("someone"), "{}", s);
+    assert!(s.contains("pic.png"), "{}", s);
+}

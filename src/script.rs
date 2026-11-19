@@ -250,9 +250,77 @@ pub fn harden_with_log(engine: &mut Engine, max_ops: u64, max_string: usize, max
     });
 }
 
+/// Stack of the thread that runs a Rhai script and post-processes what it returns. Dropping, cloning or serializing a
+/// deeply nested value (`let a=[]; for i in 0..50000 { a=[a]; }`) recurses once per level and would overflow the
+/// 8 MB (Windows: 1 MB) UI-thread stack and kill the process. Only address space is reserved; pages are committed when used.
+pub const SCRIPT_STACK_BYTES: usize = 768 * 1024 * 1024;
+
+/// Deepest nesting of arrays/maps a script may return as data (a design is about 6 levels deep).
+pub const MAX_RETURN_DEPTH: usize = 64;
+
+/// Runs `f` on a dedicated thread with a big stack and waits for it. A panic inside becomes an `Err` (it never reaches the UI thread).
+/// Scoped, so `f` may borrow from the caller. Everything that touches Rhai values must happen INSIDE `f` (they are not `Send`).
+pub fn on_big_stack<T: Send>(f: impl FnOnce() -> T + Send) -> Result<T, String> {
+    std::thread::scope(|s| {
+        let handle = std::thread::Builder::new().name("lienzo-script".into()).stack_size(SCRIPT_STACK_BYTES).spawn_scoped(s, f).map_err(|e| format!("could not start the script thread: {}", e))?;
+        handle.join().map_err(|_| "the script stopped unexpectedly (internal error)".to_string())
+    })
+}
+
+/// Converts a value returned by a script to JSON, refusing anything nested deeper than [`MAX_RETURN_DEPTH`] or that is not plain data
+/// (the recursion is bounded by that depth, so a hostile nesting cannot overflow the stack here).
+pub fn dynamic_to_json(d: &Dynamic) -> Result<serde_json::Value, String> {
+    fn go(d: &Dynamic, depth: usize) -> Result<serde_json::Value, String> {
+        use serde_json::Value;
+        if d.is_array() || d.is_map() {
+            if depth >= MAX_RETURN_DEPTH {
+                return Err(format!("the returned data is nested too deeply (more than {} levels)", MAX_RETURN_DEPTH));
+            }
+            if let Some(a) = d.read_lock::<rhai::Array>() {
+                return a.iter().map(|x| go(x, depth + 1)).collect::<Result<Vec<_>, _>>().map(Value::Array);
+            }
+            if let Some(m) = d.read_lock::<rhai::Map>() {
+                return m.iter().map(|(k, v)| go(v, depth + 1).map(|v| (k.to_string(), v))).collect::<Result<serde_json::Map<_, _>, _>>().map(Value::Object);
+            }
+            return Err("unsupported value".into());
+        }
+        if d.is_unit() {
+            Ok(Value::Null)
+        } else if let Ok(b) = d.as_bool() {
+            Ok(Value::Bool(b))
+        } else if let Ok(i) = d.as_int() {
+            Ok(Value::from(i))
+        } else if let Ok(f) = d.as_float() {
+            Ok(serde_json::Number::from_f64(f).map(Value::Number).unwrap_or(Value::Null))
+        } else if let Ok(c) = d.as_char() {
+            Ok(Value::String(c.to_string()))
+        } else if d.is_string() {
+            Ok(Value::String(d.clone().into_string().unwrap_or_default()))
+        } else {
+            Err(format!("unsupported value of type {}", d.type_name()))
+        }
+    }
+    go(d, 0)
+}
+
 /// Run `code` as if element `id` was clicked. Changes are applied to `doc`;
-/// messages and errors are appended to `log`.
+/// messages and errors are appended to `log`. The script runs on its own big-stack thread (see [`on_big_stack`]).
 pub fn run(doc: &mut Doc, id: u64, code: &str, log: &mut Vec<String>) {
+    let mut out_lines = Vec::new();
+    let mut work = doc.clone();
+    match on_big_stack(move || {
+        run_inner(&mut work, id, code, &mut out_lines);
+        (work, out_lines)
+    }) {
+        Ok((d, lines)) => {
+            *doc = d;
+            log.extend(lines);
+        }
+        Err(e) => log.push(format!("⚠ Error in the code of an element: {}", e)),
+    }
+}
+
+fn run_inner(doc: &mut Doc, id: u64, code: &str, log: &mut Vec<String>) {
     let me = doc.get(id).map(|e| e.name.clone()).unwrap_or_default();
     let shared: Shared = Rc::new(RefCell::new(doc.clone()));
     let out: Log = OutLog::new_shared();
@@ -381,6 +449,33 @@ mod tests {
         assert_eq!(get(&doc, "Slider Brightness").value, 1.0);
         run(&mut doc, id, "set_value(\"Quality\", 99);", &mut log);
         assert_eq!(get(&doc, "Quality").value, 3.0, "does not go past the last option");
+    }
+
+    #[test]
+    fn deeply_nested_data_does_not_overflow_the_stack() {
+        // PoC: 50000 levels of nesting dropped at the end of the script used to abort the whole process.
+        let mut doc = model::template(0, 1920.0, 1080.0);
+        let mut log = Vec::new();
+        run(&mut doc, 1, "let a=[]; for i in 0..50000 { a=[a]; }", &mut log);
+        run(&mut doc, 1, "let a=#{}; for i in 0..100000 { a=#{x: a}; } message(\"done\");", &mut log);
+        assert!(log.iter().all(|l| !l.contains("internal error")), "{:?}", log);
+    }
+
+    #[test]
+    fn returned_data_nesting_is_bounded() {
+        let e = Engine::new();
+        let deep: Dynamic = e.eval("let a=[]; for i in 0..200 { a=[a]; } a").unwrap();
+        assert!(dynamic_to_json(&deep).is_err());
+        let ok: Dynamic = e.eval("#{a: [1, 2.5, \"x\", true, ()], b: #{c: 'z'}}").unwrap();
+        let v = dynamic_to_json(&ok).unwrap();
+        assert_eq!(v["a"][1], 2.5);
+        assert_eq!(v["b"]["c"], "z");
+    }
+
+    #[test]
+    fn a_panic_in_the_script_thread_is_an_error_not_a_crash() {
+        assert!(on_big_stack(|| -> u8 { panic!("boom") }).is_err());
+        assert_eq!(on_big_stack(|| 7).unwrap(), 7);
     }
 
     #[test]

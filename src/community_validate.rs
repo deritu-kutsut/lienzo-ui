@@ -101,6 +101,17 @@ fn dangerous_path_basic(s: &str) -> bool {
 
 const RESERVED: &[&str] = &["con", "prn", "aux", "nul", "conin$", "conout$", "clock$"];
 
+/// `com1`..`com9` / `lpt1`..`lpt9`, also with the superscript digits Windows treats as the same devices (COM1 with a superscript 1, 2 or 3).
+fn reserved_numbered(stem: &str) -> bool {
+    let mut chars = stem.chars();
+    let prefix: String = chars.by_ref().take(3).collect();
+    if prefix != "com" && prefix != "lpt" {
+        return false;
+    }
+    let rest: Vec<char> = chars.collect();
+    rest.len() == 1 && matches!(rest[0], '1'..='9' | '\u{00B9}' | '\u{00B2}' | '\u{00B3}')
+}
+
 /// Stricter rule for file paths inside a package (they are written to disk on Windows):
 /// no NTFS streams (`:`), no trailing dots or spaces, no reserved device names (`con`, `nul.txt`, `com1`...).
 fn dangerous_path(s: &str) -> bool {
@@ -112,7 +123,7 @@ fn dangerous_path(s: &str) -> bool {
             return true;
         }
         let stem = part.split('.').next().unwrap_or("").trim_end().to_lowercase();
-        RESERVED.contains(&stem.as_str()) || ((stem.starts_with("com") || stem.starts_with("lpt")) && stem.len() == 4 && matches!(stem.as_bytes()[3], b'1'..=b'9'))
+        RESERVED.contains(&stem.as_str()) || reserved_numbered(&stem)
     })
 }
 
@@ -155,12 +166,36 @@ fn external_url(s: &str) -> bool {
     ["http:", "https:", "ftp:", "file:", "data:", "javascript:"].iter().any(|p| l.contains(p))
 }
 
+/// Longest `on_click` script a downloaded design or a plugin may carry.
+const MAX_ON_CLICK: usize = 4096;
+
+/// An `on_click` script of an element is CODE that runs when the design is tested: besides the text rules (no control characters),
+/// it gets the same scan as a plugin script (no eval, import, links, processes) and a length limit.
+fn check_on_click(code: &str) -> Result<(), String> {
+    if code.len() > MAX_ON_CLICK {
+        return Err("An on-click script is too long.".into());
+    }
+    if code.chars().any(|c| spoofing_char(c) || c == '\u{2028}' || c == '\u{2029}') {
+        return Err("An on-click script has invisible characters.".into());
+    }
+    if suspicious(code) {
+        return Err("An on-click script contains forbidden instructions (eval, import, network, processes).".into());
+    }
+    Ok(())
+}
+
 /// The optional element fields (`unity_name`, `slice`, `ppu`, `sprite`, `image_mode`, `preserve_aspect`) are allowed,
 /// but with the right type and range.
 pub fn validate_element_fields(e: &serde_json::Value) -> Result<(), String> {
     use serde_json::Value;
     let bad = |what: &str| Err(format!("Element field “{}” is not valid.", what));
     let Some(o) = e.as_object() else { return Ok(()) };
+    if let Some(v) = o.get("on_click") {
+        // the code itself is checked in `validate_design` / `check_plugin_output` (it may already be in the user's own design)
+        if !matches!(v, Value::Null | Value::String(_)) {
+            return bad("on_click");
+        }
+    }
     if let Some(v) = o.get("unity_name").filter(|v| !v.is_null()) {
         if !v.as_str().is_some_and(crate::docext::valid_unity_name) {
             return bad("unity_name");
@@ -231,6 +266,9 @@ fn validate_design(json: serde_json::Value, is_template: bool) -> Result<(), Str
     }
     for e in elements {
         validate_element_fields(e)?;
+        if let Some(code) = e.get("on_click").and_then(|v| v.as_str()) {
+            check_on_click(code)?;
+        }
     }
     validate_doc_fields(&json)?;
     let mut t = Vec::new();
@@ -391,6 +429,12 @@ pub fn check_plugin_output(input: &serde_json::Value, output: &serde_json::Value
         }
         if dangerous_path_basic(s) && (s.contains('/') || s.contains('\\')) {
             return Err("The returned design contains absolute paths or paths with “..”.".into());
+        }
+    }
+    // A NEW on_click script (not one the design already had) gets the same scan as a downloaded design.
+    for e in elements {
+        if let Some(code) = e.get("on_click").and_then(|v| v.as_str()).filter(|c| !c.is_empty() && !known.contains(*c)) {
+            check_on_click(code)?;
         }
     }
     for e in elements {
@@ -857,5 +901,35 @@ mod tests_audit {
         ] {
             assert!(check_plugin_output(&input, &bad).is_err(), "{}", bad);
         }
+    }
+}
+
+#[cfg(test)]
+mod tests_round_two {
+    use super::*;
+    use serde_json::json;
+
+    #[test]
+    fn superscript_device_names_are_reserved() {
+        for bad in ["COM\u{00B9}", "com\u{00B2}.rhai", "LPT\u{00B3}", "d/LPT\u{00B9}.json", "Com1", "lpt9.txt"] {
+            assert!(dangerous_path(bad), "{:?} must be refused", bad);
+        }
+        for ok in ["com10", "com0.rhai", "lpt", "comx", "COM\u{00B9}\u{00B9}", "console.rhai"] {
+            assert!(!dangerous_path(ok), "{:?} is a normal name", ok);
+        }
+    }
+
+    #[test]
+    fn on_click_code_is_scanned_like_a_plugin_script() {
+        let design = |code: &str| json!({"elements":[{"id":1,"name":"B","kind":"Button","on_click": code}]});
+        assert!(validate_design(design("set_text(\"B\", \"hi\"); hide(\"B\");"), true).is_ok());
+        for bad in ["eval(\"x\")", "import \"m\" as m;", "let u = \"https://evil.example\";", "spawn(1)", "a\u{202e}b", "x".repeat(MAX_ON_CLICK + 1).as_str()] {
+            assert!(validate_design(design(bad), true).is_err(), "{:?}", &bad[..bad.len().min(30)]);
+        }
+        // a plugin may not ADD forbidden code, but a script that was already there is left alone
+        let input = design("process(1)");
+        assert!(check_plugin_output(&input, &input).is_ok());
+        assert!(check_plugin_output(&design("hide(\"B\")"), &design("eval(\"x\")")).is_err());
+        assert!(check_plugin_output(&design("hide(\"B\")"), &json!({"elements":[{"id":1,"on_click": 5}]})).is_err());
     }
 }

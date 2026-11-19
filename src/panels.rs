@@ -144,7 +144,7 @@ impl EditorApp {
                     ui.menu_button(crate::i18n::t("File"), |ui| {
                         ui.set_min_width(230.0);
                         if ui.button(crate::i18n::t("New blank design")).clicked() {
-                            self.load_template(model::blank_template());
+                            self.guard(crate::app::Pending::Template(model::blank_template()));
                             ui.close();
                         }
                         if ui.button(crate::i18n::t("Open project…")).clicked() {
@@ -158,7 +158,7 @@ impl EditorApp {
                         ui.separator();
                         if ui.add(egui::Button::new(crate::i18n::t("Save")).shortcut_text("Ctrl+S")).clicked() {
                             ui.close();
-                            if std::path::Path::new(&self.project_path).is_absolute() { self.save_project() } else { self.save_project_as() }
+                            self.save_current();
                         }
                         if ui.button(crate::i18n::t("Save project as…")).clicked() {
                             ui.close();
@@ -478,7 +478,7 @@ impl EditorApp {
         });
         self.template_thumbs = thumbs;
         if let Some(i) = chosen {
-            self.load_template(i);
+            self.guard(crate::app::Pending::Template(i));
         }
 
         section(ui, "My templates");
@@ -521,7 +521,7 @@ impl EditorApp {
             }
         });
         if let Some(d) = load {
-            self.load_user_template(&d);
+            self.guard(crate::app::Pending::UserTemplate(Box::new(d)));
         }
         if self.library.templates.is_empty() {
             self.library.templates = templates;
@@ -2417,8 +2417,8 @@ impl EditorApp {
             ui.label(RichText::new(crate::i18n::t("As project")).strong());
             hint(ui, &crate::i18n::t("A file you can reopen and keep editing."));
             ui.horizontal(|ui| {
-                if ui.add(crate::icons::btn("save", crate::i18n::t("Save project"))).on_hover_text(&self.project_path).clicked() {
-                    if std::path::Path::new(&self.project_path).is_absolute() { self.save_project() } else { self.save_project_as() }
+                if ui.add(crate::icons::btn("save", crate::i18n::t("Save project"))).on_hover_text(self.recovery.bound.as_deref().unwrap_or("")).clicked() {
+                    self.save_current();
                     close = true;
                 }
                 if ui.button(crate::i18n::t("Save as…")).clicked() {

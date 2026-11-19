@@ -290,12 +290,95 @@ struct TexEntry {
     stamp: Option<(u128, u64)>,
     checked: std::time::Instant,
     tex: Option<egui::TextureHandle>,
+    /// Size of the texture in memory (RGBA8), for the cache budget.
+    bytes: usize,
+    /// Access counter (higher = more recent) and the egui pass of the last use, for the LRU eviction.
+    used: u64,
+    used_pass: u64,
 }
 
 static TEXTURES: std::sync::Mutex<Option<std::collections::HashMap<String, TexEntry>>> = std::sync::Mutex::new(None);
 
 /// How often a cached picture is looked at again on disk (the file changed, appeared or was replaced).
 const TEXTURE_RECHECK: std::time::Duration = std::time::Duration::from_millis(750);
+
+/// Largest side of a picture the app decodes (a bigger one is shown as missing: decoding it would need hundreds of MB on the UI thread).
+pub const MAX_IMAGE_SIDE: u32 = 8192;
+/// Largest side of the texture uploaded for the canvas, and of the small texture used for thumbnails ("Your images", tiles).
+const TEXTURE_SIDE: u32 = 2048;
+pub const THUMB_SIDE: u32 = 192;
+/// Pictures decoded per egui pass: the rest waits for the next frame (a folder with many big pictures never freezes the UI).
+const DECODES_PER_PASS: u32 = 3;
+/// Memory the texture cache may hold; the least recently used textures beyond it are dropped (and decoded again when needed).
+pub const TEXTURE_BUDGET_BYTES: usize = 256 * 1024 * 1024;
+/// Most entries kept (missing / unreadable pictures cost no memory but still count here).
+const MAX_TEXTURE_ENTRIES: usize = 4096;
+
+static TICK: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+static DECODE_PASS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(u64::MAX);
+static DECODE_COUNT: std::sync::atomic::AtomicU32 = std::sync::atomic::AtomicU32::new(0);
+
+thread_local! {
+    /// While true (see [`paint_element_thumb`]) pictures are fetched as small thumbnail textures.
+    static THUMB_MODE: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+}
+
+/// Whether one more picture may be decoded in this egui pass. A context that never ran a pass (tests, headless) has no limit.
+fn take_decode_slot(ctx: &egui::Context) -> bool {
+    use std::sync::atomic::Ordering::Relaxed;
+    let pass = ctx.cumulative_pass_nr();
+    if pass == 0 {
+        return true;
+    }
+    if DECODE_PASS.swap(pass, Relaxed) != pass {
+        DECODE_COUNT.store(0, Relaxed);
+    }
+    DECODE_COUNT.fetch_add(1, Relaxed) < DECODES_PER_PASS
+}
+
+/// Decodes a picture with limits: dimensions are read from the header first and anything over [`MAX_IMAGE_SIDE`] is refused,
+/// and the decoder gets an allocation limit.
+fn decode_limited(path: &std::path::Path) -> Option<image::DynamicImage> {
+    let (w, h) = image::image_dimensions(path).ok()?;
+    if w == 0 || h == 0 || w > MAX_IMAGE_SIDE || h > MAX_IMAGE_SIDE {
+        return None;
+    }
+    let mut reader = image::ImageReader::open(path).ok()?.with_guessed_format().ok()?;
+    let mut limits = image::Limits::default();
+    limits.max_image_width = Some(MAX_IMAGE_SIDE);
+    limits.max_image_height = Some(MAX_IMAGE_SIDE);
+    limits.max_alloc = Some(512 * 1024 * 1024);
+    reader.limits(limits);
+    reader.decode().ok()
+}
+
+/// A picture ready to upload: decoded with limits and shrunk so its longest side is at most `max_side`.
+fn decode_for_texture(path: &std::path::Path, max_side: u32, nearest: bool) -> Option<egui::ColorImage> {
+    let img = decode_limited(path)?;
+    let filter = if nearest { image::imageops::FilterType::Nearest } else { image::imageops::FilterType::Triangle };
+    let img = if img.width().max(img.height()) > max_side { img.resize(max_side, max_side, filter) } else { img };
+    let rgba = img.to_rgba8();
+    Some(egui::ColorImage::from_rgba_unmultiplied([rgba.width() as usize, rgba.height() as usize], rgba.as_raw()))
+}
+
+/// Which cache entries to drop so the total fits `budget`: least recently used first, never `keep` nor an entry used in `current_pass`.
+/// `entries`: (key, bytes, used, used_pass).
+fn pick_evictions(entries: &[(String, usize, u64, u64)], budget: usize, max_entries: usize, current_pass: u64, keep: &str) -> Vec<String> {
+    let mut total: usize = entries.iter().map(|e| e.1).sum();
+    let mut count = entries.len();
+    let mut order: Vec<&(String, usize, u64, u64)> = entries.iter().filter(|e| e.0 != keep && (current_pass == 0 || e.3 != current_pass)).collect();
+    order.sort_by_key(|e| e.2);
+    let mut out = Vec::new();
+    for e in order {
+        if total <= budget && count <= max_entries {
+            break;
+        }
+        total -= e.1;
+        count -= 1;
+        out.push(e.0.clone());
+    }
+    out
+}
 
 /// Forget every cached picture (another design was opened: the same relative name may be another file).
 pub fn clear_texture_cache() {
@@ -312,12 +395,19 @@ fn file_stamp(path: &std::path::Path) -> Option<(u128, u64)> {
 
 /// Texture of an uploaded picture, cached by resolved path + modified time + size. A picture that is missing is
 /// looked for again every moment, so it shows up when the file appears; a changed file is reloaded (None if it can't be read).
+/// Pictures are decoded with size limits, at most [`DECODES_PER_PASS`] per frame, and the cache is an LRU of [`TEXTURE_BUDGET_BYTES`].
 pub fn texture(ctx: &egui::Context, name: &str) -> Option<egui::TextureHandle> {
-    let nearest = PIXEL_ART.load(std::sync::atomic::Ordering::Relaxed);
-    let key = format!("{}|{}", name, nearest);
+    use std::sync::atomic::Ordering::Relaxed;
+    let nearest = PIXEL_ART.load(Relaxed);
+    let max_side = if THUMB_MODE.with(|t| t.get()) { THUMB_SIDE } else { TEXTURE_SIDE };
+    let key = format!("{}|{}|{}", name, nearest, max_side);
+    let (tick, pass) = (TICK.fetch_add(1, Relaxed) + 1, ctx.cumulative_pass_nr());
     let mut g = TEXTURES.lock().ok()?;
     let map = g.get_or_insert_with(Default::default);
+    let mut stale = None;
     if let Some(ent) = map.get_mut(&key) {
+        ent.used = tick;
+        ent.used_pass = pass;
         if ent.checked.elapsed() < TEXTURE_RECHECK {
             return ent.tex.clone();
         }
@@ -327,17 +417,27 @@ pub fn texture(ctx: &egui::Context, name: &str) -> Option<egui::TextureHandle> {
         if ent.path == path && ent.stamp == stamp {
             return ent.tex.clone(); // same file (or still missing / still unreadable)
         }
+        stale = ent.tex.clone();
+        if stamp.is_some() && !take_decode_slot(ctx) {
+            ent.checked = std::time::Instant::now() - TEXTURE_RECHECK; // look again next frame
+            ctx.request_repaint();
+            return stale; // the old picture until there is room to decode the new one
+        }
     }
     let path = crate::library::resolve_image(name);
     let stamp = file_stamp(&path);
-    let tex = image::open(&path).ok().map(|img| {
-        let filter = if nearest { image::imageops::FilterType::Nearest } else { image::imageops::FilterType::Triangle };
-        let img = if img.width().max(img.height()) > 2048 { img.resize(2048, 2048, filter) } else { img };
-        let rgba = img.to_rgba8();
-        let ci = egui::ColorImage::from_rgba_unmultiplied([rgba.width() as usize, rgba.height() as usize], rgba.as_raw());
-        ctx.load_texture(format!("img:{}", key), ci, if nearest { egui::TextureOptions::NEAREST } else { egui::TextureOptions::LINEAR })
-    });
-    map.insert(key, TexEntry { path, stamp, checked: std::time::Instant::now(), tex: tex.clone() });
+    if stamp.is_some() && !map.contains_key(&key) && !take_decode_slot(ctx) {
+        ctx.request_repaint();
+        return None; // not decoded yet: no entry, so it is tried again on the next frame
+    }
+    let ci = stamp.and_then(|_| decode_for_texture(&path, max_side, nearest));
+    let bytes = ci.as_ref().map(|c| c.size[0] * c.size[1] * 4).unwrap_or(0);
+    let tex = ci.map(|ci| ctx.load_texture(format!("img:{}", key), ci, if nearest { egui::TextureOptions::NEAREST } else { egui::TextureOptions::LINEAR }));
+    map.insert(key.clone(), TexEntry { path, stamp, checked: std::time::Instant::now(), tex: tex.clone(), bytes, used: tick, used_pass: pass });
+    let entries: Vec<(String, usize, u64, u64)> = map.iter().map(|(k, e)| (k.clone(), e.bytes, e.used, e.used_pass)).collect();
+    for k in pick_evictions(&entries, TEXTURE_BUDGET_BYTES, MAX_TEXTURE_ENTRIES, pass, &key) {
+        map.remove(&k);
+    }
     tex
 }
 
@@ -691,7 +791,10 @@ pub fn paint_element_thumb(p: &Painter, e: &Element, rect: egui::Rect) {
     e.y = 0.0;
     let size = Vec2::new(e.w * zoom, e.h * zoom);
     let origin = rect.center() - size / 2.0;
+    // Thumbnails use small textures (192 px) instead of the full picture.
+    let before = THUMB_MODE.with(|t| t.replace(true));
     paint_element(p, &e, &View { origin, zoom }, false);
+    THUMB_MODE.with(|t| t.set(before));
 }
 
 /// Checkerboard drawn behind a transparent page (background alpha 0 = transparent overlay).
@@ -788,4 +891,46 @@ pub fn system_font_candidates() -> &'static [(&'static str, &'static [&'static s
         ("Comic Sans MS", &["C:/Windows/Fonts/comic.ttf", "/System/Library/Fonts/Supplemental/Comic Sans MS.ttf"]),
         ("DejaVu Sans", &["/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"]),
     ]
+}
+
+#[cfg(test)]
+mod texture_limit_tests {
+    use super::*;
+
+    fn temp(tag: &str) -> std::path::PathBuf {
+        let d = std::env::temp_dir().join(format!("lienzo-tex-{}-{}", tag, std::process::id()));
+        let _ = std::fs::remove_dir_all(&d);
+        std::fs::create_dir_all(&d).unwrap();
+        d
+    }
+
+    #[test]
+    fn oversized_pictures_are_refused_and_big_ones_shrunk() {
+        let dir = temp("limits");
+        image::RgbaImage::from_pixel(MAX_IMAGE_SIDE + 1, 2, image::Rgba([1, 2, 3, 255])).save(dir.join("wide.png")).unwrap();
+        assert!(decode_limited(&dir.join("wide.png")).is_none(), "wider than the limit");
+        image::RgbaImage::from_pixel(3000, 1500, image::Rgba([1, 2, 3, 255])).save(dir.join("big.png")).unwrap();
+        let ci = decode_for_texture(&dir.join("big.png"), TEXTURE_SIDE, false).expect("decodes");
+        assert_eq!(ci.size, [2048, 1024]);
+        let th = decode_for_texture(&dir.join("big.png"), THUMB_SIDE, false).expect("thumbnail");
+        assert_eq!(th.size, [192, 96]);
+        assert!(decode_limited(&dir.join("missing.png")).is_none());
+        std::fs::write(dir.join("junk.png"), b"not an image").unwrap();
+        assert!(decode_limited(&dir.join("junk.png")).is_none());
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn eviction_drops_least_recently_used_over_the_budget() {
+        let e = |k: &str, bytes: usize, used: u64, pass: u64| (k.to_string(), bytes, used, pass);
+        let entries = vec![e("a", 100, 1, 1), e("b", 100, 5, 1), e("c", 100, 3, 1), e("d", 100, 9, 7)];
+        // 400 bytes, budget 250: drop the two oldest (a, c); the current one (d) and `keep` stay
+        assert_eq!(pick_evictions(&entries, 250, 100, 7, "b"), vec!["a".to_string(), "c".to_string()]);
+        // an entry used in the current pass is never dropped, even over budget
+        let only_current = vec![e("x", 500, 1, 7), e("y", 500, 2, 7)];
+        assert!(pick_evictions(&only_current, 100, 100, 7, "y").is_empty());
+        // entry count cap
+        let many: Vec<_> = (0..10).map(|i| e(&format!("k{}", i), 0, i, 1)).collect();
+        assert_eq!(pick_evictions(&many, usize::MAX, 8, 9, "k9").len(), 2);
+    }
 }

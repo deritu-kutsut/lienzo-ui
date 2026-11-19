@@ -38,6 +38,10 @@ await user(C, `insert into public.reportes(item, reportante, motivo) values ('${
 const up = (f = "0015_terms_and_copyright.sql") => db.exec(read(mig, f));
 try { await up(); await up(); } catch (e) { console.log("FAILED to apply 0015", e.message); process.exit(1); }
 check("0015 applies twice (idempotent)", true);
+// ALSO=0016 applies later migrations on top (and again after the rollback / re-apply at the end): `ALSO=0016 node supabase/tests/0015_terms_and_copyright_pglite.mjs`.
+const ALSO = (process.env.ALSO ?? "").split(",").map((x) => x.trim()).filter(Boolean);
+const applyAlso = async () => { for (const n of ALSO) { const f = fs.readdirSync(mig).find((x) => x.startsWith(n + "_")); try { await up(f); await up(f); } catch (e) { console.log("FAILED to apply", f, e.message); process.exit(1); } } };
+await applyAlso();
 
 // ═════════ 1. Terms versions, settings, current_terms ═════════
 let r = await user(B, `select public.current_terms() as t`);
@@ -205,11 +209,17 @@ r = await owner(`select downloads from public.community_items where id = '${ID_S
 id = nid(); r = await insNew(A, id); check("suspended: uploads refused (account_suspended)", !r.ok && r.hint === "account_suspended", r);
 r = await user(A, `select public.set_suspension('${A}', false)`); check("people cannot call set_suspension", !r.ok, r);
 await admin(`select public.set_suspension('${A}', false)`);
+if (ALSO.includes("0016")) { // 0016: suspension also takes the items down (pending, files queued); lifting it hands them back to review, a moderator approves again
+  check("0016: unsuspended: the item waits for re-approval (not public yet)", (await visible(null, "anon")) === 0);
+  await admin(`update public.community_items set status = 'approved' where id = '${ID_S}'`);
+}
 check("unsuspended: visible again", (await visible(null, "anon")) === 1);
 
 // ═════════ 7. Copyright claims ═════════
 // Claims need a profile >= 24 h old that accepted the terms (audit 3): age the fixtures and give D and E the legacy timestamp.
 await owner(`update public.profiles set created_at = now() - interval '3 days', terms_accepted_at = coalesce(terms_accepted_at, now()) where id in ('${A}', '${B}', '${C}', '${D}', '${E}')`);
+// 0016: claims need terms_version (accept_terms), the legacy timestamp is not enough any more
+if (ALSO.includes("0016")) await owner(`update public.profiles set terms_version = coalesce(terms_version, '1.0') where id in ('${A}', '${B}', '${C}', '${D}', '${E}')`);
 const ICL = nid();
 await owner(`insert into public.community_items(id, author, kind, title) values ('${ICL}', '${A}', 'template', 'Claimed item')`);
 await admin(`update public.community_items set status = 'approved', public_path = 'template/${ICL}/f.json', public_icon = 'template/${ICL}/icon.png', reviewed_at = now() where id = '${ICL}'`);
@@ -298,7 +308,7 @@ const mkUser = async (name, { days = 3, terms = true } = {}) => {
   const u = nid();
   await owner(`insert into auth.users values ('${u}')`);
   await owner(`insert into public.profiles(id, public_name${terms ? ", terms_accepted_at" : ""}) values ('${u}', '${name}'${terms ? ", now()" : ""})`);
-  await owner(`update public.profiles set name_reviewed = public_name, created_at = now() - interval '${days} days' where id = '${u}'`);
+  await owner(`update public.profiles set name_reviewed = public_name, created_at = now() - interval '${days} days'${terms && ALSO.includes("0016") ? ", terms_version = '1.0'" : ""} where id = '${u}'`);
   return u;
 };
 const mkItems = async (author, n, status = "approved") => {
@@ -420,6 +430,7 @@ check("export: items and claims against my items, without the claimant", exA.ite
 check("export: contains no other person's id in the claims filed", exA.copyright_claims_filed.length === 0, exA.copyright_claims_filed);
 
 // ═════════ 10. Account deletion keeps working ═════════
+if (ALSO.includes("0016")) await owner(`update public.profiles set terms_version = null where id = '${E}'`);
 await user(E, `select public.accept_terms('1.0')`);
 r = await owner(`select count(*)::int n from public.terms_log where user_id = '${E}'`); check("E has an acceptance logged", r.rows[0].n === 1, r);
 r = await owner(`delete from auth.users where id = '${E}'`);
@@ -431,6 +442,7 @@ r = await owner(`select count(*)::int n from public.copyright_claims where item_
 
 // ═════════ 11. Rollback and re-apply (twice) ═════════
 for (let round = 1; round <= 2; round++) {
+  if (ALSO.includes("0016")) { try { await db.exec(read(rb, "0016_abuse_hardening.down.sql")); await db.exec(read(rb, "0016_abuse_hardening.down.sql")); } catch (e) { console.log("FAILED 0016 rollback", e.message); process.exit(1); } }
   try { await db.exec(read(rb, "0015_terms_and_copyright.down.sql")); await db.exec(read(rb, "0015_terms_and_copyright.down.sql")); } catch (e) { console.log("FAILED rollback (round " + round + ")", e.message); process.exit(1); }
   r = await owner(`select to_regclass('public.terms_log') is null as gone, not exists (select 1 from information_schema.columns where table_name = 'profiles' and column_name = 'strikes') as nocol,
       not exists (select 1 from information_schema.columns where table_name = 'community_items' and column_name = 'license') as nolic`);
@@ -442,6 +454,7 @@ for (let round = 1; round <= 2; round++) {
   r = await user(C, `insert into public.reportes(item, reportante, motivo) values ('${ir}', '${C}', 'otro')`); check(`rollback ${round}: legacy report works`, r.ok, r);
   r = await user(C, `insert into public.reports(item, reporter, reason) values ('${nid()}', '${C}', 'spam')`); check(`rollback ${round}: new reasons refused again`, !r.ok, r);
   try { await up(); await up(); } catch (e) { console.log("FAILED reapply (round " + round + ")", e.message); process.exit(1); }
+  await applyAlso();
   r = await user(C, `select public.current_terms() as t`); check(`reapply ${round}: current_terms back`, r.ok && r.rows[0].t.version === "1.0", r);
 }
 

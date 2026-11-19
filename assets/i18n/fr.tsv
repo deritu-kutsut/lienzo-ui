@@ -1077,3 +1077,10 @@ Unsaved changes	Modifications non enregistrées
 You have unsaved changes. What do you want to do?	Vous avez des modifications non enregistrées. Que voulez-vous faire ?
 Discard changes	Abandonner les modifications
 Could not check the Terms of Use right now.	Impossible de vérifier les Conditions d'utilisation pour le moment.
+Autosave failed ({}). Your work is not being backed up: save the project.	Échec de l'enregistrement automatique ({}). Votre travail n'est pas sauvegardé : enregistrez le projet.
+The recovery copy is too large to open automatically; it stays in the recovery folder: {}	La copie de récupération est trop volumineuse pour s'ouvrir automatiquement ; elle reste dans le dossier de récupération : {}
+No application data folder was found: settings and recovery are stored in {}	Aucun dossier de données de l'application n'a été trouvé : les réglages et la récupération sont stockés dans {}
+Many issues: “Fix all” applies up to {} fixes per click, press it again for the rest.	Beaucoup de problèmes : « Corriger tous » applique jusqu’à {} corrections par clic, cliquez à nouveau pour le reste.
+Fixed {} issue(s); {} more are left, press Fix all again (Ctrl+Z undoes)	{} problème(s) corrigé(s) ; {} restent, cliquez de nouveau sur Corriger tous (Ctrl+Z annule)
+Error {}	Erreur {}
+Something went wrong in a background task. Try again.	Un problème est survenu dans une tâche en arrière-plan. Réessayez.

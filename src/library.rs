@@ -39,7 +39,7 @@ pub fn write_atomic(path: &Path, data: &[u8]) -> std::io::Result<()> {
         Some(d) if !d.as_os_str().is_empty() => d.to_path_buf(),
         _ => PathBuf::from("."),
     };
-    let name = path.file_name().map(|n| n.to_string_lossy().to_string()).unwrap_or_else(|| "file".into());
+    let name = tmp_name_part(path);
     static N: std::sync::atomic::AtomicU32 = std::sync::atomic::AtomicU32::new(0);
     let tmp = dir.join(format!(".{}.{}-{}.tmp", name, std::process::id(), N.fetch_add(1, std::sync::atomic::Ordering::Relaxed)));
     let res = (|| {
@@ -47,12 +47,67 @@ pub fn write_atomic(path: &Path, data: &[u8]) -> std::io::Result<()> {
         f.write_all(data)?;
         f.sync_all()?;
         drop(f);
-        std::fs::rename(&tmp, path)
+        // An antivirus scanner or a sync client (OneDrive) may hold the destination for a moment: retry the rename.
+        let mut last = Ok(());
+        for attempt in 0..RENAME_ATTEMPTS {
+            last = std::fs::rename(&tmp, path);
+            if last.is_ok() {
+                break;
+            }
+            if attempt + 1 < RENAME_ATTEMPTS {
+                std::thread::sleep(std::time::Duration::from_millis(60 * (attempt as u64 + 1)));
+            }
+        }
+        last
     })();
     if res.is_err() {
         let _ = std::fs::remove_file(&tmp);
     }
     res
+}
+
+const RENAME_ATTEMPTS: u32 = 3;
+/// Longest file name (in characters) used inside the temporary file's name (the full name could exceed the OS limit).
+const TMP_NAME_MAX: usize = 60;
+
+/// The part of the destination's file name that goes into the temporary file name (cut to [`TMP_NAME_MAX`] characters).
+fn tmp_name_part(path: &Path) -> String {
+    let name = path.file_name().map(|n| n.to_string_lossy().to_string()).unwrap_or_else(|| "file".into());
+    name.chars().take(TMP_NAME_MAX).collect()
+}
+
+/// Deletes the leftover temporary files (`.<name>.<pid>-<n>.tmp`) that [`write_atomic`] left next to `path` after a crash,
+/// when they are older than `min_age`. Returns how many were removed.
+pub fn clean_tmp_orphans(path: &Path, min_age: std::time::Duration) -> usize {
+    let dir = match path.parent() {
+        Some(d) if !d.as_os_str().is_empty() => d.to_path_buf(),
+        _ => PathBuf::from("."),
+    };
+    let prefix = format!(".{}.", tmp_name_part(path));
+    let Ok(rd) = std::fs::read_dir(&dir) else { return 0 };
+    let mut n = 0;
+    for f in rd.filter_map(|e| e.ok()) {
+        let name = f.file_name().to_string_lossy().to_string();
+        if name.starts_with(&prefix) && name.ends_with(".tmp") && f.metadata().and_then(|m| m.modified()).ok().and_then(|t| t.elapsed().ok()).is_some_and(|d| d >= min_age) && std::fs::remove_file(f.path()).is_ok() {
+            n += 1;
+        }
+    }
+    n
+}
+
+/// Leftover temporary files older than this are deleted when a project is opened or saved.
+pub const TMP_ORPHAN_AGE: std::time::Duration = std::time::Duration::from_secs(3600);
+
+/// Largest project file the editor reads (a bigger one is refused before it is parsed).
+pub const MAX_PROJECT_BYTES: u64 = 64 * 1024 * 1024;
+
+/// Reads a project / design file as text, refusing files bigger than [`MAX_PROJECT_BYTES`].
+pub fn read_project_text(path: &Path) -> Result<String, String> {
+    let len = std::fs::metadata(path).map_err(|e| e.to_string())?.len();
+    if len > MAX_PROJECT_BYTES {
+        return Err(format!("the file is too large ({} MB, the limit is {} MB)", len / (1024 * 1024), MAX_PROJECT_BYTES / (1024 * 1024)));
+    }
+    std::fs::read_to_string(path).map_err(|e| e.to_string())
 }
 
 fn portrait_sidecar(path: &Path) -> PathBuf {
@@ -97,7 +152,26 @@ pub fn root_dir() -> PathBuf {
     } else {
         std::env::var_os("XDG_DATA_HOME").map(PathBuf::from).or_else(|| std::env::var_os("HOME").map(|h| PathBuf::from(h).join(".local/share")))
     };
-    base.unwrap_or_else(|| PathBuf::from(".")).join("EditorGUI").join("biblioteca")
+    base.unwrap_or_else(fallback_base).join("EditorGUI").join("biblioteca")
+}
+
+static DATA_FALLBACK: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+
+/// Where data goes when the OS gives no application-data folder (no APPDATA / HOME): next to the executable, or the
+/// temp folder. Never a path relative to the working directory (which could be anywhere, even a read-only place).
+fn fallback_base() -> PathBuf {
+    DATA_FALLBACK.store(true, std::sync::atomic::Ordering::Relaxed);
+    fallback_dir()
+}
+
+fn fallback_dir() -> PathBuf {
+    std::env::current_exe().ok().and_then(|e| e.parent().map(|p| p.to_path_buf())).filter(|p| p.is_absolute()).unwrap_or_else(std::env::temp_dir)
+}
+
+/// True once the data folder had to fall back to the executable's folder or the temp folder (the editor shows a notice).
+pub fn data_dir_is_fallback() -> bool {
+    let _ = root_dir();
+    DATA_FALLBACK.load(std::sync::atomic::Ordering::Relaxed)
 }
 
 pub fn images_dir() -> PathBuf {
@@ -140,9 +214,19 @@ pub fn find_unity_project(file: &Path) -> Option<PathBuf> {
     None
 }
 
+/// The folder that holds `file`: a relative name without a folder (`x.editorgui.json`) lives in the current directory.
+pub fn folder_of(file: &Path) -> Option<PathBuf> {
+    let p = match file.parent() {
+        Some(p) if !p.as_os_str().is_empty() => p.to_path_buf(),
+        Some(_) => std::env::current_dir().ok()?,
+        None => return None,
+    };
+    Some(std::fs::canonicalize(&p).unwrap_or(p))
+}
+
 pub fn set_design_folder(file: &Path) {
     if let Ok(mut g) = DESIGN_FOLDER.lock() {
-        *g = file.parent().map(|p| std::fs::canonicalize(p).unwrap_or_else(|_| p.to_path_buf()));
+        *g = folder_of(file);
     }
     crate::render::clear_texture_cache();
 }
@@ -588,7 +672,7 @@ impl Settings {
             let _ = std::fs::create_dir_all(d);
         }
         if let Ok(s) = serde_json::to_string_pretty(self) {
-            let _ = std::fs::write(p, s);
+            let _ = write_atomic(&p, s.as_bytes());
         }
     }
 }
@@ -841,6 +925,53 @@ mod tests {
             assert!(!stem.ends_with('.') && !stem.ends_with(' ') && !stem.is_empty(), "{:?} -> {:?}", s, n);
         }
         assert_eq!(unique_name(&d, "  ", "png"), "archivo.png");
+    }
+
+    #[test]
+    fn write_atomic_handles_long_names_and_cleans_old_orphans() {
+        let dir = std::env::temp_dir().join(format!("lienzo_wa_{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        std::fs::create_dir_all(&dir).unwrap();
+        // a file name close to the 255-character limit: the temporary name is cut, so the write still works
+        let long = dir.join(format!("{}.json", "n".repeat(245)));
+        write_atomic(&long, b"{}").unwrap();
+        assert_eq!(std::fs::read(&long).unwrap(), b"{}");
+        write_atomic(&long, b"{\"v\":2}").unwrap();
+        assert_eq!(std::fs::read(&long).unwrap(), b"{\"v\":2}");
+        assert!(std::fs::read_dir(&dir).unwrap().all(|e| !e.unwrap().file_name().to_string_lossy().ends_with(".tmp")));
+        // orphaned temporaries of THIS file older than the age are deleted; recent ones and other files' are not
+        let target = dir.join("p.editorgui.json");
+        let old = dir.join(".p.editorgui.json.99-1.tmp");
+        let young = dir.join(".p.editorgui.json.99-2.tmp");
+        let other = dir.join(".q.editorgui.json.99-1.tmp");
+        for f in [&old, &young, &other] {
+            std::fs::write(f, "x").unwrap();
+        }
+        let two_hours_ago = std::time::SystemTime::now() - std::time::Duration::from_secs(7200);
+        std::fs::OpenOptions::new().write(true).open(&old).unwrap().set_modified(two_hours_ago).unwrap();
+        assert_eq!(clean_tmp_orphans(&target, TMP_ORPHAN_AGE), 1);
+        assert!(!old.exists() && young.exists() && other.exists());
+        // a relative name without a folder works too (the current directory)
+        assert_eq!(clean_tmp_orphans(Path::new("no-such-file-xyz.json"), TMP_ORPHAN_AGE), 0);
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn project_files_over_the_size_cap_are_refused_before_parsing() {
+        let dir = std::env::temp_dir().join(format!("lienzo_cap_{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        std::fs::create_dir_all(&dir).unwrap();
+        let ok = dir.join("ok.json");
+        std::fs::write(&ok, "{}").unwrap();
+        assert_eq!(read_project_text(&ok).unwrap(), "{}");
+        let big = dir.join("big.json");
+        let f = std::fs::File::create(&big).unwrap();
+        f.set_len(MAX_PROJECT_BYTES + 1).unwrap();
+        drop(f);
+        assert!(read_project_text(&big).unwrap_err().contains("too large"));
+        assert!(read_project_text(&dir.join("missing.json")).is_err());
+        assert!(fallback_dir().is_absolute(), "the fallback data folder is never relative to the working directory");
+        let _ = std::fs::remove_dir_all(&dir);
     }
 
     #[test]

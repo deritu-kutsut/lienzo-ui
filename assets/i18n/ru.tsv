@@ -1075,5 +1075,12 @@ Public domain	Общественное достояние
 Free use (proprietary)	Свободное использование (проприетарная)
 Unsaved changes	Несохранённые изменения
 You have unsaved changes. What do you want to do?	У вас есть несохранённые изменения. Что сделать?
-Discard changes	Отменить изменения
+Discard changes	Сбросить изменения
 Could not check the Terms of Use right now.	Сейчас не удалось проверить Условия использования.
+Autosave failed ({}). Your work is not being backed up: save the project.	Автосохранение не удалось ({}). Резервной копии вашей работы нет: сохраните проект.
+The recovery copy is too large to open automatically; it stays in the recovery folder: {}	Копия восстановления слишком велика, чтобы открыть её автоматически; она остаётся в папке восстановления: {}
+No application data folder was found: settings and recovery are stored in {}	Папка данных приложения не найдена: настройки и восстановление хранятся в {}
+Many issues: “Fix all” applies up to {} fixes per click, press it again for the rest.	Много проблем: «Исправить все» применяет до {} исправлений за клик, нажмите ещё раз для остальных.
+Fixed {} issue(s); {} more are left, press Fix all again (Ctrl+Z undoes)	Исправлено проблем: {}; осталось ещё {}, нажмите «Исправить все» снова (Ctrl+Z отменяет)
+Error {}	Ошибка {}
+Something went wrong in a background task. Try again.	В фоновой задаче что-то пошло не так. Повторите попытку.

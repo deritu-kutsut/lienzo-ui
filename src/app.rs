@@ -69,6 +69,20 @@ pub enum Drop {
     Root,
 }
 
+/// Something the user asked for that replaces the open design. With unsaved changes it waits for the answer of the
+/// Save / Discard / Cancel dialog and runs afterwards.
+#[derive(Clone)]
+pub enum Pending {
+    /// A built-in template (the blank design is one of them).
+    Template(usize),
+    /// A template from "My templates".
+    UserTemplate(Box<Doc>),
+    /// Open a project file.
+    Open(String),
+    /// Import a Unity prefab / Lienzo design file.
+    Import(std::path::PathBuf),
+}
+
 pub struct EditorApp {
     pub doc: Doc,
     pub sel: Vec<u64>,
@@ -78,6 +92,8 @@ pub struct EditorApp {
     history_trim_notified: bool,
     /// Autosave / crash recovery bookkeeping.
     pub recovery: crate::recovery::Session,
+    /// A request that replaces the design and waits for the "unsaved changes" dialog.
+    pub pending_action: Option<Pending>,
     committed: Doc,
     settle: u32,
     pub zoom: f32,
@@ -180,6 +196,9 @@ pub const SCREEN_PRESETS: &[(&str, f32, f32)] = &[
     ("1080 × 1080 (square)", 1080.0, 1080.0),
 ];
 
+/// Suggested file name of a project that was never saved.
+pub const DEFAULT_PROJECT_NAME: &str = "proyecto.editorgui.json";
+
 impl EditorApp {
     pub fn new(screenshot: Option<crate::Shot>) -> Self {
         let mut doc = model::template(0, 1920.0, 1080.0);
@@ -187,7 +206,8 @@ impl EditorApp {
         let first_button = doc.elements.iter().find(|e| e.kind == Kind::Button).map(|e| e.id);
         let settings = crate::library::Settings::load();
         crate::library::set_unity_project(&settings.unity_project);
-        EditorApp {
+        let data_fallback = crate::library::data_dir_is_fallback();
+        let mut app = EditorApp {
             committed: doc.clone(),
             folded: doc.clone(),
             real: None,
@@ -197,6 +217,7 @@ impl EditorApp {
             redo: Default::default(),
             history_trim_notified: false,
             recovery: Default::default(),
+            pending_action: None,
             settle: 3,
             zoom: 0.5,
             pan: Vec2::ZERO,
@@ -218,7 +239,8 @@ impl EditorApp {
             dnd_ov: Vec::new(),
             export_open: false,
             export_tab: 0,
-            project_path: if settings.last_project_file.is_empty() { "proyecto.editorgui.json".into() } else { settings.last_project_file.clone() },
+            // Only a suggested name: the Save destination is decided by `recovery.bound`, never by the last project.
+            project_path: DEFAULT_PROJECT_NAME.into(),
             status: "Ready. Drag elements onto the canvas, organise them in the Hierarchy and export to Unity.".into(),
             renaming: None,
             search: String::new(),
@@ -250,7 +272,11 @@ impl EditorApp {
             updater: crate::updater::Updater::new(),
             long_screenshot: false,
             theme_name: String::new(),
+        };
+        if data_fallback {
+            app.status = crate::i18n::tf("No application data folder was found: settings and recovery are stored in {}", &[&crate::library::root_dir().parent().map(|p| p.display().to_string()).unwrap_or_default()]);
         }
+        app
     }
 
     // ------------------------------------------------------------------ undo
@@ -302,6 +328,33 @@ impl EditorApp {
         self.sel.retain(|id| self.doc.get(*id).is_some());
         self.editing = None;
         self.drag = None;
+        self.refresh_clean();
+    }
+
+    /// Fingerprint of the full design (what Save would write).
+    pub fn doc_hash(&self) -> u64 {
+        use std::hash::{Hash, Hasher};
+        let mut h = std::collections::hash_map::DefaultHasher::new();
+        serde_json::to_string(self.doc_real()).unwrap_or_default().hash(&mut h);
+        h.finish()
+    }
+
+    /// The design as it is now is the baseline of "unsaved changes" (just saved or opened).
+    fn set_clean_baseline(&mut self) {
+        self.recovery.saved_hash = Some(self.doc_hash());
+    }
+
+    /// Back at the saved design (undo / redo got there, or an edit was reverted): it is not dirty any more.
+    fn refresh_clean(&mut self) {
+        if self.recovery.saved_hash.is_some() && self.recovery.dirty() && self.recovery.is_saved_state(self.doc_hash()) {
+            self.recovery.mark_saved();
+        }
+    }
+
+    /// Edits that are not an undo step yet (a text field still has the focus). In test mode the design that counts
+    /// is the one from before the test.
+    pub fn pending_edits(&self) -> bool {
+        self.settle == 0 && *self.doc_real() != self.committed
     }
 
     /// Called at the end of each frame: layout groups and text boxes are updated,
@@ -309,12 +362,17 @@ impl EditorApp {
     pub fn commit(&mut self, ctx: &egui::Context) {
         layout_texts(ctx, &mut self.doc);
         self.doc.apply_layouts();
+        let pointer = ctx.input(|i| i.pointer.any_down()) || self.drag.is_some();
+        let focused = ctx.memory(|m| m.focused().is_some());
         if self.preview {
-            return; // test-mode changes are thrown away on exit
+            // test-mode changes are thrown away on exit, but the real design is still autosaved
+            let b = self.recovery.autosave_busy(pointer, focused, std::time::Instant::now());
+            self.autosave_tick(b);
+            return;
         }
-        let busy = ctx.input(|i| i.pointer.any_down()) || ctx.memory(|m| m.focused().is_some()) || self.drag.is_some();
-        self.commit_state(busy);
-        self.autosave_tick(busy);
+        self.commit_state(pointer || focused);
+        let b = self.recovery.autosave_busy(pointer, focused, std::time::Instant::now());
+        self.autosave_tick(b);
     }
 
     /// The state half of [`commit`] (no egui): folds the portrait edits and records the undo step.
@@ -323,6 +381,10 @@ impl EditorApp {
         if self.settle > 0 {
             self.settle -= 1;
             self.committed = self.real_doc().clone();
+            if self.settle == 0 && self.recovery.saved_hash.is_some() && !self.recovery.dirty() {
+                // the layouts settled after opening: this is the design "as saved" that undo can come back to
+                self.set_clean_baseline();
+            }
             return;
         }
         if self.doc.pixel_art && !busy {
@@ -340,6 +402,7 @@ impl EditorApp {
             self.redo.clear();
             self.recovery.note_edit();
             self.note_history_trim();
+            self.refresh_clean();
         }
     }
 
@@ -413,6 +476,9 @@ impl EditorApp {
 
     /// Folds the edits made on the working copy since the last fold into the full design.
     pub fn fold(&mut self) {
+        if self.preview {
+            return; // the working copy is a throw-away clone in test mode: it never reaches the real design
+        }
         let Some(real) = self.real.as_mut() else { return };
         if self.settle > 0 {
             self.folded = self.doc.clone();
@@ -972,10 +1038,67 @@ impl EditorApp {
         let mut d = model::template(i, self.doc.width, self.doc.height);
         lock_backgrounds(&mut d);
         self.doc = d;
+        self.unbind_design();
         self.sel.clear();
         self.editing = None;
         self.fit_pending = true;
         self.status = crate::i18n::tf("Template applied: {} (Ctrl+Z to undo)", &[&model::TEMPLATES[i].to_string()]);
+    }
+
+    /// The open design is no longer a project file: a template, a recovered or an imported design. Save asks for a new
+    /// file (Save as…) instead of overwriting whatever project was open before.
+    fn unbind_design(&mut self) {
+        self.recovery_flush();
+        if !self.recovery.dirty() {
+            // the old design was saved (or its changes were discarded): its recovery copy is no longer needed
+            crate::recovery::remove(&self.recovery.dir, &self.recovery.key());
+        }
+        self.recovery.bound = None;
+        self.recovery.saved_hash = None;
+        self.recovery.discard_ok = false;
+        self.project_path = DEFAULT_PROJECT_NAME.into();
+        self.recovery.note_edit();
+    }
+
+    /// Runs `a` now when nothing would be lost; otherwise asks "Save / Discard / Cancel" first and runs it afterwards.
+    /// Returns true when it ran immediately.
+    pub fn guard(&mut self, a: Pending) -> bool {
+        if self.has_unsaved_changes() {
+            self.pending_action = Some(a);
+            self.recovery.close_prompt = true;
+            return false;
+        }
+        self.run_pending(a);
+        true
+    }
+
+    fn run_pending(&mut self, a: Pending) {
+        match a {
+            Pending::Template(i) => self.load_template(i),
+            Pending::UserTemplate(d) => self.load_user_template(&d),
+            Pending::Open(p) => {
+                self.project_path = p;
+                self.open_project();
+            }
+            Pending::Import(p) => self.import_unity_path(&p),
+        }
+    }
+
+    /// The project file Save writes to: only the one the open design is bound to (opened from, or saved to), else None.
+    pub fn save_target(&self) -> Option<String> {
+        self.recovery.bound.clone().filter(|p| !p.trim().is_empty())
+    }
+
+    /// Save (Ctrl+S, File > Save, the Save button): writes to the project the design is bound to, or asks where
+    /// (Save as…) when it was never saved. Never decided by a remembered path.
+    pub fn save_current(&mut self) {
+        match self.save_target() {
+            Some(p) => {
+                self.project_path = p;
+                self.save_project();
+            }
+            None => self.save_project_as(),
+        }
     }
 
     /// Change the reference resolution: every element keeps its anchors (like Unity).
@@ -994,10 +1117,24 @@ impl EditorApp {
         self.settings.save();
     }
 
-    pub fn save_project(&mut self) {
+    /// Makes the edits that are not an undo step yet (a text field still has the focus) one, so that what is about to be
+    /// saved is also what the history considers committed.
+    fn commit_pending(&mut self) {
         self.fold();
+        if self.settle == 0 && *self.doc_real() != self.committed {
+            let cur = self.doc_real().clone();
+            let prev = std::mem::replace(&mut self.committed, cur);
+            self.undo.push(prev);
+            self.redo.clear();
+            self.note_history_trim();
+        }
+    }
+
+    pub fn save_project(&mut self) {
+        self.commit_pending();
         match serde_json::to_string_pretty(self.doc_real()).map_err(|e| e.to_string()).and_then(|s| crate::library::write_atomic(std::path::Path::new(&self.project_path), s.as_bytes()).map_err(|e| e.to_string())) {
             Ok(()) => {
+                crate::library::clean_tmp_orphans(std::path::Path::new(&self.project_path), crate::library::TMP_ORPHAN_AGE);
                 self.status = crate::i18n::tf("Project saved to {}", &[&self.project_path]);
                 self.recovery_after_save();
                 self.remember_project();
@@ -1007,10 +1144,11 @@ impl EditorApp {
     }
 
     pub fn open_project(&mut self) {
-        match std::fs::read_to_string(&self.project_path).map_err(|e| e.to_string()).and_then(|s| Doc::from_json_str(&s)) {
+        match crate::library::read_project_text(std::path::Path::new(&self.project_path)).and_then(|s| Doc::from_json_str(&s)) {
             Ok(d) => {
                 self.set_preview(false);
                 crate::library::set_design_folder(std::path::Path::new(&self.project_path));
+                crate::library::clean_tmp_orphans(std::path::Path::new(&self.project_path), crate::library::TMP_ORPHAN_AGE);
                 self.real = None;
                 self.doc = d;
                 // A different document: undo must not bring the previous one back.
@@ -1023,7 +1161,9 @@ impl EditorApp {
                 self.drag = None;
                 self.fit_pending = true;
                 self.recovery.bound = Some(self.project_path.clone());
+                self.recovery.discard_ok = false;
                 self.recovery.reset();
+                self.set_clean_baseline();
                 self.status = format!("{} {}", crate::i18n::t("Project opened:"), self.project_path);
                 self.remember_project();
                 // LIENZO_SELECT=<element id>: start with that element selected (screenshots and tests).
@@ -1192,6 +1332,7 @@ impl EditorApp {
         d.migrate_groups();
         lock_backgrounds(&mut d);
         self.doc = d;
+        self.unbind_design();
         self.sel.clear();
         self.editing = None;
         self.fit_pending = true;
@@ -1209,6 +1350,12 @@ impl EditorApp {
     /// «Import from Unity…»: a `.prefab` (uGUI) or a Lienzo `Designs/*.json` becomes a new, unsaved design.
     pub fn import_unity_dialog(&mut self) {
         let Some(path) = rfd::FileDialog::new().set_title("Import from Unity").add_filter("Unity UI", &["prefab", "json"]).pick_file() else { return };
+        self.guard(Pending::Import(path));
+    }
+
+    /// Imports the file as a new, unsaved design (see [`EditorApp::import_unity_dialog`]).
+    pub fn import_unity_path(&mut self, path: &std::path::Path) {
+        let path = path.to_path_buf();
         match crate::unity_import::import_file(&path) {
             Ok(imp) => {
                 // The file was opened by the user from disk: absolute image paths are allowed.
@@ -1231,9 +1378,7 @@ impl EditorApp {
                 self.set_preview(false);
                 self.leave_portrait();
                 self.doc = imp.doc;
-                self.project_path = String::new();
-                self.recovery.bound = None;
-                self.recovery.note_edit();
+                self.unbind_design();
                 self.sel.clear();
                 self.editing = None;
                 self.fit_pending = true;
@@ -1250,8 +1395,7 @@ impl EditorApp {
 
     pub fn open_project_dialog(&mut self) {
         if let Some(path) = rfd::FileDialog::new().set_title("Open project").add_filter("Proyecto", &["json"]).pick_file() {
-            self.project_path = path.to_string_lossy().to_string();
-            self.open_project();
+            self.guard(Pending::Open(path.to_string_lossy().to_string()));
         }
     }
 
@@ -1362,7 +1506,7 @@ impl EditorApp {
         let cmd = Modifiers::COMMAND;
         let cmd_shift = Modifiers::COMMAND | Modifiers::SHIFT;
         if ctx.input_mut(|i| i.consume_key(cmd, Key::S)) {
-            if std::path::Path::new(&self.project_path).is_absolute() { self.save_project() } else { self.save_project_as() }
+            self.save_current();
         }
         if ctx.input_mut(|i| i.consume_key(cmd_shift, Key::E)) {
             self.export_open = true;
@@ -1470,35 +1614,87 @@ impl EditorApp {
 
     /// Called every frame from `commit`: writes the recovery file when it is time (never in test mode, mid-gesture or when disabled).
     pub fn autosave_tick(&mut self, busy: bool) {
-        if self.preview || self.screenshot.is_some() || self.recovery.offer.is_some() {
+        if let Some(r) = self.recovery.poll_write() {
+            self.autosave_finished(r);
+        }
+        if self.screenshot.is_some() || self.recovery.offer.is_some() {
+            return;
+        }
+        // Edits that are not an undo step yet (a text field has the focus) count as changes too.
+        if self.pending_edits() {
+            if !self.recovery.pending_noted {
+                self.recovery.pending_noted = true;
+                self.recovery.note_edit();
+            }
+        } else {
+            self.recovery.pending_noted = false;
+        }
+        if self.recovery.writing() {
             return;
         }
         let now = std::time::Instant::now();
         if self.recovery.due(now, busy, !self.settings.no_autosave) {
-            self.autosave_now();
-            self.recovery.wrote(now);
+            match self.autosave_payload() {
+                Some((json, meta)) => self.recovery.spawn_write(json, meta),
+                None => self.autosave_finished(Err(std::io::Error::other("the design could not be serialised"))),
+            }
         }
     }
 
-    /// Writes the full real design (landscape + portrait overrides) to the recovery folder. Never in test mode.
-    pub fn autosave_now(&mut self) -> bool {
-        if self.preview {
-            return false;
-        }
+    /// The recovery file contents: the REAL design (landscape + portrait overrides; in test mode the one from before the
+    /// test) serialised now, on the UI thread, so the write itself can happen on another one.
+    fn autosave_payload(&mut self) -> Option<(String, crate::recovery::Meta)> {
         self.fold();
         let doc = self.doc_real();
-        let Ok(json) = serde_json::to_string(doc) else { return false };
-        let meta = crate::recovery::Meta { path: self.recovery.bound.clone().unwrap_or_default(), title: doc.title.clone(), saved_at_ms: crate::recovery::now_ms() };
-        crate::recovery::write(&self.recovery.dir, &self.recovery.key(), &json, &meta).is_ok()
+        let json = serde_json::to_string(doc).ok()?;
+        let meta = crate::recovery::Meta { path: self.recovery.bound.clone().unwrap_or_default(), title: doc.title.clone(), saved_at_ms: crate::recovery::now_ms(), pid: std::process::id() };
+        Some((json, meta))
+    }
+
+    /// Records the outcome of an autosave: a failure is retried soon and announced once in the status bar.
+    fn autosave_finished(&mut self, r: std::io::Result<()>) {
+        let msg = r.as_ref().err().map(|e| e.to_string());
+        if self.recovery.finish_write(r, std::time::Instant::now()) {
+            self.status = crate::i18n::tf("Autosave failed ({}). Your work is not being backed up: save the project.", &[&msg.unwrap_or_default()]);
+        }
+    }
+
+    /// Waits for the background autosave (before its file is deleted or the editor exits).
+    pub(crate) fn recovery_flush(&mut self) {
+        if let Some(r) = self.recovery.flush_write() {
+            self.autosave_finished(r);
+        }
+    }
+
+    /// Writes the full real design now (landscape + portrait overrides), waiting for the disk. Used on exit; one retry.
+    /// Returns true when the recovery file was written.
+    pub fn autosave_now(&mut self) -> bool {
+        self.recovery_flush();
+        let Some((json, meta)) = self.autosave_payload() else { return false };
+        let key = self.recovery.key();
+        let mut r = crate::recovery::write(&self.recovery.dir, &key, &json, &meta);
+        if r.is_err() {
+            r = crate::recovery::write(&self.recovery.dir, &key, &json, &meta);
+        }
+        let ok = r.is_ok();
+        if ok {
+            self.recovery.wrote(std::time::Instant::now());
+        } else {
+            self.autosave_finished(r);
+        }
+        ok
     }
 
     /// After a successful Save: the recovery is no longer needed and the design is bound to the saved file.
     fn recovery_after_save(&mut self) {
+        self.recovery_flush();
         let old = self.recovery.key();
         crate::recovery::remove(&self.recovery.dir, &old);
         self.recovery.bound = Some(self.project_path.clone());
         crate::recovery::remove(&self.recovery.dir, &self.recovery.key());
         self.recovery.mark_saved();
+        self.recovery.discard_ok = false;
+        self.set_clean_baseline();
     }
 
     /// Clean exit: the recovery of this design is deleted, but only when nothing unsaved would be lost
@@ -1507,7 +1703,8 @@ impl EditorApp {
         if self.screenshot.is_some() || self.recovery.offer.is_some() {
             return; // the user never answered the offer: keep it for the next start
         }
-        if self.recovery.dirty() && !self.recovery.discard_ok {
+        self.recovery_flush();
+        if (self.recovery.dirty() || self.pending_edits()) && !self.recovery.discard_ok {
             self.autosave_now();
             return;
         }
@@ -1516,7 +1713,7 @@ impl EditorApp {
 
     /// True when closing the window (or restarting into a new version) would lose unsaved changes.
     pub fn has_unsaved_changes(&self) -> bool {
-        self.screenshot.is_none() && !self.preview && self.recovery.dirty() && !self.recovery.discard_ok
+        self.screenshot.is_none() && !self.recovery.discard_ok && (self.recovery.dirty() || self.pending_edits())
     }
 
     /// Updater "Restart now": asks first when there are unsaved changes. Returns true when it may proceed now.
@@ -1534,6 +1731,7 @@ impl EditorApp {
         if ctx.input(|i| i.viewport().close_requested()) && self.has_unsaved_changes() {
             ctx.send_viewport_cmd(egui::ViewportCommand::CancelClose);
             self.recovery.close_prompt = true;
+            self.pending_action = None; // the window closes, not the request that was waiting
         }
         if !self.recovery.close_prompt {
             return;
@@ -1554,23 +1752,48 @@ impl EditorApp {
                 }
             });
         });
+        self.answer_prompt(ctx, action);
+    }
+
+    /// Applies the answer to the "unsaved changes" dialog: 1 Save, 2 Discard changes, 3 Cancel.
+    pub(crate) fn answer_prompt(&mut self, ctx: &egui::Context, action: u8) {
         match action {
             1 => {
-                if self.recovery.bound.is_some() { self.save_project() } else { self.save_project_as() }
-                if self.recovery.dirty() {
+                self.save_current();
+                if self.has_unsaved_changes() {
                     return; // the save was cancelled or failed: stay in the dialog
                 }
-                self.finish_close(ctx);
+                self.finish_prompt(ctx);
             }
             2 => {
-                self.recovery.discard_ok = true;
-                self.finish_close(ctx);
+                if self.pending_action.is_some() {
+                    // Discard the changes of the open design: its recovery copy goes too; the requested action replaces it.
+                    self.recovery_flush();
+                    crate::recovery::remove(&self.recovery.dir, &self.recovery.key());
+                    self.recovery.mark_saved();
+                } else {
+                    self.recovery.discard_ok = true;
+                }
+                self.finish_prompt(ctx);
             }
             3 => {
                 self.recovery.close_prompt = false;
                 self.recovery.pending_restart = None;
+                self.pending_action = None;
             }
             _ => {}
+        }
+    }
+
+    /// The dialog was answered with Save or Discard: runs the request that opened it (new / open / import / template),
+    /// or closes the window / restarts into the new version.
+    fn finish_prompt(&mut self, ctx: &egui::Context) {
+        match self.pending_action.take() {
+            Some(a) => {
+                self.recovery.close_prompt = false;
+                self.run_pending(a);
+            }
+            None => self.finish_close(ctx),
         }
     }
 
@@ -1595,7 +1818,11 @@ impl EditorApp {
     /// Restore: the saved copy becomes the open design, unsaved (it stays marked as changed and the file is kept until Save / exit).
     pub fn recovery_restore(&mut self) {
         let Some(e) = self.recovery.offer.take() else { return };
-        let s_json = crate::recovery::read_capped(&e.design).unwrap_or_default();
+        self.recovery_flush();
+        let Some(s_json) = crate::recovery::read_capped(&e.design) else {
+            self.status = crate::i18n::tf("The recovery copy is too large to open automatically; it stays in the recovery folder: {}", &[&self.recovery.dir.display().to_string()]);
+            return;
+        };
         match Doc::from_json_str(&s_json) {
             Ok(d) => {
                 self.set_preview(false);
@@ -1611,11 +1838,13 @@ impl EditorApp {
                 self.editing = None;
                 self.drag = None;
                 self.fit_pending = true;
+                // A recovered design is never bound to a file: Ctrl+S opens Save as (the tutorial says so).
                 self.recovery.bound = None;
+                self.recovery.saved_hash = None;
                 self.recovery.discard_ok = false;
                 // keep the file under this instance's key, so a second crash does not lose it
                 if self.recovery.key() != e.key {
-                    let meta = crate::recovery::Meta { path: String::new(), title: e.meta.title.clone(), saved_at_ms: crate::recovery::now_ms() };
+                    let meta = crate::recovery::Meta { path: String::new(), title: e.meta.title.clone(), saved_at_ms: crate::recovery::now_ms(), pid: std::process::id() };
                     let copied = crate::recovery::write(&self.recovery.dir, &self.recovery.key(), &s_json, &meta).is_ok();
                     if copied {
                         crate::recovery::remove(&self.recovery.dir, &e.key);
@@ -1629,6 +1858,7 @@ impl EditorApp {
     }
 
     pub fn recovery_discard(&mut self) {
+        self.recovery_flush();
         if let Some(e) = self.recovery.offer.take() {
             crate::recovery::remove(&self.recovery.dir, &e.key);
         }

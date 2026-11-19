@@ -11,6 +11,13 @@ fn r2(v: f32) -> f64 {
     ((v as f64) * 100.0).round() / 100.0
 }
 
+/// Image source for the manual JSON (not a project export): the file name only. A resolved path would write local folders such as
+/// `C:/Users/<name>/...` into a file the user may share (the Unity importer only accepts `Assets/...` paths anyway).
+fn portable_source(image: &str) -> String {
+    let n = image.rsplit(['/', '\\']).next().unwrap_or("");
+    n.chars().filter(|c| !c.is_control()).collect()
+}
+
 /// `for_project`: image sources point inside the Unity project (Assets/EditorGUI/Sprites)
 /// instead of the files on this computer.
 pub fn json(doc: &Doc, for_project: bool) -> String {
@@ -34,7 +41,7 @@ pub fn json(doc: &Doc, for_project: bool) -> String {
             } else if let Some(names) = &image_names {
                 names.asset_path(&e.image)
             } else {
-                crate::library::resolve_image(&e.image).to_string_lossy().replace('\\', "/")
+                portable_source(&e.image)
             };
             let pad = crate::render::text_padding(e);
             let valign = if e.kind == Kind::Text { 0 } else { e.valign.min(2) };

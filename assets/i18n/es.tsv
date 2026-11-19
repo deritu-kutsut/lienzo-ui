@@ -1087,3 +1087,10 @@ Unsaved changes	Cambios sin guardar
 You have unsaved changes. What do you want to do?	Tienes cambios sin guardar. ¿Qué quieres hacer?
 Discard changes	Descartar cambios
 Could not check the Terms of Use right now.	No se pudieron comprobar los Términos de uso en este momento.
+Autosave failed ({}). Your work is not being backed up: save the project.	Falló el autoguardado ({}). Tu trabajo no tiene copia de seguridad: guarda el proyecto.
+The recovery copy is too large to open automatically; it stays in the recovery folder: {}	La copia de recuperación es demasiado grande para abrirla automáticamente; sigue en la carpeta de recuperación: {}
+No application data folder was found: settings and recovery are stored in {}	No se encontró la carpeta de datos de la aplicación: los ajustes y la recuperación se guardan en {}
+Many issues: “Fix all” applies up to {} fixes per click, press it again for the rest.	Muchos problemas: «Corregir todos» aplica hasta {} correcciones por clic, vuelve a pulsarlo para el resto.
+Fixed {} issue(s); {} more are left, press Fix all again (Ctrl+Z undoes)	Se corrigieron {} problema(s); quedan {} más, vuelve a pulsar Corregir todos (Ctrl+Z deshace)
+Error {}	Error {}
+Something went wrong in a background task. Try again.	Algo salió mal en una tarea en segundo plano. Inténtalo de nuevo.

@@ -1077,3 +1077,10 @@ Unsaved changes	Nicht gespeicherte Änderungen
 You have unsaved changes. What do you want to do?	Sie haben nicht gespeicherte Änderungen. Was möchten Sie tun?
 Discard changes	Änderungen verwerfen
 Could not check the Terms of Use right now.	Die Nutzungsbedingungen konnten gerade nicht geprüft werden.
+Autosave failed ({}). Your work is not being backed up: save the project.	Automatisches Speichern fehlgeschlagen ({}). Ihre Arbeit wird nicht gesichert: Speichern Sie das Projekt.
+The recovery copy is too large to open automatically; it stays in the recovery folder: {}	Die Wiederherstellungskopie ist zu groß, um sie automatisch zu öffnen; sie bleibt im Wiederherstellungsordner: {}
+No application data folder was found: settings and recovery are stored in {}	Es wurde kein Datenordner der Anwendung gefunden: Einstellungen und Wiederherstellung werden in {} gespeichert
+Many issues: “Fix all” applies up to {} fixes per click, press it again for the rest.	Viele Probleme: „Alle beheben“ wendet bis zu {} Korrekturen pro Klick an, klicke erneut für den Rest.
+Fixed {} issue(s); {} more are left, press Fix all again (Ctrl+Z undoes)	{} Problem(e) behoben; {} weitere übrig, klicke erneut auf Alle beheben (Strg+Z macht es rückgängig)
+Error {}	Fehler {}
+Something went wrong in a background task. Try again.	In einer Hintergrundaufgabe ist etwas schiefgelaufen. Versuche es erneut.

@@ -23,7 +23,7 @@ const check = (name, cond, extra) => {
 
 const BOOT = `
 create role anon nologin; create role authenticated nologin; create role service_role nologin bypassrls;
-create schema auth; create table auth.users(id uuid primary key);
+create schema auth; create table auth.users(id uuid primary key, created_at timestamptz not null default now() - interval '30 days');
 create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub', true),'')::uuid $$;
 create function auth.role() returns text language sql stable as $$ select nullif(current_setting('request.jwt.claim.role', true),'') $$;
 create schema storage;
@@ -70,10 +70,15 @@ for (const n of [1, 2]) {
 }
 check("0012 applied twice", true);
 // Optional: LATER=0013,0014 applies later migrations here so that the SAME checks prove the legacy paths still work after them.
-for (const n of (process.env.LATER ?? "").split(",").map((x) => x.trim()).filter(Boolean)) {
-  const f = files.find((x) => x.startsWith(n + "_"));
-  try { await up(f); await up(f); } catch (e) { console.log("FAILED to apply", f, e.message); process.exit(1); }
-}
+const LATER = (process.env.LATER ?? "").split(",").map((x) => x.trim()).filter(Boolean);
+const applyLater = async (times) => {
+  for (const n of LATER) {
+    const f = files.find((x) => x.startsWith(n + "_"));
+    try { for (let i = 0; i < times; i++) await up(f); } catch (e) { console.log("FAILED to apply", f, e.message); process.exit(1); }
+  }
+};
+const has16 = LATER.includes("0016");
+await applyLater(2);
 
 let r = await owner(`select tags, name_reviewed is not null as reviewed from public.community_items i, public.profiles p where i.id = '${LI}' and p.id = '${A}'`);
 check("legacy long tags were trimmed (30 chars, control chars removed)", r.ok && r.rows[0].tags.length === 3 && r.rows[0].tags[0].length === 30 && r.rows[0].tags[2] === "ab", r);
@@ -82,6 +87,7 @@ check("existing names grandfathered except the reserved one", r.rows.find((x) =>
 r = await owner(`select name_reviewed from public.profiles where id = '${A}'`);
 await owner(`update public.profiles set public_name = 'alice2' where id = '${A}'`);
 await up("0012_security_fixes_2.sql");
+await applyLater(1); // re-applying 0012 redefines functions that later migrations replaced: put them back, so the rest of the file tests the final state
 r = await owner(`select name_reviewed from public.profiles where id = '${A}'`);
 check("re-applying does not grandfather a name changed after the migration", r.rows[0].name_reviewed === "alice", r);
 await owner(`update public.profiles set public_name = 'alice' where id = '${A}'`);
@@ -345,6 +351,8 @@ r = await owner(`select status from public.community_items where id = '${IH}'`);
 check("3 reports from BEFORE the last approval do not hide the item", r.rows[0].status === "approved", r);
 const news = [nid(), nid(), nid()];
 for (const o of news) { await owner(`insert into auth.users values ('${o}')`); await owner(`insert into public.profiles(id, public_name) values ('${o}', 'n${o.slice(0, 6)}')`); }
+// 0016 weights reports by account age (fresh accounts count 0): these three are 30-day-old accounts, so every old assertion keeps its meaning.
+if (has16) await owner(`update public.profiles set created_at = now() - interval '30 days' where id in ('${news.join("','")}')`);
 await owner(`insert into public.reports(item, reporter, reason) values ('${IH}', '${news[0]}', 'other')`);
 await owner(`insert into public.reports(item, reporter, reason) values ('${IH}', '${news[1]}', 'malware')`);
 r = await owner(`select status from public.community_items where id = '${IH}'`);
@@ -353,7 +361,8 @@ await owner(`insert into public.reports(item, reporter, reason) values ('${IH}',
 r = await owner(`select status from public.community_items where id = '${IH}'`);
 check("3 reports since the approval hide it", r.rows[0].status === "pending", r);
 r = await admin(`select path, action from public.storage_cleanup where item = '${IH}' order by path`);
-check("two malware reports queue the public files to be MOVED to quarantine (not deleted)", r.rows.length === 2 && r.rows.every((x) => x.action === "to_quarantine"), r);
+if (has16) check("0016: reports never queue the public files (hiding only; a person decides)", r.rows.length === 0, r);
+else check("two malware reports queue the public files to be MOVED to quarantine (not deleted)", r.rows.length === 2 && r.rows.every((x) => x.action === "to_quarantine"), r);
 // d. generic reports (no malware / copyright) hide but keep the files
 const IG = nid();
 await ins(B, IG, "", "");
@@ -429,6 +438,7 @@ for (let round = 1; round <= 2; round++) {
   check(`rollback ${round}: a literal «..» is still refused (0011 helper restored)`, !r.ok, r);
   await owner(`delete from public.community_items where id = '${pid}'`);
   try { await up("0012_security_fixes_2.sql"); await up("0012_security_fixes_2.sql"); } catch (e) { console.log("FAILED reapply (round " + round + ")", e.message); process.exit(1); }
+  await applyLater(1);
   r = await owner(`select to_regclass('public.storage_cleanup') is not null as there`);
   check(`reapply ${round}: new objects back`, r.rows[0].there, r);
   r = await as(A, "authenticated", `insert into public.items(id, autor, tipo, titulo, ruta_cuarentena) values ('${nid()}', '${A}', 'plantilla', 'Traversal 2', '${A}/${IDS.I}/..%2fx.json')`);

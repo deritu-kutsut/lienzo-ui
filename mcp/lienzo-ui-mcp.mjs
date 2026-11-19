@@ -17,7 +17,6 @@
 import { spawn } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
-import readline from "node:readline";
 import { fileURLToPath } from "node:url";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -132,8 +131,15 @@ function load(name) {
   let doc;
   try { doc = JSON.parse(fs.readFileSync(abs, "utf8")); } catch (err) { throw new Error(`${path.basename(abs)} is not valid JSON (${err.message}).`); }
   if (!doc || typeof doc !== "object" || !Array.isArray(doc.elements)) throw new Error(`${path.basename(abs)} does not look like a Lienzo UI design (the 'elements' list is missing).`);
+  // FORMAT.md: next_id is optional. Without it (or with a value that would collide) new ids start after the highest one.
+  const top = doc.elements.reduce((m, e) => (e && Number.isFinite(e.id) && e.id > m ? e.id : m), 0);
+  if (!Number.isSafeInteger(doc.next_id) || doc.next_id <= top) doc.next_id = top + 1;
   return { abs, doc };
 }
+
+/** Unity-export fields that belong to ONE element (a Unity object name, a sprite, its slicing): a new or duplicated element must not inherit them. */
+const PER_ELEMENT_FIELDS = ["unity_name", "sprite", "slice", "ppu", "image_mode"];
+const forgetPerElement = (e) => { for (const k of PER_ELEMENT_FIELDS) delete e[k]; return e; };
 
 /** Valid ranges for numeric fields: [min, max, exclusiveMin]. */
 const RANGES = { w: [0, 100000, true], h: [0, 100000, true], font_size: [0, 1000, true], opacity: [0, 1], stroke_w: [0, 1000], radius: [0, 100000], x: [-1e6, 1e6], y: [-1e6, 1e6] };
@@ -380,6 +386,7 @@ const TOOLS = [
         image: image !== undefined ? imagePath(image) : "", anchor_min: [0.5, 0.5], anchor_max: [0.5, 0.5], pivot: [0.5, 0.5],
         on_click: "", opacity: 1,
       });
+      forgetPerElement(e);
       e.layout = { ...e.layout, mode: "None" };
       if (e.shadow) e.shadow.on = false;
       if (type === "Image") { e.fill = [255, 255, 255, 255]; e.fill2 = [255, 255, 255, 255]; e.stroke_w = 0; e.radius = 0; e.raycast = false; }
@@ -419,6 +426,7 @@ const TOOLS = [
       const copies = doc.elements.filter((x) => ids.has(x.id)).map((x) => {
         const c = structuredClone(x);
         c.id = idMap.get(x.id);
+        forgetPerElement(c);
         if (c.parent != null && idMap.has(c.parent)) c.parent = idMap.get(c.parent);
         if (c.group != null && idMap.has(c.group)) c.group = idMap.get(c.group);
         c.x += dx; c.y += dy;
@@ -555,7 +563,7 @@ process.on("uncaughtException", (e) => { try { console.error("lienzo-ui-mcp: unc
 
 const handleSafely = (m) => handle(m).catch((e) => { try { console.error("lienzo-ui-mcp:", e); } catch { /* stderr closed */ } });
 
-readline.createInterface({ input: process.stdin }).on("line", (l) => {
+function onLine(l) {
   if (!l.trim()) return;
   let m;
   try { m = JSON.parse(l); } catch { return fail(null, -32700, "Invalid JSON"); }
@@ -563,4 +571,30 @@ readline.createInterface({ input: process.stdin }).on("line", (l) => {
     if (!m.length) return fail(null, -32600, "Invalid Request: empty batch.");
     m.forEach(handleSafely);
   } else handleSafely(m);
+}
+
+// Lines are split by hand (not with readline) so that a line without a newline cannot grow in memory without bound:
+// past MAX_LINE bytes the rest of that line is discarded and one error is answered.
+const MAX_LINE = 8 * 1024 * 1024;
+let pending = [];
+let pendingBytes = 0;
+let skipping = false;
+process.stdin.on("data", (chunk) => {
+  let start = 0;
+  for (;;) {
+    const nl = chunk.indexOf(10, start);
+    const end = nl === -1 ? chunk.length : nl;
+    if (!skipping) {
+      pendingBytes += end - start;
+      if (pendingBytes > MAX_LINE) {
+        pending = []; pendingBytes = 0; skipping = true;
+        fail(null, -32600, `Request line too large (limit ${MAX_LINE} bytes).`);
+      } else pending.push(chunk.subarray(start, end));
+    }
+    if (nl === -1) break;
+    if (skipping) skipping = false;
+    else { const line = Buffer.concat(pending).toString("utf8"); pending = []; pendingBytes = 0; onLine(line); }
+    start = nl + 1;
+  }
 });
+process.stdin.on("end", () => { if (!skipping && pendingBytes) { const line = Buffer.concat(pending).toString("utf8"); pending = []; pendingBytes = 0; onLine(line); } });

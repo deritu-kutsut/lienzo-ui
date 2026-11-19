@@ -55,14 +55,38 @@ pub fn t(text: &str) -> String {
 }
 
 /// Translates a template with `{}` placeholders and fills them in order (for messages with data).
+/// One pass over the template: an argument that itself contains `{}` is never treated as a placeholder for the next argument.
 pub fn tf(template: &str, args: &[&str]) -> String {
-    let mut out = t(template);
-    for a in args {
-        if let Some(i) = out.find("{}") {
-            out.replace_range(i..i + 2, a);
+    let text = t(template);
+    let mut out = String::with_capacity(text.len() + args.iter().map(|a| a.len()).sum::<usize>());
+    let mut args = args.iter();
+    let mut rest = text.as_str();
+    while let Some(i) = rest.find("{}") {
+        out.push_str(&rest[..i]);
+        match args.next() {
+            Some(a) => out.push_str(a),
+            None => out.push_str("{}"), // more placeholders than arguments: left as they are
         }
+        rest = &rest[i + 2..];
     }
+    out.push_str(rest);
     out
+}
+
+/// Tests that switch the global language (`set`) or compare a text with `t()` take this lock so they do not run at the same time.
+#[cfg(test)]
+pub fn test_lock() -> std::sync::MutexGuard<'static, ()> {
+    static LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
+    LOCK.lock().unwrap_or_else(|e| e.into_inner())
+}
+
+/// `t()` in a given language without touching the global one (tests).
+#[cfg(test)]
+pub fn t_in(code: &str, text: &str) -> String {
+    match LANGUAGES.iter().position(|(c, _, _)| *c == code) {
+        Some(i) if i > 0 => TABLES[i].get(text).map(|s| s.to_string()).unwrap_or_else(|| text.to_string()),
+        _ => text.to_string(),
+    }
 }
 
 #[cfg(test)]
@@ -71,6 +95,7 @@ mod tests {
 
     #[test]
     fn translates_and_returns_to_english() {
+        let _l = test_lock();
         set("es");
         assert_eq!(t("Save"), "Guardar");
         assert_eq!(t("untranslated text xyz"), "untranslated text xyz");
@@ -107,6 +132,7 @@ mod tests {
 
     #[test]
     fn keys_with_quotes_match_the_tsv_text() {
+        let _l = test_lock();
         // A Rust literal with escaped quotes is the plain text in the TSV (no unescaping is done by the loader).
         set("es");
         assert_eq!(t("Check the details and press \"Send for review\"."), "Revisa los datos y pulsa «Enviar a revisión».");
@@ -120,5 +146,10 @@ mod tests {
         assert_eq!(tf("a {} b {}", &["1", "2"]), "a 1 b 2");
         assert_eq!(tf("no placeholders", &["x"]), "no placeholders");
         assert_eq!(tf("{}", &["{}"]), "{}");
+        // an argument with `{}` does not take the next argument's place
+        assert_eq!(tf("{} / {}", &["a{}b", "X"]), "a{}b / X");
+        assert_eq!(tf("{} / {}", &["{}", "{}"]), "{} / {}");
+        assert_eq!(tf("only {}", &["1", "2"]), "only 1");
+        assert_eq!(tf("{} and {}", &["1"]), "1 and {}");
     }
 }

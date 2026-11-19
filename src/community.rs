@@ -146,6 +146,8 @@ enum Message {
     TermsAccepted(Result<(), String>),
     AccountDeleted(Result<(), String>),
     State(String),
+    /// A background task panicked (releases `busy`).
+    TaskFailed,
     Image { path: String, bytes: Option<Vec<u8>> },
     ProfileView(Result<(ProfilePublic, Vec<Item>), String>),
     MyProfile(Option<ProfilePublic>),
@@ -431,7 +433,7 @@ impl Resp {
         }
     }
     fn json<T: for<'de> Deserialize<'de>>(&self) -> Result<T, String> {
-        serde_json::from_slice(&self.body).map_err(|_| "Unexpected response from the server.".to_string())
+        serde_json::from_slice(&self.body).map_err(|_| t("Unexpected response from the server."))
     }
 }
 
@@ -458,13 +460,13 @@ fn error_message_with(state: u16, body: &str, retry_after: Option<u64>) -> Strin
         401 => net::expired_message(),
         403 => t("You do not have permission to do this."),
         404 => t("Not found."),
-        409 => "It already exists or was already processed.".into(),
+        409 => t("It already exists or was already processed."),
         429 if msg.contains("Demasiadas subidas") || msg.contains("Daily limit") => val::terminal_safe(msg),
         429 => net::rate_limited_message(retry_after),
         _ if msg.contains("Demasiadas subidas") || msg.contains("Daily limit") => val::terminal_safe(msg),
-        _ if msg.contains("duplicate key") => "That name is already in use.".into(),
+        _ if msg.contains("duplicate key") => t("That name is already in use."),
         s if s >= 500 => net::unavailable_message(),
-        s => format!("Error {}", s),
+        s => tf("Error {}", &[&s.to_string()]),
     }
 }
 
@@ -528,7 +530,7 @@ fn send_once(cfg: &NetCfg, base: &str, method: &str, path: &str, session: Option
     let state = res.status().as_u16();
     let retry_after = res.headers().get("retry-after").and_then(|v| v.to_str().ok()).and_then(net::parse_retry_after);
     let body = res.body_mut().with_config().limit(limit as u64).read_to_vec().map_err(|e| match e {
-        ureq::Error::BodyExceedsLimit(_) => net::Failure { msg: "The server response is too large or was cut off.".into(), transient: false },
+        ureq::Error::BodyExceedsLimit(_) => net::Failure { msg: t("The server response is too large or was cut off."), transient: false },
         other => {
             let mut f = net::classify(&other);
             f.transient = true;
@@ -585,8 +587,29 @@ fn read_credential() -> Option<(String, String)> {
     None
 }
 
+/// GoTrue answers a refresh token it no longer accepts (revoked, already used, unknown) with a 400 whose body says
+/// `refresh_token_not_found`, `refresh_token_already_used`, `invalid_grant` or "Invalid Refresh Token": the session is over, not a glitch.
+fn refresh_token_rejected(state: u16, body: &str) -> bool {
+    if !matches!(state, 400 | 401 | 403 | 422) {
+        return false;
+    }
+    let v: serde_json::Value = serde_json::from_str(body).unwrap_or_default();
+    let field = |k: &str| v.get(k).and_then(|x| x.as_str()).unwrap_or("").to_lowercase();
+    let (code, error, text) = (field("error_code"), field("error"), format!("{} {}", field("msg"), format!("{} {}", field("message"), field("error_description"))));
+    matches!(code.as_str(), "refresh_token_not_found" | "refresh_token_already_used" | "session_not_found" | "session_expired" | "invalid_grant")
+        || error == "invalid_grant"
+        || text.contains("invalid refresh token")
+        || text.contains("refresh token not found")
+        || text.contains("already used")
+}
+
 fn renew(s: &Session) -> Result<Session, String> {
-    let r = json_post("/auth/v1/token?grant_type=refresh_token", None, &serde_json::json!({ "refresh_token": s.renewal }), &[])?.ok()?;
+    let r = json_post("/auth/v1/token?grant_type=refresh_token", None, &serde_json::json!({ "refresh_token": s.renewal }), &[])?;
+    if refresh_token_rejected(r.state, &r.text()) {
+        save_credential(None); // the stored token is dead: next start must not try it again
+        return Err(net::expired_message());
+    }
+    let r = r.ok()?;
     let v: serde_json::Value = r.json()?;
     session_from(&v)
 }
@@ -620,8 +643,9 @@ enum Callback {
 }
 
 /// Reads the first line of an HTTP request (`GET /callback?code=... HTTP/1.1`) and decides what it means.
-/// `state` is the random value of this login: when the answer carries a `state`, it must be ours. (Supabase does not
-/// echo a `state` today; PKCE then still binds the code to this login because the exchange needs our verifier.)
+/// `state` is the random value of this login: an answer that carries a `state` must carry ours, and an error answer is
+/// only believed with our `state`. (Supabase does not echo a `state` on the success redirect today; PKCE then still binds
+/// the code to this login because the exchange needs our verifier.)
 fn parse_callback(request_line: &str, state: &str) -> Callback {
     let path = request_line.strip_prefix("GET ").and_then(|r| r.split(' ').next()).unwrap_or("");
     let Some(query) = path.strip_prefix("/callback?") else { return Callback::Ignore };
@@ -629,8 +653,9 @@ fn parse_callback(request_line: &str, state: &str) -> Callback {
     if param("state").is_some_and(|s| s != state) {
         return Callback::Ignore;
     }
+    // A cancel/error answer only counts when it carries OUR state: anything else (a page, a scanner, another site) could cancel the login.
     if param("error").is_some() || param("error_description").is_some() {
-        return Callback::Failed;
+        return if param("state") == Some(state) { Callback::Failed } else { Callback::Ignore };
     }
     match param("code").filter(|c| !c.is_empty() && c.len() < 300 && c.chars().all(|ch| ch.is_ascii_alphanumeric() || ch == '-' || ch == '_')) {
         Some(code) => Callback::Code(code.to_string()),
@@ -740,7 +765,9 @@ mod oauth_tests {
         assert_eq!(parse_callback("GET /callback?code=xyz123&state=abc_DEF-123 HTTP/1.1", s), Callback::Code("xyz123".into()));
         assert_eq!(parse_callback("GET /callback?code=xyz123&state=other HTTP/1.1", s), Callback::Ignore);
         assert_eq!(parse_callback("GET /callback?error=access_denied&state=other HTTP/1.1", s), Callback::Ignore);
-        assert_eq!(parse_callback("GET /callback?error=access_denied HTTP/1.1", s), Callback::Failed);
+        assert_eq!(parse_callback("GET /callback?error=access_denied&state=abc_DEF-123 HTTP/1.1", s), Callback::Failed);
+        assert_eq!(parse_callback("GET /callback?error=access_denied HTTP/1.1", s), Callback::Ignore, "an error without our state cannot cancel the login");
+        assert_eq!(parse_callback("GET /callback?error_description=x&state= HTTP/1.1", s), Callback::Ignore);
         for noise in ["GET /favicon.ico HTTP/1.1", "POST /callback?code=x HTTP/1.1", "", "garbage", "GET /callback?code= HTTP/1.1", "GET /callback?code=a%20b HTTP/1.1", "GET /callback HTTP/1.1"] {
             assert_eq!(parse_callback(noise, s), Callback::Ignore, "{}", noise);
         }
@@ -1311,7 +1338,10 @@ impl EditorApp {
         let tx = self.community.tx.clone();
         let ctx = ctx.clone();
         std::thread::spawn(move || {
-            f(&tx);
+            // A panic in the task must not leave the spinner on forever: the UI is told and releases `busy`.
+            if std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| f(&tx))).is_err() {
+                let _ = tx.send(Message::TaskFailed);
+            }
             ctx.request_repaint();
         });
     }
@@ -1321,7 +1351,14 @@ impl EditorApp {
         let with_18 = self.community.profile.as_ref().map(|p| p.show_18).unwrap_or(false) && s.is_some();
         let only_from: Option<Vec<String>> = (self.community.only_following && s.is_some()).then(|| self.community.my_following.iter().cloned().collect());
         self.community_launch(ctx, move |tx| {
-            let s = s.and_then(|s| current(&s, tx).ok());
+            // A failure to get a valid session (expired refresh token, offline...) is reported, not swallowed into an anonymous list.
+            let s = match s.map(|s| current(&s, tx)).transpose() {
+                Ok(s) => s,
+                Err(e) => {
+                    let _ = tx.send(Message::Items(Err(e)));
+                    return;
+                }
+            };
             let _ = tx.send(Message::Items(list(s.as_ref(), f, &b, with_18, only_from.as_deref())));
         });
     }
@@ -1531,6 +1568,10 @@ impl EditorApp {
                 Message::State(e) => {
                     self.community.busy = self.community.busy.saturating_sub(1);
                     self.community.state = e;
+                }
+                Message::TaskFailed => {
+                    self.community.busy = self.community.busy.saturating_sub(1);
+                    self.community.state = t("Something went wrong in a background task. Try again.");
                 }
             }
         }

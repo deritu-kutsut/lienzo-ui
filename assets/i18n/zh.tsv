@@ -1077,3 +1077,10 @@ Unsaved changes	有未保存的更改
 You have unsaved changes. What do you want to do?	你有未保存的更改。要怎么处理？
 Discard changes	放弃更改
 Could not check the Terms of Use right now.	暂时无法检查使用条款。
+Autosave failed ({}). Your work is not being backed up: save the project.	自动保存失败（{}）。您的工作没有备份：请保存项目。
+The recovery copy is too large to open automatically; it stays in the recovery folder: {}	恢复副本太大，无法自动打开；它保留在恢复文件夹中：{}
+No application data folder was found: settings and recovery are stored in {}	未找到应用程序数据文件夹：设置和恢复文件存储在 {}
+Many issues: “Fix all” applies up to {} fixes per click, press it again for the rest.	问题很多：“修复全部”每次点击最多应用 {} 项修复，再点一次处理其余的。
+Fixed {} issue(s); {} more are left, press Fix all again (Ctrl+Z undoes)	已修复 {} 个问题；还剩 {} 个，请再次点击“修复全部”（Ctrl+Z 可撤销）
+Error {}	错误 {}
+Something went wrong in a background task. Try again.	后台任务出了点问题，请重试。

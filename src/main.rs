@@ -181,7 +181,7 @@ fn doc_from_args(args: &[String]) -> Result<Option<model::Doc>, String> {
     }
     if let Some(file) = arg_after(args, "--open") {
         library::set_design_folder(std::path::Path::new(file));
-        let text = std::fs::read_to_string(file).map_err(|e| format!("{}: {}", file, e))?;
+        let text = library::read_project_text(std::path::Path::new(file)).map_err(|e| format!("{}: {}", file, e))?;
         let doc = model::Doc::from_json_str(&text).map_err(|e| format!("{}: {}", file, e))?;
         return Ok(Some(doc));
     }
@@ -205,6 +205,10 @@ fn doc_from_args(args: &[String]) -> Result<Option<model::Doc>, String> {
 /// (The old Spanish flags, like --abrir or --exportar, are rewritten to these by `normalize_args`.)
 ///   --community-upload <type> <file> --title "…"  uploads content to the community with your saved session
 fn headless(args: &[String]) -> Option<i32> {
+    if let Some(msg) = cli_usage_error(args) {
+        eprintln!("{}", msg);
+        return Some(2);
+    }
     if args.iter().any(|a| a == "--templates") {
         for (i, t) in model::TEMPLATES.iter().enumerate() {
             println!("{}\t{}", i, t);
@@ -245,6 +249,11 @@ fn headless(args: &[String]) -> Option<i32> {
         return Some(2);
     }
     if args.iter().any(|a| a == "--review") {
+        for ignored in ["--export", "--save"] {
+            if args.iter().any(|a| a == ignored) {
+                eprintln!("Note: {} is ignored together with --review (run it without --review to {}).", ignored, if ignored == "--save" { "save" } else { "export" });
+            }
+        }
         return Some(match doc_from_args(args) {
             Ok(Some(d)) => {
                 let (text, errors) = review::report(&d);
@@ -279,7 +288,7 @@ fn headless(args: &[String]) -> Option<i32> {
         }
     };
     if let Some(file) = save {
-        let r = serde_json::to_string_pretty(&doc).map_err(|e| e.to_string()).and_then(|s| std::fs::write(file, s).map_err(|e| e.to_string()));
+        let r = serde_json::to_string_pretty(&doc).map_err(|e| e.to_string()).and_then(|s| library::write_atomic(std::path::Path::new(file), s.as_bytes()).map_err(|e| e.to_string()));
         match r {
             Ok(()) => println!("Saved: {}", file),
             Err(e) => {
@@ -299,6 +308,86 @@ fn headless(args: &[String]) -> Option<i32> {
     }
     Some(0)
 }
+
+/// Flags that need a value: a missing value (end of the arguments, or the next flag) is a usage error (exit 2, no window).
+const VALUE_FLAGS: &[(&str, &str)] = &[
+    ("--open", "--open <file.editorgui.json>"),
+    ("--save", "--save <file.editorgui.json>"),
+    ("--export", "--export <Unity project folder>"),
+    ("--template", "--template <number> (see --templates)"),
+];
+
+/// The usage message when a flag that needs a value has none (or `--template` is not a number); None when the line is fine.
+fn cli_usage_error(args: &[String]) -> Option<String> {
+    for (flag, usage) in VALUE_FLAGS {
+        if let Some(i) = args.iter().position(|a| a == flag) {
+            let v = args.get(i + 1).filter(|v| !v.starts_with("--"));
+            let bad = match (v, *flag) {
+                (None, _) => true,
+                (Some(v), "--template") => v.parse::<usize>().is_err(),
+                _ => false,
+            };
+            if bad {
+                return Some(format!("Usage: {}", usage));
+            }
+        }
+    }
+    None
+}
+
+/// True when the command line asks for a windowless mode that prints to the console.
+fn wants_console(args: &[String]) -> bool {
+    const FLAGS: &[&str] = &[
+        "--templates", "--validate", "--review", "--export", "--save", "--import-unity", "--import-unity-project", "--community-upload",
+        "--community-heart", "--community-follow", "--community-me", "--community-review", "--community-retry",
+    ];
+    args.iter().any(|a| FLAGS.contains(&a.as_str()))
+}
+
+/// The release build is a Windows-subsystem program, so run from cmd / PowerShell it has no console and its output is
+/// lost. Attach to the parent's console and point the standard handles at it, but only the ones that are not already
+/// redirected (the MCP server and scripts read the output through pipes, which stay untouched).
+#[cfg(windows)]
+fn attach_parent_console() {
+    use std::ffi::c_void;
+    unsafe extern "system" {
+        fn AttachConsole(pid: u32) -> i32;
+        fn GetStdHandle(n: u32) -> *mut c_void;
+        fn SetStdHandle(n: u32, h: *mut c_void) -> i32;
+        fn CreateFileW(name: *const u16, access: u32, share: u32, sec: *mut c_void, disp: u32, flags: u32, tmpl: *mut c_void) -> *mut c_void;
+    }
+    const ATTACH_PARENT_PROCESS: u32 = u32::MAX;
+    const STD_OUTPUT_HANDLE: u32 = -11i32 as u32;
+    const STD_ERROR_HANDLE: u32 = -12i32 as u32;
+    // SAFETY: documented Win32 calls; every pointer passed is valid for the call.
+    unsafe {
+        let missing = |n: u32| {
+            let h = GetStdHandle(n);
+            h.is_null() || h as isize == -1
+        };
+        let (need_out, need_err) = (missing(STD_OUTPUT_HANDLE), missing(STD_ERROR_HANDLE));
+        if !need_out && !need_err {
+            return; // redirected to a pipe or a file: nothing to do
+        }
+        if AttachConsole(ATTACH_PARENT_PROCESS) == 0 {
+            return; // no parent console (started from Explorer)
+        }
+        let name: Vec<u16> = "CONOUT$\0".encode_utf16().collect();
+        let h = CreateFileW(name.as_ptr(), 0xC000_0000, 3, std::ptr::null_mut(), 3, 0, std::ptr::null_mut());
+        if h.is_null() || h as isize == -1 {
+            return;
+        }
+        if need_out {
+            SetStdHandle(STD_OUTPUT_HANDLE, h);
+        }
+        if need_err {
+            SetStdHandle(STD_ERROR_HANDLE, h);
+        }
+    }
+}
+
+#[cfg(not(windows))]
+fn attach_parent_console() {}
 
 /// `--import-unity-project <Unity project> --out <folder>`: converts every UI prefab of the project. Exit 0 / 1 / 2.
 fn import_project_cli(args: &[String], i: usize) -> i32 {
@@ -331,6 +420,9 @@ fn import_project_cli(args: &[String], i: usize) -> i32 {
 
 fn main() -> eframe::Result<()> {
     let args = normalize_args(std::env::args().collect());
+    if wants_console(&args) || cli_usage_error(&args).is_some() {
+        attach_parent_console();
+    }
     if let Some(code) = headless(&args) {
         std::process::exit(code);
     }
@@ -468,6 +560,8 @@ fn main() -> eframe::Result<()> {
             Ok(Box::new(app))
         }),
     );
+    // The updater's "Restart now": the new version starts only after the editor has cleaned up and left (on_exit).
+    updater::launch_pending_restart();
     if let Some(s) = state {
         if s.load(Ordering::SeqCst) != 2 {
             eprintln!("screenshot was not saved");
@@ -532,6 +626,43 @@ mod tests {
         assert_eq!(headless(&args(&["lienzo-ui", "--import-unity", &dir.join("none.prefab").to_string_lossy(), "--save", &o])), Some(1));
         assert_eq!(headless(&args(&["lienzo-ui", "--import-unity-project", &dir.to_string_lossy()])), Some(2));
         assert_eq!(headless(&args(&["lienzo-ui", "--import-unity-project", &dir.to_string_lossy(), "--out", &dir.join("o").to_string_lossy()])), Some(1), "no Assets folder");
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn flags_without_a_value_are_usage_errors_and_never_open_the_window() {
+        for bad in [
+            &["lienzo-ui", "--export"][..],
+            &["lienzo-ui", "--open", "--export", "x"],
+            &["lienzo-ui", "--save"],
+            &["lienzo-ui", "--template"],
+            &["lienzo-ui", "--template", "abc"],
+            &["lienzo-ui", "--template", "0", "--export", "--save", "f"],
+            &["lienzo-ui", "--open"],
+        ] {
+            assert_eq!(headless(&args(bad)), Some(2), "{:?}", bad);
+        }
+        assert!(cli_usage_error(&args(&["lienzo-ui", "--open-review", "--template", "1"])).is_none());
+        assert!(cli_usage_error(&args(&["lienzo-ui"])).is_none());
+        // --review keeps working with --save / --export present (they are ignored with a note)
+        let probe = std::env::temp_dir().join(format!("lienzo_review_noop_{}.json", std::process::id()));
+        let _ = std::fs::remove_file(&probe);
+        assert!(headless(&args(&["lienzo-ui", "--review", "--template", "0", "--save", &probe.to_string_lossy()])).is_some_and(|c| c < 2));
+        assert!(!probe.exists(), "--review never saves");
+        assert!(wants_console(&args(&["lienzo-ui", "--review"])) && !wants_console(&args(&["lienzo-ui", "--open", "a.json"])));
+    }
+
+    #[test]
+    fn cli_save_is_atomic_and_relative_names_use_the_current_directory() {
+        let dir = std::env::temp_dir().join(format!("lienzo_cli_save_{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        std::fs::create_dir_all(&dir).unwrap();
+        let out = dir.join("a.editorgui.json");
+        assert_eq!(headless(&args(&["lienzo-ui", "--template", "0", "--save", &out.to_string_lossy()])), Some(0));
+        assert!(model::Doc::from_json_str(&std::fs::read_to_string(&out).unwrap()).is_ok());
+        assert!(std::fs::read_dir(&dir).unwrap().all(|e| !e.unwrap().file_name().to_string_lossy().ends_with(".tmp")));
+        assert_eq!(library::folder_of(std::path::Path::new("x.editorgui.json")), std::fs::canonicalize(std::env::current_dir().unwrap()).ok());
+        assert_eq!(library::folder_of(&out), std::fs::canonicalize(&dir).ok());
         let _ = std::fs::remove_dir_all(&dir);
     }
 

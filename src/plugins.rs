@@ -83,9 +83,8 @@ pub fn folders() -> Vec<PathBuf> {
     if let Some(exe) = std::env::current_exe().ok().and_then(|p| p.parent().map(Path::to_path_buf)) {
         v.push(exe.join("plugins"));
     }
-    if let Ok(cwd) = std::env::current_dir() {
-        v.push(cwd.join("plugins"));
-    }
+    // Not `<cwd>/plugins`: the working directory can be any folder (e.g. one the user just opened a downloaded project from),
+    // and plugins run code. Only the program's own folder and the user's data folder are searched.
     if let Some(data) = crate::library::root_dir().parent() {
         v.push(data.join("plugins"));
     }
@@ -220,11 +219,17 @@ fn call(folder: &Path, script: &str, functions: &[&str], doc: &Doc) -> Result<(r
     Ok((r, msgs))
 }
 
-/// Runs a command: returns the new design and the script's messages.
+/// Runs a command: returns the new design and the script's messages. The script AND the post-processing of what it returns
+/// (conversion, deserialization, validation, drops) run on a big-stack thread: nested data cannot overflow the UI thread's stack.
 pub fn run_command(folder: &Path, c: &Action, doc: &Doc) -> Result<(Doc, Vec<String>), String> {
+    crate::script::on_big_stack(|| run_command_inner(folder, c, doc))?
+}
+
+fn run_command_inner(folder: &Path, c: &Action, doc: &Doc) -> Result<(Doc, Vec<String>), String> {
     let (r, msgs) = call(folder, &c.script, &["run", "ejecutar"], doc)?;
-    // Rhai works with f64 and the model with f32: it goes through JSON, which converts the numbers.
-    let json: serde_json::Value = rhai::serde::from_dynamic(&r).map_err(|e| format!("{}: the returned design is not valid ({})", c.script, e))?;
+    // Rhai works with f64 and the model with f32: it goes through JSON, which converts the numbers (bounded nesting, see `dynamic_to_json`).
+    let json = crate::script::dynamic_to_json(&r).map_err(|e| format!("{}: the returned design is not valid ({})", c.script, e))?;
+    drop(r);
     let mut new: Doc = serde_json::from_value(json).map_err(|e| format!("{}: the returned design is not valid ({})", c.script, e))?;
     // The output of a plugin is untrusted: new strings and image references must be safe (see `check_plugin_output`).
     let input = serde_json::to_value(doc).map_err(|e| e.to_string())?;
@@ -260,8 +265,10 @@ impl Drop for UntrustedSource {
 
 /// Runs an exporter: returns the file's text.
 pub fn run_exporter(folder: &Path, x: &Exporter, doc: &Doc) -> Result<String, String> {
-    let (r, _) = call(folder, &x.script, &["export_text", "exportar"], doc)?;
-    r.into_string().map_err(|kind| format!("{}: export_text() must return text, it returned {}", x.script, kind))
+    crate::script::on_big_stack(|| {
+        let (r, _) = call(folder, &x.script, &["export_text", "exportar"], doc)?;
+        r.into_string().map_err(|kind| format!("{}: export_text() must return text, it returned {}", x.script, kind))
+    })?
 }
 
 impl EditorApp {
@@ -392,6 +399,13 @@ mod tests {
         let csv = run_exporter(&p.folder, &p.exporters[0], &doc).expect("the exporter must work");
         assert!(csv.starts_with("element,text"));
         assert!(csv.contains("Play"));
+    }
+
+    #[test]
+    fn plugins_are_not_loaded_from_the_working_directory() {
+        let cwd = std::env::current_dir().unwrap().join("plugins");
+        let cwd = cwd.canonicalize().unwrap_or(cwd);
+        assert!(folders().iter().all(|f| f.canonicalize().unwrap_or(f.clone()) != cwd), "{:?}", folders());
     }
 
     #[test]
@@ -598,6 +612,21 @@ mod audit_tests {
                 }
             }
         }
+    }
+
+    #[test]
+    fn deeply_nested_plugin_data_does_not_crash() {
+        let dir = temp("deep");
+        let doc = crate::model::template(0, 1920.0, 1080.0);
+        std::fs::write(dir.join("c.rhai"), "fn run(d) { let a=[]; for i in 0..50000 { a=[a]; } d.elements = a; d }").unwrap();
+        std::fs::write(dir.join("e.rhai"), "fn export_text(d) { let a=[]; for i in 0..50000 { a=[a]; } a }").unwrap();
+        std::fs::write(dir.join("f.rhai"), "fn run(d) { let a=[]; for i in 0..300000 { a=[a]; } d }").unwrap();
+        let act = |s: &str| Action { name: "a".into(), description: String::new(), script: s.into() };
+        assert!(run_command(&dir, &act("c.rhai"), &doc).is_err());
+        let _ = run_command(&dir, &act("f.rhai"), &doc); // must come back (Ok or Err), never abort
+        let x = Exporter { name: "e".into(), extension: "txt".into(), script: "e.rhai".into() };
+        assert!(run_exporter(&dir, &x, &doc).is_err());
+        let _ = std::fs::remove_dir_all(&dir);
     }
 
     #[test]

@@ -54,7 +54,7 @@ Our providers may process data in several countries. Where the law requires it, 
 | Upload counters used for rate limits | 7 days |
 | Moderation log (decisions about items; no personal data) | Kept as a record of decisions; it holds no profile data and is detached from the item if the item is deleted |
 | Copyright claim records, including claimant details as entered | Up to 3 years after the claim is resolved, to apply the repeat-infringer policy and defend against disputes. If you delete your account, claims you filed lose the link to your account; claims about your content keep only what is needed to apply the policy. |
-| Strikes and bans | While your account exists. Deleting an account does not erase the reason it was banned from our moderation records |
+| Strikes and bans | While your account exists. If you delete an account that has strikes, an upload ban or a suspension, we keep a one-way keyed hash of your sign-in identity (GitHub / Google account id; never the id itself, name or email) together with those strikes and the ban, for up to 3 years (permanent bans: for as long as the ban lasts), only to stop a ban being evaded by re-registering. Accounts with no strikes, ban or suspension leave nothing behind |
 | Hosting provider technical logs | The period set by the provider (typically days to weeks) |
 
 Items that were rejected, withdrawn or deleted have their public files removed; files may stay in provider backups for a short time.

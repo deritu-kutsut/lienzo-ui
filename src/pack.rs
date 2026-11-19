@@ -9,7 +9,7 @@ use crate::model::{Element, Kind};
 use eframe::egui;
 use serde::Deserialize;
 use std::collections::HashMap;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::sync::{LazyLock, Mutex};
 
 include!(concat!(env!("OUT_DIR"), "/pack_table.rs"));
@@ -124,6 +124,28 @@ pub fn extract_to(dir: &Path, it: &PackItem) -> Result<String, String> {
 /// True when the library file `path` is an untouched copy of a built-in pack image (`pack_<id>.<ext>` or the
 /// alternate name) whose content matches the manifest. A user's own file that merely starts with `pack_` is not.
 pub fn is_pack_copy(path: &Path) -> bool {
+    // The answer is cached by (path, size, modification time): the library list is refreshed often and a genuine copy
+    // would otherwise be read in full (megabytes) every time.
+    type Key = (PathBuf, u64, Option<std::time::SystemTime>);
+    static CACHE: std::sync::Mutex<Option<std::collections::HashMap<Key, bool>>> = std::sync::Mutex::new(None);
+    let key: Option<Key> = std::fs::metadata(path).ok().map(|m| (path.to_path_buf(), m.len(), m.modified().ok()));
+    if let Some(k) = &key {
+        if let Some(v) = CACHE.lock().ok().and_then(|g| g.as_ref().and_then(|c| c.get(k).copied())) {
+            return v;
+        }
+    }
+    let v = is_pack_copy_uncached(path);
+    if let (Some(k), Ok(mut g)) = (key, CACHE.lock()) {
+        let c = g.get_or_insert_with(Default::default);
+        if c.len() > 4096 {
+            c.clear();
+        }
+        c.insert(k, v);
+    }
+    v
+}
+
+fn is_pack_copy_uncached(path: &Path) -> bool {
     let Some(name) = path.file_name().map(|n| n.to_string_lossy().to_string()) else { return false };
     let Some(rest) = name.strip_prefix("pack_") else { return false };
     let Some((stem, ext)) = rest.rsplit_once('.') else { return false };
@@ -136,10 +158,24 @@ pub fn is_pack_copy(path: &Path) -> bool {
 pub fn ensure_named(dir: &Path, file_name: &str) -> bool {
     let Some(rest) = file_name.strip_prefix("pack_") else { return false };
     let Some((id, ext)) = rest.rsplit_once('.') else { return false };
-    match item(id) {
-        Some(it) if ext_of(&it.file) == ext => extract_to(dir, it).is_ok(),
-        _ => false,
+    if let Some(it) = item(id).filter(|it| ext_of(&it.file) == ext) {
+        return extract_to(dir, it).is_ok();
     }
+    // `pack_<id>_<sha8>.<ext>`: the alternate name used when a user's own file already had the plain name (see `alternate_name`).
+    let Some((base, hash)) = id.rsplit_once('_').filter(|(_, h)| h.len() == 8 && h.bytes().all(|b| b.is_ascii_hexdigit())) else { return false };
+    let Some(it) = item(base).filter(|it| ext_of(&it.file) == ext) else { return false };
+    let Some(data) = bytes_of_file(&it.file) else { return false };
+    if !alternate_name(it, data).ends_with(&format!("_{}.{}", hash, ext)) {
+        return false; // not the hash of this picture: not ours to create
+    }
+    let target = dir.join(file_name);
+    if same_bytes(&target, data) {
+        return true;
+    }
+    if target.exists() || std::fs::create_dir_all(dir).is_err() {
+        return false; // never overwrite a different file
+    }
+    crate::library::write_atomic(&target, data).is_ok() || same_bytes(&target, data)
 }
 
 /// Copies the item into the user's library images folder. Returns the file name to put in `Element::image`.
@@ -269,6 +305,30 @@ mod tests {
         assert!(!is_pack_copy(&d2.join("pack_unknown.png")));
         let _ = std::fs::remove_dir_all(&d);
         let _ = std::fs::remove_dir_all(&d2);
+    }
+
+    #[test]
+    fn ensure_named_resolves_the_alternate_name_too() {
+        let d = temp("alt");
+        let it = &items()[0];
+        let data = bytes_of_file(&it.file).unwrap();
+        let alt = alternate_name(it, data);
+        assert!(!d.join(&alt).exists());
+        assert!(ensure_named(&d, &alt), "creates pack_<id>_<sha8>.<ext> from the embedded picture");
+        assert_eq!(std::fs::read(d.join(&alt)).unwrap(), data);
+        assert!(ensure_named(&d, &alt), "idempotent");
+        // a wrong hash, a wrong id or a wrong extension is not ours
+        let wrong_hash = format!("pack_{}_00000000.{}", it.id, ext_of(&it.file));
+        assert!(!ensure_named(&d, &wrong_hash) && !d.join(&wrong_hash).exists());
+        assert!(!ensure_named(&d, &format!("pack_nope_{}.png", &alt[alt.len() - 12..alt.len() - 4])));
+        assert!(!ensure_named(&d, &format!("pack_{}_{}.xyz", it.id, &alt[alt.len() - 12..alt.len() - 4])));
+        // a different file already using that name is never overwritten
+        std::fs::write(d.join(&alt), b"squatter").unwrap();
+        assert!(!ensure_named(&d, &alt));
+        assert_eq!(std::fs::read(d.join(&alt)).unwrap(), b"squatter");
+        // the plain name still works
+        assert!(ensure_named(&d, &library_name(it)));
+        let _ = std::fs::remove_dir_all(&d);
     }
 
     #[test]

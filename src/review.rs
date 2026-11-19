@@ -500,9 +500,93 @@ fn contrast_color(doc: &Doc, vis: &[bool], idx: usize) -> Option<Rgba> {
     best.map(|(_, c)| c)
 }
 
+/// State shared by the fixes of one batch, so that "Fix all" does not rescan the design for every problem (that was quadratic:
+/// 20 000 elements took almost a minute on the UI thread).
+struct Batch {
+    /// Ids that have children (resizing or moving those needs the slow path that keeps the children's anchors).
+    parents: std::collections::HashSet<u64>,
+    /// Visibility of every element, computed on the first contrast fix (visibility never changes during a batch).
+    vis: Option<Vec<bool>>,
+    dups: Option<Dups>,
+}
+
+/// Elements that share a name, grouped by name (indexes in ascending order), plus the names already taken.
+struct Dups {
+    groups: std::collections::HashMap<String, Vec<usize>>,
+    used: std::collections::HashSet<String>,
+    next: std::collections::HashMap<String, u32>,
+}
+
+impl Dups {
+    fn new(doc: &Doc) -> Dups {
+        let mut groups: std::collections::HashMap<String, Vec<usize>> = std::collections::HashMap::new();
+        for (i, e) in doc.elements.iter().enumerate() {
+            groups.entry(e.name.clone()).or_default().push(i);
+        }
+        groups.retain(|_, v| v.len() > 1);
+        Dups { groups, used: doc.elements.iter().map(|e| e.name.clone()).collect(), next: Default::default() }
+    }
+
+    fn fresh_name(&mut self, base: &str) -> String {
+        let n = self.next.entry(base.to_string()).or_insert(2);
+        loop {
+            let c = format!("{}_{}", base, *n);
+            *n += 1;
+            if self.used.insert(c.clone()) {
+                return c;
+            }
+        }
+    }
+
+    /// Makes the name of element `idx` unique by renaming the duplicates that come AFTER the first one: the first element keeps its
+    /// name (it is the one `GameObject.Find` returns and scripts already refer to). On the first element, all later duplicates are renamed;
+    /// on a later one, only that one. False when there was nothing to rename.
+    fn fix(&mut self, doc: &mut Doc, idx: usize) -> bool {
+        let name = doc.elements[idx].name.clone();
+        let Some(group) = self.groups.get(&name) else { return false };
+        if group.len() <= 1 {
+            return false;
+        }
+        match group.binary_search(&idx) {
+            Err(_) => false,
+            Ok(0) => {
+                let later: Vec<usize> = group[1..].to_vec();
+                if let Some(g) = self.groups.get_mut(&name) {
+                    g.truncate(1);
+                }
+                for k in later {
+                    let new = self.fresh_name(&name);
+                    doc.elements[k].name = new;
+                }
+                true
+            }
+            Ok(pos) => {
+                if let Some(g) = self.groups.get_mut(&name) {
+                    g.remove(pos);
+                }
+                let new = self.fresh_name(&name);
+                doc.elements[idx].name = new;
+                true
+            }
+        }
+    }
+}
+
+impl Batch {
+    fn new(doc: &Doc) -> Batch {
+        Batch { parents: doc.elements.iter().filter_map(|e| e.parent).collect(), vis: None, dups: None }
+    }
+}
+
 /// Applies one quick fix to element `id` of this (already resolved) design. Returns false when there was nothing to fix.
 pub fn apply_fix(doc: &mut Doc, id: u64, fix: Fix) -> bool {
     let Some(idx) = doc.index_of(id) else { return false };
+    let mut batch = Batch::new(doc);
+    apply_fix_at(doc, idx, fix, &mut batch)
+}
+
+fn apply_fix_at(doc: &mut Doc, idx: usize, fix: Fix, batch: &mut Batch) -> bool {
+    let id = doc.elements[idx].id;
     let scale = page_scale(doc);
     match fix {
         Fix::TextSize => {
@@ -522,18 +606,16 @@ pub fn apply_fix(doc: &mut Doc, id: u64, fix: Fix) -> bool {
             }
             f.w = f.w.max(min);
             f.h = f.h.max(min);
-            doc.set_frame_keep_children(id, &f);
+            if batch.parents.contains(&id) {
+                doc.set_frame_keep_children(id, &f);
+            } else {
+                doc.elements[idx].set_frame(&f);
+            }
             true
         }
         Fix::UniqueName => {
-            let name = doc.elements[idx].name.clone();
-            if doc.elements.iter().filter(|o| o.name == name).count() <= 1 {
-                return false;
-            }
-            let used: std::collections::HashSet<&str> = doc.elements.iter().map(|o| o.name.as_str()).collect();
-            let new = (2..).map(|n| format!("{}_{}", name, n)).find(|c| !used.contains(c.as_str())).unwrap_or_default();
-            doc.elements[idx].name = new;
-            true
+            let dups = batch.dups.get_or_insert_with(|| Dups::new(doc));
+            dups.fix(doc, idx)
         }
         Fix::MoveInside => {
             let e = &doc.elements[idx];
@@ -546,7 +628,12 @@ pub fn apply_fix(doc: &mut Doc, id: u64, fix: Fix) -> bool {
             if dx == 0.0 && dy == 0.0 {
                 return false;
             }
-            doc.translate_subtree(id, dx, dy);
+            if batch.parents.contains(&id) {
+                doc.translate_subtree(id, dx, dy);
+            } else {
+                doc.elements[idx].x += dx;
+                doc.elements[idx].y += dy;
+            }
             true
         }
         Fix::RemoveImage => {
@@ -558,8 +645,10 @@ pub fn apply_fix(doc: &mut Doc, id: u64, fix: Fix) -> bool {
             true
         }
         Fix::Contrast => {
-            let vis = visible_all(doc);
-            match contrast_color(doc, &vis, idx) {
+            if batch.vis.is_none() {
+                batch.vis = Some(visible_all(doc));
+            }
+            match contrast_color(doc, batch.vis.as_deref().unwrap_or(&[]), idx) {
                 Some(c) => {
                     doc.elements[idx].text_color = c;
                     true
@@ -597,20 +686,70 @@ pub fn fix_problem(doc: &mut Doc, p: &Problem) -> bool {
     fix_in(doc, p.portrait, |d| apply_fix(d, p.id, fix))
 }
 
-/// Fixes every problem that has a safe fix (a few passes: a bigger text needs less contrast...). Returns how many fixes were applied.
-pub fn fix_all(doc: &mut Doc) -> usize {
+/// Most quick fixes "Fix all" applies per click. With more problems than this the rest is left for the next click (the UI thread must not
+/// freeze for minutes on a hostile or huge design).
+pub const MAX_FIX_ALL: usize = 3000;
+
+/// Result of [`fix_all_report`].
+pub struct FixAllReport {
+    pub fixed: usize,
+    /// Problems with a safe fix that were left for another click because of [`MAX_FIX_ALL`].
+    pub left: usize,
+}
+
+/// Applies the quick fixes of `todo` (all of one layout, already sorted) in one batch, with one id -> index map and a single layout pass.
+fn fix_batch(doc: &mut Doc, portrait: bool, todo: &[&Problem]) -> usize {
+    let mut n = 0;
+    fix_in(doc, portrait, |d| {
+        let idx = d.index_map();
+        let mut batch = Batch::new(d);
+        for p in todo {
+            let (Some(fix), Some(&i)) = (p.fix, idx.get(&p.id)) else { continue };
+            if apply_fix_at(d, i, fix, &mut batch) {
+                n += 1;
+            }
+        }
+        n > 0
+    });
+    n
+}
+
+/// Fixes every problem that has a safe fix (a few passes: a bigger text needs less contrast...), at most [`MAX_FIX_ALL`] fixes.
+pub fn fix_all_report(doc: &mut Doc) -> FixAllReport {
     const ORDER: [Fix; 5] = [Fix::TextSize, Fix::Touch, Fix::MoveInside, Fix::UniqueName, Fix::Contrast];
     let mut total = 0;
+    let mut left = 0;
     for _ in 0..4 {
         let mut todo: Vec<Problem> = review(doc).into_iter().filter(|p| p.fix.is_some_and(is_bulk_fix)).collect();
         todo.sort_by_key(|p| ORDER.iter().position(|f| Some(*f) == p.fix));
-        let n = todo.iter().filter(|p| fix_problem(doc, p)).count();
+        let room = MAX_FIX_ALL.saturating_sub(total);
+        left = todo.len().saturating_sub(room);
+        todo.truncate(room);
+        if todo.is_empty() {
+            break;
+        }
+        let landscape: Vec<&Problem> = todo.iter().filter(|p| !p.portrait).collect();
+        let portrait: Vec<&Problem> = todo.iter().filter(|p| p.portrait).collect();
+        let mut n = 0;
+        if !landscape.is_empty() {
+            n += fix_batch(doc, false, &landscape);
+        }
+        if !portrait.is_empty() {
+            n += fix_batch(doc, true, &portrait);
+        }
         total += n;
         if n == 0 {
+            left = 0;
             break;
         }
     }
-    total
+    FixAllReport { fixed: total, left }
+}
+
+/// [`fix_all_report`] for callers that only need the count.
+#[allow(dead_code)] // used by the tests
+pub fn fix_all(doc: &mut Doc) -> usize {
+    fix_all_report(doc).fixed
 }
 
 /// Text of a problem in the current language.
@@ -797,6 +936,9 @@ impl crate::app::EditorApp {
                 ui.label(RichText::new(t("No issues: the design passes every check.")).color(crate::theme::ACCENT()));
             } else {
                 ui.label(crate::i18n::tf("Errors: {} · Warnings: {}. Click one to select it.", &[&errors.to_string(), &warnings.to_string()]));
+                if problems.len() > MAX_FIX_ALL {
+                    ui.label(RichText::new(crate::i18n::tf("Many issues: “Fix all” applies up to {} fixes per click, press it again for the rest.", &[&MAX_FIX_ALL.to_string()])).small().color(crate::theme::MUTED()));
+                }
                 if problems.iter().any(|p| p.fix.is_some_and(is_bulk_fix)) && ui.add_enabled(can_fix, egui::Button::new(t("Fix all safe issues"))).on_hover_text(t("Applies every quick fix in one undo step")).clicked() {
                     fix_every = true;
                 }
@@ -828,16 +970,25 @@ impl crate::app::EditorApp {
         }
         if fix_every || fix_one.is_some() {
             let mut n = 0;
+            let mut left = 0;
             let one = fix_one;
-            self.edit_full(|d| {
-                n = match &one {
-                    Some(p) => fix_problem(d, p) as usize,
-                    None => fix_all(d),
-                };
+            self.edit_full(|d| match &one {
+                Some(p) => n = fix_problem(d, p) as usize,
+                None => {
+                    let r = fix_all_report(d);
+                    n = r.fixed;
+                    left = r.left;
+                }
             });
             self.commit_state(false); // one undo step per click
             self.review_cache = None; // the list is rebuilt next frame
-            self.status = if n == 0 { t("Nothing to fix here") } else { crate::i18n::tf("Fixed {} issue(s) (Ctrl+Z undoes)", &[&n.to_string()]) };
+            self.status = if n == 0 {
+                t("Nothing to fix here")
+            } else if left > 0 {
+                crate::i18n::tf("Fixed {} issue(s); {} more are left, press Fix all again (Ctrl+Z undoes)", &[&n.to_string(), &left.to_string()])
+            } else {
+                crate::i18n::tf("Fixed {} issue(s) (Ctrl+Z undoes)", &[&n.to_string()])
+            };
         }
         self.review_open = open;
     }
@@ -1121,6 +1272,57 @@ mod fix_tests {
         assert_eq!(d.get(ids[2]).unwrap().name, "Play_3", "skips names already taken");
         assert!(!review(&d).iter().any(|p| p.template.contains("GameObject.Find")));
         assert!(!apply_fix(&mut d, ids[0], Fix::UniqueName), "now unique");
+    }
+
+    #[test]
+    fn unique_name_fix_on_the_first_renames_the_later_duplicates() {
+        let mut d = doc();
+        let ids: Vec<u64> = (0..3)
+            .map(|i| {
+                let mut b = Element::new(0, Kind::Button);
+                b.name = "Play".into();
+                b.x = 100.0 + 200.0 * i as f32;
+                b.y = 100.0;
+                b.w = 100.0;
+                b.h = 100.0;
+                d.add(b)
+            })
+            .collect();
+        assert!(apply_fix(&mut d, ids[0], Fix::UniqueName));
+        assert_eq!(d.get(ids[0]).unwrap().name, "Play", "the first keeps its name");
+        assert_eq!(d.get(ids[1]).unwrap().name, "Play_2");
+        assert_eq!(d.get(ids[2]).unwrap().name, "Play_3");
+        assert!(!review(&d).iter().any(|p| p.template.contains("GameObject.Find")));
+    }
+
+    #[test]
+    fn fix_all_on_a_huge_design_is_fast_and_capped() {
+        let mut d = doc();
+        for i in 0..20_000u32 {
+            let mut b = Element::new(0, Kind::Button);
+            b.name = "Play".into();
+            b.x = (i % 100) as f32 * 10.0;
+            b.y = (i / 100) as f32 * 5.0;
+            b.w = 30.0;
+            b.h = 30.0;
+            d.add(b);
+        }
+        let t = std::time::Instant::now();
+        let r = fix_all_report(&mut d);
+        let first = t.elapsed();
+        assert!(first < std::time::Duration::from_secs(20), "fix_all took {:?}", first);
+        assert_eq!(r.fixed, MAX_FIX_ALL, "capped");
+        assert!(r.left > 0, "the rest is reported");
+        // press it again until nothing is left: every click is bounded and the duplicates end up unique, the first keeping its name
+        for _ in 0..30 {
+            if fix_all_report(&mut d).left == 0 {
+                break;
+            }
+        }
+        assert!(t.elapsed() < std::time::Duration::from_secs(120), "all clicks took {:?}", t.elapsed());
+        assert_eq!(d.elements[d.elements.len() - 20_000].name, "Play");
+        let names: std::collections::HashSet<&str> = d.elements.iter().map(|e| e.name.as_str()).collect();
+        assert!(names.len() > 19_000, "{} distinct names", names.len());
     }
 
     #[test]
