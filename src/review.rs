@@ -147,8 +147,27 @@ pub fn review(doc: &Doc) -> Vec<Problem> {
             p(Level::Error, "Missing image “{}”: it will be exported empty", vec![e.image.clone()]);
         }
     }
+    unity_name_problems(doc, &mut out);
     out.sort_by(|a, b| b.level.cmp(&a.level));
     out
+}
+
+/// Invalid explicit Unity names, and siblings that resolve to the same GameObject name.
+fn unity_name_problems(doc: &Doc, out: &mut Vec<Problem>) {
+    let mut seen: std::collections::HashMap<(Option<u64>, String), u64> = std::collections::HashMap::new();
+    for e in &doc.elements {
+        let mut p = |template, data: Vec<String>| out.push(Problem { level: Level::Warning, id: e.id, element: e.name.clone(), template, data });
+        if let Some(u) = e.unity_name.as_deref() {
+            if !crate::docext::valid_unity_name(u) {
+                p("Invalid Unity name “{}”: it must not be empty, contain “/” or control characters, or exceed 128 characters (the display name is used instead)", vec![u.to_string()]);
+            }
+        }
+        let name = crate::export::base_unity_name(e);
+        if let Some(first) = seen.insert((doc.parent_of(e.id), name.clone()), e.id) {
+            let _ = first;
+            p("Two siblings resolve to the same Unity name “{}”: the exporter will rename this one", vec![name]);
+        }
+    }
 }
 
 /// Text of a problem in the current language.

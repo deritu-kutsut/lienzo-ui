@@ -737,11 +737,10 @@ impl EditorApp {
     }
 
     pub fn open_project(&mut self) {
-        match std::fs::read_to_string(&self.project_path).map_err(|e| e.to_string()).and_then(|s| serde_json::from_str::<Doc>(crate::library::strip_bom(&s)).map_err(|e| e.to_string())) {
-            Ok(mut d) => {
+        match std::fs::read_to_string(&self.project_path).map_err(|e| e.to_string()).and_then(|s| Doc::from_json_str(&s)) {
+            Ok(d) => {
                 self.set_preview(false);
                 crate::library::set_design_folder(std::path::Path::new(&self.project_path));
-                d.migrate_groups();
                 self.doc = d;
                 // A different document: undo must not bring the previous one back.
                 self.undo.clear();

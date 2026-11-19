@@ -1,0 +1,617 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lienzo-ui/editorgui.schema.json",
+  "title": "Lienzo UI design (.editorgui.json)",
+  "description": "Every property is optional; see docs/FORMAT.md. Unknown properties are ignored.",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Design name; becomes the Unity prefab / class name"
+    },
+    "width": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 16384,
+      "description": "Reference resolution width"
+    },
+    "height": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 16384,
+      "description": "Reference resolution height"
+    },
+    "background": {
+      "$ref": "#/$defs/Rgba",
+      "description": "Page colour. Alpha 0 = transparent: no canvas background is exported"
+    },
+    "elements": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Element"
+      }
+    },
+    "next_id": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Next free element id; default max(id)+1"
+    },
+    "canvas_match": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "CanvasScaler match: 0 width, 1 height; default 0.5"
+    },
+    "pixel_art": {
+      "type": "boolean"
+    },
+    "canvas": {
+      "type": "object",
+      "properties": {
+        "render_mode": {
+          "$ref": "#/$defs/RenderMode"
+        },
+        "sort_order": {
+          "type": "number",
+          "minimum": -32768,
+          "maximum": 32767,
+          "description": "Canvas sorting order (clamped)"
+        },
+        "safe_area": {
+          "type": "boolean"
+        },
+        "embed": {
+          "type": "boolean"
+        },
+        "plane_distance": {
+          "type": "number",
+          "minimum": 0.01,
+          "maximum": 100000
+        }
+      }
+    },
+    "unity": {
+      "type": "object",
+      "properties": {
+        "scripts_dir": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 260,
+          "description": "Project-relative folder starting with Assets"
+        },
+        "assembly": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 128,
+          "description": "Existing asmdef name"
+        },
+        "generate": {
+          "type": "object",
+          "properties": {
+            "prefab": {
+              "type": "boolean"
+            },
+            "uitk": {
+              "type": "boolean"
+            },
+            "imgui": {
+              "type": [
+                "boolean",
+                "null"
+              ]
+            },
+            "view_scripts": {
+              "type": "boolean"
+            }
+          }
+        },
+        "default_font": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 128,
+          "description": "TMP font asset name"
+        },
+        "fallback_fonts": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 16
+        }
+      }
+    },
+    "portrait": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "width": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 16384
+        },
+        "height": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 16384
+        },
+        "overrides": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ElementOverride"
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "Rgba": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 255
+      },
+      "minItems": 4,
+      "maxItems": 4,
+      "description": "Colour [r,g,b,a], each 0-255."
+    },
+    "Kind": {
+      "type": "string",
+      "enum": [
+        "Panel",
+        "Ellipse",
+        "Image",
+        "Text",
+        "Button",
+        "Toggle",
+        "Slider",
+        "InputField",
+        "Dropdown",
+        "ScrollView",
+        "Empty"
+      ]
+    },
+    "LayoutMode": {
+      "type": "string",
+      "enum": [
+        "None",
+        "Horizontal",
+        "Vertical",
+        "Grid"
+      ]
+    },
+    "ImageMode": {
+      "type": "string",
+      "enum": [
+        "Simple",
+        "Sliced",
+        "Tiled",
+        "Filled"
+      ]
+    },
+    "RenderMode": {
+      "type": "string",
+      "enum": [
+        "ScreenSpaceOverlay",
+        "ScreenSpaceCamera",
+        "WorldSpace"
+      ]
+    },
+    "Shadow": {
+      "type": "object",
+      "properties": {
+        "on": {
+          "type": "boolean"
+        },
+        "color": {
+          "$ref": "#/$defs/Rgba"
+        },
+        "offset": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 2,
+          "maxItems": 2,
+          "description": "x right, y up (Unity convention)"
+        }
+      }
+    },
+    "LayoutGroup": {
+      "type": "object",
+      "properties": {
+        "mode": {
+          "$ref": "#/$defs/LayoutMode"
+        },
+        "padding": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "minimum": -10000,
+            "maximum": 10000
+          },
+          "minItems": 4,
+          "maxItems": 4,
+          "description": "left, right, top, bottom"
+        },
+        "spacing": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "minimum": -10000,
+            "maximum": 10000
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "align": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 8,
+          "description": "Unity TextAnchor 0 UpperLeft .. 8 LowerRight, row-major"
+        },
+        "cell": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 10000
+          },
+          "minItems": 2,
+          "maxItems": 2,
+          "description": "Grid cell size"
+        },
+        "expand_w": {
+          "type": "boolean"
+        },
+        "expand_h": {
+          "type": "boolean"
+        }
+      }
+    },
+    "ElementOverride": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "id of the element this overrides"
+        },
+        "x": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "y": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "w": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "h": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "rot": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "anchor_min": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "number"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "anchor_max": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "number"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "pivot": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "number"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "visible": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "font_size": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 1,
+          "maximum": 1000
+        },
+        "layout": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LayoutGroup"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "Element": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Unique element id (0 or missing: assigned on load)"
+        },
+        "name": {
+          "type": "string",
+          "description": "Display name (editor label). Exported as the GameObject name unless unity_name is set"
+        },
+        "kind": {
+          "$ref": "#/$defs/Kind"
+        },
+        "x": {
+          "type": "number",
+          "description": "Left edge of the unrotated box in page pixels (y down)"
+        },
+        "y": {
+          "type": "number",
+          "description": "Top edge"
+        },
+        "w": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Width, page pixels"
+        },
+        "h": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Height"
+        },
+        "rot": {
+          "type": "number",
+          "description": "Clockwise rotation about the box centre, degrees"
+        },
+        "fill": {
+          "$ref": "#/$defs/Rgba"
+        },
+        "fill2": {
+          "$ref": "#/$defs/Rgba",
+          "description": "Second gradient colour (Image without picture) / slider track"
+        },
+        "stroke": {
+          "$ref": "#/$defs/Rgba"
+        },
+        "stroke_w": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1000
+        },
+        "radius": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 10000
+        },
+        "opacity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "text": {
+          "type": "string"
+        },
+        "font_size": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 1000
+        },
+        "text_color": {
+          "$ref": "#/$defs/Rgba"
+        },
+        "bold": {
+          "type": "boolean"
+        },
+        "italic": {
+          "type": "boolean"
+        },
+        "underline": {
+          "type": "boolean"
+        },
+        "align": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2,
+          "description": "0 left, 1 centre, 2 right"
+        },
+        "valign": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2,
+          "description": "0 top, 1 middle, 2 bottom"
+        },
+        "font": {
+          "type": "string",
+          "description": "Font family name; empty = default"
+        },
+        "on_click": {
+          "type": "string",
+          "description": "Script run when clicked in test mode"
+        },
+        "image": {
+          "type": "string",
+          "description": "Picture: library file name or path"
+        },
+        "value": {
+          "type": "number",
+          "description": "Slider/toggle/dropdown value"
+        },
+        "visible": {
+          "type": "boolean"
+        },
+        "locked": {
+          "type": "boolean"
+        },
+        "group": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "description": "Legacy flat group id (pre-hierarchy files); converted to parents on load"
+        },
+        "parent": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "description": "Parent element id; null = child of the Canvas"
+        },
+        "anchor_min": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 2,
+          "maxItems": 2,
+          "description": "Unity anchors, y UP, relative to the parent rect"
+        },
+        "anchor_max": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "pivot": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Dropdown options"
+        },
+        "interactable": {
+          "type": "boolean"
+        },
+        "raycast": {
+          "type": "boolean"
+        },
+        "mask": {
+          "type": "boolean"
+        },
+        "shadow": {
+          "$ref": "#/$defs/Shadow"
+        },
+        "layout": {
+          "$ref": "#/$defs/LayoutGroup"
+        },
+        "collapsed": {
+          "type": "boolean"
+        },
+        "unity_name": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 256,
+          "description": "Exact GameObject name to export (no '/', no control chars, max 128)"
+        },
+        "slice": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100000
+          },
+          "minItems": 4,
+          "maxItems": 4,
+          "description": "9-slice border in source pixels: left, bottom, right, top"
+        },
+        "ppu": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0.01,
+          "maximum": 10000,
+          "description": "Pixels per unit"
+        },
+        "sprite": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 256,
+          "description": "Sub-sprite name inside a multi-sprite texture"
+        },
+        "image_mode": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ImageMode"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Image.type; Sliced is implied when slice is set"
+        },
+        "preserve_aspect": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}

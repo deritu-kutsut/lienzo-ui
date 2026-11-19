@@ -30,7 +30,7 @@ pub fn json(doc: &Doc, for_project: bool) -> String {
             };
             let pad = crate::render::text_padding(e);
             let valign = if e.kind == Kind::Text { 0 } else { e.valign.min(2) };
-            json!({
+            let mut j = json!({
                 "id": e.id,
                 "parent": parent,
                 "name": names.get(&e.id).cloned().unwrap_or_default(),
@@ -56,7 +56,7 @@ pub fn json(doc: &Doc, for_project: bool) -> String {
                     "source": source,
                     "radius": r2(radius_of(e)),
                     "alpha": r2(e.opacity),
-                    "preserveAspect": false,
+                    "preserveAspect": e.preserve_aspect,
                 },
                 "outline": { "color": hex(e.stroke), "width": r2(if e.kind.has_fill() { e.stroke_w } else { 0.0 }) },
                 "shadow": { "enabled": e.shadow.on, "color": hex(e.shadow.color), "offset": [r2(e.shadow.offset[0]), r2(e.shadow.offset[1])] },
@@ -86,10 +86,29 @@ pub fn json(doc: &Doc, for_project: bool) -> String {
                 "options": e.options,
                 "contentHeight": if e.kind == Kind::ScrollView { r2(content_height(doc, e)) } else { 0.0 },
                 "onClick": e.on_click,
-            })
+            });
+            // Optional data (never null: JsonUtility cannot read it); the Unity side reads what it knows.
+            if let Some(o) = j.as_object_mut() {
+                if let Some(u) = e.unity_name.as_deref().filter(|u| crate::docext::valid_unity_name(u)) {
+                    o.insert("unityName".into(), json!(u));
+                }
+                if let Some(sl) = e.slice {
+                    o.insert("slice".into(), json!(sl.map(r2)));
+                }
+                if let Some(p) = e.ppu {
+                    o.insert("ppu".into(), json!(r2(p)));
+                }
+                if let Some(sp) = &e.sprite {
+                    o.insert("sprite".into(), json!(sp));
+                }
+                if e.image_mode.is_some() || e.slice.is_some() {
+                    o.insert("imageMode".into(), json!(e.effective_image_mode().as_str()));
+                }
+            }
+            j
         })
         .collect();
-    let v = json!({
+    let mut v = json!({
         "format": "editor-gui/ugui/2",
         "canvas": {
             "name": doc.title,
@@ -101,7 +120,83 @@ pub fn json(doc: &Doc, for_project: bool) -> String {
         },
         "elements": elements,
     });
+    doc_extras(doc, &mut v);
     serde_json::to_string_pretty(&v).unwrap_or_default()
+}
+
+/// Canvas / unity / portrait data, written only when the design uses it. The canvas options go inside
+/// the existing `canvas` object (`renderMode`, `sortOrder`, `safeArea`, `embed`, `planeDistance`).
+fn doc_extras(doc: &Doc, v: &mut serde_json::Value) {
+    let c = &doc.canvas;
+    if !c.is_default() {
+        if let Some(o) = v["canvas"].as_object_mut() {
+            o.insert("renderMode".into(), json!(c.render_mode.as_str()));
+            o.insert("sortOrder".into(), json!(c.sort_order));
+            o.insert("safeArea".into(), json!(c.safe_area));
+            o.insert("embed".into(), json!(c.embed));
+            o.insert("planeDistance".into(), json!(r2(c.plane_distance)));
+        }
+    }
+    if !doc.unity.is_default() {
+        let u = &doc.unity;
+        let mut o = serde_json::Map::new();
+        if let Some(s) = &u.scripts_dir {
+            o.insert("scriptsDir".into(), json!(s));
+        }
+        if let Some(s) = &u.assembly {
+            o.insert("assembly".into(), json!(s));
+        }
+        o.insert(
+            "generate".into(),
+            json!({ "prefab": u.generate.prefab, "uitk": u.generate.uitk, "imgui": u.generate.imgui_enabled(), "viewScripts": u.generate.view_scripts }),
+        );
+        if let Some(s) = &u.default_font {
+            o.insert("defaultFont".into(), json!(s));
+        }
+        if !u.fallback_fonts.is_empty() {
+            o.insert("fallbackFonts".into(), json!(u.fallback_fonts));
+        }
+        v["unity"] = serde_json::Value::Object(o);
+    }
+    if let Some(p) = &doc.portrait {
+        let overrides: Vec<_> = p
+            .overrides
+            .iter()
+            .map(|ov| {
+                let mut o = serde_json::Map::new();
+                o.insert("id".into(), json!(ov.id));
+                for (k, val) in [("x", ov.x), ("y", ov.y), ("w", ov.w), ("h", ov.h), ("rot", ov.rot), ("fontSize", ov.font_size)] {
+                    if let Some(val) = val {
+                        o.insert(k.into(), json!(r2(val)));
+                    }
+                }
+                for (k, val) in [("anchorMin", ov.anchor_min), ("anchorMax", ov.anchor_max), ("pivot", ov.pivot)] {
+                    if let Some(val) = val {
+                        o.insert(k.into(), json!([r2(val[0]), r2(val[1])]));
+                    }
+                }
+                if let Some(vis) = ov.visible {
+                    o.insert("visible".into(), json!(vis));
+                }
+                if let Some(l) = &ov.layout {
+                    o.insert(
+                        "layout".into(),
+                        json!({
+                            "mode": l.mode.index(),
+                            "padding": l.padding.iter().map(|x| r2(*x)).collect::<Vec<_>>(),
+                            "spacing": [r2(l.spacing[0]), r2(l.spacing[1])],
+                            "cellSize": [r2(l.cell[0]), r2(l.cell[1])],
+                            "childAlignment": l.align.min(8),
+                            "expandWidth": l.expand_w,
+                            "expandHeight": l.expand_h,
+                        }),
+                    );
+                }
+                serde_json::Value::Object(o)
+            })
+            .collect();
+        v["portrait"] = json!({ "width": r2(p.width), "height": r2(p.height), "overrides": overrides });
+    }
 }
 
 #[cfg(test)]

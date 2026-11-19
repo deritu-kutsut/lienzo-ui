@@ -127,9 +127,6 @@ fn one_u8() -> u8 {
 fn yes() -> bool {
     true
 }
-fn half() -> f32 {
-    0.5
-}
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Default, Serialize, Deserialize)]
 pub enum LayoutMode {
@@ -197,6 +194,7 @@ impl Default for Shadow {
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
 pub struct Element {
     pub id: u64,
     pub name: String,
@@ -265,6 +263,29 @@ pub struct Element {
     /// Hierarchy row collapsed (editor only).
     #[serde(default)]
     pub collapsed: bool,
+    /// Exact GameObject name to export instead of the display `name`.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub unity_name: Option<String>,
+    /// 9-slice border in source-image pixels: left, bottom, right, top.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub slice: Option<[f32; 4]>,
+    /// Sprite pixels per unit.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub ppu: Option<f32>,
+    /// Sub-sprite name inside a multi-sprite texture / atlas.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub sprite: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub image_mode: Option<crate::docext::ImageMode>,
+    #[serde(skip_serializing_if = "crate::docext::is_false")]
+    pub preserve_aspect: bool,
+}
+
+impl Default for Element {
+    /// What a missing field of a hand-written file gets (the kind-neutral defaults of `Element::new`).
+    fn default() -> Self {
+        Element::base(0, Kind::Panel)
+    }
 }
 
 /// A box in page space: centre, size and clockwise rotation (degrees).
@@ -320,7 +341,13 @@ pub fn norm_angle(a: f32) -> f32 {
 
 impl Element {
     pub fn new(id: u64, kind: Kind) -> Self {
-        let mut e = Element {
+        let mut e = Element::base(id, kind);
+        e.apply_kind_defaults();
+        e
+    }
+
+    fn base(id: u64, kind: Kind) -> Self {
+        Element {
             id,
             name: format!("{} {}", kind.label(), id),
             kind,
@@ -361,8 +388,18 @@ impl Element {
             shadow: Shadow::default(),
             layout: LayoutGroup::default(),
             collapsed: false,
-        };
-        match kind {
+            unity_name: None,
+            slice: None,
+            ppu: None,
+            sprite: None,
+            image_mode: None,
+            preserve_aspect: false,
+        }
+    }
+
+    fn apply_kind_defaults(&mut self) {
+        let e = self;
+        match e.kind {
             Kind::Panel => {
                 e.fill = [255, 255, 255, 235];
                 e.radius = 24.0;
@@ -456,7 +493,6 @@ impl Element {
                 e.raycast = false;
             }
         }
-        e
     }
 
     pub fn center(&self) -> [f32; 2] {
@@ -596,6 +632,7 @@ pub fn rect_transform(e: &Element, page_w: f32, page_h: f32) -> RectTransform {
 // ---------------------------------------------------------------------------
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
 pub struct Doc {
     pub title: String,
     pub width: f32,
@@ -604,17 +641,45 @@ pub struct Doc {
     pub elements: Vec<Element>,
     pub next_id: u64,
     /// CanvasScaler "Match" (0 = width, 1 = height).
-    #[serde(default = "half")]
     pub canvas_match: f32,
     /// Pixel art mode: unsmoothed images, integer pixel positions and,
     /// in Unity, Canvas "Pixel Perfect" + sprites with Point filter and no compression.
     #[serde(default)]
     pub pixel_art: bool,
+    /// Unity Canvas options (render mode, sort order, safe area, embed).
+    #[serde(skip_serializing_if = "crate::docext::CanvasSettings::is_default")]
+    pub canvas: crate::docext::CanvasSettings,
+    /// Unity export options (scripts folder, assembly, outputs, fonts).
+    #[serde(skip_serializing_if = "crate::docext::UnitySettings::is_default")]
+    pub unity: crate::docext::UnitySettings,
+    /// Second layout for portrait screens.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub portrait: Option<crate::docext::PortraitLayout>,
+}
+
+impl Default for Doc {
+    /// What a missing field of a hand-written file gets. Keeps the legacy `unity` behaviour (IMGUI output on).
+    fn default() -> Self {
+        Doc {
+            title: "Untitled design".into(),
+            width: 1920.0,
+            height: 1080.0,
+            background: [255, 255, 255, 255],
+            elements: Vec::new(),
+            next_id: 1,
+            canvas_match: 0.5,
+            pixel_art: false,
+            canvas: Default::default(),
+            unity: Default::default(),
+            portrait: None,
+        }
+    }
 }
 
 impl Doc {
+    /// A new design: like the default but IMGUI output is off.
     pub fn empty(width: f32, height: f32) -> Self {
-        Doc { title: "Untitled design".into(), width, height, background: [255, 255, 255, 255], elements: Vec::new(), next_id: 1, canvas_match: 0.5, pixel_art: false }
+        Doc { width, height, unity: crate::docext::UnitySettings { generate: crate::docext::GenerateOutputs::new_design(), ..Default::default() }, ..Doc::default() }
     }
 
     /// Append an element (new id). Call [`Doc::normalize`] if it has a parent.
@@ -846,6 +911,7 @@ impl Doc {
         if self.next_id <= max {
             self.next_id = max + 1;
         }
+        self.prune_overrides();
     }
 
     /// Reorder the children of `parent` (ids not listed keep their relative order after).
@@ -915,6 +981,7 @@ impl Doc {
             gone.extend(self.subtree(*id));
         }
         self.elements.retain(|e| !gone.contains(&e.id));
+        self.prune_overrides();
     }
 
     /// Clone elements (with their internal parent links) into the document under
@@ -1026,6 +1093,8 @@ impl Doc {
                 *v = if v.is_finite() { v.clamp(1.0, 10_000.0) } else { 100.0 };
             }
         }
+        self.next_id = self.next_id.max(1);
+        self.sanitize_ext();
         // Page: with no size, or a huge one, the canvas ends up NaN or unscaled.
         if !self.width.is_finite() || self.width < 1.0 {
             self.width = 1920.0;

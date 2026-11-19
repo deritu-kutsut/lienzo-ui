@@ -105,6 +105,68 @@ fn external_url(s: &str) -> bool {
     ["http:", "https:", "ftp:", "file:", "data:", "javascript:"].iter().any(|p| l.contains(p))
 }
 
+/// The optional element fields (`unity_name`, `slice`, `ppu`, `sprite`, `image_mode`, `preserve_aspect`) are allowed,
+/// but with the right type and range.
+fn validate_element_fields(e: &serde_json::Value) -> Result<(), String> {
+    use serde_json::Value;
+    let bad = |what: &str| Err(format!("Element field “{}” is not valid.", what));
+    let Some(o) = e.as_object() else { return Ok(()) };
+    if let Some(v) = o.get("unity_name").filter(|v| !v.is_null()) {
+        if !v.as_str().is_some_and(crate::docext::valid_unity_name) {
+            return bad("unity_name");
+        }
+    }
+    if let Some(v) = o.get("sprite").filter(|v| !v.is_null()) {
+        if !v.as_str().is_some_and(|s| s.chars().count() <= 256 && !s.trim().is_empty()) {
+            return bad("sprite");
+        }
+    }
+    if let Some(v) = o.get("slice").filter(|v| !v.is_null()) {
+        let ok = v.as_array().is_some_and(|a| a.len() == 4 && a.iter().all(|x| x.as_f64().is_some_and(|f| f.is_finite() && (0.0..=100_000.0).contains(&f))));
+        if !ok {
+            return bad("slice");
+        }
+    }
+    if let Some(v) = o.get("ppu").filter(|v| !v.is_null()) {
+        if !v.as_f64().is_some_and(|f| (0.01..=10_000.0).contains(&f)) {
+            return bad("ppu");
+        }
+    }
+    if let Some(v) = o.get("image_mode").filter(|v| !v.is_null()) {
+        if !matches!(v.as_str(), Some("Simple" | "Sliced" | "Tiled" | "Filled")) {
+            return bad("image_mode");
+        }
+    }
+    if let Some(v) = o.get("preserve_aspect") {
+        if !matches!(v, Value::Bool(_)) {
+            return bad("preserve_aspect");
+        }
+    }
+    Ok(())
+}
+
+/// Optional Doc blocks (`canvas`, `unity`, `portrait`) of a template.
+fn validate_doc_fields(json: &serde_json::Value) -> Result<(), String> {
+    use crate::docext::{CanvasSettings, PortraitLayout, UnitySettings};
+    let Some(o) = json.as_object() else { return Ok(()) };
+    if let Some(v) = o.get("canvas") {
+        serde_json::from_value::<CanvasSettings>(v.clone()).map_err(|_| "The design's “canvas” block is not valid.")?;
+    }
+    if let Some(v) = o.get("unity") {
+        let u: UnitySettings = serde_json::from_value(v.clone()).map_err(|_| "The design's “unity” block is not valid.")?;
+        if u.scripts_dir.as_deref().is_some_and(|s| !crate::docext::valid_scripts_dir(s)) || u.assembly.as_deref().is_some_and(|s| !crate::docext::valid_assembly(s)) {
+            return Err("The design's “unity” block has an invalid folder or assembly name.".into());
+        }
+    }
+    if let Some(v) = o.get("portrait").filter(|v| !v.is_null()) {
+        let p: PortraitLayout = serde_json::from_value(v.clone()).map_err(|_| "The design's “portrait” block is not valid.")?;
+        if p.overrides.len() > 2000 {
+            return Err("Too many portrait overrides.".into());
+        }
+    }
+    Ok(())
+}
+
 fn validate_design(json: serde_json::Value, is_template: bool) -> Result<(), String> {
     let json = if !is_template && (json.is_array() || json.is_object()) {
         // a library element is a list of elements (or a single one)
@@ -117,6 +179,10 @@ fn validate_design(json: serde_json::Value, is_template: bool) -> Result<(), Str
     if elements.len() > if is_template { 2000 } else { 500 } {
         return Err("Too many elements.".into());
     }
+    for e in elements {
+        validate_element_fields(e)?;
+    }
+    validate_doc_fields(&json)?;
     let mut t = Vec::new();
     texts(&serde_json::Value::Array(elements.clone()), &mut t, 0);
     for s in &t {
@@ -505,5 +571,35 @@ mod tests_hardening {
         }
         let ok = serde_json::json!({ "elements": [{ "kind": "Button", "name": "Time: 5/10", "on_click": "a();\nb();\tc();" }] }).to_string();
         assert!(validate("template", "t.json", ok.as_bytes()).is_ok());
+    }
+}
+
+#[cfg(test)]
+mod tests_format_fields {
+    use super::*;
+    use serde_json::json;
+
+    #[test]
+    fn new_element_and_doc_fields_are_allowed_but_validated() {
+        let el = |extra: serde_json::Value| {
+            let mut e = json!({"id":1,"name":"a","kind":"Image","x":0,"y":0,"w":1,"h":1});
+            e.as_object_mut().unwrap().extend(extra.as_object().unwrap().clone());
+            json!({"elements":[e]})
+        };
+        let good = json!({"unity_name":"Exact","slice":[1,2,3,4],"ppu":100,"sprite":"s0","image_mode":"Sliced","preserve_aspect":true});
+        assert!(validate_design(el(good), true).is_ok());
+        for bad in [json!({"unity_name":"a/b"}), json!({"unity_name":5}), json!({"slice":[1,2,3]}), json!({"slice":[-1,0,0,0]}), json!({"ppu":0}), json!({"ppu":1e9}), json!({"image_mode":"Nope"}), json!({"preserve_aspect":"yes"})] {
+            assert!(validate_design(el(bad.clone()), true).is_err(), "{}", bad);
+        }
+        let mut d = el(json!({}));
+        d["unity"] = json!({"scripts_dir":"Assets/Game"});
+        d["canvas"] = json!({"render_mode":"WorldSpace","sort_order":3});
+        d["portrait"] = json!({"width":1080,"height":1920,"overrides":[{"id":1,"x":2}]});
+        assert!(validate_design(d.clone(), true).is_ok());
+        d["unity"] = json!({"scripts_dir":"../Evil"});
+        assert!(validate_design(d.clone(), true).is_err());
+        d["unity"] = json!({});
+        d["canvas"] = json!({"render_mode":"Bogus"});
+        assert!(validate_design(d, true).is_err());
     }
 }

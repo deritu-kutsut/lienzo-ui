@@ -192,26 +192,52 @@ pub fn cf(v: f32) -> String {
     format!("{}f", f(v))
 }
 
-/// Unique GameObject names among siblings (Unity's `Transform.Find` uses names; '/' is not allowed).
-pub fn unity_names(doc: &Doc) -> HashMap<u64, String> {
-    let mut out = HashMap::new();
-    let mut used: HashMap<Option<u64>, HashSet<String>> = HashMap::new();
-    for e in &doc.elements {
-        let base = {
-            let n = e.name.replace('/', "-").trim().to_string();
-            if n.is_empty() { e.kind.label().to_string() } else { n }
-        };
-        let set = used.entry(doc.parent_of(e.id)).or_default();
-        let mut name = base.clone();
-        let mut k = 2;
-        while set.contains(&name) {
-            name = format!("{} ({})", base, k);
-            k += 1;
-        }
-        set.insert(name.clone());
-        out.insert(e.id, name);
+/// Name an element would get before de-duplication: its valid `unity_name` verbatim, else its display name.
+pub fn base_unity_name(e: &Element) -> String {
+    if let Some(u) = e.unity_name.as_deref().filter(|u| crate::docext::valid_unity_name(u)) {
+        return u.to_string();
     }
-    out
+    let n = e.name.replace('/', "-").trim().to_string();
+    if n.is_empty() { e.kind.label().to_string() } else { n }
+}
+
+/// Unique GameObject names among siblings (Unity's `Transform.Find` uses names; '/' is not allowed).
+/// A valid `unity_name` is used verbatim; it is only suffixed when it collides with a sibling that
+/// claimed the same name first (see [`unity_name_collisions`]). Explicit names are assigned before
+/// automatic ones, so a generated name never takes an explicit name away.
+pub fn unity_names(doc: &Doc) -> HashMap<u64, String> {
+    unity_names_report(doc).0
+}
+
+#[allow(dead_code)] // used by the exporters built on top of the model
+/// Ids of elements with an explicit `unity_name` that had to be renamed because a sibling already uses it.
+pub fn unity_name_collisions(doc: &Doc) -> Vec<u64> {
+    unity_names_report(doc).1
+}
+
+fn unity_names_report(doc: &Doc) -> (HashMap<u64, String>, Vec<u64>) {
+    let mut out = HashMap::new();
+    let mut clashes = Vec::new();
+    let mut used: HashMap<Option<u64>, HashSet<String>> = HashMap::new();
+    let explicit = |e: &Element| e.unity_name.as_deref().is_some_and(crate::docext::valid_unity_name);
+    for pass in [true, false] {
+        for e in doc.elements.iter().filter(|e| explicit(e) == pass) {
+            let base = base_unity_name(e);
+            let set = used.entry(doc.parent_of(e.id)).or_default();
+            let mut name = base.clone();
+            let mut k = 2;
+            while set.contains(&name) {
+                name = format!("{} ({})", base, k);
+                k += 1;
+            }
+            if pass && name != base {
+                clashes.push(e.id);
+            }
+            set.insert(name.clone());
+            out.insert(e.id, name);
+        }
+    }
+    (out, clashes)
 }
 
 /// Path from the Canvas (`transform.Find` style). Children of a ScrollView live in "Viewport/Content".

@@ -22,6 +22,10 @@ mod tutorial;
 mod themes;
 mod updater;
 mod review;
+mod docext;
+mod schema;
+#[cfg(test)]
+mod docext_tests;
 
 use eframe::egui;
 use std::sync::{
@@ -153,8 +157,7 @@ fn doc_from_args(args: &[String]) -> Result<Option<model::Doc>, String> {
     if let Some(file) = arg_after(args, "--open") {
         library::set_design_folder(std::path::Path::new(file));
         let text = std::fs::read_to_string(file).map_err(|e| format!("{}: {}", file, e))?;
-        let mut doc: model::Doc = serde_json::from_str(library::strip_bom(&text)).map_err(|e| format!("{}: {}", file, e))?;
-        doc.migrate_groups();
+        let doc = model::Doc::from_json_str(&text).map_err(|e| format!("{}: {}", file, e))?;
         return Ok(Some(doc));
     }
     if let Some(t) = arg_after(args, "--template").and_then(|v| v.parse::<usize>().ok()) {
@@ -168,6 +171,7 @@ fn doc_from_args(args: &[String]) -> Result<Option<model::Doc>, String> {
 
 /// Windowless mode (automation, MCP, CI). Returns Some(exit code) if it was used.
 ///   --templates                lists the templates
+///   --validate <file>          checks a design file against docs/editorgui.schema.json (errors with JSON paths, exit 1)
 ///   --review                   reviews the design (--open or --template): legibility, contrast, touch size
 ///   --save <file>              saves the design (--open or --template) as a project and exits
 ///   --export <Unity project>   exports the design to Unity and exits
@@ -196,6 +200,15 @@ fn headless(args: &[String]) -> Option<i32> {
     }
     if args.iter().any(|a| a == "--community-retry") {
         return Some(community::retry_cli());
+    }
+    if let Some(i) = args.iter().position(|a| a == "--validate") {
+        return Some(match args.get(i + 1) {
+            Some(f) => schema::validate_file(f),
+            None => {
+                eprintln!("Usage: --validate <file.editorgui.json>");
+                2
+            }
+        });
     }
     if args.iter().any(|a| a == "--review") {
         return Some(match doc_from_args(args) {

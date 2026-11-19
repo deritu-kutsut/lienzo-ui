@@ -159,8 +159,7 @@ impl Library {
         }
         for p in list(&templates_dir()) {
             if ext_of(&p) == "json" {
-                if let Some(mut doc) = std::fs::read_to_string(&p).ok().and_then(|s| serde_json::from_str::<Doc>(strip_bom(&s)).ok()) {
-                    doc.migrate_groups();
+                if let Some(doc) = std::fs::read_to_string(&p).ok().and_then(|s| Doc::from_json_str(&s).ok()) {
                     self.templates.push(LibTemplate { name: stem(&p), path: p, doc });
                 }
             }
@@ -242,7 +241,7 @@ impl Library {
     pub fn add_template_file(&mut self, src: &Path) -> Result<String, String> {
         let text = std::fs::read_to_string(src).map_err(|e| e.to_string())?;
         let text = strip_bom(&text);
-        let doc: Doc = serde_json::from_str(&text).map_err(|_| "the file is not a design from this editor".to_string())?;
+        let doc = Doc::from_json_str(text).map_err(|_| "the file is not a design from this editor".to_string())?;
         self.save_template(&stem(src), &doc)
     }
 
