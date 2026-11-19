@@ -446,17 +446,62 @@ impl Doc {
 
     /// The design as the game sees it in the given orientation: a clone with the portrait page size and
     /// overrides applied (portrait), or unchanged (landscape). The result has no `portrait` block.
-    /// Children do not follow a parent's override: each element is overridden on its own.
+    ///
+    /// Emulates Unity: an element keeps its landscape RectTransform (anchors, pivot, offsets) and is re-evaluated
+    /// against its parent's portrait box, parents first, so a full-page background stretches and right-anchored
+    /// elements follow the right edge. The override values of an element (box, rotation, anchors, pivot, visibility,
+    /// font size, layout) are written over that result; children then follow the resolved box of their parent.
+    /// O(n), iterative.
     pub fn resolved_for(&self, orientation: Orientation) -> Doc {
         let mut d = self.clone();
         if orientation == Orientation::Portrait {
             if let Some(p) = &self.portrait {
                 d.width = p.width;
                 d.height = p.height;
+                let n = self.elements.len();
                 let idx = self.index_map();
+                let pidx = self.parent_indices(&idx);
+                let mut ov: Vec<Option<&ElementOverride>> = vec![None; n];
                 for o in &p.overrides {
                     if let Some(&i) = idx.get(&o.id) {
+                        if ov[i].is_none() {
+                            ov[i] = Some(o);
+                        }
+                    }
+                }
+                let mut kids: Vec<Vec<usize>> = vec![Vec::new(); n];
+                let mut stack: Vec<usize> = Vec::new();
+                for i in (0..n).rev() {
+                    match pidx[i] {
+                        Some(q) => kids[q].push(i),
+                        None => stack.push(i),
+                    }
+                }
+                let (land_page, port_page) = (self.page_frame(), d.page_frame());
+                let mut done = vec![false; n];
+                while let Some(i) = stack.pop() {
+                    if std::mem::replace(&mut done[i], true) {
+                        continue;
+                    }
+                    let (lf, pf) = match pidx[i] {
+                        Some(q) => (self.elements[q].frame(), d.elements[q].frame()),
+                        None => (land_page, port_page),
+                    };
+                    let rt = crate::model::rect_transform_in(&self.elements[i], &lf);
+                    crate::model::apply_rect_transform(&mut d.elements[i], &rt, &pf);
+                    if let Some(o) = ov[i] {
                         o.apply(&mut d.elements[i]);
+                    }
+                    for &c in kids[i].iter().rev() {
+                        stack.push(c);
+                    }
+                }
+                // elements in a parent cycle (never reached from a root): overrides only
+                for i in 0..n {
+                    if !done[i] {
+                        if let Some(o) = ov[i] {
+                            o.apply(&mut d.elements[i]);
+                        }
                     }
                 }
                 // Layout groups of the portrait page place their children like Unity does.

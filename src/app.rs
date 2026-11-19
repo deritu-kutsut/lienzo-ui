@@ -1530,6 +1530,21 @@ pub fn fold_portrait_edit_with(real: &mut Doc, old: &Doc, new: &Doc, sources: &s
     let land_all: std::collections::HashMap<u64, [f32; 4]> = landscape.iter().map(|(k, e)| (*k, [e.x, e.y, e.x + e.w, e.y + e.h])).collect();
     let old_by: std::collections::HashMap<u64, &Element> = old.elements.iter().map(|e| (e.id, e)).collect();
     let (lw, lh) = (real.width, real.height);
+    // Unity keeps the landscape RectTransform of an element without override and re-evaluates it against the
+    // portrait parent: the "inherited" portrait box of an element is that re-evaluation, not its landscape box.
+    let land_page = Frame::page(lw, lh);
+    let mut land_frames: std::collections::HashMap<u64, Frame> = landscape.iter().map(|(k, e)| (*k, e.frame())).collect();
+    let old_frames: std::collections::HashMap<u64, Frame> = old.elements.iter().map(|e| (e.id, e.frame())).collect();
+    let new_frames: std::collections::HashMap<u64, Frame> = new.elements.iter().map(|e| (e.id, e.frame())).collect();
+    let (old_page, new_page) = (old.page_frame(), new.page_frame());
+    let parent_frame = |frames: &std::collections::HashMap<u64, Frame>, page: Frame, p: Option<u64>| -> Frame { p.and_then(|p| frames.get(&p).copied()).unwrap_or(page) };
+    // `e` (landscape values) re-evaluated from the landscape parent box `from` into the portrait parent box `to`
+    let rebase = |e: &Element, from: &Frame, to: &Frame| -> Element {
+        let mut b = e.clone();
+        let rt = model::rect_transform_in(e, from);
+        model::apply_rect_transform(&mut b, &rt, to);
+        b
+    };
     let mut out = Vec::with_capacity(new.elements.len());
     let mut final_ov: Vec<ElementOverride> = Vec::new();
     for ne in &new.elements {
@@ -1552,7 +1567,41 @@ pub fn fold_portrait_edit_with(real: &mut Doc, old: &Doc, new: &Doc, sources: &s
                 m.visible = le.visible;
                 m.font_size = le.font_size;
                 m.layout = le.layout.clone();
-                // a property counts as edited when it differs from what the element had before the edit
+                // inherited portrait box of the element (landscape RectTransform under the portrait parent)
+                let new_pf = parent_frame(&new_frames, new_page, ne.parent);
+                let land_pf = match ne.parent {
+                    None => Some(land_page),
+                    Some(p) => land_frames.get(&p).copied(),
+                };
+                let be = match &land_pf {
+                    Some(lp) => rebase(&le, lp, &new_pf),
+                    None => le.clone(),
+                };
+                let reparented = oe.map(|o| o.parent != ne.parent).unwrap_or(true);
+                // moved only because its parent (or the page) changed and it follows its anchors: not an edit
+                let inherited_move = !reparented
+                    && oe
+                        .map(|o| {
+                            let opf = parent_frame(&old_frames, old_page, o.parent);
+                            !opf.close_to(&new_pf) && rebase(o, &opf, &new_pf).frame().close_to(&ne.frame())
+                        })
+                        .unwrap_or(false);
+                // a box property counts as edited when it differs from what the element had before the edit
+                macro_rules! geo {
+                    ($f:ident, $skip:expr) => {
+                        if !$skip {
+                            let edited = reparented || (!inherited_move && oe.map(|o| !near(o.$f, ne.$f)).unwrap_or(true));
+                            if edited {
+                                ov.$f = if near(ne.$f, be.$f) { None } else { Some(ne.$f) };
+                            } else if let Some(v) = ov.$f {
+                                // an overridden absolute value follows the parent it was resolved against
+                                if !near(v, ne.$f) {
+                                    ov.$f = Some(ne.$f);
+                                }
+                            }
+                        }
+                    };
+                }
                 macro_rules! num {
                     ($f:ident, $skip:expr) => {
                         if !$skip && oe.map(|o| !near(o.$f, ne.$f)).unwrap_or(true) {
@@ -1567,11 +1616,20 @@ pub fn fold_portrait_edit_with(real: &mut Doc, old: &Doc, new: &Doc, sources: &s
                         }
                     };
                 }
-                num!(x, driven);
-                num!(y, driven);
-                num!(w, driven);
-                num!(h, driven);
-                num!(rot, false);
+                // an element with overridden anchors / pivot that moved with its parent keeps its box explicit
+                // (the portrait box is evaluated with the landscape anchors)
+                if inherited_move && !driven && (ov.anchor_min.is_some() || ov.anchor_max.is_some() || ov.pivot.is_some()) {
+                    ov.x = Some(ne.x);
+                    ov.y = Some(ne.y);
+                    ov.w = Some(ne.w);
+                    ov.h = Some(ne.h);
+                    ov.rot = Some(ne.rot);
+                }
+                geo!(x, driven);
+                geo!(y, driven);
+                geo!(w, driven);
+                geo!(h, driven);
+                geo!(rot, false);
                 num!(font_size, false);
                 pair!(anchor_min);
                 pair!(anchor_max);
@@ -1629,23 +1687,27 @@ pub fn fold_portrait_edit_with(real: &mut Doc, old: &Doc, new: &Doc, sources: &s
                     m.x = ne.x.clamp(0.0, (lw - m.w).max(0.0));
                     m.y = ne.y.clamp(0.0, (lh - m.h).max(0.0));
                 }
-                // everything of the portrait element that differs from what the landscape got is an override
+                // everything of the portrait element that differs from what Unity would show (its landscape values
+                // re-evaluated under the portrait parent) is an override
                 let driven_new = new.driven_by_layout(id);
+                let new_pf = parent_frame(&new_frames, new_page, ne.parent);
+                let land_pf = match ne.parent {
+                    None => Some(land_page),
+                    Some(p) => land_frames.get(&p).copied(),
+                };
+                // landscape parent unknown (a new parent that comes later): write the box explicitly
+                let be = land_pf.as_ref().map(|lp| rebase(&m, lp, &new_pf));
+                let differs = |a: f32, b: Option<f32>| b.map(|b| !near(a, b)).unwrap_or(true);
                 if !driven_new {
-                    for (a, b, set) in [(m.x, ne.x, 0), (m.y, ne.y, 1), (m.w, ne.w, 2), (m.h, ne.h, 3)] {
-                        if !near(a, b) {
-                            match set {
-                                0 => ov.x = Some(b),
-                                1 => ov.y = Some(b),
-                                2 => ov.w = Some(b),
-                                _ => ov.h = Some(b),
-                            }
-                        }
-                    }
+                    ov.x = if differs(ne.x, be.as_ref().map(|b| b.x)) { Some(ne.x) } else { None };
+                    ov.y = if differs(ne.y, be.as_ref().map(|b| b.y)) { Some(ne.y) } else { None };
+                    ov.w = if differs(ne.w, be.as_ref().map(|b| b.w)) { Some(ne.w) } else { None };
+                    ov.h = if differs(ne.h, be.as_ref().map(|b| b.h)) { Some(ne.h) } else { None };
                 }
-                if !near(m.rot, ne.rot) {
+                if differs(ne.rot, be.as_ref().map(|b| b.rot).or(Some(m.rot))) {
                     ov.rot = Some(ne.rot);
                 }
+                land_frames.insert(id, m.frame());
                 if !near(m.font_size, ne.font_size) {
                     ov.font_size = Some(ne.font_size);
                 }
@@ -1970,13 +2032,14 @@ mod portrait_tests {
         a.set_orientation(Orientation::Portrait);
         a.commit_state(false);
         assert_eq!((a.doc.width, a.doc.height), (1080.0, 1920.0));
+        let land_view = a.doc.get(play).unwrap().clone(); // what the portrait view shows before the edit (anchored)
         a.doc.translate_subtree(play, 25.0, 40.0);
         a.commit_state(false);
         let real = a.real_doc().clone();
         let le = real.get(play).unwrap();
         assert_eq!((le.x, le.y, le.w, le.h), (land.x, land.y, land.w, land.h), "landscape values are untouched");
         let ov = real.override_of(play).expect("an override was created");
-        assert!((ov.x.unwrap() - (land.x + 25.0)).abs() < 0.01 && (ov.y.unwrap() - (land.y + 40.0)).abs() < 0.01);
+        assert!((ov.x.unwrap() - (land_view.x + 25.0)).abs() < 0.01 && (ov.y.unwrap() - (land_view.y + 40.0)).abs() < 0.01);
         assert!(ov.w.is_none() && ov.h.is_none() && ov.visible.is_none());
         // only the moved element (and the ones that moved with it) have overrides
         assert!(real.portrait.as_ref().unwrap().overrides.len() < real.elements.len());
@@ -2017,6 +2080,7 @@ mod portrait_tests {
         a.set_orientation(Orientation::Portrait);
         a.commit_state(false);
         a.commit_state(false); // the new portrait layout is one step
+        let x0 = a.doc.get(play).unwrap().x; // inherited (anchored) portrait position
         a.doc.translate_subtree(play, 100.0, 0.0);
         a.commit_state(false);
         assert!(a.is_overridden(play));

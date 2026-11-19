@@ -4,6 +4,9 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versio
 
 ## [Unreleased]
 
+### Fixed
+- The Portrait view now shows elements without a portrait override the way Unity will: they keep their landscape anchors and offsets and follow them when the page becomes portrait (a full-page background fills the portrait page, right-anchored elements stay at the right edge). Editing in portrait still creates an override only for the element you change.
+
 ## [1.5.0] - 2026-11-19
 
 Bringing existing Unity interfaces in, and exporting them the way a real game needs. Also includes the 1.4.2 security fixes below.

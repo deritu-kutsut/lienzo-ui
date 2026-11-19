@@ -149,7 +149,10 @@ fn portrait_round_trip_and_inherit() {
     assert!(port.portrait.is_none());
     let e = port.get(ids[1]).unwrap();
     assert_eq!((e.x, e.y, e.w, e.visible, e.font_size, e.anchor_min), (5.0, 500.0, 80.0, false, 50.0, [0.0, 1.0]));
-    assert_eq!(port.get(ids[0]), d.get(ids[0]), "no override: inherits");
+    // no override: keeps its landscape RectTransform (centre anchors: the same offset from the page centre)
+    let (b, lb) = (port.get(ids[0]).unwrap(), d.get(ids[0]).unwrap());
+    assert_eq!((b.x + b.w / 2.0 - 540.0, b.y + b.h / 2.0 - 960.0), (lb.x + lb.w / 2.0 - 960.0, lb.y + lb.h / 2.0 - 540.0), "no override: inherits its anchors");
+    assert_eq!((b.w, b.h), (lb.w, lb.h));
     let land = d.resolved_for(Orientation::Landscape);
     assert_eq!((land.width, land.get(ids[1]).unwrap().x), (1920.0, 100.0));
     assert!(d.get(ids[1]).unwrap().visible, "original untouched");

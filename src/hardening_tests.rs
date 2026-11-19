@@ -426,7 +426,7 @@ fn portrait_resolved_design_applies_layout_groups() {
     }
     d.normalize();
     d.apply_layouts();
-    d.set_override(ElementOverride { w: Some(300.0), ..ElementOverride::new(rid) });
+    d.set_override(ElementOverride { x: Some(0.0), w: Some(300.0), ..ElementOverride::new(rid) });
     let p = d.resolved_for(Orientation::Portrait);
     let kids = p.children(Some(rid));
     let (a, b) = (p.get(kids[0]).unwrap(), p.get(kids[1]).unwrap());
@@ -452,7 +452,7 @@ fn portrait_content_height_is_exported_per_scrollview() {
     c.parent = Some(sid);
     let cid = d.add(c);
     d.normalize();
-    d.set_override(ElementOverride { y: Some(900.0), ..ElementOverride::new(cid) });
+    d.set_override(ElementOverride { y: Some(1500.0), ..ElementOverride::new(cid) });
     let v: serde_json::Value = serde_json::from_str(&export::ugui::json(&d, true)).unwrap();
     let hs = v["portrait"]["contentHeights"].as_array().expect("portrait content heights");
     assert_eq!(hs[0]["id"].as_u64(), Some(sid));
@@ -655,5 +655,237 @@ fn dump_for_csc() {
         std::fs::create_dir_all(dir.join("Assets")).unwrap();
         std::fs::create_dir_all(dir.join("ProjectSettings")).unwrap();
         export::write_unity_package(&d, &dir).unwrap();
+    }
+}
+
+// ------------------------------------------------------------------ portrait view emulates Unity anchors
+
+mod portrait_anchors {
+    use super::*;
+    use crate::app::fold_portrait_edit_with;
+    use crate::model::LayoutMode;
+    use std::collections::{HashMap, HashSet};
+
+    fn el(d: &mut Doc, name: &str, kind: Kind, b: [f32; 4], amin: [f32; 2], amax: [f32; 2], parent: Option<u64>) -> u64 {
+        let mut e = Element::new(0, kind);
+        e.name = name.into();
+        e.x = b[0];
+        e.y = b[1];
+        e.w = b[2];
+        e.h = b[3];
+        e.anchor_min = amin;
+        e.anchor_max = amax;
+        e.parent = parent;
+        d.add(e)
+    }
+
+    fn with_portrait(mut d: Doc) -> Doc {
+        d.portrait = Some(PortraitLayout { width: 1080.0, height: 1920.0, overrides: Vec::new() });
+        d
+    }
+
+    fn near(a: f32, b: f32) -> bool {
+        (a - b).abs() < 0.01
+    }
+
+    fn box_of(d: &Doc, id: u64) -> [f32; 4] {
+        let e = d.get(id).unwrap();
+        [e.x, e.y, e.w, e.h]
+    }
+
+    fn same_boxes(a: &Doc, b: &Doc) {
+        assert_eq!(a.elements.len(), b.elements.len());
+        for (x, y) in a.elements.iter().zip(&b.elements) {
+            let (p, q) = ([x.x, x.y, x.w, x.h, x.rot], [y.x, y.y, y.w, y.h, y.rot]);
+            assert!(p.iter().zip(&q).all(|(m, n)| near(*m, *n)), "{}: {:?} vs {:?}", x.name, p, q);
+        }
+    }
+
+    fn sample() -> (Doc, [u64; 6]) {
+        let mut d = Doc::empty(1920.0, 1080.0);
+        let bg = el(&mut d, "Background", Kind::Image, [0.0, 0.0, 1920.0, 1080.0], [0.0, 0.0], [1.0, 1.0], None);
+        let right = el(&mut d, "Right", Kind::Button, [1600.0, 100.0, 300.0, 80.0], [1.0, 1.0], [1.0, 1.0], None);
+        let center = el(&mut d, "Center", Kind::Panel, [660.0, 340.0, 600.0, 400.0], [0.5, 0.5], [0.5, 0.5], None);
+        let kid = el(&mut d, "Kid", Kind::Button, [700.0, 380.0, 520.0, 60.0], [0.0, 1.0], [1.0, 1.0], Some(center));
+        let panel = el(&mut d, "Panel", Kind::Panel, [100.0, 600.0, 500.0, 300.0], [0.0, 0.0], [0.5, 0.5], None);
+        let pkid = el(&mut d, "PanelKid", Kind::Button, [120.0, 620.0, 100.0, 40.0], [0.0, 0.0], [0.0, 0.0], Some(panel));
+        d.normalize();
+        (with_portrait(d), [bg, right, center, kid, panel, pkid])
+    }
+
+    #[test]
+    fn background_stretches_to_the_portrait_page() {
+        let (d, [bg, ..]) = sample();
+        let p = d.resolved_for(Orientation::Portrait);
+        assert_eq!(box_of(&p, bg), [0.0, 0.0, 1080.0, 1920.0]);
+    }
+
+    #[test]
+    fn right_anchored_keeps_its_distance_to_the_right_edge_and_centre_stays_centred() {
+        let (d, [_, right, center, kid, ..]) = sample();
+        let p = d.resolved_for(Orientation::Portrait);
+        let r = box_of(&p, right);
+        assert!(near(1080.0 - (r[0] + r[2]), 1920.0 - 1900.0) && near(r[2], 300.0), "{:?}", r);
+        // y anchor 1 = top: the distance to the top edge is kept
+        assert!(near(r[1], 100.0), "{:?}", r);
+        let c = box_of(&p, center);
+        assert!(near(c[0] + c[2] / 2.0, 540.0) && near(c[1] + c[3] / 2.0, 960.0), "{:?}", c);
+        // child stretched in x inside the parent keeps its margins
+        let k = box_of(&p, kid);
+        assert!(near(k[0] - c[0], 40.0) && near(c[0] + c[2] - (k[0] + k[2]), 40.0) && near(k[2], 520.0), "{:?} {:?}", k, c);
+    }
+
+    #[test]
+    fn child_of_an_overridden_parent_follows_the_override_box() {
+        let (mut d, [_, _, _, _, panel, pkid]) = sample();
+        d.set_override(ElementOverride { x: Some(300.0), y: Some(800.0), w: Some(400.0), h: Some(200.0), ..ElementOverride::new(panel) });
+        let p = d.resolved_for(Orientation::Portrait);
+        assert_eq!(box_of(&p, panel), [300.0, 800.0, 400.0, 200.0]);
+        // anchored to the parent's bottom-left corner at (20, 20) in landscape: same offsets in the override box
+        let k = box_of(&p, pkid);
+        assert!(near(k[0], 320.0) && near(k[2], 100.0) && near(k[3], 40.0), "{:?}", k);
+        let landscape_gap = 600.0 + 300.0 - (620.0 + 40.0); // panel bottom to kid bottom
+        assert!(near(800.0 + 200.0 - (k[1] + k[3]), landscape_gap) || near(k[1] - 800.0, 20.0), "{:?}", k);
+    }
+
+    #[test]
+    fn resolve_fold_without_edit_is_stable_and_creates_no_override() {
+        let (mut d, ids) = sample();
+        d.set_override(ElementOverride { x: Some(300.0), ..ElementOverride::new(ids[4]) });
+        let before = d.portrait.clone();
+        let mut real = d.clone();
+        let mut old = real.resolved_for(Orientation::Portrait);
+        for _ in 0..5 {
+            let new = old.clone();
+            fold_portrait_edit_with(&mut real, &old, &new, &HashMap::new(), &HashSet::new());
+            let again = real.resolved_for(Orientation::Portrait);
+            same_boxes(&again, &old);
+            old = again;
+        }
+        assert_eq!(real.portrait, before);
+    }
+
+    #[test]
+    fn editing_one_element_creates_a_single_override_and_round_trips() {
+        let (d, ids) = sample();
+        let mut real = d.clone();
+        let old = real.resolved_for(Orientation::Portrait);
+        // move the centred panel with its child, like the editor does
+        let mut new = old.clone();
+        new.translate_subtree(ids[2], 30.0, 70.0);
+        fold_portrait_edit_with(&mut real, &old, &new, &HashMap::new(), &HashSet::new());
+        let ovs = &real.portrait.as_ref().unwrap().overrides;
+        assert_eq!(ovs.len(), 1, "{:?}", ovs);
+        assert_eq!(ovs[0].id, ids[2]);
+        same_boxes(&real.resolved_for(Orientation::Portrait), &new);
+        // resize the panel: the child follows its stretch anchors, only the panel gets an override
+        let mut real = d.clone();
+        let mut new = old.clone();
+        let f = crate::model::Frame { cx: 540.0, cy: 960.0, w: 800.0, h: 500.0, rot: 0.0 };
+        new.set_frame_keep_children(ids[2], &f);
+        fold_portrait_edit_with(&mut real, &old, &new, &HashMap::new(), &HashSet::new());
+        let ovs = &real.portrait.as_ref().unwrap().overrides;
+        assert_eq!(ovs.len(), 1, "{:?}", ovs);
+        same_boxes(&real.resolved_for(Orientation::Portrait), &new);
+        // a page size change creates no element override
+        let mut real = d.clone();
+        let mut new = old.clone();
+        let of = new.page_frame();
+        new.width = 1200.0;
+        new.height = 2400.0;
+        new.reapply_children(None, of);
+        fold_portrait_edit_with(&mut real, &old, &new, &HashMap::new(), &HashSet::new());
+        assert!(real.portrait.as_ref().unwrap().overrides.is_empty());
+        same_boxes(&real.resolved_for(Orientation::Portrait), &new);
+    }
+
+    #[test]
+    fn overridden_child_follows_when_its_parent_is_moved() {
+        let (mut d, ids) = sample();
+        d.set_override(ElementOverride { x: Some(50.0), y: Some(1200.0), ..ElementOverride::new(ids[3]) });
+        let mut real = d.clone();
+        let old = real.resolved_for(Orientation::Portrait);
+        let mut new = old.clone();
+        new.translate_subtree(ids[2], 0.0, -100.0);
+        fold_portrait_edit_with(&mut real, &old, &new, &HashMap::new(), &HashSet::new());
+        let ids_ov: Vec<u64> = real.portrait.as_ref().unwrap().overrides.iter().map(|o| o.id).collect();
+        assert!(ids_ov.contains(&ids[2]) && ids_ov.contains(&ids[3]) && ids_ov.len() == 2, "{:?}", ids_ov);
+        same_boxes(&real.resolved_for(Orientation::Portrait), &new);
+    }
+
+    #[test]
+    fn layout_group_children_follow_the_portrait_group() {
+        let mut d = Doc::empty(1920.0, 1080.0);
+        let g = el(&mut d, "Row", Kind::Panel, [100.0, 100.0, 1720.0, 100.0], [0.0, 1.0], [1.0, 1.0], None);
+        for i in 0..3 {
+            el(&mut d, &format!("C{}", i), Kind::Button, [0.0, 0.0, 100.0, 50.0], [0.5, 0.5], [0.5, 0.5], Some(g));
+        }
+        d.get_mut(g).unwrap().layout.mode = LayoutMode::Horizontal;
+        d.get_mut(g).unwrap().layout.padding = [0.0; 4];
+        d.get_mut(g).unwrap().layout.spacing = [10.0, 0.0];
+        d.normalize();
+        d.apply_layouts();
+        let d = with_portrait(d);
+        let p = d.resolved_for(Orientation::Portrait);
+        let gb = box_of(&p, g);
+        assert!(near(gb[2], 1080.0 - 200.0), "{:?}", gb);
+        let kids = p.children(Some(g));
+        let (first, last) = (box_of(&p, kids[0]), box_of(&p, kids[2]));
+        // 3 x 100 + 2 x 10 packed at the start of the (stretched) row
+        assert!(near(first[0], gb[0]) && near(last[0] + last[2] - first[0], 320.0), "{:?} {:?} {:?}", gb, first, last);
+        // a portrait override that carries the layout is kept
+        let mut d2 = d.clone();
+        let mut lg = d.get(g).unwrap().layout.clone();
+        lg.mode = LayoutMode::Vertical;
+        d2.set_override(ElementOverride { layout: Some(lg), ..ElementOverride::new(g) });
+        let p2 = d2.resolved_for(Orientation::Portrait);
+        let kids = p2.children(Some(g));
+        assert!(box_of(&p2, kids[1])[1] > box_of(&p2, kids[0])[1]);
+    }
+
+    #[test]
+    fn hostile_values_never_panic() {
+        let (mut d, ids) = sample();
+        d.get_mut(ids[1]).unwrap().w = f32::NAN;
+        d.get_mut(ids[2]).unwrap().anchor_max = [f32::INFINITY, -1e30];
+        d.get_mut(ids[3]).unwrap().x = 1e30;
+        d.get_mut(ids[0]).unwrap().parent = Some(ids[0]);
+        d.get_mut(ids[4]).unwrap().parent = Some(ids[5]);
+        d.get_mut(ids[5]).unwrap().parent = Some(ids[4]);
+        for (w, h) in [(0.0, 0.0), (1e30, 1e-30), (f32::NAN, 5.0), (-5.0, f32::INFINITY)] {
+            let mut x = d.clone();
+            let p = x.portrait.as_mut().unwrap();
+            p.width = w;
+            p.height = h;
+            p.overrides.push(ElementOverride { x: Some(f32::NAN), w: Some(f32::INFINITY), ..ElementOverride::new(ids[2]) });
+            let r = x.resolved_for(Orientation::Portrait);
+            assert_eq!(r.elements.len(), x.elements.len());
+            let mut real = x.clone();
+            fold_portrait_edit_with(&mut real, &r, &r.clone(), &HashMap::new(), &HashSet::new());
+        }
+    }
+
+    #[test]
+    fn resolving_3000_elements_is_fast() {
+        let mut d = Doc::empty(1920.0, 1080.0);
+        let mut parent = None;
+        for i in 0..3000u32 {
+            let id = el(&mut d, &format!("E{}", i), Kind::Panel, [(i % 50) as f32, (i / 50 % 50) as f32, 10.0, 10.0], [0.0, 0.0], [1.0, 1.0], parent);
+            if i % 100 == 0 {
+                parent = Some(id);
+            }
+        }
+        let mut d = with_portrait(d);
+        for i in (0..3000).step_by(7) {
+            let id = d.elements[i].id;
+            d.set_override(ElementOverride { x: Some(5.0), ..ElementOverride::new(id) });
+        }
+        let t = std::time::Instant::now();
+        for _ in 0..5 {
+            std::hint::black_box(d.resolved_for(Orientation::Portrait));
+        }
+        let ms = t.elapsed().as_secs_f64() * 1000.0 / 5.0;
+        let limit = if cfg!(debug_assertions) { 400.0 } else { 20.0 };
+        assert!(ms < limit, "{} ms", ms);
     }
 }

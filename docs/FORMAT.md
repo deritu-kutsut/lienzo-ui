@@ -73,7 +73,7 @@ No `next_id` (becomes 3), no `canvas_match` (0.5); `fill`, `font_size`... take t
 
 ### PortraitLayout (`portrait`)
 
-The same design with a second layout used when the screen is portrait. Elements without an override inherit the landscape values.
+The same design with a second layout used when the screen is portrait. Elements without an override keep their landscape RectTransform (anchors, pivot, offsets) and are re-evaluated against their parent's portrait box, exactly like Unity: a full-page background stretches to the portrait page, right-anchored elements follow the right edge, centred ones stay centred. Children follow the resolved box of their parent (an override's box included). Overridden values are written over that result.
 
 | Field | Type | Default | Meaning |
 |---|---|---|---|
