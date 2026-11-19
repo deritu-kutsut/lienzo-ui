@@ -69,6 +69,11 @@ for (const n of [1, 2]) {
   try { await up("0012_security_fixes_2.sql"); } catch (e) { console.log("FAILED to apply 0012 (run " + n + ")", e.message); process.exit(1); }
 }
 check("0012 applied twice", true);
+// Optional: LATER=0013,0014 applies later migrations here so that the SAME checks prove the legacy paths still work after them.
+for (const n of (process.env.LATER ?? "").split(",").map((x) => x.trim()).filter(Boolean)) {
+  const f = files.find((x) => x.startsWith(n + "_"));
+  try { await up(f); await up(f); } catch (e) { console.log("FAILED to apply", f, e.message); process.exit(1); }
+}
 
 let r = await owner(`select tags, name_reviewed is not null as reviewed from public.community_items i, public.profiles p where i.id = '${LI}' and p.id = '${A}'`);
 check("legacy long tags were trimmed (30 chars, control chars removed)", r.ok && r.rows[0].tags.length === 3 && r.rows[0].tags[0].length === 30 && r.rows[0].tags[2] === "ab", r);
