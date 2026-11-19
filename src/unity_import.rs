@@ -1853,7 +1853,7 @@ fn build(sc: &Scene, cx: &mut Ctx, rt_id: i64, go: i64, alpha_in: f32) -> Built 
             let Some(ko) = sc.objs.get(k) else { continue };
             let kg = ko.go;
             if let Some(n) = only_named {
-                if sc.go_name(kg) != n {
+                if !name_matches(&sc.go_name(kg), n) {
                     continue;
                 }
             }
@@ -1889,7 +1889,7 @@ fn build(sc: &Scene, cx: &mut Ctx, rt_id: i64, go: i64, alpha_in: f32) -> Built 
         }
         Kind::Panel | Kind::Image => {
             // Lienzo exports a caption of a panel as a stretched child called "Texto"
-            if let Some(t) = label_child(cx, &mut absorbed, Some("Texto")) {
+            if let Some(t) = label_child(cx, &mut absorbed, Some("__text")) {
                 cx.w.group("Child named 'Texto' absorbed as the caption of its parent (Lienzo export convention)", &name_raw);
                 apply_txt(&mut e, &t, &mut cx.fonts);
             }
@@ -2070,7 +2070,7 @@ fn build(sc: &Scene, cx: &mut Ctx, rt_id: i64, go: i64, alpha_in: f32) -> Built 
                 continue;
             }
             let Some(o) = sc.objs.get(k) else { continue };
-            if sc.go_name(o.go) != "Borde" || !sc.kids(*k, &cx.by_father).is_empty() || !is_stretch_full(&read_rt(&o.y).rt) {
+            if !name_matches(&sc.go_name(o.go), "__border") || !sc.kids(*k, &cx.by_father).is_empty() || !is_stretch_full(&read_rt(&o.y).rt) {
                 continue;
             }
             let kc = comps_of(sc, o.go, cx.assets);
@@ -2470,7 +2470,7 @@ pub(crate) fn import_prefab_text(text: &str, title: &str, assets: &mut Assets) -
         if canvas_root.is_some() {
             for k in &kids {
                 let Some(o) = sc.objs.get(k) else { continue };
-                if sc.go_name(o.go) == "Fondo del lienzo" && sc.kids(*k, &cx.by_father).is_empty() && is_stretch_full(&read_rt(&o.y).rt) {
+                if name_matches(&sc.go_name(o.go), "__canvas_background") && sc.kids(*k, &cx.by_father).is_empty() && is_stretch_full(&read_rt(&o.y).rt) {
                     let kc = comps_of(&sc, o.go, cx.assets);
                     if let Some(im) = find(&kc, &[CK::Image]) {
                         cx.doc.background = read_image(im).color;
@@ -3039,4 +3039,19 @@ pub fn import_unity_project_report(dir: &Path, out_dir: &Path) -> Result<Project
 /// Like [`import_unity_project_report`] but returns only (file written, element count) per converted prefab.
 pub fn import_unity_project(dir: &Path, out_dir: &Path) -> Result<Vec<(String, usize)>, String> {
     import_unity_project_report(dir, out_dir).map(|r| r.written)
+}
+
+
+// ---- Lienzo-generated child names (appended block: names of exports from v1.5 on and of older versions)
+/// True when a GameObject name is the helper name Lienzo generates (`__border`, `__text`, `__tick`, `__canvas_background`,
+/// `__safe_area`) or the Spanish name older exporter versions used (`Borde`, `Texto`, `Tick`, `Fondo del lienzo`).
+fn name_matches(go_name: &str, generated: &str) -> bool {
+    let old = match generated {
+        "__border" => "Borde",
+        "__text" => "Texto",
+        "__tick" => "Tick",
+        "__canvas_background" => "Fondo del lienzo",
+        _ => return go_name == generated,
+    };
+    go_name == generated || go_name == old
 }

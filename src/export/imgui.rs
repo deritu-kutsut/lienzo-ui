@@ -4,7 +4,7 @@
 //! GUI.BeginScrollView / BeginGroup). Rectangles are computed from the same
 //! anchors as uGUI, so the layout adapts to any screen size.
 
-use super::{cf, class_name, comment_lines, cs_str, image_file_name, radius_of, sanitize_line, ExportCtx};
+use super::{cf, class_name, comment_lines, cs_str, radius_of, sanitize_line, ExportCtx, ImageNames};
 use crate::model::{Doc, Element, Kind, Rgba};
 use std::collections::{HashMap, HashSet};
 use std::fmt::Write;
@@ -53,6 +53,7 @@ fn idents(doc: &Doc) -> HashMap<u64, String> {
 struct Gen<'a> {
     doc: &'a Doc,
     ctx: &'a ExportCtx<'a>,
+    imgs: ImageNames,
     ids: HashMap<u64, String>,
     fields: String,
     styles: String,
@@ -130,7 +131,7 @@ impl<'a> Gen<'a> {
             Kind::Empty => {}
             Kind::Panel | Kind::Image | Kind::Ellipse | Kind::ScrollView => {
                 if !e.image.is_empty() {
-                    let _ = writeln!(self.fields, "    public Texture2D image{}; // {}", n, sanitize_line(&image_file_name(&e.image)));
+                    let _ = writeln!(self.fields, "    public Texture2D image{}; // {}", n, sanitize_line(&self.imgs.file(&e.image)));
                     let _ = writeln!(b, "{}if (image{} != null) GUI.DrawTexture({}, image{}, ScaleMode.StretchToFill, true, 0f, new Color(1f, 1f, 1f, {}), 0f, {});", p2, n, r, n, cf(op), radius);
                     let _ = writeln!(b, "{}else Box({}, {}, {});", p2, r, color(e.fill, op), radius);
                 } else {
@@ -280,7 +281,7 @@ impl<'a> Gen<'a> {
 pub fn script(doc: &Doc) -> String {
     let cls = format!("{}OnGUI", class_name(&doc.title));
     let ctx = ExportCtx::new(doc);
-    let mut g = Gen { doc, ctx: &ctx, ids: idents(doc), fields: String::new(), styles: String::new(), body: String::new(), methods: String::new(), nstyle: 0 };
+    let mut g = Gen { doc, ctx: &ctx, imgs: ImageNames::new(doc), ids: idents(doc), fields: String::new(), styles: String::new(), body: String::new(), methods: String::new(), nstyle: 0 };
     for &id in ctx.children(None) {
         g.el(id, "root", "m0", false, 2);
     }
@@ -347,7 +348,7 @@ public class {cls} : MonoBehaviour
 
     GUIStyle Field(int size, TextAnchor a)
     {{
-        var s = new GUIStyle(GUI.skin.textField) {{ fontSize = size, alignment = a, wordWrap = false, padding = new RectOffset(0, 0, 0, 0), margin = new RectOffset(0, 0, 0, 0) }};
+        var s = new GUIStyle(GUI.skin.textField) {{ fontSize = size, alignment = a, wordWrap = false, richText = false, padding = new RectOffset(0, 0, 0, 0), margin = new RectOffset(0, 0, 0, 0) }};
         if (font != null) s.font = font;
         s.normal.background = s.hover.background = s.focused.background = s.active.background = null;
         s.normal.textColor = s.hover.textColor = s.focused.textColor = s.active.textColor = new Color(0.1f, 0.1f, 0.13f, 1f);

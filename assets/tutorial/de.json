@@ -10,7 +10,7 @@
     },
     {
       "title": "Mit einer Vorlage beginnen",
-      "text": "Öffne Vorlagen in der linken Leiste und wähle eine der 12: Hauptmenü, HUD, Pausenmenü, Spielende, Levelauswahl, Inventar, Charakterdialog, Rangliste…\n\nSo siehst du am schnellsten, wie eine komplette Oberfläche aufgebaut ist. Alles darin lässt sich ändern.\n\nWenn du lieber bei null anfangen willst, wähle „Leer“ oder Datei › Neuer leerer Entwurf."
+      "text": "Öffne Vorlagen in der linken Leiste und wähle eine der 13: Hauptmenü, HUD, Pausenmenü, Spielende, Levelauswahl, Inventar, Charakterdialog, Rangliste…\n\nSo siehst du am schnellsten, wie eine komplette Oberfläche aufgebaut ist. Alles darin lässt sich ändern.\n\nWenn du lieber bei null anfangen willst, wähle „Leer“ oder Datei › Neuer leerer Entwurf."
     },
     {
       "title": "Elemente hinzufügen und bearbeiten",
@@ -56,7 +56,7 @@
     },
     {
       "title": "Barrierefreiheit und Sprachen",
-      "text": "Die Schaltfläche „Barrierefreiheit“ in der oberen Leiste erlaubt dir:\n\n• Die Sprache der Oberfläche zu ändern (Spanisch, Englisch, Portugiesisch, Französisch, Deutsch, Italienisch oder Russisch).\n• Die Oberfläche bis auf 200 % zu vergrößern (auch mit Strg+Alt+= und Strg+Alt+-).\n• Hohen Kontrast zu aktivieren: weißer Text und kräftige Rahmen.\n• Bewegung zu reduzieren: keine Animationen.\n\nDie Sprachen sind Dateien assets/i18n/<código>.tsv: Um eine hinzuzufügen, übersetze einfach en.tsv."
+      "text": "Die Schaltfläche „Barrierefreiheit“ in der oberen Leiste erlaubt dir:\n\n• Die Sprache der Oberfläche zu ändern (Spanisch, Englisch, Portugiesisch, Französisch, Deutsch, Italienisch, Russisch, Chinesisch, Japanisch oder Koreanisch).\n• Die Oberfläche bis auf 250 % zu vergrößern (auch mit Strg+Alt+= und Strg+Alt+-).\n• Hohen Kontrast zu aktivieren: weißer Text und kräftige Rahmen.\n• Bewegung zu reduzieren: keine Animationen.\n\nDie Sprachen sind Dateien assets/i18n/<código>.tsv: Um eine hinzuzufügen, kopiere es.tsv und übersetze die Kopie."
     }
   ]
 }

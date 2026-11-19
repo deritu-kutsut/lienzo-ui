@@ -142,7 +142,7 @@ fn generate_flags_select_the_outputs() {
 fn scripts_dir_and_assembly_are_honored() {
     let dir = project("asm");
     std::fs::create_dir_all(dir.join("Assets/Game/Runtime")).unwrap();
-    std::fs::write(dir.join("Assets/Game/Runtime/Game.Runtime.asmdef"), r#"{ "name": "Game.Runtime", "references": [] }"#).unwrap();
+    std::fs::write(dir.join("Assets/Game/Runtime/Game.Runtime.asmdef"), r#"{ "name": "Game.Runtime", "references": ["UnityEngine.UI", "Unity.TextMeshPro"] }"#).unwrap();
     let mut d = doc_with_button();
     d.unity.generate = GenerateOutputs::new_design();
     // scripts_dir only
@@ -382,4 +382,371 @@ fn all_templates_export_clean_json() {
             assert!(e["field"].is_string(), "template {i}: every element has a view field");
         }
     }
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+// Audit round 2: image / font names, UXML + USS details, importer lifecycle, assemblies, hostile characters.
+// ---------------------------------------------------------------------------------------------------------------------
+
+fn png_bytes(seed: u8) -> Vec<u8> {
+    let mut v = Vec::new();
+    let mut img = image::RgbaImage::new(2, 2);
+    for p in img.pixels_mut() {
+        *p = image::Rgba([seed, 10, 20, 255]);
+    }
+    image::DynamicImage::ImageRgba8(img).write_to(&mut std::io::Cursor::new(&mut v), image::ImageFormat::Png).unwrap();
+    v
+}
+
+fn doc_with_images(images: &[&str]) -> Doc {
+    let mut d = Doc::empty(1920.0, 1080.0);
+    d.title = "Pics".into();
+    for im in images {
+        let mut e = Element::new(0, Kind::Image);
+        e.name = format!("Pic {}", im);
+        e.image = im.to_string();
+        d.add(e);
+    }
+    d
+}
+
+#[test]
+fn same_file_name_from_different_folders_gets_different_sprite_files() {
+    let dir = project("imgnames");
+    let (a, b, c, d2) = (dir.join("a/icon.png"), dir.join("b/icon.png"), dir.join("c/icon.png"), dir.join("d/Icon.PNG"));
+    for (p, seed) in [(&a, 1u8), (&b, 2), (&c, 1), (&d2, 3)] {
+        std::fs::create_dir_all(p.parent().unwrap()).unwrap();
+        std::fs::write(p, png_bytes(seed)).unwrap();
+    }
+    let imgs = ["a/icon.png", "b/icon.png", "c/icon.png", "d/Icon.PNG", "a/other.png"];
+    let doc = doc_with_images(&imgs);
+    let map = |i: &str| Some(dir.join(i));
+    let n = ImageNames::with_resolver(&doc, map);
+    assert_eq!(n.file("a/icon.png"), "icon.png", "the first picture keeps the plain name");
+    assert_eq!(n.file("b/icon.png"), "icon_2.png", "different content, same name");
+    assert_eq!(n.file("c/icon.png"), "icon.png", "same content = same file");
+    assert_eq!(n.file("d/Icon.PNG"), "Icon_3.PNG", "names are compared case-insensitively (Windows / macOS)");
+    assert_eq!(n.file("a/other.png"), "other.png");
+    assert_eq!(n.asset_path("b/icon.png"), "Assets/EditorGUI/Sprites/icon_2.png");
+    // no clash -> exactly the old name
+    let solo = ImageNames::with_resolver(&doc_with_images(&["x/hero.png"]), |_| None);
+    assert_eq!(solo.asset_path("x/hero.png"), image_asset_path("x/hero.png"));
+    assert_eq!(suffixed_name("noext", 2), "noext_2");
+    assert_eq!(suffixed_name(".hidden", 2), ".hidden_2");
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
+#[test]
+fn json_uss_and_imgui_use_the_same_image_mapping() {
+    // exporters go through ImageNames::new: a design without clashes keeps the plain names everywhere
+    let d = doc_with_images(&["Assets/Art/a.png"]);
+    assert!(json_of(&d)["elements"][0]["image"]["source"] == "Assets/Art/a.png");
+    let mut d = doc_with_images(&["hero.png"]);
+    d.elements[0].kind = Kind::Panel;
+    let json = json_of(&d);
+    let src = json["elements"][0]["image"]["source"].as_str().unwrap().to_string();
+    assert_eq!(src, "Assets/EditorGUI/Sprites/hero.png");
+    assert!(uitk::uss(&d).contains(&format!("project://database/{}", src)));
+    assert!(imgui::script(&d).contains("// hero.png"));
+}
+
+#[test]
+fn headless_export_copies_fonts_and_warns_about_missing_ones() {
+    let arial = Path::new("C:/Windows/Fonts/arial.ttf");
+    let mut d = doc_with_button();
+    d.elements[0].font = "Arial".into();
+    let uss_has_rule = |d: &Doc| uitk::uss(d).contains("-unity-font: url(\"project://database/Assets/EditorGUI/Fonts/Arial.ttf\")");
+    let dir = project("fonts");
+    let files = write_unity_package(&d, &dir).unwrap();
+    if arial.exists() {
+        // the GUI never ran here: the table is filled lazily
+        assert!(files.iter().any(|f| f == "Assets/EditorGUI/Fonts/Arial.ttf"), "{files:?}");
+        assert!(uss_has_rule(&d));
+        assert_eq!(font_ext("Arial").as_deref(), Some("ttf"));
+    }
+    assert!(!uitk::uss(&d).contains("SDF.asset"), "a TextMeshPro asset is not a UI Toolkit font");
+    // a font nobody has: nothing is copied and USS keeps the default font
+    d.elements[0].font = "Nonexistent Font 123".into();
+    let dir2 = project("fonts2");
+    let files = write_unity_package(&d, &dir2).unwrap();
+    assert!(!files.iter().any(|f| f.contains("/Fonts/")), "{files:?}");
+    assert!(!uitk::uss(&d).contains("-unity-font:") && !uitk::uss(&d).contains("-unity-font-definition"));
+    assert!(font_file("Nonexistent Font 123").is_none() && font_ext("Nonexistent Font 123").is_none());
+    let _ = std::fs::remove_dir_all(&dir);
+    let _ = std::fs::remove_dir_all(&dir2);
+}
+
+#[test]
+fn uxml_choices_never_split_and_rich_text_is_off() {
+    let mut d = Doc::empty(800.0, 600.0);
+    d.title = "Opts".into();
+    let mut dd = Element::new(0, Kind::Dropdown);
+    dd.name = "Quality".into();
+    dd.options = vec!["Low, fast".into(), "High".into(), "A,B,C".into()];
+    d.add(dd);
+    let mut t = Element::new(0, Kind::Text);
+    t.text = "<b>bold?</b>".into();
+    d.add(t);
+    let mut b = Element::new(0, Kind::Button);
+    b.text = "<color=red>x</color>".into();
+    d.add(b);
+    let mut p = Element::new(0, Kind::Panel);
+    p.text = "<i>cap</i>".into();
+    d.add(p);
+    let uxml = uitk::uxml(&d);
+    let line = uxml.lines().find(|l| l.contains("<ui:DropdownField")).unwrap();
+    let choices = line.split("choices=\"").nth(1).unwrap().split('"').next().unwrap();
+    assert_eq!(choices.split(',').count(), 3, "three choices stay three: {choices}");
+    assert!(choices.contains('\u{201A}') && !choices.contains("Low, fast"));
+    assert!(uxml.contains("comma inside a choice"), "{uxml}");
+    // rich text off on every UI Toolkit text element that supports it
+    for l in uxml.lines().filter(|l| l.contains("<ui:Label") || l.contains("<ui:Button")) {
+        assert!(l.contains("enable-rich-text=\"false\""), "{l}");
+    }
+    // a choice list without commas is unchanged
+    assert_eq!(uitk::choices_attr(&["A".into(), "B".into()]), "A,B");
+    // uGUI importer and IMGUI
+    assert!(IMPORTER_CS.contains("t.richText = false;") && IMPORTER_CS.contains("inp.richText = false;") && IMPORTER_CS.contains("dd.itemText.richText = false;"));
+    assert!(imgui::script(&d).contains("richText = false"));
+}
+
+#[test]
+fn importer_default_font_ownership_marker_and_fallback_rules() {
+    // default font names (the app writes "Monospace"), misses are cached, .ttc is looked up
+    for k in ["IsDefaultFontName", "\"Monospace\"", "\"Monoespaciada\"", "fontCache[family] = fa;", "\".ttc\""] {
+        assert!(IMPORTER_CS.contains(k), "{k}");
+    }
+    // sprites: the marker carries a hash of what Lienzo wrote; a different state = the user's change = hands off
+    for k in ["SettingsHash", "Ownership.Modified", "OwnedMarker + \":\" + SettingsHash(ti)", "was changed by hand"] {
+        assert!(IMPORTER_CS.contains(k), "{k}");
+    }
+    // other texture types are never retyped
+    assert!(IMPORTER_CS.contains("ti.textureType == TextureImporterType.Default") && IMPORTER_CS.contains("left untouched"));
+    // fallbacks: logged, only with a configured list, never in a package
+    let i = IMPORTER_CS.find("static void EnsureFallbacks").unwrap();
+    let body = &IMPORTER_CS[i..i + 2200];
+    assert!(body.contains("fallbackFontNames.Length == 0") && body.contains("Debug.Log(") && body.contains("Packages/"), "{body}");
+}
+
+#[test]
+fn pending_list_retries_hashes_designs_and_warns() {
+    for k in ["const int MaxAttempts = 5;", "if (retry) Schedule();", "is still not compiled after", "DesignHash", "lienzo:design:", "StoredDesignHash", "Where(b => b != 13)"] {
+        assert!(IMPORTER_CS.contains(k), "{k}");
+    }
+    // the rebuild decision is the stored content hash, not "json newer than prefab"
+    let i = IMPORTER_CS.find("static bool NeedsRebuild").unwrap();
+    let body = &IMPORTER_CS[i..i + 900];
+    assert!(body.contains("stored != EditorGuiImporter.DesignHash(json)"), "{body}");
+    assert!(body.contains("AddMinutes(1)"), "legacy prefabs only: a clearly newer design");
+    // BuildPrefab records the hash
+    assert!(IMPORTER_CS.contains("StampDesignHash(prefabPath, DesignHash(jsonPath));"));
+}
+
+#[test]
+fn safe_area_only_acts_on_a_full_screen_overlay_canvas_and_uses_driven_rects() {
+    for k in ["DrivenRectTransformTracker", "tracker.Add(", "tracker.Clear()", "RenderMode.ScreenSpaceOverlay", "InFullScreenOverlay", "PrefabStageUtility", "nested Canvas", "Debug.LogWarning"] {
+        assert!(SAFE_AREA_CS.contains(k), "{k}");
+    }
+    // braces balance (cheap syntax check; the real compile is done against the Unity DLLs)
+    assert_eq!(SAFE_AREA_CS.matches('{').count(), SAFE_AREA_CS.matches('}').count());
+}
+
+#[test]
+fn all_outputs_off_is_a_clear_error() {
+    let mut d = doc_with_button();
+    d.unity.generate = GenerateOutputs { prefab: false, uitk: false, imgui: Some(false), view_scripts: false };
+    let dir = project("nothing");
+    let err = write_unity_package(&d, &dir).unwrap_err();
+    assert!(err.contains("every output set to false"), "{err}");
+    assert!(!dir.join("Assets/EditorGUI").exists());
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
+fn count_cs(p: &Path) -> usize {
+    std::fs::read_dir(p).unwrap().flatten().map(|e| if e.path().is_dir() { count_cs(&e.path()) } else { e.path().extension().is_some_and(|x| x == "cs") as usize }).sum()
+}
+
+#[test]
+fn every_cs_file_is_read_once_per_export() {
+    let dir = project("reads");
+    std::fs::create_dir_all(dir.join("Assets/Game")).unwrap();
+    for i in 0..7 {
+        std::fs::write(dir.join(format!("Assets/Game/C{i}.cs")), format!("public class C{i} {{}}")).unwrap();
+    }
+    let mut d = doc_with_button();
+    d.canvas.safe_area = true; // the helper scan, the ViewBase scan and the View scan all run
+    d.unity.generate = GenerateOutputs { prefab: true, uitk: true, imgui: Some(false), view_scripts: true };
+    CS_READS.with(|c| c.set(0));
+    write_unity_package(&d, &dir).unwrap();
+    // the 7 + the importer the export wrote just before (the first scan loads the cache)
+    assert_eq!(CS_READS.with(|c| c.get()), 8, "three scans share one read per file");
+    // a second export finds the 7 + what the first one generated: still one read per file
+    let before = count_cs(&dir.join("Assets"));
+    assert!(before > 8);
+    CS_READS.with(|c| c.set(0));
+    write_unity_package(&d, &dir).unwrap();
+    assert_eq!(CS_READS.with(|c| c.get()), before);
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
+fn asm_project(tag: &str, asmdef: &str, meta: Option<&str>) -> (PathBuf, Doc) {
+    let dir = project(tag);
+    std::fs::create_dir_all(dir.join("Assets/Game/Runtime")).unwrap();
+    std::fs::write(dir.join("Assets/Game/Runtime/Game.Runtime.asmdef"), asmdef).unwrap();
+    if let Some(g) = meta {
+        std::fs::write(dir.join("Assets/Game/Runtime/Game.Runtime.asmdef.meta"), format!("fileFormatVersion: 2\nguid: {}\nAssemblyDefinitionImporter:\n  userData: \n", g)).unwrap();
+    }
+    let mut d = doc_with_button();
+    d.unity.generate = GenerateOutputs::new_design();
+    d.unity.assembly = Some("Game.Runtime".into());
+    (dir, d)
+}
+
+#[test]
+fn assembly_without_ui_references_or_editor_only_falls_back_with_a_warning() {
+    // references missing: Assembly-CSharp + a note that says which ones
+    let (dir, d) = asm_project("asm-missing", r#"{ "name": "Game.Runtime", "references": ["UnityEngine.UI"] }"#, None);
+    let (p, note) = resolve_scripts_dir(&d, &dir);
+    assert_eq!(p, DEFAULT_SCRIPTS_DIR);
+    let note = note.unwrap();
+    assert!(note.contains("Unity.TextMeshPro") && note.contains("Assembly-CSharp") && note.contains("NOT"), "{note}");
+    let files = write_unity_package(&d, &dir).unwrap();
+    assert!(files.iter().any(|f| f == "Assets/EditorGUI/Scripts/MenuViewBase.cs"), "{files:?}");
+    // the user asked for a folder inside the failing assembly: still outside it
+    let mut d2 = d.clone();
+    d2.unity.scripts_dir = Some("Assets/Game/Runtime/UI".into());
+    assert_eq!(resolve_scripts_dir(&d2, &dir).0, DEFAULT_SCRIPTS_DIR);
+    // IMGUI only needs no UI package: the assembly is fine
+    let mut d3 = d.clone();
+    d3.unity.generate = GenerateOutputs { prefab: false, uitk: false, imgui: Some(true), view_scripts: false };
+    assert_eq!(resolve_scripts_dir(&d3, &dir), ("Assets/Game/Runtime/LienzoUI".to_string(), None));
+    let _ = std::fs::remove_dir_all(&dir);
+    // Editor-only assembly
+    let (dir, d) = asm_project("asm-editor", r#"{ "name": "Game.Runtime", "includePlatforms": ["Editor"], "references": ["UnityEngine.UI", "Unity.TextMeshPro"] }"#, None);
+    let mut d_imgui = d.clone();
+    d_imgui.unity.generate = GenerateOutputs { prefab: false, uitk: false, imgui: Some(true), view_scripts: false };
+    for doc in [&d, &d_imgui] {
+        let (p, note) = resolve_scripts_dir(doc, &dir);
+        assert_eq!(p, DEFAULT_SCRIPTS_DIR);
+        assert!(note.unwrap().contains("Editor-only"));
+    }
+    let _ = std::fs::remove_dir_all(&dir);
+    // references by GUID (Unity's default) are resolved: the well-known UnityEngine.UI / Unity.TextMeshPro GUIDs
+    let refs = r#"{ "name": "Game.Runtime", "references": ["GUID:2bafac87e7f4b9b418d9448d219b01ab", "GUID:6055be8ebefd69e48b49212b09b47b2f"] }"#;
+    let (dir, d) = asm_project("asm-guid-refs", refs, None);
+    assert_eq!(resolve_scripts_dir(&d, &dir), ("Assets/Game/Runtime/LienzoUI".to_string(), None));
+    let _ = std::fs::remove_dir_all(&dir);
+    // an unresolvable GUID: cannot be sure -> kept, with a note
+    let (dir, d) = asm_project("asm-guid-unknown", r#"{ "name": "Game.Runtime", "references": ["GUID:ffffffffffffffffffffffffffffffff"] }"#, None);
+    let (p, note) = resolve_scripts_dir(&d, &dir);
+    assert_eq!(p, "Assets/Game/Runtime/LienzoUI");
+    assert!(note.unwrap().contains("could not confirm"));
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
+#[test]
+fn asmref_by_guid_resolves_through_the_asmdef_meta() {
+    // the asmdef lives in an embedded package (not in Assets); Assets/Extra has an .asmref by GUID
+    let dir = project("asmref-guid");
+    let pkg = dir.join("Packages/com.game.core/Runtime");
+    std::fs::create_dir_all(&pkg).unwrap();
+    std::fs::write(pkg.join("Game.Core.asmdef"), r#"{ "name": "Game.Core", "references": ["UnityEngine.UI", "Unity.TextMeshPro"] }"#).unwrap();
+    std::fs::write(pkg.join("Game.Core.asmdef.meta"), "fileFormatVersion: 2\nguid: ABCDEF0123456789abcdef0123456789\n").unwrap();
+    std::fs::create_dir_all(dir.join("Assets/Extra")).unwrap();
+    std::fs::write(dir.join("Assets/Extra/Core.asmref"), r#"{ "reference": "GUID:abcdef0123456789abcdef0123456789" }"#).unwrap();
+    let mut d = doc_with_button();
+    d.unity.generate = GenerateOutputs::new_design();
+    d.unity.assembly = Some("Game.Core".into());
+    assert_eq!(find_asmdef_folder(&dir, "Game.Core").as_deref(), Some("Assets/Extra"));
+    assert_eq!(resolve_scripts_dir(&d, &dir), ("Assets/Extra/LienzoUI".to_string(), None));
+    // the same asmref, but the package asmdef lacks the references: fallback, never silent
+    std::fs::write(pkg.join("Game.Core.asmdef"), r#"{ "name": "Game.Core", "references": [] }"#).unwrap();
+    let (p, note) = resolve_scripts_dir(&d, &dir);
+    assert_eq!(p, DEFAULT_SCRIPTS_DIR);
+    assert!(note.unwrap().contains("does not reference"));
+    // a GUID nobody has: the assembly is "not found"
+    std::fs::write(dir.join("Assets/Extra/Core.asmref"), r#"{ "reference": "GUID:00000000000000000000000000000000" }"#).unwrap();
+    assert!(find_asmdef_folder(&dir, "Game.Core").is_none());
+    assert!(resolve_scripts_dir(&d, &dir).1.unwrap().contains("not found"));
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
+const BIDI: &str = "a\u{202E}b\u{202A}c\u{202B}\u{202C}\u{202D}\u{2066}\u{2067}\u{2068}\u{2069}\u{200E}\u{200F}\u{061C}\u{200B}\u{200C}\u{200D}\u{2060}\u{FEFF}z";
+
+fn assert_no_invisible(name: &str, text: &str) {
+    for c in text.chars() {
+        assert!(!is_invisible_ctrl(c), "{name}: raw U+{:04X}", c as u32);
+    }
+}
+
+#[test]
+fn bidi_and_zero_width_characters_are_escaped_everywhere() {
+    let mut d = Doc::empty(800.0, 600.0);
+    d.title = format!("T{}", BIDI);
+    for k in [Kind::Button, Kind::Text, Kind::Toggle, Kind::InputField, Kind::Dropdown, Kind::Panel] {
+        let mut e = Element::new(0, k);
+        e.name = format!("N{}", BIDI);
+        e.text = format!("X{}", BIDI);
+        e.on_click = format!("C{}", BIDI);
+        e.options = vec![format!("O{}", BIDI), "P".into()];
+        e.font = format!("F{}", BIDI);
+        d.add(e);
+    }
+    // note: `Doc::sanitize` is NOT called: the exporters must be safe on their own
+    let json = ugui::json(&d, true);
+    assert_no_invisible("json", &json);
+    let v: Value = serde_json::from_str(&json).unwrap();
+    // same values once parsed (emoji ZWJ sequences, Persian ZWNJ... keep working)
+    assert_eq!(v["elements"][1]["text"]["value"], format!("X{}", BIDI));
+    assert_no_invisible("uxml", &uitk::uxml(&d));
+    assert_no_invisible("uss", &uitk::uss(&d));
+    assert_no_invisible("imgui", &imgui::script(&d));
+    assert_no_invisible("view_base", &view::base_script(&d));
+    assert_no_invisible("view_user", &view::user_script(&d));
+    // numeric character reference in UXML: it parses back to the same character
+    assert!(uitk::uxml(&d).contains("&#x202E;"));
+    assert_eq!(xml_attr("a\u{200B}b"), "a&#x200B;b");
+    assert_eq!(css_url_part("a\u{202E}b"), "ab");
+    assert_eq!(sanitize_line("a\u{200F}b"), "a b");
+}
+
+#[test]
+fn non_latin_titles_get_stable_distinct_class_names() {
+    let titles = ["主菜单", "设置", "Главное меню", "Настройки", "🎮", "メニュー"];
+    let names: Vec<String> = titles.iter().map(|t| class_name(t)).collect();
+    for (t, n) in titles.iter().zip(&names) {
+        assert!(n.starts_with("Design_") && n.len() == "Design_".len() + 8, "{t} -> {n}");
+        assert_eq!(&class_name(t), n, "stable");
+    }
+    let mut uniq = names.clone();
+    uniq.sort();
+    uniq.dedup();
+    assert_eq!(uniq.len(), titles.len(), "no two titles share a name: {names:?}");
+    // ASCII and Latin-with-accents titles keep their old names; a blank title is plain Design
+    assert_eq!(class_name("Menú principal"), "MenuPrincipal");
+    assert_eq!(class_name("   "), "Design");
+    assert_eq!(class_name(""), "Design");
+    // two designs with such titles export to two sets of files
+    let dir = project("cjk");
+    for t in ["主菜单", "设置"] {
+        let mut d = doc_with_button();
+        d.title = t.into();
+        write_unity_package(&d, &dir).unwrap();
+    }
+    let designs: Vec<_> = std::fs::read_dir(dir.join("Assets/EditorGUI/Designs")).unwrap().flatten().collect();
+    assert_eq!(designs.len(), 2);
+    // view fields of two non-Latin element names do not collapse into one
+    let mut d = Doc::empty(100.0, 100.0);
+    for n in ["按钮一", "按钮二"] {
+        let mut b = Element::new(0, Kind::Button);
+        b.name = n.into();
+        d.add(b);
+    }
+    let f = view::field_names(&d);
+    let mut vals: Vec<_> = f.values().cloned().collect();
+    vals.sort();
+    vals.dedup();
+    assert_eq!(vals.len(), 2);
+    assert!(vals.iter().all(|v| v.starts_with("design_")), "{vals:?}");
+    let _ = std::fs::remove_dir_all(&dir);
 }

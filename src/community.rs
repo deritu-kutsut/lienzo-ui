@@ -627,22 +627,33 @@ fn list(session: Option<&Session>, filter: Option<&str>, search: &str, with_18: 
     Ok(items)
 }
 
+/// Columns of `public_profiles` that anybody may read (never `select=*`: migration 0014 revokes the pending flags and `updated_at` from everyone).
+const PROFILE_PUBLIC_COLUMNS: &str = "id,public_name,bio,github,links,public_avatar,public_banner,followers,hearts_received";
+/// The same plus the caller's own pending flags: only valid on `my_public_profile` or, before migration 0014, on `public_profiles`.
+const PROFILE_OWN_COLUMNS: &str = "id,public_name,bio,github,links,public_avatar,public_banner,avatar_pending,banner_pending,followers,hearts_received";
+
 const ITEM_COLUMNS: &str = "id,kind,title,description,tags,is_18,public_path,sha256,bytes,downloads,version,author,author_name,public_icon,public_preview,hearts";
 
 fn load_public_profile(session: Option<&Session>, uid: &str) -> Result<(ProfilePublic, Vec<Item>), String> {
     if !is_uuid(uid) {
         return Err("Invalid creator.".into());
     }
-    let p: Vec<ProfilePublic> = request("GET", &format!("/rest/v1/public_profiles?select=id,public_name,bio,github,links,public_avatar,public_banner,followers,hearts_received&id=eq.{}", uid), session, None, None, &[], 1 << 18)?.ok()?.json()?;
+    let p: Vec<ProfilePublic> = request("GET", &format!("/rest/v1/public_profiles?select={}&id=eq.{}", PROFILE_PUBLIC_COLUMNS, uid), session, None, None, &[], 1 << 18)?.ok()?.json()?;
     let p = p.into_iter().next().ok_or("This creator does not have a public profile yet.")?;
     let mut items: Vec<Item> = request("GET", &format!("/rest/v1/community_items?select={}&status=eq.approved&author=eq.{}&order=created_at.desc&limit=60", ITEM_COLUMNS, uid), session, None, None, &[], 2 << 20)?.ok()?.json()?;
     items.retain(|i| is_uuid(&i.id) && val::KINDS.contains(&i.kind.as_str()));
     Ok((p, items))
 }
 
+/// Your own profile, with the pending-review flags. Read from the view `my_public_profile` (migration 0014: only the caller's row);
+/// while that migration is not applied yet the view does not exist and the same explicit columns are read from the table (never `select=*`).
 fn load_my_profile(s: &Session) -> Option<ProfilePublic> {
-    let r = request("GET", &format!("/rest/v1/public_profiles?select=*&id=eq.{}", s.uid), Some(s), None, None, &[], 1 << 18).ok()?.ok().ok()?;
-    r.json::<Vec<ProfilePublic>>().ok()?.into_iter().next()
+    let from_view = request("GET", &format!("/rest/v1/my_public_profile?select={}&id=eq.{}", PROFILE_OWN_COLUMNS, s.uid), Some(s), None, None, &[], 1 << 18).and_then(|r| r.ok());
+    let r = match from_view {
+        Ok(r) => r,
+        Err(_) => request("GET", &format!("/rest/v1/public_profiles?select={}&id=eq.{}", PROFILE_OWN_COLUMNS, s.uid), Some(s), None, None, &[], 1 << 18).ok()?.ok().ok()?,
+    };
+    r.json::<Vec<ProfilePublic>>().ok()?.into_iter().next().filter(|p| p.id == s.uid)
 }
 
 /// Crops a photo to the profile format (avatar 1:1, banner 3:1), shrinks it and converts it to PNG within the limits.
@@ -1203,6 +1214,9 @@ impl EditorApp {
                         let r = current(&s, tx).and_then(|s| json_post("/rest/v1/profiles", Some(&s), &serde_json::json!({ "id": s.uid, "public_name": n, "terms_accepted_at": iso(now()) }), &[("Prefer", "return=minimal")])?.ok().map(|_| s));
                         match r {
                             Ok(s) => {
+                                // The server reviews a new public name when the profile function runs (an empty save does that): until it is
+                                // reviewed the name is not shown publicly. Best effort: the first upload or any later save does it as well.
+                                let _ = json_post("/functions/v1/profile", Some(&s), &serde_json::json!({ "v": 2, "action": "save", "bio": "", "github": "", "links": {} }), &[]);
                                 let _ = tx.send(Message::Profile(load_profile(&s)));
                             }
                             Err(e) => {
@@ -1415,6 +1429,18 @@ mod tests {
     use super::*;
 
     #[test]
+    fn profile_reads_never_use_select_star() {
+        // Migration 0014 hides the pending flags / updated_at of the table from everybody: a `select=*` on public_profiles would fail.
+        let src = include_str!("community.rs");
+        let needle = ["public_profiles?select", "=*"].concat(); // built at run time so this test does not match itself
+        for (n, line) in src.lines().enumerate() {
+            assert!(!line.contains(&needle), "line {}: select=* on public_profiles", n + 1);
+        }
+        assert!(!PROFILE_PUBLIC_COLUMNS.contains("pending") && !PROFILE_PUBLIC_COLUMNS.contains("updated_at"));
+        assert!(PROFILE_OWN_COLUMNS.contains("avatar_pending") && PROFILE_OWN_COLUMNS.contains("banner_pending") && !PROFILE_OWN_COLUMNS.contains("updated_at"));
+    }
+
+    #[test]
     fn iso_date() {
         assert_eq!(iso(0), "1970-01-01T00:00:00Z");
         assert_eq!(iso(1_794_865_809), "2026-11-16T21:50:09Z");
@@ -1514,6 +1540,7 @@ fn review_action(a: &str) -> &str {
         "token-create" | "token-crear" => "token-create",
         "token-revoke" | "token-revocar" => "token-revoke",
         "rescan" | "reanalizar" => "rescan",
+        "cleanup" | "limpiar" => "cleanup",
         other => other,
     }
 }
@@ -1654,19 +1681,61 @@ pub fn me_cli() -> i32 {
     }
 }
 
+/// Maximum number of `cleanup` calls per run of `--community-review cleanup` (each call removes up to 25 files).
+const CLEANUP_MAX_CALLS: usize = 20;
+
+/// Repeats the server's `cleanup` action until it reports `done: 0` (queue drained or nothing more to do right now)
+/// or the call bound is reached. Prints how many files were removed. Exit code 1 on a request/server error.
+fn cleanup_loop(s: &Session, body: &serde_json::Value) -> i32 {
+    let (mut removed, mut failed) = (0i64, 0i64);
+    for call in 1..=CLEANUP_MAX_CALLS {
+        let r = match json_post("/functions/v1/review", Some(s), body, &[]) {
+            Ok(r) => r,
+            Err(e) => {
+                eprintln!("{}", val::terminal_safe(&e));
+                println!("{}", crate::i18n::tf("cleanup: {} file(s) removed before the error.", &[&removed.to_string()]));
+                return 1;
+            }
+        };
+        let mut v: serde_json::Value = r.json().unwrap_or_default();
+        val::terminal_safe_json(&mut v);
+        if !(200..300).contains(&r.state) {
+            eprintln!("{}", v["error"].as_str().unwrap_or("Server error."));
+            println!("{}", crate::i18n::tf("cleanup: {} file(s) removed before the error.", &[&removed.to_string()]));
+            return 1;
+        }
+        let done = v["done"].as_i64().unwrap_or(0).max(0);
+        removed += done;
+        failed += v["failed"].as_i64().unwrap_or(0).max(0);
+        if done == 0 {
+            break;
+        }
+        if call == CLEANUP_MAX_CALLS {
+            println!("{}", crate::i18n::tf("cleanup: call limit reached ({}); run it again if more files are queued.", &[&CLEANUP_MAX_CALLS.to_string()]));
+        }
+    }
+    if failed > 0 {
+        println!("{}", crate::i18n::tf("cleanup: {} file(s) removed, {} failed (they will be retried).", &[&removed.to_string(), &failed.to_string()]));
+    } else {
+        println!("{}", crate::i18n::tf("cleanup: {} file(s) removed.", &[&removed.to_string()]));
+    }
+    0
+}
+
 /// Human review (only accounts listed in the server's MODERATORS secret):
 ///   lienzo-ui --community-review list
 ///   lienzo-ui --community-review approve <id> [--18]      · reject <id> "reason"
 ///   lienzo-ui --community-review approve-profile <account-id> avatar|banner  · reject-profile <account-id> avatar|banner
 ///   lienzo-ui --community-review token-create "name" read,reject [days]    (credential for scripts; shown once)
 ///   lienzo-ui --community-review tokens                                       · token-revoke <id>
+///   lienzo-ui --community-review cleanup                                      (drains the takedown queue: removes the files of rejected / deleted listings; needs the reject scope)
 /// (The old Spanish action names — listar, aprobar, rechazar, … — still work.)
 /// The same can be done in the moderation web page (web/moderacion).
 pub fn review_cli(args: &[String]) -> i32 {
     let action = review_action(args.first().map(|s| s.as_str()).unwrap_or(""));
     let a1 = args.get(1).map(|s| s.as_str()).unwrap_or("");
     let a2 = args.get(2).map(|s| s.as_str()).unwrap_or("");
-    let usage = "Usage: lienzo-ui --community-review list | approve <id> [--18] | reject <id> \"reason\" | approve-profile <account> avatar|banner | reject-profile <account> avatar|banner | token-create \"name\" read,reject [days] | tokens | token-revoke <id> | rescan [id]";
+    let usage = "Usage: lienzo-ui --community-review list | approve <id> [--18] | reject <id> \"reason\" | approve-profile <account> avatar|banner | reject-profile <account> avatar|banner | token-create \"name\" read,reject [days] | tokens | token-revoke <id> | rescan [id] | cleanup";
     let body = match action {
         "list" | "tokens" => serde_json::json!({ "v": 2, "action": if action == "tokens" { "list_tokens" } else { "list" } }),
         "approve" | "reject" if is_uuid(a1) => serde_json::json!({ "v": 2, "action": action, "item": a1, "reason": a2, "is_18": args.iter().any(|x| x == "--18") }),
@@ -1678,6 +1747,7 @@ pub fn review_cli(args: &[String]) -> i32 {
         }
         "token-revoke" if is_uuid(a1) => serde_json::json!({ "v": 2, "action": "revoke_token", "id": a1 }),
         "rescan" if a1.is_empty() || is_uuid(a1) => serde_json::json!({ "v": 2, "action": "rescan", "item": if a1.is_empty() { serde_json::Value::Null } else { serde_json::json!(a1) } }),
+        "cleanup" => serde_json::json!({ "v": 2, "action": "cleanup" }),
         _ => {
             eprintln!("{}", usage);
             return 2;
@@ -1690,6 +1760,9 @@ pub fn review_cli(args: &[String]) -> i32 {
             return 1;
         }
     };
+    if action == "cleanup" {
+        return cleanup_loop(&s, &body);
+    }
     let r = match json_post("/functions/v1/review", Some(&s), &body, &[]) {
         Ok(r) => r,
         Err(e) => {
@@ -2520,6 +2593,31 @@ mod install_tests {
         for f in &folders {
             assert!(f.chars().all(|c| c.is_ascii_alphanumeric() || c == '-') && !f.ends_with('-') && f.starts_with("community-"), "{}", f);
         }
+    }
+
+    #[test]
+    fn plugins_whose_names_only_differ_by_case_or_symbols_never_share_a_folder() {
+        let base = std::env::temp_dir().join(format!("lienzo-collide-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&base);
+        let names = ["Tools", "tools", "TOOLS", "Tools.", "Tools ", "T ools", "T_ools", "Tools\u{200b}"];
+        for (i, n) in names.iter().enumerate() {
+            let manifest = serde_json::json!({"name": n, "commands":[{"name":"x","script":"a.rhai"}]});
+            let pkg = Package { manifest, files: [("a.rhai".to_string(), format!("fn run(d){{ d }} // plugin {}", i))].into() };
+            install_plugin_into(&pkg, &base, &base.join(plugin_folder_name(n))).unwrap();
+        }
+        for (i, n) in names.iter().enumerate() {
+            let code = std::fs::read_to_string(base.join(plugin_folder_name(n)).join("a.rhai")).unwrap();
+            assert!(code.ends_with(&format!("// plugin {}", i)), "{:?} was overwritten by another plugin: {}", n, code);
+        }
+        assert_eq!(std::fs::read_dir(&base).unwrap().count(), names.len());
+        // a package can never overwrite the validated manifest through a differently cased plugin.json
+        let manifest = serde_json::json!({"name":"Guard","commands":[{"name":"x","script":"a.rhai"}]});
+        let sneaky = Package { manifest: manifest.clone(), files: [("a.rhai".to_string(), "fn run(d){ d }".to_string()), ("Plugin.JSON".to_string(), "{\"name\":\"Evil\"}".to_string())].into() };
+        let folder = base.join(plugin_folder_name("Guard"));
+        install_plugin_into(&sneaky, &base, &folder).unwrap();
+        let written: serde_json::Value = serde_json::from_str(&std::fs::read_to_string(folder.join("plugin.json")).unwrap()).unwrap();
+        assert_eq!(written["name"], "Guard");
+        let _ = std::fs::remove_dir_all(&base);
     }
 
     #[test]

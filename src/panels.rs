@@ -445,6 +445,7 @@ impl EditorApp {
     fn place_or_drag(&mut self, resp: &egui::Response, proto: Element) {
         if resp.drag_started() {
             self.dnd = Some(vec![proto]);
+            self.dnd_ov.clear();
         } else if resp.clicked() {
             self.insert(proto, None);
         }
@@ -568,11 +569,12 @@ impl EditorApp {
                 });
                 if resp.drag_started() {
                     self.dnd = Some(it.items.clone());
+                    self.dnd_ov = it.overrides.clone();
                 } else if resp.clicked() {
-                    if it.items.len() == 1 {
+                    if it.items.len() == 1 && it.overrides.is_empty() {
                         self.insert(it.items[0].clone(), None);
                     } else {
-                        self.insert_items(&it.items, None);
+                        self.insert_items_with(&it.items, &it.overrides, None);
                     }
                 }
                 resp.context_menu(|ui| {
@@ -917,6 +919,7 @@ impl EditorApp {
                 if resp.drag_started() {
                     let max = (self.doc.width.min(self.doc.height) * 0.5).max(100.0);
                     self.dnd = Some(vec![crate::library::image_element(&im.file, im.w, im.h, max)]);
+                    self.dnd_ov.clear();
                 } else if resp.clicked() {
                     self.insert_library_image(&im.file, None);
                 }
@@ -1700,7 +1703,7 @@ impl EditorApp {
     }
 
     fn multi_settings(&mut self, ui: &mut egui::Ui) {
-        ui.label(RichText::new(format!("{} {}", self.sel.len(), crate::i18n::t("elements selected"))).color(MUTED()));
+        ui.label(RichText::new(crate::i18n::tf("Elements selected: {}", &[&self.sel.len().to_string()])).color(MUTED()));
         self.arrange(ui, true);
         ui.add_space(6.0);
         if ui.button(crate::i18n::t("Group into Container (Ctrl+G)")).clicked() {

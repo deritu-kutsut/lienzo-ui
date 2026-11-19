@@ -35,9 +35,36 @@ namespace EditorGui
 
         /// userData of a sprite texture that Lienzo created / manages: its import settings may be rewritten.
         /// A texture without it that already exists in the project belongs to the user (only what the design sets is applied).
+        /// The marker is "lienzo:sprite:<hash>": the hash (see <see cref="SettingsHash"/>) is of the settings Lienzo LAST wrote.
+        /// If the settings no longer match it, somebody changed them by hand: Lienzo stops resetting that texture.
+        /// A bare "lienzo:sprite" (older versions) is still Lienzo's and gets its hash on the next write.
         /// Design note: the marker is written to the .meta of the copies Lienzo puts in Assets/EditorGUI/Sprites; if a user
         /// removes it from the meta (or the texture was imported before Lienzo), the importer will not touch its settings.
         const string OwnedMarker = "lienzo:sprite";
+
+        enum Ownership { User, Lienzo, Modified }
+
+        /// Small FNV-1a hash of the import settings Lienzo manages (type, mode, pixels per unit, border, filter, mipmaps).
+        static string SettingsHash(TextureImporter ti)
+        {
+            var b = ti.spriteBorder;
+            var text = (int)ti.textureType + "|" + (int)ti.spriteImportMode + "|" + Mathf.RoundToInt(ti.spritePixelsPerUnit * 100f) + "|" +
+                       Mathf.RoundToInt(b.x * 100f) + "," + Mathf.RoundToInt(b.y * 100f) + "," + Mathf.RoundToInt(b.z * 100f) + "," + Mathf.RoundToInt(b.w * 100f) + "|" +
+                       (int)ti.filterMode + "|" + (ti.mipmapEnabled ? 1 : 0);
+            uint h = 2166136261;
+            foreach (var c in text) { h ^= c; h *= 16777619; }
+            return h.ToString("x8");
+        }
+
+        static bool Stamped(TextureImporter ti) => ti.userData != null && ti.userData.StartsWith(OwnedMarker + ":");
+
+        static Ownership OwnershipOf(TextureImporter ti)
+        {
+            var u = ti.userData ?? "";
+            if (u == OwnedMarker) return Ownership.Lienzo; // marker without hash (older versions)
+            if (!u.StartsWith(OwnedMarker + ":")) return Ownership.User;
+            return u.Substring(OwnedMarker.Length + 1) == SettingsHash(ti) ? Ownership.Lienzo : Ownership.Modified;
+        }
 
         // ------------------------------------------------------------------ JSON format
         [Serializable] public class RT { public float[] anchorMin, anchorMax, pivot, anchoredPosition, sizeDelta; public float rotationZ; }
@@ -131,6 +158,39 @@ namespace EditorGui
 
         public static string PrefabPathFor(string jsonPath) => Root + "/Prefabs/" + Path.GetFileNameWithoutExtension(jsonPath) + ".prefab";
 
+        // ---- which design a prefab was built from
+        // The prefab's .meta (userData, saved with the project and so also in a fresh clone) holds "lienzo:design:<hash>" of the
+        // design JSON it was built from. Rebuilding is decided by that hash, never by file times (a clone gives every file a new time),
+        // so opening a cloned project does not regenerate prefabs nor drop the edits made to them by hand.
+        const string DesignMarker = "lienzo:design:";
+        /// Bump to force every prefab to be rebuilt by a new importer.
+        const int BuildRevision = 1;
+
+        /// Hash of a design file (line endings do not count: git may convert them).
+        public static string DesignHash(string jsonPath)
+        {
+            var bytes = File.ReadAllBytes(jsonPath).Where(b => b != 13).ToArray();
+            using (var sha = System.Security.Cryptography.SHA256.Create())
+                return BuildRevision + "-" + BitConverter.ToString(sha.ComputeHash(bytes), 0, 8).Replace("-", "").ToLowerInvariant();
+        }
+
+        /// Hash stored in the prefab, or null (no prefab, or built by an older version).
+        public static string StoredDesignHash(string prefabPath)
+        {
+            var ai = AssetImporter.GetAtPath(prefabPath);
+            var u = ai != null ? ai.userData : null;
+            return !string.IsNullOrEmpty(u) && u.StartsWith(DesignMarker) ? u.Substring(DesignMarker.Length) : null;
+        }
+
+        public static void StampDesignHash(string prefabPath, string hash)
+        {
+            var ai = AssetImporter.GetAtPath(prefabPath);
+            if (ai == null) { Debug.LogWarning("[Lienzo UI] Could not record the design hash of " + prefabPath + ": the prefab will be rebuilt the next time Unity checks."); return; }
+            if (ai.userData == DesignMarker + hash) return;
+            ai.userData = DesignMarker + hash;
+            ai.SaveAndReimport();
+        }
+
         /// TextMeshPro needs its “TMP Essential Resources” (default font and settings). Without them
         /// texts have no font and fail when clipped inside a mask (RectMask2D).
         /// If they are missing, the official TMP window opens to import them and nothing is built.
@@ -170,6 +230,7 @@ namespace EditorGui
             {
                 EditorSceneManager.ClosePreviewScene(scene);
             }
+            StampDesignHash(prefabPath, DesignHash(jsonPath));
             var vt = FindViewType((doc.canvas ?? new Cv()).className);
             Debug.Log("[Lienzo UI] Prefab updated: " + prefabPath + (vt == null && !string.IsNullOrEmpty((doc.canvas ?? new Cv()).className) ? " (the " + doc.canvas.className + "View script is not compiled yet: the prefab is rebuilt when it is)" : ""));
             return prefabPath;
@@ -661,6 +722,7 @@ namespace EditorGui
                 tc.color = new Color(0.1f, 0.1f, 0.13f, 1f);
             }
             inp.pointSize = e.text.fontSize;
+            inp.richText = false;
             inp.text = "";
         }
 
@@ -693,7 +755,7 @@ namespace EditorGui
                 arrow.anchoredPosition = new Vector2(-h * 0.45f, 0);
                 arrow.GetComponent<Image>().color = Col(e.text.color, 1f);
             }
-            if (dd.itemText != null) dd.itemText.fontSize = e.text.fontSize * 0.9f;
+            if (dd.itemText != null) { dd.itemText.fontSize = e.text.fontSize * 0.9f; dd.itemText.richText = false; }
             var template = dd.template;
             if (template != null)
             {
@@ -883,9 +945,10 @@ namespace EditorGui
         {
             var x = e.text;
             // the element's font, else the design's default font, else TMP's own default
-            var family = !string.IsNullOrEmpty(x.font) && x.font != "Monospace" && x.font != "Monoespaciada" ? x.font : defaultFontName;
+            var family = !IsDefaultFontName(x.font) ? x.font : defaultFontName;
             var fa = FontAsset(family);
             if (fa != null) { t.font = fa; EnsureFallbacks(fa); }
+            t.richText = false; // as in the editor: "<b>" in a text is shown literally, not as markup
             t.text = value ?? "";
             CheckGlyphs(t.font, t.text);
             if (!textsOf.TryGetValue(e.id, out var list)) textsOf[e.id] = list = new List<TMP_Text>();
@@ -909,11 +972,15 @@ namespace EditorGui
 
         static readonly Dictionary<string, TMP_FontAsset> fontCache = new Dictionary<string, TMP_FontAsset>();
 
+        /// "" and the editor's built-in font ("Monospace"; "Monoespaciada" in files from older versions) mean "no font chosen".
+        static bool IsDefaultFontName(string f) =>
+            string.IsNullOrEmpty(f) || f.Equals("Monospace", StringComparison.OrdinalIgnoreCase) || f.Equals("Monoespaciada", StringComparison.OrdinalIgnoreCase);
+
         /// Resolves a TMP_FontAsset by name. An existing asset of the project always wins (searched by name, also in
         /// "Fonts & Materials"); an SDF asset is only created from Assets/EditorGUI/Fonts/&lt;family&gt;.ttf|otf when none exists.
         static TMP_FontAsset FontAsset(string family)
         {
-            if (string.IsNullOrEmpty(family) || family == "Monoespaciada" || family == "Monospace") return null;
+            if (IsDefaultFontName(family)) return null;
             // A font name is looked up as an asset name and used inside Assets/EditorGUI/Fonts: it must not be a path.
             if (family.IndexOfAny(new[] { '/', '\\', ':' }) >= 0 || family.Contains(".."))
             {
@@ -924,9 +991,10 @@ namespace EditorGui
             var fa = FindFontAsset(family);
             if (fa == null)
             {
-                var src = new[] { ".ttf", ".otf" }.Select(x => Root + "/Fonts/" + family + x).FirstOrDefault(File.Exists);
+                var src = new[] { ".ttf", ".otf", ".ttc" }.Select(x => Root + "/Fonts/" + family + x).FirstOrDefault(File.Exists);
                 if (src != null)
                 {
+                    if (src.EndsWith(".ttc")) Warn("ttc:" + family, "[Lienzo UI] \"" + src + "\" is a TrueType collection (.ttc): the TextMeshPro font asset is created from its first face.");
                     var assetPath = Root + "/Fonts/" + family + " SDF.asset";
                     AssetDatabase.ImportAsset(src, ImportAssetOptions.ForceSynchronousImport);
                     var font = AssetDatabase.LoadAssetAtPath<Font>(src);
@@ -973,20 +1041,27 @@ namespace EditorGui
         /// fallbacks, once per build, and saves the asset only if something was added.
         static void EnsureFallbacks(TMP_FontAsset fa)
         {
-            if (fa == null || fallbackFontNames.Length == 0 || !fallbacksDone.Add(fa)) return;
+            if (fa == null || fallbackFontNames.Length == 0 || !fallbacksDone.Add(fa)) return; // only when the design lists fallback fonts
+            var faPath = AssetDatabase.GetAssetPath(fa);
+            if (faPath.StartsWith("Packages/"))
+            {
+                Warn("fbpkg:" + faPath, "[Lienzo UI] The font asset \"" + fa.name + "\" lives in a package (read-only): the design's fallback fonts were not added to it. Add them in its Fallback Font Assets list.");
+                return;
+            }
             var table = fa.fallbackFontAssetTable ?? new List<TMP_FontAsset>();
-            bool changed = false;
+            var added = new List<string>();
             foreach (var n in fallbackFontNames)
             {
                 var fb = FontAsset(n);
                 if (fb == null || fb == fa || table.Contains(fb)) continue;
                 table.Add(fb);
-                changed = true;
+                added.Add(fb.name);
             }
-            if (!changed) return;
+            if (added.Count == 0) return;
             fa.fallbackFontAssetTable = table;
             EditorUtility.SetDirty(fa);
             AssetDatabase.SaveAssetIfDirty(fa);
+            Debug.Log("[Lienzo UI] Added fallback font(s) " + string.Join(", ", added) + " to the TextMeshPro font asset \"" + fa.name + "\" (" + faPath + ") because the design lists them in unity.fallback_fonts. This edits that asset permanently; remove them from its Fallback Font Assets list if you do not want them.", fa);
         }
 
         /// Remembers the characters of `text` that the font (and its fallbacks) cannot draw.
@@ -1105,7 +1180,13 @@ namespace EditorGui
             var ti = GetImporter(path);
             if (ti == null) return;
             var filter = pixelArt ? FilterMode.Point : FilterMode.Bilinear;
-            if (ti.userData == OwnedMarker && ti.textureType == TextureImporterType.Sprite && ti.spriteImportMode == SpriteImportMode.Single && ti.spriteBorder == border && !ti.mipmapEnabled && ti.filterMode == filter) return;
+            var own = OwnershipOf(ti);
+            if (own == Ownership.Modified)
+            {
+                Warn("modified:" + path, "[Lienzo UI] \"" + path + "\" was changed by hand after Lienzo generated it (mode / pixels per unit / border / filter): its settings are left as they are. Delete the file to have it generated again.");
+                return;
+            }
+            if (own == Ownership.Lienzo && Stamped(ti) && ti.textureType == TextureImporterType.Sprite && ti.spriteImportMode == SpriteImportMode.Single && ti.spriteBorder == border && !ti.mipmapEnabled && ti.filterMode == filter) return;
             ApplyLienzoDefaults(ti, border, 100f);
             ti.SaveAndReimport();
         }
@@ -1121,7 +1202,7 @@ namespace EditorGui
             ti.wrapMode = TextureWrapMode.Clamp;
             ti.filterMode = pixelArt ? FilterMode.Point : FilterMode.Bilinear;
             if (pixelArt) ti.textureCompression = TextureImporterCompression.Uncompressed;
-            ti.userData = OwnedMarker;
+            ti.userData = OwnedMarker + ":" + SettingsHash(ti);
         }
 
         static TextureImporter GetImporter(string path)
@@ -1146,13 +1227,23 @@ namespace EditorGui
             bool hasBorder = e.slice != null && e.slice.Length >= 4;
             var border = hasBorder ? new Vector4(e.slice[0], e.slice[1], e.slice[2], e.slice[3]) : Vector4.zero;
             bool hasPpu = e.ppu > 0f;
-            bool fresh = ti.textureType != TextureImporterType.Sprite;
-            bool owned = ti.userData == OwnedMarker || (fresh && path.StartsWith(Root + "/Sprites/"));
+            // Only a plain texture (Default) is turned into a Sprite. Normal maps, cursors, lightmaps, single channel... are
+            // other kinds of texture: they are never retyped (an Image cannot show them; the user decides).
+            bool fresh = ti.textureType == TextureImporterType.Default;
+            if (!fresh && ti.textureType != TextureImporterType.Sprite)
+            {
+                Warn("textype:" + path, "[Lienzo UI] \"" + path + "\" is imported as " + ti.textureType + ", not as a Sprite: its import settings were left untouched and the image is left empty (change its Texture Type to Sprite (2D and UI) if it is a picture).");
+                return;
+            }
+            var own = OwnershipOf(ti);
+            if (own == Ownership.Modified)
+                Warn("modified:" + path, "[Lienzo UI] \"" + path + "\" was changed by hand after Lienzo configured it: only what the design explicitly sets (slice, ppu, pixel-art filter) is applied to it.");
+            bool owned = own == Ownership.Lienzo || (own == Ownership.User && fresh && path.StartsWith(Root + "/Sprites/"));
             if (owned)
             {
                 var ppu = hasPpu ? e.ppu : 100f;
                 var filter = pixelArt ? FilterMode.Point : FilterMode.Bilinear;
-                if (ti.userData == OwnedMarker && ti.textureType == TextureImporterType.Sprite && ti.spriteBorder == border && Mathf.Approximately(ti.spritePixelsPerUnit, ppu) && !ti.mipmapEnabled && ti.filterMode == filter) return;
+                if (own == Ownership.Lienzo && Stamped(ti) && ti.textureType == TextureImporterType.Sprite && ti.spriteBorder == border && Mathf.Approximately(ti.spritePixelsPerUnit, ppu) && !ti.mipmapEnabled && ti.filterMode == filter) return;
                 ApplyLienzoDefaults(ti, border, ppu);
                 ti.SaveAndReimport();
                 return;
@@ -1343,7 +1434,9 @@ namespace EditorGui
     {
         const string Dir = "Library/LienzoUI";
         const string FilePath = Dir + "/pending.txt";
-        const int MaxAttempts = 3;
+        /// Reload cycles (a few idle seconds each) a design waits for its View script before it is built without it.
+        const int MaxAttempts = 5;
+        static bool failedWarned;
         static bool polling;
         static double deadline;
 
@@ -1432,15 +1525,27 @@ namespace EditorGui
 
         static void Process()
         {
-            if (EditorUtility.scriptCompilationFailed) return; // fix the compile errors; it runs again after the next reload
             var list = Read();
             if (list.Count == 0) return;
+            if (EditorUtility.scriptCompilationFailed)
+            {
+                // fix the compile errors; it runs again after the next reload
+                if (!failedWarned) { failedWarned = true; Debug.LogWarning("[Lienzo UI] " + list.Count + " prefab(s) are waiting: the scripts have compile errors. Fix them and the prefabs are generated automatically."); }
+                return;
+            }
+            failedWarned = false;
             var keep = new List<(string path, int attempts)>();
             int built = 0;
+            bool retry = false;
             foreach (var (path, attempts) in list)
             {
                 if (!File.Exists(path)) continue;
-                if (!ViewReady(path) && attempts + 1 < MaxAttempts) { keep.Add((path, attempts + 1)); continue; }
+                if (!ViewReady(path))
+                {
+                    // not ready: stays in the list and is tried again in the next cycle (bounded)
+                    if (attempts + 1 < MaxAttempts) { keep.Add((path, attempts + 1)); retry = true; continue; }
+                    Debug.LogWarning("[Lienzo UI] The View script of " + path + " is still not compiled after " + MaxAttempts + " attempts (compile errors? an assembly that does not reference UnityEngine.UI / Unity.TextMeshPro? a class named differently?). The prefab is built WITHOUT its View component; it is rebuilt automatically when the View compiles.");
+                }
                 try
                 {
                     if (EditorGuiImporter.BuildPrefab(path) != null) built++;
@@ -1449,14 +1554,20 @@ namespace EditorGui
                 catch (Exception ex) { Debug.LogError("[Lienzo UI] Could not build " + path + ": " + ex); }
             }
             Write(keep);
+            if (retry) Schedule();
             if (built > 0) Debug.Log("[Lienzo UI] Prefabs generated: " + built + (keep.Count > 0 ? " (" + keep.Count + " still pending)" : "") + ".");
         }
 
-        /// Prefab missing, older than its design, or without the View / runtime components its design needs.
+        /// Prefab missing, built from another version of its design (content hash stored in the prefab's .meta, never file times),
+        /// or without the View / runtime components its design needs. A prefab from an older version has no hash: it is rebuilt
+        /// only when its design is clearly newer (more than a minute), then it gets the hash (see CatchUp).
         static bool NeedsRebuild(string json)
         {
             var prefab = EditorGuiImporter.PrefabPathFor(json);
-            if (!File.Exists(prefab) || File.GetLastWriteTimeUtc(json) > File.GetLastWriteTimeUtc(prefab)) return true;
+            if (!File.Exists(prefab)) return true;
+            var stored = EditorGuiImporter.StoredDesignHash(prefab);
+            if (stored != null) { if (stored != EditorGuiImporter.DesignHash(json)) return true; }
+            else if (File.GetLastWriteTimeUtc(json) > File.GetLastWriteTimeUtc(prefab).AddMinutes(1)) return true;
             var go = AssetDatabase.LoadAssetAtPath<GameObject>(prefab);
             if (go == null) return true;
             EditorGuiImporter.Doc doc;
@@ -1479,6 +1590,13 @@ namespace EditorGui
             {
                 var json = f.Replace('\\', '/');
                 if (NeedsRebuild(json)) Add(json, false);
+                else
+                {
+                    // an up-to-date prefab from an older version: record the hash so a fresh clone never rebuilds it
+                    var prefab = EditorGuiImporter.PrefabPathFor(json);
+                    if (File.Exists(prefab) && EditorGuiImporter.StoredDesignHash(prefab) == null)
+                        try { EditorGuiImporter.StampDesignHash(prefab, EditorGuiImporter.DesignHash(json)); } catch (Exception ex) { Debug.LogWarning("[Lienzo UI] " + ex.Message); }
+                }
             }
         }
     }

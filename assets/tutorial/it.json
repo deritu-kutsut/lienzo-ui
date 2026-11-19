@@ -10,7 +10,7 @@
     },
     {
       "title": "Inizia da un modello",
-      "text": "Apri Modelli nella barra a sinistra e scegline uno dei 12: menu principale, HUD, pausa, fine partita, selezione livello, inventario, dialogo personaggio, classifica…\n\nÈ il modo più rapido per vedere come si costruisce un'interfaccia completa. Tutto ciò che contiene può essere modificato.\n\nSe preferisci partire da zero, scegli «Vuoto» o File › Nuovo design vuoto."
+      "text": "Apri Modelli nella barra a sinistra e scegline uno dei 13: menu principale, HUD, pausa, fine partita, selezione livello, inventario, dialogo personaggio, classifica…\n\nÈ il modo più rapido per vedere come si costruisce un'interfaccia completa. Tutto ciò che contiene può essere modificato.\n\nSe preferisci partire da zero, scegli «Vuoto» o File › Nuovo design vuoto."
     },
     {
       "title": "Aggiungere e modificare elementi",
@@ -56,7 +56,7 @@
     },
     {
       "title": "Accessibilità e lingue",
-      "text": "Il pulsante «Accessibilità» nella barra superiore permette di:\n\n• Cambiare la lingua dell'interfaccia (spagnolo, inglese, portoghese, francese, tedesco, italiano o russo).\n• Ingrandire l'interfaccia fino al 200 % (anche con Ctrl+Alt+= e Ctrl+Alt+-).\n• Attivare l'alto contrasto: testo bianco e bordi marcati.\n• Ridurre il movimento: nessuna animazione.\n\nLe lingue sono file assets/i18n/<codice>.tsv: per aggiungerne una basta tradurre en.tsv."
+      "text": "Il pulsante «Accessibilità» nella barra superiore permette di:\n\n• Cambiare la lingua dell'interfaccia (spagnolo, inglese, portoghese, francese, tedesco, italiano, russo, cinese, giapponese o coreano).\n• Ingrandire l'interfaccia fino al 250 % (anche con Ctrl+Alt+= e Ctrl+Alt+-).\n• Attivare l'alto contrasto: testo bianco e bordi marcati.\n• Ridurre il movimento: nessuna animazione.\n\nLe lingue sono file assets/i18n/<codice>.tsv: per aggiungerne una basta copiare es.tsv e tradurre la copia."
     }
   ]
 }

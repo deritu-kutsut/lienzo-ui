@@ -10,7 +10,7 @@
     },
     {
       "title": "Comece com um modelo",
-      "text": "Abra Modelos na barra à esquerda e escolha um dos 12: menu principal, HUD, pausa, fim de jogo, seleção de fase, inventário, diálogo de personagem, classificação…\n\nÉ a forma mais rápida de ver como uma interface completa é construída. Tudo o que vem nele pode ser alterado.\n\nSe preferir começar do zero, escolha «Em branco» ou Arquivo › Novo design em branco."
+      "text": "Abra Modelos na barra à esquerda e escolha um dos 13: menu principal, HUD, pausa, fim de jogo, seleção de fase, inventário, diálogo de personagem, classificação…\n\nÉ a forma mais rápida de ver como uma interface completa é construída. Tudo o que vem nele pode ser alterado.\n\nSe preferir começar do zero, escolha «Em branco» ou Arquivo › Novo design em branco."
     },
     {
       "title": "Adicionar e editar elementos",
@@ -56,7 +56,7 @@
     },
     {
       "title": "Acessibilidade e idiomas",
-      "text": "O botão «Acessibilidade» da barra superior permite:\n\n• Mudar o idioma da interface (espanhol, inglês, português, francês, alemão, italiano ou russo).\n• Aumentar a interface até 200 % (também com Ctrl+Alt+= e Ctrl+Alt+-).\n• Ativar alto contraste: texto branco e bordas marcadas.\n• Reduzir movimento: sem animações.\n\nOs idiomas são arquivos assets/i18n/<código>.tsv: para adicionar um, basta traduzir en.tsv."
+      "text": "O botão «Acessibilidade» da barra superior permite:\n\n• Mudar o idioma da interface (espanhol, inglês, português, francês, alemão, italiano, russo, chinês, japonês ou coreano).\n• Aumentar a interface até 250 % (também com Ctrl+Alt+= e Ctrl+Alt+-).\n• Ativar alto contraste: texto branco e bordas marcadas.\n• Reduzir movimento: sem animações.\n\nOs idiomas são arquivos assets/i18n/<código>.tsv: para adicionar um, basta copiar es.tsv e traduzir a cópia."
     }
   ]
 }

@@ -1163,3 +1163,54 @@ fn scrollview_content_keeps_sibling_order() {
     let names: Vec<&str> = imp.doc.elements.iter().map(|e| e.name.as_str()).collect();
     assert_eq!(names, ["Before", "Items", "Item", "After"], "{names:?}");
 }
+
+// ---- Lienzo-generated helper names, new form (marked block: the old form is covered by the test above)
+#[test]
+fn lienzo_exported_structure_is_recognised_with_the_new_generated_names() {
+    // (names of exports from v1.5 on) "__canvas_background" background, "__border" ring, "__text" caption and generated sprites (rr_ / ellipse_) of Lienzo's own prefabs
+    let dir = tmpdir("lienzo_struct_new");
+    let sprites = dir.join("Assets/EditorGUI/Sprites/Generated");
+    std::fs::create_dir_all(&sprites).unwrap();
+    for (n, g) in [("rr_24_0", "11111111111111111111111111111111"), ("rr_24_3", "22222222222222222222222222222222"), ("ellipse_0", "33333333333333333333333333333333")] {
+        std::fs::write(sprites.join(format!("{n}.png")), b"png").unwrap();
+        std::fs::write(sprites.join(format!("{n}.png.meta")), format!("fileFormatVersion: 2\nguid: {g}\nTextureImporter:\n  spriteMode: 1\n  spriteBorder: {{x: 26, y: 26, z: 26, w: 26}}\n")).unwrap();
+    }
+    let pref_dir = dir.join("Assets/EditorGUI/Prefabs");
+    std::fs::create_dir_all(&pref_dir).unwrap();
+    let text = prefab(&[
+        go(1, "Menu", &[11, 12, 13], true),
+        Rt::new(11, 1, 0).kids(&[21, 31, 51]).stretch().yaml(),
+        native(223, 12, 1, "  m_RenderMode: 0\n"),
+        mb(13, 1, G_SCALER, "", "  m_UiScaleMode: 1\n  m_ReferenceResolution: {x: 1920, y: 1080}\n  m_ScreenMatchMode: 0\n  m_MatchWidthOrHeight: 0.5\n"),
+        go(2, "__canvas_background", &[21, 22], true),
+        Rt::new(21, 2, 11).stretch().yaml(),
+        image(22, 2, [0.1, 0.2, 0.3, 1.0], None, 0),
+        go(3, "Card", &[31, 32], true),
+        Rt::new(31, 3, 11).kids(&[41, 42]).size([500.0, 300.0]).yaml(),
+        image(32, 3, [1.0, 1.0, 1.0, 1.0], Some((21300000, "11111111111111111111111111111111")), 1),
+        go(4, "__border", &[41, 43], true),
+        Rt::new(41, 4, 31).stretch().yaml(),
+        image(43, 4, [0.0, 0.0, 0.0, 1.0], Some((21300000, "22222222222222222222222222222222")), 1),
+        go(5, "__text", &[42, 44], true),
+        Rt::new(42, 5, 31).stretch().yaml(),
+        tmp(44, 5, "Hello", 28.0, [0.0, 0.0, 0.0, 1.0], ""),
+        go(6, "Dot", &[51, 52], true),
+        Rt::new(51, 6, 11).size([80.0, 80.0]).pos([300.0, 0.0]).yaml(),
+        image(52, 6, [1.0, 0.0, 0.0, 1.0], Some((21300000, "33333333333333333333333333333333")), 0),
+    ]);
+    let pf = pref_dir.join("Menu.prefab");
+    std::fs::write(&pf, text).unwrap();
+    let imp = import_file(&pf).unwrap();
+    let d = &imp.doc;
+    assert_eq!(d.background, [26, 51, 77, 255], "the 'Fondo del lienzo' child is the page background: {:?}", d.background);
+    assert_eq!(d.elements.len(), 2, "{:?}", d.elements.iter().map(|e| &e.name).collect::<Vec<_>>());
+    let card = by_name(d, "Card");
+    assert_eq!(card.kind, Kind::Panel, "a generated rounded sprite is a plain panel");
+    assert_eq!(card.radius, 24.0);
+    assert_eq!(card.stroke_w, 3.0, "ring sprite rr_24_3 gives the border width");
+    assert_eq!(card.stroke, [0, 0, 0, 255]);
+    assert_eq!(card.text, "Hello");
+    assert!(card.image.is_empty() && card.slice.is_none());
+    assert_eq!(by_name(d, "Dot").kind, Kind::Ellipse);
+    let _ = std::fs::remove_dir_all(&dir);
+}

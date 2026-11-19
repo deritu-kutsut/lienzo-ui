@@ -591,16 +591,19 @@ impl EditorApp {
                 if released {
                     if rect.contains(m) {
                         let p = v.to_page(m);
-                        if items.len() == 1 {
+                        let ovs = std::mem::take(&mut self.dnd_ov);
+                        if items.len() == 1 && ovs.is_empty() {
                             self.insert(items[0].clone(), Some(p));
                         } else {
-                            self.insert_items(&items, Some(p));
+                            self.insert_items_with(&items, &ovs, Some(p));
                         }
                     }
                     self.dnd = None;
+                    self.dnd_ov.clear();
                 }
             } else if released {
                 self.dnd = None;
+                self.dnd_ov.clear();
             }
         }
     }
@@ -789,7 +792,7 @@ impl EditorApp {
         let (w, h) = (self.doc.width, self.doc.height);
         let mut xs = vec![(0.0, [0.0, h]), (w / 2.0, [0.0, h]), (w, [0.0, h])];
         let mut ys = vec![(0.0, [0.0, w]), (h / 2.0, [0.0, w]), (h, [0.0, w])];
-        let moving: Vec<u64> = self.sel_top().iter().flat_map(|t| self.doc.subtree(*t)).collect();
+        let moving: std::collections::HashSet<u64> = self.sel_top().iter().flat_map(|t| self.doc.subtree(*t)).collect();
         for e in d.orig.iter().filter(|e| e.visible && !moving.contains(&e.id) && e.kind != Kind::Empty) {
             let a = e.aabb();
             if a[0] <= 0.5 && a[1] <= 0.5 && a[2] >= w - 0.5 && a[3] >= h - 0.5 {

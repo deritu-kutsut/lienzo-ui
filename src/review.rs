@@ -38,6 +38,30 @@ pub fn contrast(a: Rgba, b: Rgba) -> f32 {
     (la.max(lb) + 0.05) / (la.min(lb) + 0.05)
 }
 
+/// `v` written with as few decimals as it takes not to look equal to the threshold `min` it is below
+/// (17.6 px against 18 px reads «17.6», never a rounded «18»).
+fn below(v: f32, min: f32) -> String {
+    for d in 0..=3usize {
+        let (s, m) = (format!("{:.*}", d, v), format!("{:.*}", d, min));
+        if s != m {
+            return s;
+        }
+    }
+    format!("{}", v)
+}
+
+/// Contrast ratio written rounded down to one decimal, so that a failing 4.46 is not shown as «4.5».
+fn floor1(v: f32) -> String {
+    format!("{:.1}", (v * 10.0).floor() / 10.0)
+}
+
+/// Colour of an element's fill as it is seen: its alpha times the element's own opacity.
+fn seen(c: Rgba, opacity: f32) -> Rgba {
+    let mut c = c;
+    c[3] = (c[3] as f32 * opacity.clamp(0.0, 1.0)).round() as u8;
+    c
+}
+
 fn blend(up: Rgba, down: Rgba) -> Rgba {
     let a = up[3] as f32 / 255.0;
     let m = |i: usize| (up[i] as f32 * a + down[i] as f32 * (1.0 - a)).round() as u8;
@@ -92,7 +116,7 @@ fn visible_all(doc: &Doc) -> Vec<bool> {
 }
 
 fn has_own_background(e: &Element) -> bool {
-    matches!(e.kind, Kind::Button | Kind::InputField | Kind::Dropdown | Kind::Panel | Kind::Ellipse) && e.fill[3] > 0
+    matches!(e.kind, Kind::Button | Kind::InputField | Kind::Dropdown | Kind::Panel | Kind::Ellipse) && seen(e.fill, e.opacity)[3] > 0
 }
 
 /// Color the text of `idx` is seen against: its own fill if it has one, or whatever is underneath.
@@ -109,7 +133,7 @@ fn background_of(doc: &Doc, vis: &[bool], idx: usize) -> Rgba {
             continue;
         }
         if cx >= o.x && cx <= o.x + o.w && cy >= o.y && cy <= o.y + o.h {
-            color = blend(fill(o), color);
+            color = blend(seen(fill(o), o.opacity), color);
         }
     }
     color
@@ -151,24 +175,24 @@ fn review_layout(doc: &Doc, portrait: bool) -> Vec<Problem> {
         if with_text {
             let min = MIN_FONT * scale;
             if e.font_size < min {
-                p(Level::Warning, "{} px text: hard to read on small screens (recommended minimum {} px)", vec![format!("{:.0}", e.font_size), format!("{:.0}", min)]);
+                p(Level::Warning, "{} px text: hard to read on small screens (recommended minimum {} px)", vec![below(e.font_size, min), format!("{:.0}", min)]);
             }
             // WCAG does not require contrast for disabled controls.
             let disabled = !e.interactable && matches!(e.kind, Kind::Button | Kind::Toggle);
             let background = background_of(doc, &vis, idx);
-            let c = contrast(blend(e.text_color, background), background);
+            let c = contrast(blend(seen(e.text_color, e.opacity), background), background);
             // WCAG "large text": 18 pt (24 px) or 14 pt bold (≈18.7 px), at the reference scale.
             let big = e.font_size >= 24.0 * scale || (e.bold && e.font_size >= 18.7 * scale);
             let min_c = if big { 3.0 } else { 4.5 };
             if c < min_c && !disabled {
                 let level = if c < 2.0 { Level::Error } else { Level::Warning };
-                p(level, "Text contrast {}:1 (WCAG asks for {}:1)", vec![format!("{:.1}", c), format!("{:.1}", min_c)]);
+                p(level, "Text contrast {}:1 (WCAG asks for {}:1)", vec![floor1(c), format!("{:.1}", min_c)]);
             }
         }
         if is_pressable(e) {
             let min = MIN_TOUCH * scale;
             if e.w.min(e.h) < min {
-                p(Level::Warning, "{} px control: hard to tap with a finger (recommended minimum {} px)", vec![format!("{:.0}", e.w.min(e.h)), format!("{:.0}", min)]);
+                p(Level::Warning, "{} px control: hard to tap with a finger (recommended minimum {} px)", vec![below(e.w.min(e.h), min), format!("{:.0}", min)]);
             }
         }
         let outside = e.x + e.w < 0.0 || e.y + e.h < 0.0 || e.x > doc.width || e.y > doc.height;
@@ -458,6 +482,61 @@ mod tests {
     }
 
     #[test]
+    fn rounded_messages_never_claim_equality_while_flagging() {
+        // 17.6 px text against the 18 px minimum
+        let mut t = Element::new(0, Kind::Text);
+        t.text = "hola".into();
+        t.text_color = [0, 0, 0, 255];
+        t.font_size = 17.6;
+        let ps = review(&doc_with(t));
+        let p = ps.iter().find(|p| p.template.starts_with("{} px text")).unwrap();
+        assert_eq!(p.data[0], "17.6");
+        assert_eq!(p.data[1], "18");
+        // 63.7 px button against 64 px
+        let mut b = Element::new(0, Kind::Button);
+        b.w = 63.7;
+        b.h = 90.0;
+        let ps = review(&doc_with(b));
+        let p = ps.iter().find(|p| p.template.starts_with("{} px control")).unwrap();
+        assert_ne!(p.data[0], p.data[1]);
+        // contrast that rounds to the threshold shows the lower value
+        assert_eq!(floor1(4.46), "4.4");
+        assert_eq!(floor1(4.5), "4.5");
+        assert_eq!(below(17.96, 18.0), "17.96");
+        assert_eq!(below(12.0, 18.0), "12");
+    }
+
+    #[test]
+    fn element_opacity_counts_for_the_contrast_background() {
+        // dark text on a black panel that is almost transparent: it is read against the white page
+        let mut d = Doc::empty(1920.0, 1080.0);
+        d.background = [255, 255, 255, 255];
+        let mut panel = Element::new(0, Kind::Panel);
+        panel.fill = [0, 0, 0, 255];
+        panel.opacity = 0.05;
+        panel.x = 0.0;
+        panel.y = 0.0;
+        panel.w = 400.0;
+        panel.h = 200.0;
+        let pid = d.add(panel);
+        let mut t = Element::new(0, Kind::Text);
+        t.text = "hola".into();
+        t.text_color = [0, 0, 0, 255];
+        t.font_size = 30.0;
+        t.w = 100.0;
+        t.h = 40.0;
+        t.x = 10.0;
+        t.y = 10.0;
+        t.parent = Some(pid);
+        d.add(t);
+        d.normalize();
+        assert!(!review(&d).iter().any(|p| p.template.starts_with("Text contrast")), "{:?}", review(&d).iter().map(|p| p.template).collect::<Vec<_>>());
+        // the same panel fully opaque is a real problem
+        d.get_mut(pid).unwrap().opacity = 1.0;
+        assert!(review(&d).iter().any(|p| p.template.starts_with("Text contrast")));
+    }
+
+    #[test]
     fn off_page_and_duplicate_names() {
         let mut b = Element::new(0, Kind::Button);
         b.x = 5000.0;
@@ -519,7 +598,7 @@ impl crate::app::EditorApp {
             if problems.is_empty() {
                 ui.label(RichText::new(t("No issues: the design passes every check.")).color(crate::theme::ACCENT()));
             } else {
-                ui.label(crate::i18n::tf("{} errors · {} warnings. Click one to select it.", &[&errors.to_string(), &warnings.to_string()]));
+                ui.label(crate::i18n::tf("Errors: {} · Warnings: {}. Click one to select it.", &[&errors.to_string(), &warnings.to_string()]));
             }
             ui.add_space(6.0);
             egui::ScrollArea::vertical().max_height(360.0).show(ui, |ui| {

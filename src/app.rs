@@ -1,5 +1,6 @@
 //! Editor state, undo history and editing commands.
 
+use std::collections::{HashMap, HashSet};
 use crate::docext::{ElementOverride, Orientation};
 use crate::model::{self, Doc, Element, Frame, Kind};
 use eframe::egui::{self, Event, Key, Modifiers, Pos2, Vec2};
@@ -95,6 +96,8 @@ pub struct EditorApp {
     pub drag_label: Option<String>,
     pub hover: Option<u64>,
     pub dnd: Option<Vec<Element>>,
+    /// Portrait overrides that go with `dnd` (library elements saved with them).
+    pub dnd_ov: Vec<ElementOverride>,
     pub export_open: bool,
     pub export_tab: u8,
     pub project_path: String,
@@ -206,6 +209,7 @@ impl EditorApp {
             drag_label: None,
             hover: None,
             dnd: None,
+            dnd_ov: Vec::new(),
             export_open: false,
             export_tab: 0,
             project_path: if settings.last_project_file.is_empty() { "proyecto.editorgui.json".into() } else { settings.last_project_file.clone() },
@@ -550,7 +554,10 @@ impl EditorApp {
 
     // -------------------------------------------------------------- commands
 
-    pub fn insert(&mut self, mut e: Element, at: Option<[f32; 2]>) {
+    pub fn insert(&mut self, e: Element, at: Option<[f32; 2]>) {
+        // Library / community elements may carry absurd values (1e9 px letter, NaN, control characters...).
+        let mut e = crate::library::sanitize_items(std::slice::from_ref(&e)).into_iter().next().unwrap_or(e);
+        e.parent = None;
         let parent = match at {
             Some(p) => self.container_at(p),
             None => self.insert_parent(),
@@ -621,9 +628,16 @@ impl EditorApp {
             return;
         }
         let mut new_ids = Vec::new();
+        // one pass over the whole document: the copies are appended and the order fixed once at the end
+        let cmap = self.doc.child_map();
+        let idx = self.doc.index_map();
+        let mut placed: Vec<(Option<u64>, u64, Vec<u64>)> = Vec::new(); // (parent, original, new roots)
         for t in tops {
             let parent = self.doc.parent_of(t);
-            let mut items = self.doc.collect_subtrees(&[t]);
+            let mut items: Vec<Element> = Doc::subtree_in(&cmap, t).iter().filter_map(|i| idx.get(i).map(|k| self.doc.elements[*k].clone())).collect();
+            if let Some(first) = items.first_mut() {
+                first.parent = None;
+            }
             for e in items.iter_mut() {
                 e.x += offset;
                 e.y += offset;
@@ -632,7 +646,7 @@ impl EditorApp {
             if let Some(first) = items.first_mut() {
                 first.name = format!("{} (copia)", first.name);
             }
-            let (roots, map) = self.doc.insert_items_map(&items, parent);
+            let (roots, map) = self.doc.insert_items_raw(&items, parent);
             if self.real.is_some() {
                 // portrait view: the copies start from the landscape values of what they were copied from
                 self.portrait_src.extend(map.iter().map(|(old, new)| (*new, *old)));
@@ -640,21 +654,51 @@ impl EditorApp {
                 let ovs = self.doc.overrides_of(&map.keys().copied().collect::<Vec<_>>());
                 self.doc.copy_overrides(&ovs, &map, offset, offset);
             }
-            // place right after the original among its siblings
-            let mut sibs: Vec<u64> = self.doc.children(parent).into_iter().filter(|s| !roots.contains(s)).collect();
-            let at = sibs.iter().position(|s| *s == t).map(|i| i + 1).unwrap_or(sibs.len());
-            for (k, r) in roots.iter().enumerate() {
-                sibs.insert(at + k, *r);
-            }
-            self.doc.set_sibling_order(parent, &sibs);
+            placed.push((parent, t, roots.clone()));
             new_ids.extend(roots);
         }
+        // place each copy right after its original among the siblings
+        let all_roots: HashSet<u64> = new_ids.iter().copied().collect();
+        let mut orders: Vec<(Option<u64>, Vec<u64>)> = Vec::new();
+        let mut parents: Vec<Option<u64>> = Vec::new();
+        for (p, _, _) in &placed {
+            if !parents.contains(p) {
+                parents.push(*p);
+            }
+        }
+        let cm = self.doc.child_map();
+        for p in parents {
+            let mut sibs: Vec<u64> = cm.get(&p).map(|v| v.iter().copied().filter(|s| !all_roots.contains(s)).collect()).unwrap_or_default();
+            let mut after: HashMap<u64, Vec<u64>> = HashMap::new();
+            for (pp, t, roots) in &placed {
+                if *pp == p {
+                    after.entry(*t).or_default().extend(roots.iter().copied());
+                }
+            }
+            let mut out = Vec::with_capacity(sibs.len() + all_roots.len());
+            for s in sibs.drain(..) {
+                out.push(s);
+                if let Some(r) = after.remove(&s) {
+                    out.extend(r);
+                }
+            }
+            for (_, r) in after {
+                out.extend(r);
+            }
+            orders.push((p, out));
+        }
+        self.doc.normalize_orders(&orders);
         self.sel = new_ids;
         self.status = crate::i18n::t("Duplicated (with its contents)");
     }
 
     pub fn copy(&mut self) {
-        self.clipboard = self.doc.collect_subtrees(&self.sel);
+        // Ctrl+C with nothing selected keeps what is on the clipboard.
+        let copied = self.doc.collect_subtrees(&self.sel);
+        if copied.is_empty() {
+            return;
+        }
+        self.clipboard = copied;
         let ids: Vec<u64> = self.clipboard.iter().map(|e| e.id).collect();
         self.clipboard_ov = self.real_doc().overrides_of(&ids);
         if !self.clipboard.is_empty() {
@@ -933,7 +977,7 @@ impl EditorApp {
 
     pub fn save_project(&mut self) {
         self.fold();
-        match serde_json::to_string_pretty(self.doc_real()).map_err(|e| e.to_string()).and_then(|s| std::fs::write(&self.project_path, s).map_err(|e| e.to_string())) {
+        match serde_json::to_string_pretty(self.doc_real()).map_err(|e| e.to_string()).and_then(|s| crate::library::write_atomic(std::path::Path::new(&self.project_path), s.as_bytes()).map_err(|e| e.to_string())) {
             Ok(()) => {
                 self.status = crate::i18n::tf("Project saved to {}", &[&self.project_path]);
                 self.remember_project();
@@ -1037,10 +1081,20 @@ impl EditorApp {
     }
 
     /// Insert a saved library element (one or more elements, with their hierarchy).
+    #[allow(dead_code)]
     pub fn insert_items(&mut self, items: &[Element], at: Option<[f32; 2]>) {
+        self.insert_items_with(items, &[], at);
+    }
+
+    /// [`EditorApp::insert_items`] that also carries the portrait overrides of the elements (library elements saved
+    /// from a design with a portrait layout): they are copied to the new ids when this design has a portrait layout.
+    pub fn insert_items_with(&mut self, items: &[Element], overrides: &[ElementOverride], at: Option<[f32; 2]>) {
         if items.is_empty() {
             return;
         }
+        // Untrusted: cleaned before anything is measured (NaN would poison the bounds).
+        let items = crate::library::sanitize_items(items);
+        let items = &items[..];
         let b = bounds(&items.iter().collect::<Vec<_>>());
         let (bw, bh) = (b[2] - b[0], b[3] - b[1]);
         let parent = match at {
@@ -1077,7 +1131,12 @@ impl EditorApp {
             }
             items.insert(0, g);
         }
-        self.sel = self.doc.insert_items(&items, parent);
+        let (roots, map) = self.doc.insert_items_map(&items, parent);
+        self.sel = roots;
+        if self.real.is_none() && self.doc.portrait.is_some() && !overrides.is_empty() {
+            let (dx, dy) = (cx - bw / 2.0 - b[0], cy - bh / 2.0 - b[1]);
+            self.doc.copy_overrides(overrides, &map, dx, dy);
+        }
         // What arrives from the library or the community may carry absurd values (1e9 px letter, NaN…).
         self.doc.sanitize();
         self.status = crate::i18n::t("Element from your library added");
@@ -1086,7 +1145,9 @@ impl EditorApp {
     pub fn save_selection_as_element(&mut self, name: &str) {
         let items = self.doc.collect_subtrees(&self.sel);
         let name = if name.trim().is_empty() { items.first().map(|e| e.name.clone()).unwrap_or_else(|| "Element".into()) } else { name.trim().to_string() };
-        match self.library.save_element(&name, &items) {
+        let ids: Vec<u64> = items.iter().map(|e| e.id).collect();
+        let ovs = self.real_doc().overrides_of(&ids);
+        match self.library.save_element_with(&name, &items, &ovs) {
             Ok(_) => self.status = crate::i18n::tf("“{}” saved to My elements", &[&name]),
             Err(e) => self.status = crate::i18n::tf("Could not save the element: {}", &[&e.to_string()]),
         }
@@ -1633,6 +1694,134 @@ mod tests {
 
     fn id(a: &EditorApp, n: &str) -> u64 {
         a.doc.elements.iter().find(|e| e.name == n).unwrap().id
+    }
+
+    fn flat_doc(n: usize) -> EditorApp {
+        let mut a = EditorApp::new(None);
+        a.doc = Doc::empty(1920.0, 1080.0);
+        let mut c = Element::new(0, Kind::Panel);
+        c.w = 1000.0;
+        c.h = 1000.0;
+        let cid = a.doc.add(c);
+        for i in 0..n {
+            let mut e = Element::new(0, Kind::Panel);
+            e.parent = Some(cid);
+            e.x = (i % 50) as f32;
+            e.y = (i / 50 % 50) as f32;
+            e.w = 10.0;
+            e.h = 10.0;
+            a.doc.add(e);
+        }
+        a.doc.normalize();
+        a.committed = a.doc.clone();
+        a.sel.clear();
+        a
+    }
+
+    #[test]
+    fn copy_with_an_empty_selection_keeps_the_clipboard() {
+        let mut a = app_with(0);
+        let menu = id(&a, "Menu");
+        a.sel = vec![menu];
+        a.copy();
+        let n = a.clipboard.len();
+        assert!(n > 1);
+        a.sel.clear();
+        a.copy();
+        assert_eq!(a.clipboard.len(), n, "Ctrl+C with nothing selected does not clear it");
+    }
+
+    #[test]
+    fn delete_keeps_locked_descendants_and_says_so() {
+        let mut a = app_with(0);
+        let menu = id(&a, "Menu");
+        let lock = id(&a, "Play button");
+        a.doc.get_mut(lock).unwrap().locked = true;
+        let parent = a.doc.parent_of(menu);
+        a.sel = vec![menu];
+        a.delete_selection();
+        assert!(a.doc.get(menu).is_none());
+        let l = a.doc.get(lock).expect("the locked button survives its deleted container");
+        assert_eq!(l.parent, parent);
+        assert!(a.doc.elements.iter().all(|e| e.parent.is_none_or(|p| a.doc.get(p).is_some())), "no dangling parents");
+    }
+
+    #[test]
+    fn library_insert_is_sanitized_and_carries_portrait_overrides() {
+        let mut a = app_with(0);
+        a.doc.portrait = Some(crate::docext::PortraitLayout { width: 1080.0, height: 1920.0, overrides: Vec::new() });
+        let mut t = Element::new(7, Kind::Text);
+        t.text = "hola".into();
+        t.w = 100.0;
+        t.h = 30.0;
+        t.font_size = 5.0e8;
+        let mut o = ElementOverride::new(7);
+        o.x = Some(10.0);
+        o.y = Some(20.0);
+        a.insert_items_with(&[t], &[o], Some([500.0, 500.0]));
+        let nid = a.sel[0];
+        let e = a.doc.get(nid).unwrap();
+        assert!(e.font_size <= 1000.0, "sanitized: {}", e.font_size);
+        let ov = a.doc.override_of(nid).expect("override copied to the new id");
+        assert!(ov.x.is_some() && ov.y.is_some());
+        // single insert path is sanitized as well
+        let mut s = Element::new(1, Kind::Text);
+        s.font_size = f32::NAN;
+        s.text = "x\u{0}".into();
+        a.insert(s, Some([100.0, 100.0]));
+        let e = a.doc.get(a.sel[0]).unwrap();
+        assert!(e.font_size.is_finite() && !e.text.contains('\u{0}'));
+    }
+
+    #[test]
+    fn save_project_is_atomic() {
+        let mut a = app_with(0);
+        let dir = std::env::temp_dir().join(format!("lienzo-save-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        std::fs::create_dir_all(&dir).unwrap();
+        a.settings.read_only = true;
+        a.project_path = dir.join("p.editorgui.json").to_string_lossy().to_string();
+        a.save_project();
+        a.save_project();
+        let names: Vec<String> = std::fs::read_dir(&dir).unwrap().flatten().map(|e| e.file_name().to_string_lossy().to_string()).collect();
+        assert_eq!(names, vec!["p.editorgui.json".to_string()], "{:?}", names);
+        assert!(Doc::from_json_str(&std::fs::read_to_string(&a.project_path).unwrap()).is_ok());
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn perf_duplicate_2000_elements() {
+        let mut a = flat_doc(2000);
+        a.sel = a.doc.elements.iter().skip(1).map(|e| e.id).collect();
+        let t = std::time::Instant::now();
+        a.duplicate_selection(10.0);
+        assert!(t.elapsed().as_secs_f32() < 2.0, "duplicate took {:?}", t.elapsed());
+        assert_eq!(a.doc.elements.len(), 1 + 4000);
+        // and a single container with 2000 children
+        let mut a = flat_doc(2000);
+        a.sel = vec![a.doc.elements[0].id];
+        let t = std::time::Instant::now();
+        a.duplicate_selection(10.0);
+        assert!(t.elapsed().as_secs_f32() < 2.0, "duplicate took {:?}", t.elapsed());
+        assert_eq!(a.doc.elements.len(), 2 * 2001);
+    }
+
+    #[test]
+    fn perf_move_container_with_3000_children() {
+        let mut a = flat_doc(3000);
+        a.sel = vec![a.doc.elements[0].id];
+        let t = std::time::Instant::now();
+        for _ in 0..3 {
+            a.nudge(1.0, 1.0);
+        }
+        assert!(t.elapsed().as_millis() < 300, "3 nudges took {:?}", t.elapsed());
+        let cid = a.doc.elements[0].id;
+        let t = std::time::Instant::now();
+        a.doc.translate_subtree(cid, 5.0, 5.0);
+        assert!(t.elapsed().as_millis() < 100, "translate took {:?}", t.elapsed());
+        let t = std::time::Instant::now();
+        a.align(0, 0);
+        assert!(t.elapsed().as_millis() < 300, "align took {:?}", t.elapsed());
     }
 
     #[test]

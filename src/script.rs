@@ -139,6 +139,85 @@ fn with_el(doc: &Shared, log: &Log, name: &str, f: impl FnOnce(&mut Element)) {
     }
 }
 
+/// Hard memory ceiling for a script run: a global allocation counter that only counts on the thread that holds a [`mem_budget::Guard`]
+/// (the thread running a Rhai script). `on_progress` reads it and stops the script when the net growth passes the limit. Rhai's own size limits
+/// (strings, arrays, maps) already bound each value; this is the backstop for everything else (many variables, deep calls, long garbage chains).
+/// It is NOT a sandbox for a single huge allocation: the check runs between script operations, so one operation can still overshoot by its own size
+/// (which Rhai's size limits cap). No job object / OS limit is involved, so it works the same on every platform.
+pub mod mem_budget {
+    use std::alloc::{GlobalAlloc, Layout, System};
+    use std::cell::Cell;
+
+    /// Net bytes a script run may hold above where it started.
+    pub const SCRIPT_MEMORY_LIMIT: i64 = 256 * 1024 * 1024;
+
+    // `const` initializers and no destructors: the slots need no lazy set-up, so touching them from inside the allocator can never allocate.
+    thread_local! {
+        static ON: Cell<bool> = const { Cell::new(false) };
+        static LIVE: Cell<i64> = const { Cell::new(0) };
+        static CEIL: Cell<i64> = const { Cell::new(i64::MAX) };
+    }
+
+    /// Accounts `delta` bytes (positive: allocated, negative: freed) on the current thread when a guard is active.
+    #[inline]
+    pub fn note(delta: i64) {
+        let _ = ON.try_with(|on| {
+            if on.get() {
+                let _ = LIVE.try_with(|l| l.set(l.get().saturating_add(delta)));
+            }
+        });
+    }
+
+    /// True while a guard is active on this thread and the run holds more than its limit.
+    pub fn exceeded() -> bool {
+        ON.try_with(|on| on.get()).unwrap_or(false) && LIVE.try_with(|l| l.get()).unwrap_or(0) > CEIL.try_with(|c| c.get()).unwrap_or(i64::MAX)
+    }
+
+    /// Active for as long as it lives (one script run). Not re-entrant: a new guard starts a new count.
+    pub struct Guard;
+
+    impl Guard {
+        pub fn begin(limit: i64) -> Guard {
+            LIVE.with(|l| l.set(0));
+            CEIL.with(|c| c.set(limit));
+            ON.with(|o| o.set(true));
+            Guard
+        }
+    }
+
+    impl Drop for Guard {
+        fn drop(&mut self) {
+            ON.with(|o| o.set(false));
+        }
+    }
+
+    /// The program's allocator: `System`, plus the accounting above (one thread-local read when no script is running).
+    pub struct BudgetAlloc;
+
+    unsafe impl GlobalAlloc for BudgetAlloc {
+        unsafe fn alloc(&self, l: Layout) -> *mut u8 {
+            note(l.size() as i64);
+            unsafe { System.alloc(l) }
+        }
+        unsafe fn alloc_zeroed(&self, l: Layout) -> *mut u8 {
+            note(l.size() as i64);
+            unsafe { System.alloc_zeroed(l) }
+        }
+        unsafe fn dealloc(&self, p: *mut u8, l: Layout) {
+            note(-(l.size() as i64));
+            unsafe { System.dealloc(p, l) }
+        }
+        unsafe fn realloc(&self, p: *mut u8, l: Layout, new: usize) -> *mut u8 {
+            note(new as i64 - l.size() as i64);
+            unsafe { System.realloc(p, l, new) }
+        }
+    }
+}
+
+#[cfg(not(test))]
+#[global_allocator]
+static BUDGET_ALLOC: mem_budget::BudgetAlloc = mem_budget::BudgetAlloc;
+
 /// Sandbox limits for a Rhai engine: no `import` (no file or network module resolver), bounded memory
 /// (strings, arrays/blobs, maps), bounded recursion and expression depth, bounded operations and a
 /// wall-clock deadline (`on_progress`) so no script can hang or exhaust memory.
@@ -161,6 +240,8 @@ pub fn harden_with_log(engine: &mut Engine, max_ops: u64, max_string: usize, max
     engine.on_progress(move |_| {
         if std::time::Instant::now() > deadline {
             Some(Dynamic::from("time limit exceeded"))
+        } else if mem_budget::exceeded() {
+            Some(Dynamic::from("memory limit exceeded"))
         } else if log.as_ref().is_some_and(|l| l.try_borrow().map(|l| l.overflow).unwrap_or(false)) {
             Some(Dynamic::from("too much output (message limit exceeded)"))
         } else {
@@ -244,6 +325,7 @@ pub fn run(doc: &mut Doc, id: u64, code: &str, log: &mut Vec<String>) {
         None => l.borrow_mut().push(format!("⚠ Invalid color: {}", c)),
     });
 
+    let _memory = mem_budget::Guard::begin(mem_budget::SCRIPT_MEMORY_LIMIT);
     let mut scope = Scope::new();
     scope.push_constant("me", me.clone());
     scope.push_constant("yo", me.clone()); // old name
@@ -420,6 +502,7 @@ pub mod alloc_probe {
 
     unsafe impl GlobalAlloc for Counting {
         unsafe fn alloc(&self, l: Layout) -> *mut u8 {
+            super::mem_budget::note(l.size() as i64);
             let _ = CUR.try_with(|c| {
                 c.set(c.get() + l.size() as i64);
                 let _ = PEAK.try_with(|p| p.set(p.get().max(c.get())));
@@ -427,10 +510,12 @@ pub mod alloc_probe {
             unsafe { System.alloc(l) }
         }
         unsafe fn dealloc(&self, p: *mut u8, l: Layout) {
+            super::mem_budget::note(-(l.size() as i64));
             let _ = CUR.try_with(|c| c.set(c.get() - l.size() as i64));
             unsafe { System.dealloc(p, l) }
         }
         unsafe fn realloc(&self, p: *mut u8, l: Layout, new: usize) -> *mut u8 {
+            super::mem_budget::note(new as i64 - l.size() as i64);
             let _ = CUR.try_with(|c| {
                 c.set(c.get() + new as i64 - l.size() as i64);
                 let _ = PEAK.try_with(|p| p.set(p.get().max(c.get())));
@@ -497,6 +582,37 @@ mod flood_tests {
             assert!(peak < 64 * MB, "{}: peak {} bytes", code, peak);
             assert!(t < Duration::from_secs(5), "{}: {:?}", code, t);
         }
+    }
+
+    #[test]
+    fn memory_budget_stops_a_script_that_holds_too_much() {
+        // 9000 integers held in a list are far below Rhai's own limits but above a 50 KB budget.
+        let mut engine = Engine::new();
+        harden_with_log(&mut engine, 5_000_000, 64 * 1024, 10_000, 5000, None);
+        let guard = mem_budget::Guard::begin(50 * 1024);
+        let r = engine.run("let a = []; for i in 0..9000 { a.push(i); }");
+        drop(guard);
+        match *r.unwrap_err() {
+            rhai::EvalAltResult::ErrorTerminated(token, _) => assert_eq!(token.into_string().unwrap(), "memory limit exceeded"),
+            other => panic!("expected the memory limit, got {:?}", other),
+        }
+        // after the guard is gone nothing is counted or stopped
+        assert!(!mem_budget::exceeded());
+        assert!(engine.run("let a = []; for i in 0..9000 { a.push(i); }").is_ok());
+        // a normal script under the real limit is untouched
+        let _g = mem_budget::Guard::begin(mem_budget::SCRIPT_MEMORY_LIMIT);
+        assert!(engine.run("let a = []; for i in 0..9000 { a.push(i); }").is_ok());
+        assert!(!mem_budget::exceeded());
+    }
+
+    #[test]
+    fn memory_budget_counts_net_growth_not_garbage() {
+        let mut engine = Engine::new();
+        harden_with_log(&mut engine, 5_000_000, 64 * 1024, 10_000, 5000, None);
+        let _g = mem_budget::Guard::begin(2 * 1024 * 1024);
+        // thousands of short-lived 60 KB strings (hundreds of MB of churn) never hold more than a couple of them at a time
+        let r = engine.run("for i in 0..3000 { let s = \"x\"; for j in 0..15 { s += s; } }");
+        assert!(r.is_ok(), "{:?}", r);
     }
 
     #[test]

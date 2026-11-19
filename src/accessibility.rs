@@ -72,7 +72,7 @@ impl EditorApp {
             });
             ui.add_space(8.0);
             ui.label(RichText::new(t("Shortcuts: Ctrl+Alt+= and Ctrl+Alt+- change the interface size; F1 opens the tutorial.")).small().color(MUTED()));
-            ui.label(RichText::new(t("To add a language, translate assets/i18n/en.tsv (see docs/EXTENDING.md).")).small().color(ACCENT()));
+            ui.label(RichText::new(t("To add a language, copy assets/i18n/es.tsv and translate it (see docs/EXTENDING.md).")).small().color(ACCENT()));
         });
         if change {
             self.settings.save();
@@ -87,7 +87,7 @@ impl EditorApp {
         let (plus, minus) = ctx.input_mut(|i| (i.consume_key(m, egui::Key::Equals) || i.consume_key(m, egui::Key::Plus), i.consume_key(m, egui::Key::Minus)));
         if plus || minus {
             let current = if self.settings.ui_scale <= 0.0 { 1.0 } else { self.settings.ui_scale };
-            self.settings.ui_scale = (current + if plus { 0.25 } else { -0.25 }).clamp(0.75, 2.0);
+            self.settings.ui_scale = (current + if plus { 0.25 } else { -0.25 }).clamp(0.75, 2.5);
             self.settings.save();
             apply(ctx, &self.settings);
             self.status = format!("{} {:.0} %", t("Interface size:"), self.settings.ui_scale * 100.0);

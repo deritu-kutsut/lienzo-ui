@@ -17,7 +17,9 @@ Tokens: they are shown **only once** when created (only their SHA-256 fingerprin
 2. **Pending**: each card shows the reason, the images and, with "View content", the text of the file (plugin, template, theme…). Buttons **Approve**, **Approve as 18+** and **Reject** (with a reason).
 3. **Access tokens** (accounts only): create and revoke credentials.
 
-From the command line (with your app session): `lienzo-ui --comunidad-revisar listar | aprobar | rechazar | aprobar-perfil | rechazar-perfil | token-crear | tokens | token-revocar` (run `--comunidad-revisar` without arguments to see usage).
+From the command line (with your app session): `lienzo-ui --community-review list | approve | reject | approve-profile | reject-profile | token-create | tokens | token-revoke | rescan | cleanup` (run `--community-review` without arguments to see usage; the old Spanish names such as `--comunidad-revisar listar` still work).
+
+**Takedown queue (`cleanup`)**: files of rejected, withdrawn, deleted or hidden listings are queued in `storage_cleanup` and drained a few at a time on every moderation call. `lienzo-ui --community-review cleanup` drains it on demand: it calls the server's `cleanup` action (`{"v":2,"action":"cleanup"}`, which needs the `reject` scope) until the answer reports `done: 0`, with a bound of 20 calls (up to 25 files each), and prints how many files were removed (and how many failed and will be retried). If it prints that the call limit was reached, run it again.
 
 ## API
 

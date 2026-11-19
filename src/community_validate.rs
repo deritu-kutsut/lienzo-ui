@@ -121,16 +121,33 @@ fn bad_text_char(c: char) -> bool {
     (c.is_control() && c != '\n' && c != '\t') || c == '\u{2028}' || c == '\u{2029}'
 }
 
-fn texts(v: &serde_json::Value, acc: &mut Vec<String>, depth: u32) {
-    if depth > 40 {
-        return;
+/// How deep a JSON document may be nested. `serde_json` already refuses text deeper than 128 levels when it PARSES, but values built in memory
+/// (plugin output, scripts) are not bounded by that: anything deeper than this is refused instead of being silently left unscanned.
+const MAX_JSON_DEPTH: usize = 1000;
+
+/// Every string VALUE of a JSON document (iterative: no recursion, so a hostile nesting cannot overflow the stack), or an error when the
+/// document is nested deeper than `MAX_JSON_DEPTH`.
+fn texts(v: &serde_json::Value, acc: &mut Vec<String>) -> Result<(), String> {
+    let mut stack: Vec<(&serde_json::Value, usize)> = vec![(v, 0)];
+    while let Some((v, depth)) = stack.pop() {
+        match v {
+            serde_json::Value::String(s) => acc.push(s.clone()),
+            serde_json::Value::Array(a) => {
+                if depth >= MAX_JSON_DEPTH {
+                    return Err("The document is nested too deeply.".into());
+                }
+                stack.extend(a.iter().rev().map(|x| (x, depth + 1)));
+            }
+            serde_json::Value::Object(o) => {
+                if depth >= MAX_JSON_DEPTH {
+                    return Err("The document is nested too deeply.".into());
+                }
+                stack.extend(o.values().map(|x| (x, depth + 1)));
+            }
+            _ => {}
+        }
     }
-    match v {
-        serde_json::Value::String(s) => acc.push(s.clone()),
-        serde_json::Value::Array(a) => a.iter().for_each(|x| texts(x, acc, depth + 1)),
-        serde_json::Value::Object(o) => o.values().for_each(|x| texts(x, acc, depth + 1)),
-        _ => {}
-    }
+    Ok(())
 }
 
 fn external_url(s: &str) -> bool {
@@ -217,7 +234,7 @@ fn validate_design(json: serde_json::Value, is_template: bool) -> Result<(), Str
     }
     validate_doc_fields(&json)?;
     let mut t = Vec::new();
-    texts(&serde_json::Value::Array(elements.clone()), &mut t, 0);
+    texts(&serde_json::Value::Array(elements.clone()), &mut t)?;
     for s in &t {
         if external_url(s) {
             return Err("Designs cannot contain external links or paths.".into());
@@ -227,6 +244,15 @@ fn validate_design(json: serde_json::Value, is_template: bool) -> Result<(), Str
         }
         if dangerous_path_basic(s) && (s.contains('/') || s.contains('\\')) {
             return Err("Designs cannot contain absolute paths or paths with “..”.".into());
+        }
+    }
+    // Image references are file paths: the strict rule applies (this also refuses drive-relative `C:foo.png`, which has no slash and so slips
+    // through the text rule above, and NTFS streams / UNC paths).
+    for e in elements {
+        if let Some(r) = e.get("image").and_then(|v| v.as_str()).filter(|r| !r.is_empty()) {
+            if dangerous_path(r) || crate::library::is_unc_or_stream(r) {
+                return Err("Designs cannot contain absolute paths or paths with “..”.".into());
+            }
         }
     }
     Ok(())
@@ -253,7 +279,7 @@ fn validate_plugin(json: serde_json::Value) -> Result<Package, String> {
         return Err("Manifest: the name has control or invisible characters.".into());
     }
     let mut manifest_texts = Vec::new();
-    texts(&p.manifest, &mut manifest_texts, 0);
+    texts(&p.manifest, &mut manifest_texts)?;
     if manifest_texts.iter().any(|s| s.chars().any(|c| bad_text_char(c) || spoofing_char(c))) {
         return Err("Manifest: it has control or invisible characters.".into());
     }
@@ -320,7 +346,7 @@ fn validate_plugin(json: serde_json::Value) -> Result<Package, String> {
                     } else if !is_script {
                         // any other data file: same text rules as a design
                         let mut t = Vec::new();
-                        texts(&v, &mut t, 0);
+                        texts(&v, &mut t).map_err(|er| format!("{}: {}", path, er))?;
                         if t.iter().any(|s| external_url(s) || s.chars().any(bad_text_char)) {
                             return Err(format!("{}: contains external links or control characters.", path));
                         }
@@ -352,10 +378,10 @@ pub fn check_plugin_output(input: &serde_json::Value, output: &serde_json::Value
     }
     validate_doc_fields(output)?;
     let mut old = Vec::new();
-    texts(input, &mut old, 0);
+    texts(input, &mut old)?;
     let known: std::collections::HashSet<String> = old.into_iter().collect();
     let mut new = Vec::new();
-    texts(&serde_json::Value::Array(elements.clone()), &mut new, 0);
+    texts(&serde_json::Value::Array(elements.clone()), &mut new)?;
     for s in new.iter().filter(|s| !known.contains(*s)) {
         if external_url(s) {
             return Err("The returned design contains external links.".into());
@@ -739,6 +765,55 @@ mod tests_audit {
         assert!(validate("plugin", "p.json", &pkg(m2, json!({"a.rhai":"fn run(d){d}","other.json": evil2}))).is_err(), "a design-looking json is validated even if not listed");
         let m3 = json!({"name":"Sneaky","templates":["t.json"],"commands":[{"name":"x","script":"t.json"}]});
         assert!(validate("plugin", "p.json", &pkg(m3, json!({"t.json": evil}))).is_err());
+    }
+
+    #[test]
+    fn drive_relative_and_stream_image_references_are_rejected() {
+        for bad in ["C:foo.png", "c:foo.png", "Z:a/b.png", "icons/a.png:stream", "\\\\srv\\share\\a.png", "..", "a/../b.png", "con.png", "icons/", "a.png."] {
+            let j = json!({"elements":[{"kind":"Image","image":bad}]}).to_string();
+            assert!(validate("template", "t.json", j.as_bytes()).is_err(), "template {:?}", bad);
+            let m = json!({"name":"Img","templates":["t.json"],"commands":[{"name":"x","script":"a.rhai"}]});
+            assert!(validate("plugin", "p.json", &pkg(m, json!({"a.rhai":"fn run(d){d}","t.json": j}))).is_err(), "plugin template {:?}", bad);
+            assert!(check_plugin_output(&json!({"elements":[]}), &json!({"elements":[{"image":bad}]})).is_err(), "plugin output {:?}", bad);
+        }
+        for ok in ["icons/a.png", "a.png", "My Icons/btn 1.png"] {
+            let j = json!({"elements":[{"kind":"Image","image":ok}]}).to_string();
+            assert!(validate("template", "t.json", j.as_bytes()).is_ok(), "{:?}", ok);
+        }
+    }
+
+    #[test]
+    fn u2028_in_on_click_is_rejected_everywhere() {
+        let j = json!({"elements":[{"kind":"Button","on_click":"a();\u{2028}b();"}]}).to_string();
+        assert!(validate("template", "t.json", j.as_bytes()).is_err());
+        let m = json!({"name":"Lines","templates":["t.json"],"commands":[{"name":"x","script":"a.rhai"}]});
+        assert!(validate("plugin", "p.json", &pkg(m, json!({"a.rhai":"fn run(d){d}","t.json": j.clone()}))).is_err());
+        assert!(check_plugin_output(&json!({"elements":[]}), &json!({"elements":[{"on_click":"x\u{2028}y"}]})).is_err());
+        // text that was already in the input is kept, a NEW one is not
+        assert!(check_plugin_output(&json!({"elements":[{"on_click":"ok"}]}), &json!({"elements":[{"on_click":"ok"},{"on_click":"p\u{2029}q"}]})).is_err());
+    }
+
+    #[test]
+    fn deeply_nested_documents_are_refused_not_left_unscanned() {
+        // Strings nested below 40 levels used to be skipped: a link could hide there.
+        let mut v = json!("https://evil.example");
+        for _ in 0..100 {
+            v = json!([v]);
+        }
+        let mut t = Vec::new();
+        assert!(texts(&v, &mut t).is_ok());
+        assert_eq!(t, vec!["https://evil.example".to_string()], "strings at any normal depth are scanned");
+        let out = json!({"elements":[{"kind":"Text","text": v}]});
+        assert!(check_plugin_output(&json!({"elements":[]}), &out).is_err());
+        // far deeper than serde_json can even parse: refused (the walk is iterative, so no stack overflow either)
+        let mut deep = json!("x");
+        for _ in 0..(MAX_JSON_DEPTH + 10) {
+            deep = json!([deep]);
+        }
+        let mut t = Vec::new();
+        assert!(texts(&deep, &mut t).is_err());
+        let r = check_plugin_output(&json!({"elements":[]}), &json!({"elements":[{"kind":"Text","extra": deep}]}));
+        assert!(r.unwrap_err().contains("nested too deeply"));
     }
 
     #[test]

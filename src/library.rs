@@ -17,6 +17,59 @@ pub struct LibElement {
     pub name: String,
     pub path: PathBuf,
     pub items: Vec<Element>,
+    /// Portrait overrides of `items` (sidecar file `<name>.portrait`; empty for older elements).
+    pub overrides: Vec<crate::docext::ElementOverride>,
+}
+
+/// Cleans elements that come from a file (library, community): huge font sizes, NaN, control characters,
+/// parent cycles... They go through the same `Doc::sanitize` as a loaded design, inside a temporary document.
+pub fn sanitize_items(items: &[Element]) -> Vec<Element> {
+    let mut d = Doc::empty(1920.0, 1080.0);
+    d.elements = items.to_vec();
+    d.next_id = 1;
+    d.sanitize();
+    d.elements
+}
+
+/// Writes `data` to `path` without ever leaving a half-written file: a temporary file in the same folder
+/// is written, flushed and renamed over the destination (an atomic replace on the same volume).
+pub fn write_atomic(path: &Path, data: &[u8]) -> std::io::Result<()> {
+    use std::io::Write;
+    let dir = match path.parent() {
+        Some(d) if !d.as_os_str().is_empty() => d.to_path_buf(),
+        _ => PathBuf::from("."),
+    };
+    let name = path.file_name().map(|n| n.to_string_lossy().to_string()).unwrap_or_else(|| "file".into());
+    static N: std::sync::atomic::AtomicU32 = std::sync::atomic::AtomicU32::new(0);
+    let tmp = dir.join(format!(".{}.{}-{}.tmp", name, std::process::id(), N.fetch_add(1, std::sync::atomic::Ordering::Relaxed)));
+    let res = (|| {
+        let mut f = std::fs::File::create(&tmp)?;
+        f.write_all(data)?;
+        f.sync_all()?;
+        drop(f);
+        std::fs::rename(&tmp, path)
+    })();
+    if res.is_err() {
+        let _ = std::fs::remove_file(&tmp);
+    }
+    res
+}
+
+fn portrait_sidecar(path: &Path) -> PathBuf {
+    path.with_extension("portrait")
+}
+
+fn load_overrides(path: &Path, items: &[Element]) -> Vec<crate::docext::ElementOverride> {
+    let Some(text) = std::fs::read_to_string(portrait_sidecar(path)).ok() else { return Vec::new() };
+    let Ok(mut ovs) = serde_json::from_str::<Vec<crate::docext::ElementOverride>>(strip_bom(&text)) else { return Vec::new() };
+    let ids: std::collections::HashSet<u64> = items.iter().map(|e| e.id).collect();
+    let mut seen = std::collections::HashSet::new();
+    ovs.retain(|o| ids.contains(&o.id) && seen.insert(o.id));
+    ovs.truncate(items.len());
+    for o in ovs.iter_mut() {
+        o.sanitize();
+    }
+    ovs
 }
 
 #[derive(Clone, Debug)]
@@ -91,6 +144,7 @@ pub fn set_design_folder(file: &Path) {
     if let Ok(mut g) = DESIGN_FOLDER.lock() {
         *g = file.parent().map(|p| std::fs::canonicalize(p).unwrap_or_else(|_| p.to_path_buf()));
     }
+    crate::render::clear_texture_cache();
 }
 
 /// Path of an element's image: absolute, relative to the open design's folder
@@ -249,10 +303,33 @@ fn ext_of(p: &Path) -> String {
     p.extension().and_then(|e| e.to_str()).unwrap_or("").to_lowercase()
 }
 
+/// CON, PRN, AUX, NUL, COM1-9, LPT1-9 (also with a superscript digit), compared case-insensitively.
+fn is_reserved_device_name(stem: &str) -> bool {
+    let base = stem.split('.').next().unwrap_or("").trim_end_matches([' ', '.']).to_ascii_lowercase();
+    if matches!(base.as_str(), "con" | "prn" | "aux" | "nul" | "conin$" | "conout$") {
+        return true;
+    }
+    let digits = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '¹', '²', '³'];
+    for pre in ["com", "lpt"] {
+        if let Some(rest) = base.strip_prefix(pre) {
+            let mut it = rest.chars();
+            if let (Some(c), None) = (it.next(), it.next()) {
+                if digits.contains(&c) {
+                    return true;
+                }
+            }
+        }
+    }
+    false
+}
+
 /// Make a file name safe and unique inside `dir`.
 fn unique_name(dir: &Path, stem: &str, ext: &str) -> String {
     let clean: String = stem.chars().map(|c| if c.is_alphanumeric() || c == '-' || c == '_' || c == ' ' { c } else { '_' }).collect();
-    let clean = if clean.trim().is_empty() { "archivo".to_string() } else { clean.trim().to_string() };
+    // Windows drops trailing dots / spaces and reserves device names (CON, NUL, COM1...) with any extension.
+    let clean = clean.trim().trim_end_matches(['.', ' ']).to_string();
+    let clean = if clean.is_empty() { "archivo".to_string() } else { clean };
+    let clean = if is_reserved_device_name(&clean) { format!("{}_", clean) } else { clean };
     let mut name = format!("{}.{}", clean, ext);
     let mut n = 2;
     while dir.join(&name).exists() {
@@ -296,7 +373,9 @@ impl Library {
         for p in list(&elements_dir()) {
             if ext_of(&p) == "json" {
                 if let Some(items) = std::fs::read_to_string(&p).ok().and_then(|s| serde_json::from_str::<Vec<Element>>(strip_bom(&s)).ok()) {
-                    self.elements.push(LibElement { name: stem(&p), path: p, items });
+                    let items = sanitize_items(&items);
+                    let overrides = load_overrides(&p, &items);
+                    self.elements.push(LibElement { name: stem(&p), path: p, items, overrides });
                 }
             }
         }
@@ -339,6 +418,12 @@ impl Library {
 
     /// Save elements (e.g. the current selection) as a reusable library element.
     pub fn save_element(&mut self, name: &str, items: &[Element]) -> Result<String, String> {
+        self.save_element_with(name, items, &[])
+    }
+
+    /// [`Library::save_element`] that also stores the portrait overrides of the elements (geometry relative to the
+    /// group, like the elements themselves).
+    pub fn save_element_with(&mut self, name: &str, items: &[Element], overrides: &[crate::docext::ElementOverride]) -> Result<String, String> {
         if items.is_empty() {
             return Err("nothing is selected".into());
         }
@@ -364,6 +449,22 @@ impl Library {
         let file = unique_name(&dir, name, "json");
         let json = serde_json::to_string_pretty(&items).map_err(|e| e.to_string())?;
         std::fs::write(dir.join(&file), json).map_err(|e| e.to_string())?;
+        let side = portrait_sidecar(&dir.join(&file));
+        let ovs: Vec<crate::docext::ElementOverride> = overrides
+            .iter()
+            .filter(|o| ids.contains(&o.id))
+            .cloned()
+            .map(|mut o| {
+                o.x = o.x.map(|v| v - min_x);
+                o.y = o.y.map(|v| v - min_y);
+                o
+            })
+            .collect();
+        if ovs.is_empty() {
+            let _ = std::fs::remove_file(&side);
+        } else {
+            let _ = std::fs::write(&side, serde_json::to_string_pretty(&ovs).map_err(|e| e.to_string())?);
+        }
         self.refresh();
         Ok(file)
     }
@@ -390,6 +491,9 @@ impl Library {
 
     pub fn remove(&mut self, path: &Path) {
         let _ = std::fs::remove_file(path);
+        if ext_of(path) == "json" {
+            let _ = std::fs::remove_file(portrait_sidecar(path));
+        }
         self.refresh();
     }
 }
@@ -539,6 +643,29 @@ mod tests {
         assert_eq!(lib.templates.len(), 2);
         lib.remove(&tpl_path);
         assert_eq!(lib.templates.len(), 1);
+        // elements saved with portrait overrides keep them (relative to the group); a hostile file is cleaned on load
+        let mut a = Element::new(1, Kind::Panel);
+        a.x = 100.0;
+        a.y = 50.0;
+        a.w = 20.0;
+        a.h = 20.0;
+        let mut o = crate::docext::ElementOverride::new(1);
+        o.x = Some(300.0);
+        o.y = Some(80.0);
+        let f = lib.save_element_with("con", &[a.clone()], &[o]).unwrap();
+        assert_ne!(f.to_lowercase(), "con.json");
+        let saved = lib.elements.iter().find(|e| e.path.file_name().unwrap().to_string_lossy() == f).unwrap();
+        assert_eq!(saved.overrides.len(), 1);
+        assert_eq!((saved.overrides[0].x, saved.overrides[0].y), (Some(200.0), Some(30.0)));
+        let path = saved.path.clone();
+        let mut evil = a.clone();
+        evil.font_size = 1.0e9;
+        std::fs::write(&path, serde_json::to_string(&vec![evil]).unwrap()).unwrap();
+        lib.refresh();
+        let again = lib.elements.iter().find(|e| e.path == path).unwrap();
+        assert!(again.items[0].font_size <= 1000.0);
+        lib.remove(&path);
+        assert!(!path.with_extension("portrait").exists());
         let _ = std::fs::remove_dir_all(&dir);
     }
 
@@ -657,5 +784,124 @@ mod tests {
         // what is saved now uses the English keys
         let out = serde_json::to_string(&Settings::default()).unwrap();
         assert!(out.contains("\"language\"") && !out.contains("idioma"));
+    }
+
+    #[test]
+    fn elements_from_files_are_sanitized_before_they_reach_the_canvas() {
+        let mut bad = Element::new(1, Kind::Text);
+        bad.font_size = 1.0e9;
+        bad.w = f32::NAN;
+        bad.h = 1.0e12;
+        bad.x = f32::INFINITY;
+        bad.text = "a\u{0}b\u{2028}c".into();
+        bad.parent = Some(2);
+        let mut b2 = Element::new(2, Kind::Panel);
+        b2.parent = Some(1); // parent cycle
+        let out = sanitize_items(&[bad, b2]);
+        assert_eq!(out.len(), 2);
+        for e in &out {
+            assert!(e.font_size <= 1000.0 && e.w.is_finite() && e.h <= crate::model::COORD_LIMIT && e.x.is_finite(), "{:?}", e);
+        }
+        assert_eq!(out[0].text, "abc");
+        assert!(out.iter().filter(|e| e.parent.is_none()).count() >= 1, "the cycle is broken");
+        // tiles clamp too (a hostile element that skipped the loader)
+        let mut huge = Element::new(1, Kind::Text);
+        huge.w = 0.0;
+        huge.font_size = f32::NAN;
+        let ctx = eframe::egui::Context::default();
+        let mut out = ctx.run_ui(Default::default(), |ui| {
+            let r = eframe::egui::Rect::from_min_size(eframe::egui::pos2(0.0, 0.0), eframe::egui::vec2(80.0, 60.0));
+            crate::render::paint_element_thumb(ui.painter(), &huge, r);
+        });
+        out.textures_delta.clear();
+    }
+
+    #[test]
+    fn generated_names_avoid_windows_device_names_and_trailing_dots() {
+        let d = std::env::temp_dir();
+        for (stem, bad) in [("con", true), ("NUL", true), ("com1", true), ("Lpt9", true), ("aux", true), ("com10", false), ("console", false), ("a", false)] {
+            let n = unique_name(&d, stem, "json");
+            assert!(!is_reserved_device_name(&n), "{} -> {}", stem, n);
+            if bad {
+                assert_ne!(n.to_lowercase(), format!("{}.json", stem.to_lowercase()));
+            }
+        }
+        for s in ["name...", "name. . ", "name ", "name.", "..."] {
+            let n = unique_name(&d, s, "png");
+            let stem = n.trim_end_matches(".png");
+            assert!(!stem.ends_with('.') && !stem.ends_with(' ') && !stem.is_empty(), "{:?} -> {:?}", s, n);
+        }
+        assert_eq!(unique_name(&d, "  ", "png"), "archivo.png");
+    }
+
+    #[test]
+    fn write_atomic_replaces_without_leftovers() {
+        let dir = temp_dir("atomic");
+        let f = dir.join("p.json");
+        write_atomic(&f, b"one").unwrap();
+        write_atomic(&f, b"two two").unwrap();
+        assert_eq!(std::fs::read_to_string(&f).unwrap(), "two two");
+        let names: Vec<String> = std::fs::read_dir(&dir).unwrap().flatten().map(|e| e.file_name().to_string_lossy().to_string()).collect();
+        assert_eq!(names, vec!["p.json".to_string()], "no temporary file is left behind");
+        // a destination that cannot be written fails without a leftover
+        assert!(write_atomic(&dir.join("missing").join("p.json"), b"x").is_err());
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn portrait_overrides_sidecar_round_trip() {
+        let dir = temp_dir("side");
+        let el = dir.join("pieza.json");
+        let mut a = Element::new(1, Kind::Panel);
+        a.w = 10.0;
+        let mut b = Element::new(2, Kind::Panel);
+        b.parent = Some(1);
+        let items = vec![a, b];
+        std::fs::write(&el, serde_json::to_string(&items).unwrap()).unwrap();
+        // nothing next to it: older library elements have no overrides
+        assert!(load_overrides(&el, &items).is_empty());
+        let mut o = crate::docext::ElementOverride::new(2);
+        o.x = Some(7.0);
+        let stray = crate::docext::ElementOverride::new(99);
+        let dup = crate::docext::ElementOverride::new(2);
+        std::fs::write(portrait_sidecar(&el), serde_json::to_string(&vec![o, stray, dup]).unwrap()).unwrap();
+        let got = load_overrides(&el, &items);
+        assert_eq!(got.len(), 1, "unknown ids and duplicates are dropped");
+        assert_eq!((got[0].id, got[0].x), (2, Some(7.0)));
+        assert_ne!(portrait_sidecar(&el).extension().unwrap(), "json", "the sidecar is not listed as an element");
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn texture_cache_follows_the_file_on_disk() {
+        let _g = GLOBALS.lock().unwrap_or_else(|e| e.into_inner());
+        let dir = temp_dir("tex");
+        set_design_folder(&dir.join("d.json"));
+        let ctx = eframe::egui::Context::default();
+        // Other tests may open designs at the same time (that resets the folder and the cache): poll instead of assuming.
+        let folder = dir.join("d.json");
+        let wait = |size: Option<[usize; 2]>| {
+            for _ in 0..40 {
+                let want = std::fs::canonicalize(&dir).unwrap();
+                if DESIGN_FOLDER.lock().unwrap().as_ref() != Some(&want) {
+                    set_design_folder(&folder);
+                }
+                std::thread::sleep(std::time::Duration::from_millis(300));
+                if crate::render::texture(&ctx, "late.png").map(|t| t.size()) == size {
+                    return true;
+                }
+            }
+            false
+        };
+        // missing: nothing, but it is looked for again
+        assert!(wait(None));
+        image::RgbaImage::from_pixel(8, 4, image::Rgba([1, 2, 3, 255])).save(dir.join("late.png")).unwrap();
+        assert!(wait(Some([8, 4])), "the file appeared");
+        // replaced by another size: reloaded
+        image::RgbaImage::from_pixel(16, 6, image::Rgba([1, 2, 3, 255])).save(dir.join("late.png")).unwrap();
+        assert!(wait(Some([16, 6])), "the changed file was reloaded");
+        *DESIGN_FOLDER.lock().unwrap() = None;
+        crate::render::clear_texture_cache();
+        let _ = std::fs::remove_dir_all(&dir);
     }
 }

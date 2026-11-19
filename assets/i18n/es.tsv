@@ -947,3 +947,10 @@ Imported {} ({} warnings). Save it as a project to keep it.	Importado {} ({} avi
 {} (portrait)	{} (vertical)
 Invalid folder: it must start with Assets, use / and contain no “..”, no drive, no empty parts, none of <>"|?*, no trailing dot or space and no reserved names (CON, NUL, COM1…).	Carpeta no válida: debe empezar por Assets, usar / y no contener «..», ni unidad, ni partes vacías, ni <>"|?*, ni punto o espacio al final, ni nombres reservados (CON, NUL, COM1…).
 Invalid font name: it must not contain / \ : or ..	Nombre de fuente no válido: no puede contener / \ : ni ..
+cleanup: {} file(s) removed before the error.	cleanup: {} archivo(s) eliminado(s) antes del error.
+cleanup: call limit reached ({}); run it again if more files are queued.	cleanup: se alcanzó el límite de llamadas ({}); ejecútalo de nuevo si quedan archivos en cola.
+cleanup: {} file(s) removed, {} failed (they will be retried).	cleanup: {} archivo(s) eliminado(s), {} fallaron (se reintentarán).
+cleanup: {} file(s) removed.	cleanup: {} archivo(s) eliminado(s).
+Errors: {} · Warnings: {}. Click one to select it.	Errores: {} · Avisos: {}. Clic en uno para seleccionarlo.
+Elements selected: {}	Elementos seleccionados: {}
+To add a language, copy assets/i18n/es.tsv and translate it (see docs/EXTENDING.md).	Para añadir un idioma, copia assets/i18n/es.tsv y tradúcelo (ver docs/EXTENDING.md).

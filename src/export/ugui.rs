@@ -1,7 +1,7 @@
 //! uGUI export: a flat JSON (parent = index in the list, never null so Unity's
 //! JsonUtility can read it) consumed by `EditorGuiImporter.cs`.
 
-use super::{class_name, element_sprite, image_asset_path, radius_of, unity_image_ref, unity_names, view, ExportCtx};
+use super::{class_name, element_sprite, json_escape_invisible, radius_of, unity_image_ref, unity_names, view, ExportCtx, ImageNames};
 use crate::docext::{ElementOverride, Orientation};
 use crate::model::{Doc, Kind, hex};
 use serde_json::json;
@@ -18,6 +18,8 @@ pub fn json(doc: &Doc, for_project: bool) -> String {
     let index: HashMap<u64, usize> = doc.elements.iter().enumerate().map(|(i, e)| (e.id, i)).collect();
     let fields = view::field_names(doc);
     let ctx = ExportCtx::new(doc);
+    // pictures with the same file name from different folders get different files (only needed for the project copies)
+    let image_names = if for_project { Some(ImageNames::new(doc)) } else { None };
     let elements: Vec<_> = doc
         .elements
         .iter()
@@ -29,8 +31,8 @@ pub fn json(doc: &Doc, for_project: bool) -> String {
             } else if let Some((asset, _)) = unity_image_ref(&e.image) {
                 // already in the Unity project: referenced, never copied
                 asset
-            } else if for_project {
-                image_asset_path(&e.image)
+            } else if let Some(names) = &image_names {
+                names.asset_path(&e.image)
             } else {
                 crate::library::resolve_image(&e.image).to_string_lossy().replace('\\', "/")
             };
@@ -133,7 +135,8 @@ pub fn json(doc: &Doc, for_project: bool) -> String {
         v["canvas"]["background"] = json!(hex(doc.background));
     }
     doc_extras(doc, &mut v);
-    serde_json::to_string_pretty(&v).unwrap_or_default()
+    // bidi / zero-width controls in the texts are written as an escape: same values, nothing invisible in the file
+    json_escape_invisible(&serde_json::to_string_pretty(&v).unwrap_or_default())
 }
 
 fn layout_json(l: &crate::model::LayoutGroup) -> serde_json::Value {

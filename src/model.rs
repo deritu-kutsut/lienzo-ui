@@ -499,9 +499,10 @@ impl Element {
         [self.x + self.w / 2.0, self.y + self.h / 2.0]
     }
 
+    /// Box of the element. A (transiently) negative size counts as empty, around the same centre.
     pub fn frame(&self) -> Frame {
         let [cx, cy] = self.center();
-        Frame { cx, cy, w: self.w, h: self.h, rot: self.rot }
+        Frame { cx, cy, w: self.w.max(0.0), h: self.h.max(0.0), rot: self.rot }
     }
 
     pub fn set_frame(&mut self, f: &Frame) {
@@ -603,8 +604,10 @@ pub fn apply_rect_transform(e: &mut Element, rt: &RectTransform, p: &Frame) {
     e.pivot = rt.pivot;
     let (ax0, ax1) = (rt.anchor_min[0] * p.w, rt.anchor_max[0] * p.w);
     let (ay0, ay1) = (rt.anchor_min[1] * p.h, rt.anchor_max[1] * p.h);
-    let w = (rt.size_delta[0] + ax1 - ax0).max(0.0);
-    let h = (rt.size_delta[1] + ay1 - ay0).max(0.0);
+    // Not clamped: a stretched child of a parent smaller than its margins goes negative, and growing the parent again
+    // gives the margins back. Drawing clamps (render.rs), loading / pasting sanitizes.
+    let w = rt.size_delta[0] + ax1 - ax0;
+    let h = rt.size_delta[1] + ay1 - ay0;
     let px = ax0 + rt.pivot[0] * (ax1 - ax0) + rt.anchored_position[0];
     let py = ay0 + rt.pivot[1] * (ay1 - ay0) + rt.anchored_position[1];
     let rl = -rt.rotation_z;
@@ -879,7 +882,33 @@ impl Doc {
 
     /// Ids whose ancestors are not also in `ids`, in document order.
     pub fn top_level(&self, ids: &[u64]) -> Vec<u64> {
-        self.elements.iter().map(|e| e.id).filter(|id| ids.contains(id) && !self.ancestors(*id).iter().any(|a| ids.contains(a))).collect()
+        let want: HashSet<u64> = ids.iter().copied().collect();
+        let idx = self.index_map();
+        self.elements
+            .iter()
+            .enumerate()
+            .filter(|(i, e)| {
+                // only the first element with a duplicated id counts (same as `get`)
+                if !want.contains(&e.id) || idx.get(&e.id) != Some(i) {
+                    return false;
+                }
+                // walk the ancestors (bounded: a malformed file may have cycles)
+                let (mut cur, mut hops) = (e.parent, 0usize);
+                while let Some(p) = cur {
+                    hops += 1;
+                    let Some(&k) = idx.get(&p) else { break };
+                    if want.contains(&p) && p != e.id {
+                        return false;
+                    }
+                    if hops > self.elements.len() {
+                        break;
+                    }
+                    cur = self.elements[k].parent;
+                }
+                true
+            })
+            .map(|(_, e)| e.id)
+            .collect()
     }
 
     /// Clip rectangle (page aabb) from masked ancestors (and masked self if `include_self`).
@@ -906,18 +935,35 @@ impl Doc {
     }
 
     fn normalize_with(&mut self, order: Option<(Option<u64>, &[u64])>) {
+        match order {
+            Some((p, o)) => self.normalize_orders(&[(p, o.to_vec())]),
+            None => self.normalize_orders(&[]),
+        }
+    }
+
+    /// [`Doc::normalize`] with the sibling order of several parents given at once (O(n) overall).
+    pub fn normalize_orders(&mut self, orders: &[(Option<u64>, Vec<u64>)]) {
         self.repair_parents();
-        // sibling lists (vec order, optionally overridden for one parent)
+        // sibling lists (vec order, optionally overridden for some parents)
         let mut kids: HashMap<Option<u64>, Vec<usize>> = HashMap::new();
         for (i, e) in self.elements.iter().enumerate() {
             kids.entry(e.parent).or_default().push(i);
         }
-        if let Some((parent, ord)) = order {
-            if let Some(list) = kids.get_mut(&parent) {
-                let mut sorted: Vec<usize> = ord.iter().filter_map(|id| list.iter().copied().find(|i| self.elements[*i].id == *id)).collect();
-                for i in list.iter() {
-                    if !sorted.contains(i) {
-                        sorted.push(*i);
+        for (parent, ord) in orders {
+            if let Some(list) = kids.get_mut(parent) {
+                let by_id: HashMap<u64, usize> = list.iter().rev().map(|&i| (self.elements[i].id, i)).collect();
+                let mut used: HashSet<usize> = HashSet::with_capacity(list.len());
+                let mut sorted: Vec<usize> = Vec::with_capacity(list.len());
+                for id in ord {
+                    if let Some(&i) = by_id.get(id) {
+                        if used.insert(i) {
+                            sorted.push(i);
+                        }
+                    }
+                }
+                for &i in list.iter() {
+                    if used.insert(i) {
+                        sorted.push(i);
                     }
                 }
                 *list = sorted;
@@ -1071,22 +1117,85 @@ impl Doc {
     }
 
     pub fn translate_subtree(&mut self, id: u64, dx: f32, dy: f32) {
-        for i in self.subtree(id) {
-            if let Some(e) = self.get_mut(i) {
-                e.x += dx;
-                e.y += dy;
-            }
+        if self.get(id).is_none() {
+            return;
+        }
+        let set: HashSet<u64> = self.subtree(id).into_iter().collect();
+        for e in self.elements.iter_mut().filter(|e| set.contains(&e.id)) {
+            e.x += dx;
+            e.y += dy;
         }
     }
 
-    /// Remove elements and everything inside them.
+    /// `id` plus its descendants using a prebuilt [`Doc::child_map`] (depth-first, each element once).
+    pub fn subtree_in(map: &HashMap<Option<u64>, Vec<u64>>, id: u64) -> Vec<u64> {
+        let mut out = vec![id];
+        let mut seen: HashSet<u64> = HashSet::from([id]);
+        let mut stack: Vec<u64> = map.get(&Some(id)).map(|v| v.iter().rev().copied().collect()).unwrap_or_default();
+        while let Some(c) = stack.pop() {
+            if !seen.insert(c) {
+                continue;
+            }
+            out.push(c);
+            if let Some(k) = map.get(&Some(c)) {
+                stack.extend(k.iter().rev().copied());
+            }
+        }
+        out
+    }
+
+    /// Remove elements and everything inside them, except locked descendants: those are kept (with what
+    /// they contain) and move up to the parent of the element that was removed, staying where they are on the page.
     pub fn remove_subtrees(&mut self, ids: &[u64]) {
+        let map = self.child_map();
+        let by_id: HashMap<u64, usize> = self.index_map();
         let mut gone: HashSet<u64> = HashSet::new();
+        let mut keep_parent: HashMap<u64, Option<u64>> = HashMap::new();
         for id in ids {
-            gone.extend(self.subtree(*id));
+            let Some(&ix) = by_id.get(id) else { continue };
+            if gone.contains(id) {
+                continue;
+            }
+            let new_parent = self.elements[ix].parent.filter(|p| by_id.contains_key(p));
+            // walk the subtree; a locked descendant stops the walk (it and its subtree survive)
+            let mut seen: HashSet<u64> = HashSet::from([*id]);
+            let mut stack = vec![*id];
+            gone.insert(*id);
+            while let Some(c) = stack.pop() {
+                for &k in map.get(&Some(c)).map(|v| v.as_slice()).unwrap_or(&[]) {
+                    if !seen.insert(k) {
+                        continue;
+                    }
+                    if by_id.get(&k).is_some_and(|&i| self.elements[i].locked) {
+                        keep_parent.insert(k, new_parent);
+                        continue;
+                    }
+                    gone.insert(k);
+                    stack.push(k);
+                }
+            }
+        }
+        // a locked element survives only if nothing above it is deleted twice over (it was reached from a removed parent)
+        for (k, np) in keep_parent {
+            if gone.contains(&k) {
+                continue;
+            }
+            // the new parent may itself be removed by another id of the same call: climb to a survivor
+            let mut np = np;
+            let mut hops = 0usize;
+            while let Some(p) = np {
+                hops += 1;
+                if !gone.contains(&p) || hops > by_id.len() {
+                    break;
+                }
+                np = by_id.get(&p).and_then(|&i| self.elements[i].parent).filter(|q| by_id.contains_key(q));
+            }
+            if let Some(&i) = by_id.get(&k) {
+                self.elements[i].parent = np;
+            }
         }
         self.elements.retain(|e| !gone.contains(&e.id));
-        self.prune_overrides();
+        self.normalize();
     }
 
     /// Clone elements (with their internal parent links) into the document under
@@ -1099,6 +1208,13 @@ impl Doc {
     /// Like [`Doc::insert_items`], also returning the map old id -> new id of every inserted element
     /// (to carry per-element data such as portrait overrides along).
     pub fn insert_items_map(&mut self, items: &[Element], parent: Option<u64>) -> (Vec<u64>, HashMap<u64, u64>) {
+        let r = self.insert_items_raw(items, parent);
+        self.normalize();
+        r
+    }
+
+    /// [`Doc::insert_items_map` ] without the final [`Doc::normalize`] (batch callers normalize once).
+    pub fn insert_items_raw(&mut self, items: &[Element], parent: Option<u64>) -> (Vec<u64>, HashMap<u64, u64>) {
         let inside: HashSet<u64> = items.iter().map(|e| e.id).collect();
         let mut map: HashMap<u64, u64> = HashMap::new();
         for e in items {
@@ -1119,20 +1235,21 @@ impl Doc {
             };
             self.elements.push(n);
         }
-        self.normalize();
         (roots, map)
     }
 
     /// Elements of `ids` plus all their descendants, in document order (for copy / library).
     pub fn collect_subtrees(&self, ids: &[u64]) -> Vec<Element> {
         let top = self.top_level(ids);
+        let map = self.child_map();
         let mut set: HashSet<u64> = HashSet::new();
         for t in &top {
-            set.extend(self.subtree(*t));
+            set.extend(Self::subtree_in(&map, *t));
         }
+        let top_set: HashSet<u64> = top.iter().copied().collect();
         let mut v: Vec<Element> = self.elements.iter().filter(|e| set.contains(&e.id)).cloned().collect();
         for e in v.iter_mut() {
-            if top.contains(&e.id) {
+            if top_set.contains(&e.id) {
                 e.parent = None;
             }
         }
@@ -2209,6 +2326,68 @@ mod tests {
         let k = d.get(k).unwrap();
         // parent now spans x 100..700, y 100..500; keeps 20 px to the right and bottom
         assert!(close(k.x + k.w, 680.0) && close(k.y + k.h, 480.0), "{:?}", k.frame());
+    }
+
+    #[test]
+    fn shrinking_a_parent_below_the_margins_then_growing_it_keeps_the_margins() {
+        let mut d = Doc::empty(1000.0, 800.0);
+        let p = put(&mut d, None, Kind::Panel, "P", [100.0, 100.0, 400.0, 300.0], |_| {});
+        let c = put(&mut d, Some(p), Kind::Panel, "C", [150.0, 110.0, 300.0, 50.0], |e| {
+            e.anchor_min = [0.0, 1.0];
+            e.anchor_max = [1.0, 1.0];
+            e.pivot = [0.5, 1.0];
+        });
+        d.normalize();
+        let before = d.get(c).unwrap().clone();
+        // 50 px margins each side: a 60 px parent makes the child -40 px wide
+        d.set_frame_keep_children(p, &Frame { cx: 130.0, cy: 250.0, w: 60.0, h: 300.0, rot: 0.0 });
+        assert!(d.get(c).unwrap().w < 0.0, "stored unclamped");
+        let f = d.get(c).unwrap().frame();
+        assert!(f.w == 0.0, "drawn / hit-tested as empty");
+        d.set_frame_keep_children(p, &Frame { cx: 300.0, cy: 250.0, w: 400.0, h: 300.0, rot: 0.0 });
+        let after = d.get(c).unwrap();
+        assert!(close(after.x, before.x) && close(after.w, before.w) && close(after.y, before.y) && close(after.h, before.h), "{:?} vs {:?}", after.frame(), before.frame());
+    }
+
+    #[test]
+    fn deleting_keeps_locked_descendants_and_moves_them_up() {
+        let mut d = Doc::empty(1000.0, 800.0);
+        let top = put(&mut d, None, Kind::Panel, "Top", [0.0, 0.0, 500.0, 500.0], |_| {});
+        let victim = put(&mut d, Some(top), Kind::Panel, "Victim", [10.0, 10.0, 300.0, 300.0], |_| {});
+        let free = put(&mut d, Some(victim), Kind::Panel, "Free", [20.0, 20.0, 50.0, 50.0], |_| {});
+        let lock = put(&mut d, Some(victim), Kind::Panel, "Lock", [100.0, 100.0, 50.0, 50.0], |e| e.locked = true);
+        let under = put(&mut d, Some(lock), Kind::Button, "UnderLock", [110.0, 110.0, 20.0, 20.0], |_| {});
+        let deep_free = put(&mut d, Some(free), Kind::Button, "DeepFree", [25.0, 25.0, 5.0, 5.0], |_| {});
+        let deep_lock = put(&mut d, Some(free), Kind::Button, "DeepLock", [26.0, 26.0, 5.0, 5.0], |e| e.locked = true);
+        d.normalize();
+        d.remove_subtrees(&[victim]);
+        assert!(d.get(victim).is_none() && d.get(free).is_none() && d.get(deep_free).is_none());
+        let l = d.get(lock).expect("locked descendant survives");
+        assert_eq!((l.parent, l.x, l.y), (Some(top), 100.0, 100.0), "re-parented to the deleted element's parent, same place");
+        assert_eq!(d.get(under).unwrap().parent, Some(lock), "its own children stay with it");
+        assert_eq!(d.get(deep_lock).unwrap().parent, Some(top));
+        // deleting a root keeps locked ones as roots
+        d.remove_subtrees(&[top]);
+        assert_eq!(d.get(lock).unwrap().parent, None);
+        assert!(d.get(top).is_none());
+    }
+
+    #[test]
+    fn top_level_and_subtrees_scale() {
+        let mut d = Doc::empty(1000.0, 800.0);
+        let root = d.add(Element::new(0, Kind::Panel));
+        for _ in 0..3000 {
+            let mut e = Element::new(0, Kind::Panel);
+            e.parent = Some(root);
+            d.add(e);
+        }
+        d.normalize();
+        let all: Vec<u64> = d.elements.iter().map(|e| e.id).collect();
+        let t = std::time::Instant::now();
+        assert_eq!(d.top_level(&all), vec![root]);
+        assert_eq!(d.collect_subtrees(&[root]).len(), 3001);
+        d.translate_subtree(root, 1.0, 1.0);
+        assert!(t.elapsed().as_millis() < 500, "{:?}", t.elapsed());
     }
 
     #[test]

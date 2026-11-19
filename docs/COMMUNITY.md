@@ -92,7 +92,7 @@ The `review` function (`supabase/functions/review/`) checks that the caller is a
 ## Icons, previews and creator profiles
 
 - **Icon and preview** (optional, for any content type): PNG up to 512×512 / 256 KB and 1920×1080 / 1 MB. They go through the same moderation: while there is no image moderator, content that carries them waits for human review. On the command line: `--icon icon.png --preview preview.png`.
-- **Creator profile** (`public_profiles`): profile photo (PNG ≤ 512×512), banner (PNG ≤ 1920×640), description (≤ 300, no links, reviewed automatically), GitHub username and links to X, YouTube, itch.io, Twitch, Bluesky and Instagram (only `https://` on those domains). It can only be edited through the `profile` function; the table cannot be written from the app.
+- **Creator profile** (`public_profiles`): profile photo (PNG ≤ 512×512), banner (PNG ≤ 1920×640), description (≤ 300, no links, reviewed automatically), GitHub username and links to X, YouTube, itch.io, Twitch, Bluesky and Instagram (only `https://` on those domains). It can only be edited through the `profile` function; the table cannot be written from the app. Your own profile, including the pending-review flags, is read from the view `my_public_profile` (only your row); the table itself exposes only the public columns to other people (migration 0014, applied after the 1.5.x release; see `supabase/MIGRATION.md`). A new public name is reviewed by the same text moderation when the profile is created (an empty `save`), saved or first used in an upload; until it is reviewed it is not shown publicly.
 - A profile is **public only if the person has at least one approved piece of content**; your own is always visible. It never includes the email or preferences.
 - Moderators: `--community-review list` also shows pending profile images; they are approved with `approve-profile <account> avatar|banner` (the `review` function).
 
@@ -127,7 +127,7 @@ Every content upload and every profile photo or banner goes through an automatic
 - **Antivirus:** all files. Many detections = rejection; few = review by a person.
 - **Text:** automatic moderation of the listing.
 
-**Decision rules** (`decide.ts`, with tests): clean content is published on its own; **when in doubt or if a service is down, it is not published** and stays pending for a person. Everything is recorded in `moderation_log` (step, result and reason, without personal data). `lienzo-ui --community-review rescan [id]` re-runs the oldest pending item.
+**Decision rules** (`decide.ts`, with tests): clean content is published on its own; **when in doubt or if a service is down, it is not published** and stays pending for a person. Everything is recorded in `moderation_log` (step, result and reason, without personal data). `lienzo-ui --community-review rescan [id]` re-runs the oldest pending item. `lienzo-ui --community-review cleanup` drains the takedown queue (files of rejected / deleted listings).
 
 Server secrets are stored **in Supabase, never in the repository** (`supabase secrets set ...`).
 

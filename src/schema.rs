@@ -169,8 +169,9 @@ fn semantic(v: &Value, out: &mut Vec<String>) {
     }
     if let Some(u) = v.get("unity") {
         if let Some(s) = u.get("scripts_dir").and_then(|s| s.as_str()) {
-            if !crate::docext::valid_scripts_dir(s) {
-                out.push("$.unity.scripts_dir: must be a relative path starting with Assets, with '/' separators, no '..', no drive letter, none of <>\"|?*, no trailing dot or space and no Windows device names (CON, NUL, COM1...)".into());
+            // The loader normalises '' to '/' (and trims a trailing slash), so those are valid here too.
+            if crate::docext::normalize_scripts_dir(s).is_none() {
+                out.push("$.unity.scripts_dir: must be a relative path starting with Assets (use '/' or '\\' as separators), no '..', no drive letter, none of <>\"|?*, no trailing dot or space and no Windows device names (CON, NUL, COM1...)".into());
             }
         }
         let fonts = u.get("default_font").into_iter().chain(u.get("fallback_fonts").and_then(|f| f.as_array()).into_iter().flatten());
@@ -186,10 +187,14 @@ fn semantic(v: &Value, out: &mut Vec<String>) {
         }
     }
     if let Some(ov) = v.get("portrait").and_then(|p| p.get("overrides")).and_then(|o| o.as_array()) {
+        let mut seen = std::collections::HashSet::new();
         for (i, o) in ov.iter().enumerate() {
             if let Some(id) = o.get("id").and_then(|i| i.as_u64()) {
                 if !ids.contains(&id) {
                     out.push(format!("$.portrait.overrides[{}].id: no element has id {}", i, id));
+                } else if !seen.insert(id) {
+                    // the loader keeps the first one and drops the rest
+                    out.push(format!("$.portrait.overrides[{}].id: duplicate override for element {} (only the first one is used)", i, id));
                 }
             }
         }
@@ -277,6 +282,26 @@ mod tests {
         assert!(e.iter().any(|m| m.starts_with("$.elements[1].id: duplicate")), "{:?}", e);
         assert!(e.iter().any(|m| m.starts_with("$.elements[1].unity_name")), "{:?}", e);
         assert!(e.iter().any(|m| m.starts_with("$.unity.scripts_dir")), "{:?}", e);
+    }
+
+    #[test]
+    fn validate_agrees_with_the_loader_on_scripts_dir_and_duplicate_overrides() {
+        let base = |dir: &str, ovs: Value| json!({"elements":[{"id":1,"name":"a","kind":"Panel","w":10,"h":10}],"unity":{"scripts_dir":dir},"portrait":{"width":10,"height":20,"overrides":ovs}});
+        // backslashes and a trailing slash are fine: the loader normalises them
+        assert!(validate_value(&base(r"Assets\Game\UI\", json!([]))).is_empty());
+        let d: crate::model::Doc = serde_json::from_value(base(r"Assets\Game\UI", json!([]))).unwrap();
+        let mut d = d;
+        d.sanitize();
+        assert_eq!(d.unity.scripts_dir.as_deref(), Some("Assets/Game/UI"));
+        // still invalid when the loader would drop it
+        assert!(!validate_value(&base(r"..\x", json!([]))).is_empty());
+        assert!(!validate_value(&base(r"Assets\CON", json!([]))).is_empty());
+        // two overrides for one element: the loader keeps the first, validation reports it
+        let e = validate_value(&base("Assets/X", json!([{"id":1,"x":5},{"id":1,"x":9}])));
+        assert!(e.iter().any(|m| m.starts_with("$.portrait.overrides[1].id: duplicate")), "{:?}", e);
+        let mut d: crate::model::Doc = serde_json::from_value(base("Assets/X", json!([{"id":1,"x":5},{"id":1,"x":9}]))).unwrap();
+        d.sanitize();
+        assert_eq!(d.portrait.unwrap().overrides[0].x, Some(5.0));
     }
 
     #[test]

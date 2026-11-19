@@ -937,3 +937,10 @@ Imported {} ({} warnings). Save it as a project to keep it.	已导入 {}（{} �
 Could not import: {}	无法导入：{}
 {} things could not be mapped exactly:	有 {} 项无法精确转换：
 {} (portrait)	{}（竖屏）
+cleanup: {} file(s) removed before the error.	cleanup：出错前已删除 {} 个文件。
+cleanup: call limit reached ({}); run it again if more files are queued.	cleanup：已达到调用次数上限（{}）；如果队列中还有文件，请再运行一次。
+cleanup: {} file(s) removed, {} failed (they will be retried).	cleanup：已删除 {} 个文件，{} 个失败（将会重试）。
+cleanup: {} file(s) removed.	cleanup：已删除 {} 个文件。
+Errors: {} · Warnings: {}. Click one to select it.	错误：{} · 警告：{}。点击其中一项即可选中。
+Elements selected: {}	已选择的元素：{}
+To add a language, copy assets/i18n/es.tsv and translate it (see docs/EXTENDING.md).	要添加语言，请复制 assets/i18n/es.tsv 并翻译副本（见 docs/EXTENDING.md）。

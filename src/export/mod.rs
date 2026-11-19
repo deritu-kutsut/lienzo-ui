@@ -59,7 +59,13 @@ fn words(s: &str) -> Vec<String> {
     ascii_fold(s).split(|c: char| !c.is_ascii_alphanumeric()).filter(|w| !w.is_empty()).map(|w| w.to_string()).collect()
 }
 
-/// PascalCase C# identifier ("Main menu" → "MainMenu").
+/// First 8 hex digits of the SHA-256 of `s` (stable across runs and platforms).
+pub fn hash8(s: &str) -> String {
+    use sha2::{Digest, Sha256};
+    Sha256::digest(s.as_bytes()).iter().take(4).map(|b| format!("{:02x}", b)).collect()
+}
+
+/// PascalCase C# identifier ("Main menu" → "MainMenu"; a name with no ASCII letters or digits → `Design_<hash>`).
 pub fn class_name(s: &str) -> String {
     let mut out: String = words(s)
         .iter()
@@ -72,7 +78,9 @@ pub fn class_name(s: &str) -> String {
         })
         .collect();
     if out.is_empty() {
-        out = "Design".into();
+        // A title in another script (CJK, Cyrillic, emoji...) has no ASCII word: a stable hash keeps two such designs
+        // from sharing (and overwriting) one file. Only a blank name is plain "Design".
+        out = if s.trim().is_empty() { "Design".into() } else { format!("Design_{}", hash8(s.trim())) };
     }
     if out.chars().next().map(|c| c.is_ascii_digit()).unwrap_or(false) {
         out = format!("Ui{}", out);
@@ -114,11 +122,32 @@ pub fn is_line_break(c: char) -> bool {
     matches!(c, '\n' | '\r' | '\u{0B}' | '\u{0C}' | '\u{85}' | '\u{2028}' | '\u{2029}')
 }
 
+/// Bidi controls (U+202A-202E, U+2066-2069, U+200E/F, U+061C) and zero-width characters (U+200B-200D, U+2060, U+FEFF,
+/// U+180E): invisible, and able to make source text read differently from what it does ("Trojan Source").
+pub fn is_invisible_ctrl(c: char) -> bool {
+    matches!(c, '\u{202A}'..='\u{202E}' | '\u{2066}'..='\u{2069}' | '\u{200E}' | '\u{200F}' | '\u{061C}' | '\u{200B}'..='\u{200D}' | '\u{2060}' | '\u{FEFF}' | '\u{180E}')
+}
+
+/// Escapes (as `\uXXXX`) the characters of an already serialized JSON text that are valid but unsafe to leave raw:
+/// bidi / zero-width controls and the line separators U+2028, U+2029 and U+0085. Only string contents can hold them,
+/// so the result parses to the same values.
+pub fn json_escape_invisible(json: &str) -> String {
+    let mut o = String::with_capacity(json.len());
+    for c in json.chars() {
+        if is_invisible_ctrl(c) || matches!(c, '\u{2028}' | '\u{2029}' | '\u{85}') {
+            o.push_str(&format!("\\u{:04X}", c as u32));
+        } else {
+            o.push(c);
+        }
+    }
+    o
+}
+
 /// Text that is safe inside a one-line comment (`//`, `///`): every line break, control
 /// character and bidi override becomes a space, so user text can never end the comment.
 pub fn sanitize_line(s: &str) -> String {
     s.chars()
-        .map(|c| if is_line_break(c) || c.is_control() || matches!(c, '\u{202A}'..='\u{202E}' | '\u{2066}'..='\u{2069}') { ' ' } else { c })
+        .map(|c| if is_line_break(c) || c.is_control() || is_invisible_ctrl(c) { ' ' } else { c })
         .collect()
 }
 
@@ -156,7 +185,7 @@ pub fn cs_str(s: &str) -> String {
             '\n' => o.push_str("\\n"),
             '\r' => o.push_str("\\r"),
             '\t' => o.push_str("\\t"),
-            c if c.is_control() || matches!(c, '\u{2028}' | '\u{2029}' | '\u{202A}'..='\u{202E}' | '\u{2066}'..='\u{2069}') => {
+            c if c.is_control() || is_invisible_ctrl(c) || matches!(c, '\u{2028}' | '\u{2029}') => {
                 let mut u = [0u16; 2];
                 for unit in c.encode_utf16(&mut u) {
                     o.push_str(&format!("\\u{:04X}", unit));
@@ -189,12 +218,18 @@ pub fn css_comment(s: &str) -> String {
 
 /// Piece of a quoted USS `url("...")`: no quotes, backslashes, parentheses or line breaks.
 pub fn css_url_part(s: &str) -> String {
-    s.chars().filter(|c| !matches!(c, '"' | '\\' | '(' | ')') && !is_line_break(*c) && !c.is_control()).collect()
+    s.chars().filter(|c| !matches!(c, '"' | '\\' | '(' | ')') && !is_line_break(*c) && !c.is_control() && !is_invisible_ctrl(*c)).collect()
 }
 
 /// XML attribute value.
+/// Bidi / zero-width characters become numeric character references (same text once parsed, but visible in the source).
 pub fn xml_attr(s: &str) -> String {
-    s.replace('&', "&amp;").replace('"', "&quot;").replace('<', "&lt;").replace('>', "&gt;").replace('\n', "&#10;").replace('\r', "&#13;").replace('\t', "&#9;")
+    let t = s.replace('&', "&amp;").replace('"', "&quot;").replace('<', "&lt;").replace('>', "&gt;").replace('\n', "&#10;").replace('\r', "&#13;").replace('\t', "&#9;");
+    let unsafe_char = |c: char| is_invisible_ctrl(c) || matches!(c, '\u{2028}' | '\u{2029}' | '\u{85}');
+    if !t.chars().any(unsafe_char) {
+        return t;
+    }
+    t.chars().map(|c| if unsafe_char(c) { format!("&#x{:X};", c as u32) } else { c.to_string() }).collect()
 }
 
 pub fn f(v: f32) -> String {
@@ -428,7 +463,7 @@ pub fn radius_of(e: &Element) -> f32 {
     if max.is_finite() && max > 0.0 && e.radius.is_finite() { e.radius.clamp(0.0, max) } else { 0.0 }
 }
 
-/// File name an image gets inside Assets/EditorGUI/Sprites.
+/// File name an image gets inside Assets/EditorGUI/Sprites when nothing else has the same name (see [`ImageNames`]).
 pub fn image_file_name(image: &str) -> String {
     Path::new(image).file_name().map(|s| s.to_string_lossy().to_string()).unwrap_or_else(|| image.to_string())
 }
@@ -451,12 +486,108 @@ pub fn element_sprite(e: &Element) -> Option<String> {
     e.sprite.clone().or_else(|| unity_image_ref(&e.image).and_then(|(_, s)| s))
 }
 
-/// Asset path inside the Unity project of an element's picture: the referenced asset for a `unity:` image,
-/// else the copy that the export writes into `Assets/EditorGUI/Sprites`.
+/// Asset path inside the Unity project of an element's picture, ignoring other pictures with the same file name:
+/// the referenced asset for a `unity:` image, else `Assets/EditorGUI/Sprites/<file name>`. The exporters use
+/// [`ImageNames::asset_path`] instead, which also tells apart two different pictures called the same.
+#[allow(dead_code)]
 pub fn image_asset_path(image: &str) -> String {
     match unity_image_ref(image) {
         Some((p, _)) => p,
         None => format!("{}/Sprites/{}", UNITY_ROOT, image_file_name(image)),
+    }
+}
+
+type HashCache = HashMap<PathBuf, (u64, Option<std::time::SystemTime>, u128)>;
+
+/// SHA-256 (first 16 bytes) of the file behind `path`, cached by (length, modification time): the exporters ask for
+/// the mapping of a design several times and must not read every picture again each time.
+fn file_hash(path: &Path) -> Option<u128> {
+    use sha2::{Digest, Sha256};
+    static CACHE: std::sync::Mutex<Option<HashCache>> = std::sync::Mutex::new(None);
+    let md = std::fs::metadata(path).ok()?;
+    if !md.is_file() {
+        return None;
+    }
+    let key = (md.len(), md.modified().ok());
+    if let Some((l, m, h)) = CACHE.lock().ok().and_then(|g| g.as_ref().and_then(|c| c.get(path).copied())) {
+        if (l, m) == key {
+            return Some(h);
+        }
+    }
+    let bytes = std::fs::read(path).ok()?;
+    let d = Sha256::digest(&bytes);
+    let h = u128::from_be_bytes(d[..16].try_into().ok()?);
+    if let Ok(mut g) = CACHE.lock() {
+        g.get_or_insert_with(Default::default).insert(path.to_path_buf(), (key.0, key.1, h));
+    }
+    Some(h)
+}
+
+/// `stem_2.ext` for `name.ext` (`name_2` when there is no extension).
+fn suffixed_name(name: &str, k: usize) -> String {
+    match name.rfind('.').filter(|&i| i > 0) {
+        Some(i) => format!("{}_{}{}", &name[..i], k, &name[i..]),
+        None => format!("{}_{}", name, k),
+    }
+}
+
+/// File each picture of a design gets in `Assets/EditorGUI/Sprites`. Pictures from different folders can share a file
+/// name: the same content (SHA-256) keeps one file, different content gets `_2`, `_3`... (compared case-insensitively,
+/// as Windows and macOS do). The first picture in element order keeps the plain name, so a design without clashes
+/// exports exactly as before. JSON, USS and IMGUI all use this one mapping.
+pub struct ImageNames {
+    files: HashMap<String, String>,
+}
+
+impl ImageNames {
+    pub fn new(doc: &Doc) -> Self {
+        let blocked = crate::library::blocked_path();
+        Self::with_resolver(doc, |image| Some(crate::library::resolve_image(image)).filter(|p| *p != blocked))
+    }
+
+    /// Same, with the file of each picture given by `resolve` (None = not readable).
+    pub fn with_resolver(doc: &Doc, resolve: impl Fn(&str) -> Option<PathBuf>) -> Self {
+        let mut files: HashMap<String, String> = HashMap::new();
+        let mut taken: HashSet<String> = HashSet::new();
+        let mut groups: HashMap<String, Vec<(Option<u128>, String)>> = HashMap::new();
+        for e in &doc.elements {
+            if e.image.is_empty() || unity_image_ref(&e.image).is_some() || files.contains_key(&e.image) {
+                continue;
+            }
+            let base = image_file_name(&e.image);
+            let hash = resolve(&e.image).and_then(|src| file_hash(&src));
+            let key = base.to_lowercase();
+            let same = groups.get(&key).and_then(|v| v.iter().find(|(h, _)| *h == hash)).map(|(_, n)| n.clone());
+            let name = match same {
+                Some(n) => n,
+                None => {
+                    let mut cand = base.clone();
+                    let mut k = 2;
+                    while taken.contains(&cand.to_lowercase()) {
+                        cand = suffixed_name(&base, k);
+                        k += 1;
+                    }
+                    taken.insert(cand.to_lowercase());
+                    groups.entry(key).or_default().push((hash, cand.clone()));
+                    cand
+                }
+            };
+            files.insert(e.image.clone(), name);
+        }
+        ImageNames { files }
+    }
+
+    /// File name (inside `Assets/EditorGUI/Sprites`) of a copied picture.
+    pub fn file(&self, image: &str) -> String {
+        self.files.get(image).cloned().unwrap_or_else(|| image_file_name(image))
+    }
+
+    /// Asset path inside the Unity project: the referenced asset of a `unity:` image, else the copy in Sprites.
+    pub fn asset_path(&self, image: &str) -> String {
+        match unity_image_ref(image) {
+            Some((p, _)) => p,
+            None => format!("{}/Sprites/{}", UNITY_ROOT, self.file(image)),
+        }
     }
 }
 
@@ -469,6 +600,37 @@ pub fn used_fonts(doc: &Doc) -> Vec<String> {
         }
     }
     v
+}
+
+/// Font file of a family: the one the editor registered (GUI), else - headless `--export`, where the GUI never
+/// filled the table - a lazy scan of the same system folders and of the font library (done once per process).
+pub fn font_file(name: &str) -> Option<PathBuf> {
+    if let Some(p) = crate::render::font_path(name) {
+        return Some(p);
+    }
+    static SCAN: std::sync::OnceLock<HashMap<String, PathBuf>> = std::sync::OnceLock::new();
+    SCAN
+        .get_or_init(|| {
+            let mut m = HashMap::new();
+            for (n, files) in crate::render::system_font_candidates() {
+                if let Some(f) = files.iter().find(|p| Path::new(p).is_file()) {
+                    m.insert(n.to_string(), PathBuf::from(f));
+                }
+            }
+            for (n, p, _) in crate::library::library_fonts() {
+                m.entry(n).or_insert(p);
+            }
+            m
+        })
+        .get(name)
+        .cloned()
+}
+
+/// Extension (lowercase, no dot) of the font file copied for `name`: `ttf`, `otf` or `ttc`; None when the font cannot be found.
+pub fn font_ext(name: &str) -> Option<String> {
+    let f = font_file(name)?;
+    let e = f.extension().and_then(|x| x.to_str()).unwrap_or("ttf").to_lowercase();
+    Some(if matches!(e.as_str(), "ttf" | "otf" | "ttc") { e } else { "ttf".into() })
 }
 
 /// Accept the project folder, its Assets folder, or any folder inside Assets.
@@ -500,13 +662,130 @@ pub fn decode_cs(bytes: &[u8]) -> String {
     String::from_utf8_lossy(b).into_owned()
 }
 
-/// Every `.cs` under `<project>/Assets` (relative paths with `/`) whose text satisfies `pred` (bounded scan).
+thread_local! {
+    /// `.cs` files read by [`CsCache`] on this thread (used by the tests: one read per file per export).
+    static CS_READS: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
+}
+
+/// Every `.cs` under `<project>/Assets` (relative path with `/`, decoded text), read ONCE per export on first use and
+/// shared by all the scans of that export (bounded: at most 50 000 files of up to 2 MB, 400 MB of text kept).
 /// Files are read as bytes and decoded leniently (see [`decode_cs`]): a Latin-1 or UTF-16 file is still scanned.
-fn scan_cs(root: &Path, mut pred: impl FnMut(&str) -> bool) -> Vec<String> {
-    let mut stack = vec![root.join("Assets")];
-    let mut found = Vec::new();
-    let (mut files, mut dirs) = (0usize, 0usize);
-    while let Some(d) = stack.pop() {
+struct CsCache<'a> {
+    root: &'a Path,
+    files: Option<Vec<(String, String)>>,
+}
+
+impl<'a> CsCache<'a> {
+    fn new(root: &'a Path) -> Self {
+        CsCache { root, files: None }
+    }
+
+    fn load(&mut self) -> &mut Vec<(String, String)> {
+        let root = self.root;
+        self.files.get_or_insert_with(|| {
+            let mut out: Vec<(String, String)> = Vec::new();
+            let mut stack = vec![root.join("Assets")];
+            let (mut files, mut dirs, mut kept) = (0usize, 0usize, 0usize);
+            'walk: while let Some(d) = stack.pop() {
+                dirs += 1;
+                if dirs > 20_000 {
+                    break;
+                }
+                let Ok(rd) = std::fs::read_dir(&d) else { continue };
+                for ent in rd.flatten() {
+                    let p = ent.path();
+                    let Ok(ft) = ent.file_type() else { continue };
+                    if ft.is_dir() {
+                        stack.push(p);
+                    } else if ft.is_file() && p.extension().is_some_and(|x| x.eq_ignore_ascii_case("cs")) {
+                        files += 1;
+                        if files > 50_000 {
+                            break 'walk;
+                        }
+                        if ent.metadata().map(|m| m.len() > 2_000_000).unwrap_or(true) {
+                            continue;
+                        }
+                        let Ok(bytes) = std::fs::read(&p) else { continue };
+                        CS_READS.with(|c| c.set(c.get() + 1));
+                        let Ok(rel) = p.strip_prefix(root) else { continue };
+                        let text = decode_cs(&bytes);
+                        kept += text.len();
+                        // past the memory cap a file is still scanned once, but its text is not kept
+                        out.push((rel.to_string_lossy().replace('\\', "/"), if kept > 400_000_000 { String::new() } else { text }));
+                    }
+                }
+            }
+            out
+        })
+    }
+
+    /// Relative paths of the `.cs` files whose text satisfies `pred`, sorted.
+    fn scan(&mut self, mut pred: impl FnMut(&str) -> bool) -> Vec<String> {
+        let mut found: Vec<String> = self.load().iter().filter(|(_, t)| pred(t)).map(|(p, _)| p.clone()).collect();
+        found.sort();
+        found
+    }
+
+    /// A file this export deleted: later scans must not see it.
+    fn forget(&mut self, rel: &str) {
+        if let Some(v) = self.files.as_mut() {
+            v.retain(|(p, _)| norm_rel(p) != norm_rel(rel));
+        }
+    }
+}
+
+/// True if some `.cs` under `<project>/Assets` already declares `class {cls}View` (bounded textual scan).
+fn view_class_exists(cs: &mut CsCache, cls: &str) -> bool {
+    let needle = format!("{}View", cls);
+    !cs.scan(|t| declares_class(t, &needle)).is_empty()
+}
+
+/// An assembly definition found in the project (`Assets`, plus `Packages` and `Library/PackageCache` for resolving references).
+#[derive(Clone, Debug, Default)]
+pub struct AsmdefInfo {
+    pub name: String,
+    /// Folder relative to the project (`/`), e.g. `Assets/Game/Runtime`.
+    pub folder: String,
+    pub in_assets: bool,
+    pub guid: Option<String>,
+    pub references: Vec<String>,
+    pub include_platforms: Vec<String>,
+    pub no_engine_references: bool,
+}
+
+#[derive(Default)]
+struct AsmScan {
+    defs: Vec<AsmdefInfo>,
+    /// (`reference` value, folder) of every `.asmref` under Assets.
+    refs: Vec<(String, String)>,
+}
+
+/// GUID of a Unity asset from its `.meta` file (`guid: <32 hex>`).
+fn meta_guid(asset: &Path) -> Option<String> {
+    let mut m = asset.as_os_str().to_os_string();
+    m.push(".meta");
+    let t = std::fs::read_to_string(PathBuf::from(m)).ok()?;
+    t.lines().find_map(|l| l.trim().strip_prefix("guid:").map(|g| g.trim().to_lowercase())).filter(|g| !g.is_empty())
+}
+
+/// `GUID:<guid>` reference (Unity's default form in `.asmref` and in `references`) -> the lowercase guid.
+fn guid_ref(r: &str) -> Option<String> {
+    let t = r.trim();
+    t.get(..5).filter(|p| p.eq_ignore_ascii_case("guid:")).map(|_| t[5..].trim().to_lowercase())
+}
+
+/// Assemblies Unity's own packages declare (their GUIDs are stable across versions): used when the package folder cannot be read.
+const KNOWN_ASM_GUIDS: [(&str, &str); 2] = [("2bafac87e7f4b9b418d9448d219b01ab", "UnityEngine.UI"), ("6055be8ebefd69e48b49212b09b47b2f", "Unity.TextMeshPro")];
+
+fn scan_asm(root: &Path) -> AsmScan {
+    let mut out = AsmScan::default();
+    let mut stack: Vec<(PathBuf, bool)> = vec![(root.join("Assets"), true), (root.join("Packages"), false)];
+    // packages resolved from the registry live one level down: Library/PackageCache/<pkg>@<version>
+    if let Ok(rd) = std::fs::read_dir(root.join("Library").join("PackageCache")) {
+        stack.extend(rd.flatten().map(|e| (e.path(), false)));
+    }
+    let mut dirs = 0usize;
+    while let Some((d, in_assets)) = stack.pop() {
         dirs += 1;
         if dirs > 20_000 {
             break;
@@ -516,70 +795,117 @@ fn scan_cs(root: &Path, mut pred: impl FnMut(&str) -> bool) -> Vec<String> {
             let p = ent.path();
             let Ok(ft) = ent.file_type() else { continue };
             if ft.is_dir() {
-                stack.push(p);
-            } else if ft.is_file() && p.extension().is_some_and(|x| x.eq_ignore_ascii_case("cs")) {
-                files += 1;
-                if files > 50_000 {
-                    return found;
+                stack.push((p, in_assets));
+                continue;
+            }
+            let ext = p.extension().and_then(|x| x.to_str()).unwrap_or("").to_ascii_lowercase();
+            if !(ft.is_file() && (ext == "asmdef" || (ext == "asmref" && in_assets))) {
+                continue;
+            }
+            let Ok(t) = std::fs::read_to_string(&p) else { continue };
+            let Ok(v) = serde_json::from_str::<serde_json::Value>(t.trim_start_matches('\u{feff}')) else { continue };
+            let folder = p.parent().and_then(|d| d.strip_prefix(root).ok()).map(|r| r.to_string_lossy().replace('\\', "/")).unwrap_or_default();
+            if ext == "asmref" {
+                if let Some(r) = v["reference"].as_str() {
+                    out.refs.push((r.to_string(), folder));
                 }
-                if ent.metadata().map(|m| m.len() > 2_000_000).unwrap_or(true) {
-                    continue;
-                }
-                if let Ok(bytes) = std::fs::read(&p) {
-                    if pred(&decode_cs(&bytes)) {
-                        if let Ok(r) = p.strip_prefix(root) {
-                            found.push(r.to_string_lossy().replace('\\', "/"));
-                        }
-                    }
-                }
+            } else if let Some(name) = v["name"].as_str() {
+                let strs = |k: &str| v[k].as_array().map(|a| a.iter().filter_map(|x| x.as_str().map(str::to_string)).collect()).unwrap_or_default();
+                out.defs.push(AsmdefInfo {
+                    name: name.to_string(),
+                    folder,
+                    in_assets,
+                    guid: meta_guid(&p),
+                    references: strs("references"),
+                    include_platforms: strs("includePlatforms"),
+                    no_engine_references: v["noEngineReferences"].as_bool().unwrap_or(false),
+                });
             }
         }
     }
-    found.sort();
-    found
+    out
 }
 
-/// True if some `.cs` under `<project>/Assets` already declares `class {cls}View` (bounded textual scan).
-fn view_class_exists(root: &Path, cls: &str) -> bool {
-    let needle = format!("{}View", cls);
-    !scan_cs(root, |t| declares_class(t, &needle)).is_empty()
+impl AsmScan {
+    /// Assembly name behind a `references` / `reference` entry (a plain name, or a `GUID:` resolved through the `.meta` of
+    /// the asmdefs found, then the well-known Unity ones). None when a GUID cannot be resolved.
+    fn resolve(&self, r: &str) -> Option<String> {
+        match guid_ref(r) {
+            Some(g) => self
+                .defs
+                .iter()
+                .find(|d| d.guid.as_deref() == Some(g.as_str()))
+                .map(|d| d.name.clone())
+                .or_else(|| KNOWN_ASM_GUIDS.iter().find(|(k, _)| *k == g).map(|(_, n)| n.to_string())),
+            None => Some(r.trim().to_string()),
+        }
+    }
+}
+
+/// Where scripts must live to compile into assembly `assembly`: the folder of its `.asmdef` under Assets, or of an
+/// `.asmref` that points to it by name or by `GUID:<guid>` (resolved through the asmdef's `.meta`), plus what is known
+/// about the asmdef (None when only a name-based `.asmref` was found: its asmdef is not readable).
+#[derive(Clone, Debug)]
+#[allow(dead_code)]
+pub struct AsmTarget {
+    pub folder: String,
+    pub via_ref: bool,
+    pub def: Option<AsmdefInfo>,
+}
+
+fn find_asm_target(scan: &AsmScan, assembly: &str) -> Option<AsmTarget> {
+    if let Some(d) = scan.defs.iter().find(|d| d.in_assets && d.name == assembly) {
+        return Some(AsmTarget { folder: d.folder.clone(), via_ref: false, def: Some(d.clone()) });
+    }
+    for (r, folder) in &scan.refs {
+        if scan.resolve(r).as_deref() == Some(assembly) {
+            let def = scan.defs.iter().find(|d| d.name == assembly).cloned();
+            return Some(AsmTarget { folder: folder.clone(), via_ref: true, def });
+        }
+    }
+    None
 }
 
 // Project folder (relative, starts with `Assets`) of the `.asmdef` named `assembly`, or of an `.asmref` that
 /// points to it (a folder with an `.asmref` compiles into that assembly too).
+#[allow(dead_code)]
 pub fn find_asmdef_folder(root: &Path, assembly: &str) -> Option<String> {
-    let mut stack = vec![root.join("Assets")];
-    let mut dirs = 0usize;
-    let mut via_ref = None;
-    while let Some(d) = stack.pop() {
-        dirs += 1;
-        if dirs > 20_000 {
-            break;
-        }
-        let Ok(rd) = std::fs::read_dir(&d) else { continue };
-        for ent in rd.flatten() {
-            let p = ent.path();
-            let Ok(ft) = ent.file_type() else { continue };
-            if ft.is_dir() {
-                stack.push(p);
-                continue;
-            }
-            let ext = p.extension().and_then(|x| x.to_str()).unwrap_or("").to_ascii_lowercase();
-            if (ext == "asmdef" || ext == "asmref") && ft.is_file() {
-                let Ok(t) = std::fs::read_to_string(&p) else { continue };
-                let Ok(v) = serde_json::from_str::<serde_json::Value>(t.trim_start_matches('\u{feff}')) else { continue };
-                let key = if ext == "asmdef" { "name" } else { "reference" };
-                if v[key].as_str() == Some(assembly) {
-                    let rel = p.parent().and_then(|d| d.strip_prefix(root).ok()).map(|r| r.to_string_lossy().replace('\\', "/"));
-                    if ext == "asmdef" {
-                        return rel;
-                    }
-                    via_ref = via_ref.or(rel);
-                }
-            }
+    find_asm_target(&scan_asm(root), assembly).map(|t| t.folder)
+}
+
+/// Why the generated scripts cannot compile in `def`, or a caveat. `Ok(note)` = usable (note when it could not be checked
+/// completely), `Err(reason)` = they would not compile / would not exist in a build.
+fn check_assembly(scan: &AsmScan, def: &AsmdefInfo, needs_ui: bool) -> Result<Option<String>, String> {
+    if def.include_platforms.iter().any(|p| p.eq_ignore_ascii_case("Editor")) {
+        return Err(format!("assembly {} is an Editor-only assembly (includePlatforms contains Editor): runtime scripts cannot compile into it", def.name));
+    }
+    if !needs_ui {
+        return Ok(None);
+    }
+    if def.no_engine_references {
+        return Err(format!("assembly {} has noEngineReferences: the scripts need UnityEngine", def.name));
+    }
+    let mut names: Vec<String> = Vec::new();
+    let mut unresolved = 0usize;
+    for r in &def.references {
+        match scan.resolve(r) {
+            Some(n) => names.push(n),
+            None => unresolved += 1,
         }
     }
-    via_ref
+    let missing: Vec<&str> = ["UnityEngine.UI", "Unity.TextMeshPro"].into_iter().filter(|m| !names.iter().any(|n| n == m)).collect();
+    if missing.is_empty() {
+        return Ok(None);
+    }
+    if unresolved > 0 {
+        return Ok(Some(format!(
+            "could not confirm that assembly {} references {} ({} GUID reference(s) could not be resolved): add them to its asmdef if the scripts do not compile",
+            def.name,
+            missing.join(" and "),
+            unresolved
+        )));
+    }
+    Err(format!("assembly {} does not reference {} (its asmdef `references`)", def.name, missing.join(" and ")))
 }
 
 /// Where the generated scripts of `doc` go and a note when the request could not be followed exactly.
@@ -587,26 +913,52 @@ pub fn find_asmdef_folder(root: &Path, assembly: &str) -> Option<String> {
 /// * `unity.scripts_dir` (default `Assets/EditorGUI/Scripts`).
 /// * With `unity.assembly`: if an `.asmdef` of that name is found in the project, the scripts must live under its
 ///   folder to compile into it: `scripts_dir` is kept when it is already inside that folder, otherwise
-///   `<asmdef folder>/LienzoUI` is used. If no such asmdef exists the scripts stay in `scripts_dir` (Assembly-CSharp).
+///   `<asmdef folder>/LienzoUI` is used. An `.asmref` (by name or `GUID:<guid>`) counts like the asmdef it points to.
+///   The asmdef is checked first: the View scripts / portrait helper need `UnityEngine.UI` and `Unity.TextMeshPro`
+///   in its `references`, and an Editor-only assembly (`includePlatforms` with Editor) cannot hold runtime scripts. When
+///   it fails, or no such asmdef exists, the scripts stay outside it (Assembly-CSharp) and the note says why.
 pub fn resolve_scripts_dir(doc: &Doc, root: &Path) -> (String, Option<String>) {
     let want = doc.unity.scripts_dir.clone();
-    if let Some(asm) = &doc.unity.assembly {
-        return match find_asmdef_folder(root, asm) {
-            Some(folder) => {
-                let inside = |w: &str| w == folder || w.starts_with(&format!("{}/", folder));
-                match want {
-                    Some(w) if inside(&w) => (w, None),
-                    Some(w) => (format!("{}/LienzoUI", folder), Some(format!("scripts_dir {} is outside the folder of assembly {} ({}): the scripts were put in {}/LienzoUI", w, asm, folder, folder))),
-                    None => (format!("{}/LienzoUI", folder), None),
-                }
+    let Some(asm) = &doc.unity.assembly else {
+        return (want.unwrap_or_else(|| DEFAULT_SCRIPTS_DIR.to_string()), None);
+    };
+    let scan = scan_asm(root);
+    let Some(target) = find_asm_target(&scan, asm) else {
+        return (
+            want.unwrap_or_else(|| DEFAULT_SCRIPTS_DIR.to_string()),
+            Some(format!("assembly {} was not found (no .asmdef with that name in Assets, no .asmref pointing to it): the scripts compile into Assembly-CSharp", asm)),
+        );
+    };
+    let folder = target.folder.clone();
+    let inside = |w: &str| w == folder || w.starts_with(&format!("{}/", folder));
+    let gn = &doc.unity.generate;
+    let needs_ui = gn.view_scripts || (gn.prefab && doc.portrait.as_ref().is_some_and(|p| !p.overrides.is_empty()));
+    let mut caveat: Option<String> = None;
+    match &target.def {
+        Some(def) => match check_assembly(&scan, def, needs_ui) {
+            Ok(n) => caveat = n,
+            Err(why) => {
+                // Assembly-CSharp: never inside the assembly's own folder
+                let dir = match want {
+                    Some(w) if !inside(&w) => w,
+                    _ => DEFAULT_SCRIPTS_DIR.to_string(),
+                };
+                return (dir, Some(format!("{}: the scripts were NOT put in it and compile into Assembly-CSharp (fix the asmdef or choose another assembly)", why)));
             }
-            None => (
-                want.unwrap_or_else(|| DEFAULT_SCRIPTS_DIR.to_string()),
-                Some(format!("assembly {} was not found (no .asmdef with that name in Assets): the scripts compile into Assembly-CSharp", asm)),
-            ),
-        };
+        },
+        None if needs_ui => {
+            caveat = Some(format!("assembly {} was found through an .asmref but its .asmdef could not be read: make sure it references UnityEngine.UI and Unity.TextMeshPro", asm));
+        }
+        None => {}
     }
-    (want.unwrap_or_else(|| DEFAULT_SCRIPTS_DIR.to_string()), None)
+    match want {
+        Some(w) if inside(&w) => (w, caveat),
+        Some(w) => (
+            format!("{}/LienzoUI", folder),
+            Some(format!("scripts_dir {} is outside the folder of assembly {} ({}): the scripts were put in {}/LienzoUI{}", w, asm, folder, folder, caveat.map(|c| format!("; {}", c)).unwrap_or_default())),
+        ),
+        None => (format!("{}/LienzoUI", folder), caveat),
+    }
 }
 
 fn is_ident_char(c: char) -> bool {
@@ -689,9 +1041,23 @@ fn norm_rel(p: &str) -> String {
 /// A generated C# file is only overwritten when its first line carries the generated marker; a file without it is
 /// the user's own and is skipped with a warning. The ViewBase is updated where it already lives in the project.
 pub fn write_unity_package(doc: &Doc, project: &Path) -> Result<Vec<String>, String> {
+    // A stretched child of a parent that was shrunk below its margins keeps a negative size in the editor model (so growing the parent
+    // restores the margins); Unity must never see it.
+    if doc.elements.iter().any(|e| e.w < 0.0 || e.h < 0.0) {
+        let mut d = doc.clone();
+        for e in d.elements.iter_mut() {
+            e.w = e.w.max(0.0);
+            e.h = e.h.max(0.0);
+        }
+        return write_unity_package(&d, project);
+    }
     let root = find_unity_root(project).ok_or("that folder does not look like a Unity project (it has no Assets folder)")?;
     let gn = doc.unity.generate.clone();
+    if !(gn.prefab || gn.uitk || gn.imgui_enabled() || gn.view_scripts) {
+        return Err("the design's `unity.generate` block has every output set to false (prefab, uitk, imgui, view_scripts): there is nothing to export. Turn at least one on.".into());
+    }
     let cls = class_name(&doc.title);
+    let mut cs = CsCache::new(&root);
     let (scripts, note) = resolve_scripts_dir(doc, &root);
     if let Some(n) = &note {
         eprintln!("[Lienzo UI] {}", n);
@@ -700,9 +1066,11 @@ pub fn write_unity_package(doc: &Doc, project: &Path) -> Result<Vec<String>, Str
     // Pictures that already live in the Unity project (`unity:` / `Assets/...`) are referenced, never copied.
     // Only real pictures are copied: a known image extension AND png / jpeg / gif / webp magic bytes, from a path
     // that `library::resolve_image` accepted (anything else is skipped with a warning).
-    let mut pictures = Vec::new();
+    let mut pictures: Vec<(String, Vec<u8>)> = Vec::new();
     let mut done = HashSet::new();
+    let mut done_paths = HashSet::new();
     if gn.prefab || gn.uitk {
+        let image_names = ImageNames::new(doc);
         for e in &doc.elements {
             if !e.image.is_empty() && unity_image_ref(&e.image).is_none() && done.insert(e.image.clone()) {
                 let src = crate::library::resolve_image(&e.image);
@@ -720,7 +1088,11 @@ pub fn write_unity_package(doc: &Doc, project: &Path) -> Result<Vec<String>, Str
                     eprintln!("[Lienzo UI] the file {:?} is not a png / jpeg / gif / webp picture: it was not copied", e.image);
                     continue;
                 }
-                pictures.push((image_asset_path(&e.image), b));
+                // two pictures called the same from different folders get different files (same content = one file)
+                let asset = image_names.asset_path(&e.image);
+                if done_paths.insert(asset.to_lowercase()) {
+                    pictures.push((asset, b));
+                }
             }
         }
     }
@@ -751,11 +1123,23 @@ pub fn write_unity_package(doc: &Doc, project: &Path) -> Result<Vec<String>, Str
     // fonts (Unity turns them into TextMeshPro font assets, unless a TMP asset with that name already exists)
     if gn.prefab || gn.uitk {
         for name in used_fonts(doc) {
-            if let Some(src) = crate::render::font_path(&name) {
-                let ext = src.extension().and_then(|x| x.to_str()).unwrap_or("ttf").to_lowercase();
-                if let Ok(b) = std::fs::read(&src) {
-                    put(format!("{}/Fonts/{}.{}", UNITY_ROOT, name, ext), &b)?;
+            match font_file(&name) {
+                Some(src) => {
+                    let ext = font_ext(&name).unwrap_or_else(|| "ttf".into());
+                    match std::fs::read(&src) {
+                        Ok(b) => {
+                            if ext == "ttc" {
+                                eprintln!("[Lienzo UI] the font {:?} is a TrueType collection (.ttc): Unity uses its first face", name);
+                            }
+                            put(format!("{}/Fonts/{}.{}", UNITY_ROOT, name, ext), &b)?;
+                        }
+                        Err(err) => eprintln!("[Lienzo UI] could not read the font file {} for {:?}: {}: it was not copied", src.display(), name, err),
+                    }
                 }
+                None => eprintln!(
+                    "[Lienzo UI] the font {:?} was not found among the system fonts or the font library: it was not copied and UI Toolkit / TextMeshPro fall back to their default font (install it, or add it to the font library, and export again)",
+                    name
+                ),
             }
         }
     }
@@ -770,10 +1154,11 @@ pub fn write_unity_package(doc: &Doc, project: &Path) -> Result<Vec<String>, Str
         // it is removed only because the new copy now exists, and only when it carries the generated marker.
         if overwritable(&root, &target) && root.join(&target).exists() {
             let ongui = format!("{}OnGUI", cls);
-            for old in scan_cs(&root, |t| declares_class(t, &ongui) && has_generated_mark(t)) {
+            for old in cs.scan(|t| declares_class(t, &ongui) && has_generated_mark(t)) {
                 if norm_rel(&old) != norm_rel(&target) {
                     let _ = std::fs::remove_file(root.join(&old));
                     let _ = std::fs::remove_file(root.join(format!("{}.meta", old)));
+                    cs.forget(&old);
                 }
             }
         }
@@ -785,7 +1170,7 @@ pub fn write_unity_package(doc: &Doc, project: &Path) -> Result<Vec<String>, Str
         // same name would not compile).
         let target = format!("{}/{}ViewBase.cs", scripts, cls);
         let base_name = format!("{}ViewBase", cls);
-        let existing = scan_cs(&root, |t| declares_abstract_class(t, &base_name));
+        let existing = cs.scan(|t| declares_abstract_class(t, &base_name));
         let mut generated: Vec<String> = Vec::new();
         let mut user_owned: Vec<String> = Vec::new();
         for rel in existing {
@@ -819,13 +1204,14 @@ pub fn write_unity_package(doc: &Doc, project: &Path) -> Result<Vec<String>, Str
                 if norm_rel(old) != norm_rel(&dest) {
                     let _ = std::fs::remove_file(root.join(old));
                     let _ = std::fs::remove_file(root.join(format!("{}.meta", old)));
+                    cs.forget(old);
                 }
             }
         }
         let user_view = format!("{}/{}View.cs", scripts, cls);
         // The View is user-owned: write the stub only if the user has no `{cls}View` class anywhere in
         // the project (they may have moved or renamed the file) and the base class was not already exported.
-        if !base_existed && !view_class_exists(&root, &cls) {
+        if !base_existed && !view_class_exists(&mut cs, &cls) {
             put(user_view, view::user_script(doc).as_bytes())?;
         }
     }
@@ -841,7 +1227,7 @@ pub fn write_unity_package(doc: &Doc, project: &Path) -> Result<Vec<String>, Str
         }
         for (name, code) in helpers {
             let target = format!("{}/Runtime/{}.cs", scripts, name);
-            if root.join(&target).exists() || scan_cs(&root, |t| declares_class(t, name)).is_empty() {
+            if root.join(&target).exists() || cs.scan(|t| declares_class(t, name)).is_empty() {
                 put_script(target, code.as_bytes(), &mut put)?;
             }
         }

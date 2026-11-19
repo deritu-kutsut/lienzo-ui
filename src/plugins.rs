@@ -208,6 +208,7 @@ fn call(folder: &Path, script: &str, functions: &[&str], doc: &Doc) -> Result<(r
     let path = inside(folder, script)?;
     let code = std::fs::read_to_string(&path).map_err(|e| format!("{}: {}", path.display(), e))?;
     let (engine, log) = engine();
+    let _memory = crate::script::mem_budget::Guard::begin(crate::script::mem_budget::SCRIPT_MEMORY_LIMIT); // hard ceiling, see script::mem_budget
     let ast = engine.compile(&code).map_err(|e| format!("{}: {}", script, e))?;
     let arg = rhai::serde::to_dynamic(doc).map_err(|e| e.to_string())?;
     let function = functions.iter().copied().find(|f| ast.iter_functions().any(|d| d.name == *f)).unwrap_or(functions[0]);

@@ -3,6 +3,14 @@
 using UnityEngine;
 
 /// Put on a stretched child container of a Canvas: the container follows the device safe area.
+///
+/// It only does so when the container sits in a FULL-SCREEN "Screen Space - Overlay" canvas (the container, and every
+/// RectTransform between it and the canvas, stretched over its parent). Screen Space - Camera, World Space and a design
+/// embedded in a game canvas that is not full screen are left untouched (a warning explains why, once per component):
+/// Screen.safeArea is in screen pixels and means nothing there.
+///
+/// The anchors it writes are "driven" (DrivenRectTransformTracker): Unity does not save them as prefab overrides or in the
+/// scene, and shows them greyed out in the inspector; the prefab keeps the neutral stretched rect.
 [ExecuteAlways]
 [DisallowMultipleComponent]
 [RequireComponent(typeof(RectTransform))]
@@ -10,8 +18,17 @@ public class LienzoSafeArea : MonoBehaviour
 {
     Rect lastArea;
     Vector2Int lastScreen;
+    bool warned;
+    DrivenRectTransformTracker tracker;
 
     void OnEnable() => Refresh();
+
+    void OnDisable()
+    {
+        tracker.Clear();
+        // leave the neutral (stretched) rect behind: nothing of the safe area stays in the object
+        Stretch((RectTransform)transform);
+    }
 
     void Update()
     {
@@ -23,14 +40,30 @@ public class LienzoSafeArea : MonoBehaviour
         if (isActiveAndEnabled) Refresh();
     }
 
-    /// Recomputes the anchors from Screen.safeArea.
+    /// Recomputes the anchors from Screen.safeArea (only for a full-screen Overlay canvas).
     public void Refresh()
     {
         var rt = (RectTransform)transform;
         var area = Screen.safeArea;
         lastArea = area;
         lastScreen = new Vector2Int(Screen.width, Screen.height);
+        tracker.Clear();
         if (Screen.width <= 0 || Screen.height <= 0) return;
+#if UNITY_EDITOR
+        // editing the prefab asset itself: never write the device values into it
+        if (!gameObject.scene.IsValid() || UnityEditor.SceneManagement.PrefabStageUtility.GetPrefabStage(gameObject) != null) return;
+#endif
+        if (!InFullScreenOverlay(rt, out var why))
+        {
+            Stretch(rt);
+            if (!warned && Application.isPlaying)
+            {
+                warned = true;
+                Debug.LogWarning("[Lienzo UI] LienzoSafeArea on \"" + name + "\" does nothing: " + why, this);
+            }
+            return;
+        }
+        tracker.Add(this, rt, DrivenTransformProperties.Anchors | DrivenTransformProperties.AnchoredPosition | DrivenTransformProperties.SizeDelta);
         var min = area.position;
         var max = area.position + area.size;
         min.x /= Screen.width;
@@ -39,7 +72,40 @@ public class LienzoSafeArea : MonoBehaviour
         max.y /= Screen.height;
         rt.anchorMin = min;
         rt.anchorMax = max;
+        rt.anchoredPosition = Vector2.zero;
+        rt.sizeDelta = Vector2.zero;
+    }
+
+    static void Stretch(RectTransform rt)
+    {
+        rt.anchorMin = Vector2.zero;
+        rt.anchorMax = Vector2.one;
         rt.offsetMin = Vector2.zero;
         rt.offsetMax = Vector2.zero;
     }
+
+    /// True when `rt` is a full-screen Overlay canvas' content: root canvas in Screen Space - Overlay and every RectTransform
+    /// between `rt` and that canvas stretched to fill its parent.
+    static bool InFullScreenOverlay(RectTransform rt, out string why)
+    {
+        why = null;
+        var canvas = rt.GetComponentInParent<Canvas>();
+        if (canvas == null) { why = "it is not under a Canvas."; return false; }
+        var root = canvas.rootCanvas;
+        if (root.renderMode != RenderMode.ScreenSpaceOverlay)
+        {
+            why = "its root Canvas is " + root.renderMode + ", not Screen Space - Overlay (Screen.safeArea only applies to a full-screen Overlay canvas).";
+            return false;
+        }
+        for (var t = rt.parent as RectTransform; t != null && t != root.transform; t = t.parent as RectTransform)
+        {
+            var nested = t.GetComponent<Canvas>();
+            if (nested != null && !nested.isRootCanvas) { why = "it is inside a nested Canvas."; return false; }
+            if (!Fills(t)) { why = "its parent \"" + t.name + "\" does not fill the screen (the design is embedded in a smaller area)."; return false; }
+        }
+        return true;
+    }
+
+    static bool Fills(RectTransform t) =>
+        t.anchorMin.sqrMagnitude < 1e-6f && (t.anchorMax - Vector2.one).sqrMagnitude < 1e-6f && t.offsetMin.sqrMagnitude < 1e-4f && t.offsetMax.sqrMagnitude < 1e-4f;
 }

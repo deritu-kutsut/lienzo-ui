@@ -937,3 +937,10 @@ Imported {} ({} warnings). Save it as a project to keep it.	{} importato ({} avv
 Could not import: {}	Impossibile importare: {}
 {} things could not be mapped exactly:	{} elementi non sono stati convertiti con esattezza:
 {} (portrait)	{} (verticale)
+cleanup: {} file(s) removed before the error.	cleanup: {} file rimossi prima dell'errore.
+cleanup: call limit reached ({}); run it again if more files are queued.	cleanup: limite di chiamate raggiunto ({}); eseguilo di nuovo se ci sono ancora file in coda.
+cleanup: {} file(s) removed, {} failed (they will be retried).	cleanup: {} file rimossi, {} falliti (verranno ritentati).
+cleanup: {} file(s) removed.	cleanup: {} file rimossi.
+Errors: {} · Warnings: {}. Click one to select it.	Errori: {} · Avvisi: {}. Clicca su uno per selezionarlo.
+Elements selected: {}	Elementi selezionati: {}
+To add a language, copy assets/i18n/es.tsv and translate it (see docs/EXTENDING.md).	Per aggiungere una lingua, copia assets/i18n/es.tsv e traducilo (vedi docs/EXTENDING.md).

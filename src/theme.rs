@@ -412,6 +412,27 @@ mod tests {
     }
 
     #[test]
+    fn theme_name_and_author_refuse_newlines_and_bidi_characters() {
+        for bad in ["a\nb", "a\rb", "a\tb", "a\u{0}b", "a\u{85}b", "a\u{2028}b", "a\u{2029}b", "evil\u{202E}txt.exe", "a\u{200B}b", "a\u{2066}b", "a\u{FEFF}", "a\u{061C}b", "a\u{200F}b"] {
+            let mut t = Theme::default();
+            t.name = bad.into();
+            assert!(t.validate().is_err(), "name {:?}", bad);
+            let mut t = Theme::default();
+            t.author = bad.into();
+            assert!(t.validate().is_err(), "author {:?}", bad);
+            // the same through the community file validator (what an uploaded / downloaded theme goes through)
+            let mut t = Theme::default();
+            t.author = bad.into();
+            let json = serde_json::to_vec(&t).unwrap();
+            assert!(crate::community_validate::validate("theme", "t.json", &json).is_err(), "community {:?}", bad);
+        }
+        let mut t = Theme::default();
+        t.name = "Tema ñandú 日本語".into();
+        t.author = "Álvaro".into();
+        assert!(t.validate().is_ok());
+    }
+
+    #[test]
     fn old_spanish_theme_files_still_load() {
         let old = r##"{"nombre":"Viejo","autor":"yo","claro":true,"fondo":"#E9EBF0","panel":"#F7F8FA","panel_oscuro":"#EEF0F4","campo":"#E2E5EC","hover":"#D6DAE3",
             "linea":"#CDD2DC","borde":"#B9BFCC","texto":"#1E2230","apagado":"#5D6476","acento":"#2F6FE4","acento_suave":"#CFDDFB","ok":"#1F9D57","aviso":"#B86E00",

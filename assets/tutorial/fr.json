@@ -10,7 +10,7 @@
     },
     {
       "title": "Commence avec un modèle",
-      "text": "Ouvre Modèles dans la barre de gauche et choisis l'un des 12 : menu principal, HUD, menu pause, fin de partie, sélection de niveau, inventaire, dialogue de personnage, classement…\n\nC'est le moyen le plus rapide de voir comment se construit une interface complète. Tout ce qu'il contient peut être modifié.\n\nSi tu préfères partir de zéro, choisis « Vierge » ou Fichier › Nouveau design vierge."
+      "text": "Ouvre Modèles dans la barre de gauche et choisis l'un des 13 : menu principal, HUD, menu pause, fin de partie, sélection de niveau, inventaire, dialogue de personnage, classement…\n\nC'est le moyen le plus rapide de voir comment se construit une interface complète. Tout ce qu'il contient peut être modifié.\n\nSi tu préfères partir de zéro, choisis « Vierge » ou Fichier › Nouveau design vierge."
     },
     {
       "title": "Ajouter et modifier des éléments",
@@ -56,7 +56,7 @@
     },
     {
       "title": "Accessibilité et langues",
-      "text": "Le bouton « Accessibilité » de la barre supérieure permet de :\n\n• Changer la langue de l'interface (espagnol, anglais, portugais, français, allemand, italien ou russe).\n• Agrandir l'interface jusqu'à 200 % (aussi avec Ctrl+Alt+= et Ctrl+Alt+-).\n• Activer le contraste élevé : texte blanc et bordures marquées.\n• Réduire les animations : sans animations.\n\nLes langues sont des fichiers assets/i18n/<code>.tsv : pour en ajouter une, il suffit de traduire en.tsv."
+      "text": "Le bouton « Accessibilité » de la barre supérieure permet de :\n\n• Changer la langue de l'interface (espagnol, anglais, portugais, français, allemand, italien, russe, chinois, japonais ou coréen).\n• Agrandir l'interface jusqu'à 250 % (aussi avec Ctrl+Alt+= et Ctrl+Alt+-).\n• Activer le contraste élevé : texte blanc et bordures marquées.\n• Réduire les animations : sans animations.\n\nLes langues sont des fichiers assets/i18n/<code>.tsv : pour en ajouter une, il suffit de copier es.tsv et de traduire la copie."
     }
   ]
 }

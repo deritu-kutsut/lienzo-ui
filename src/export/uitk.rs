@@ -1,7 +1,7 @@
 //! UI Toolkit export: UXML (structure) + USS (style). Anchors become
 //! left/right/top/bottom percentages plus pixel margins, layout groups become flexbox.
 
-use super::{class_name, css_comment, css_url_part, xml_comment, f, image_asset_path, radius_of, unity_names, xml_attr, ExportCtx};
+use super::{class_name, css_comment, css_url_part, f, font_ext, radius_of, unity_names, xml_attr, xml_comment, ExportCtx, ImageNames};
 use crate::model::{Doc, Element, Kind, LayoutMode, Rgba};
 
 fn rgba(c: Rgba, op: f32) -> String {
@@ -48,11 +48,12 @@ fn write_el(ctx: &ExportCtx, names: &std::collections::HashMap<u64, String>, id:
     let t = tag(e);
     let mut attrs = format!("name=\"{}\" class=\"{}\"", xml_attr(names.get(&id).map(|s| s.as_str()).unwrap_or("")), class_of(e));
     match e.kind {
-        Kind::Text | Kind::Button => attrs.push_str(&format!(" text=\"{}\"", xml_attr(&e.text))),
+        // rich text is off, as in the editor: `<b>` in a text is shown literally
+        Kind::Text | Kind::Button => attrs.push_str(&format!(" text=\"{}\" enable-rich-text=\"false\"", xml_attr(&e.text))),
         Kind::Toggle => attrs.push_str(&format!(" label=\"{}\" value=\"{}\"", xml_attr(&e.text), e.value > 0.5)),
         Kind::Slider => attrs.push_str(&format!(" low-value=\"0\" high-value=\"1\" value=\"{}\"", f(e.value))),
         Kind::InputField => attrs.push_str(&format!(" placeholder-text=\"{}\"", xml_attr(&e.text))),
-        Kind::Dropdown => attrs.push_str(&format!(" choices=\"{}\" index=\"{}\"", xml_attr(&e.options.join(",")), e.value.round().max(0.0) as i64)),
+        Kind::Dropdown => attrs.push_str(&format!(" choices=\"{}\" index=\"{}\"", xml_attr(&choices_attr(&e.options)), e.value.round().max(0.0) as i64)),
         Kind::ScrollView => attrs.push_str(" mode=\"Vertical\" horizontal-scroller-visibility=\"Hidden\""),
         _ => {}
     }
@@ -61,6 +62,13 @@ fn write_el(ctx: &ExportCtx, names: &std::collections::HashMap<u64, String>, id:
     }
     if !e.raycast && matches!(e.kind, Kind::Text | Kind::Empty | Kind::Panel | Kind::Image | Kind::Ellipse) {
         attrs.push_str(" picking-mode=\"Ignore\"");
+    }
+    if e.kind == Kind::Dropdown && e.options.iter().any(|o| o.contains(',')) {
+        out.push_str(&format!(
+            "{}<!-- {}: UXML splits `choices` at commas and has no escape, so a comma inside a choice was replaced by U+201A (a lookalike) -->\n",
+            ind,
+            xml_comment(names.get(&id).map(|s| s.as_str()).unwrap_or(""))
+        ));
     }
     let kids = ctx.children(Some(id));
     // label inside containers (Panel / Image / circle with text)
@@ -71,12 +79,18 @@ fn write_el(ctx: &ExportCtx, names: &std::collections::HashMap<u64, String>, id:
     }
     out.push_str(&format!("{}<{} {}>\n", ind, t, attrs));
     if inner_label {
-        out.push_str(&format!("{}    <ui:Label text=\"{}\" class=\"{}-label\" picking-mode=\"Ignore\" />\n", ind, xml_attr(&e.text), class_of(e)));
+        out.push_str(&format!("{}    <ui:Label text=\"{}\" enable-rich-text=\"false\" class=\"{}-label\" picking-mode=\"Ignore\" />\n", ind, xml_attr(&e.text), class_of(e)));
     }
     for &k in kids {
         write_el(ctx, names, k, depth + 1, out);
     }
     out.push_str(&format!("{}</{}>\n", ind, t));
+}
+
+/// Value of the DropdownField `choices` attribute. UXML (Unity 6 too) joins the choices with `,` and has no escape for a
+/// comma inside one, so it is replaced by U+201A (SINGLE LOW-9 QUOTATION MARK, a lookalike): the list never splits in two.
+pub fn choices_attr(options: &[String]) -> String {
+    options.iter().map(|o| o.replace(',', "\u{201A}")).collect::<Vec<_>>().join(",")
 }
 
 fn text_align(e: &Element) -> &'static str {
@@ -123,13 +137,15 @@ pub fn uss(doc: &Doc) -> String {
     }
     o.push_str("}\n\n");
     let ctx = ExportCtx::new(doc);
+    let imgs = ImageNames::new(doc);
+    let mut fonts: std::collections::HashMap<String, Option<String>> = std::collections::HashMap::new();
     for e in &doc.elements {
-        o.push_str(&rule(&ctx, e));
+        o.push_str(&rule(&ctx, e, &imgs, &mut fonts));
     }
     o
 }
 
-fn rule(ctx: &ExportCtx, e: &Element) -> String {
+fn rule(ctx: &ExportCtx, e: &Element, imgs: &ImageNames, fonts: &mut std::collections::HashMap<String, Option<String>>) -> String {
     let mut s = Vec::<String>::new();
     let parent_layout = ctx.parent(e).map(|p| p.layout.clone());
     let in_flow = parent_layout.as_ref().map(|l| l.mode != LayoutMode::None).unwrap_or(false);
@@ -226,7 +242,7 @@ fn rule(ctx: &ExportCtx, e: &Element) -> String {
     // background
     if e.kind.has_fill() && !matches!(e.kind, Kind::Toggle | Kind::Slider) {
         if !e.image.is_empty() {
-            s.push(format!("background-image: url(\"project://database/{}\")", css_url_part(&image_asset_path(&e.image))));
+            s.push(format!("background-image: url(\"project://database/{}\")", css_url_part(&imgs.asset_path(&e.image))));
             // preserve_aspect -> scale-to-fit; a 9-slice (slice / Image.type Sliced) uses the -unity-slice-* border
             let mode = if e.preserve_aspect { "scale-to-fit" } else { "stretch-to-fill" };
             s.push(format!("-unity-background-scale-mode: {}", mode));
@@ -269,8 +285,14 @@ fn rule(ctx: &ExportCtx, e: &Element) -> String {
         s.push(format!("-unity-font-style: {}", font_style(e)));
         s.push(format!("-unity-text-align: {}", text_align(e)));
         s.push("white-space: normal".into());
+        // The export copies the font file to Assets/EditorGUI/Fonts and UI Toolkit reads it as a Font (`-unity-font`,
+        // dynamic atlas): a TextMeshPro "<name> SDF.asset" is NOT a UI Toolkit FontAsset and would not load.
+        // A font that was not found is not copied: no reference is written (the default font is used).
         if !e.font.is_empty() && e.font != "Monospace" {
-            s.push(format!("-unity-font-definition: url(\"project://database/Assets/EditorGUI/Fonts/{} SDF.asset\")", css_url_part(&e.font)));
+            let ext = fonts.entry(e.font.clone()).or_insert_with(|| font_ext(&e.font)).clone();
+            if let Some(ext) = ext {
+                s.push(format!("-unity-font: url(\"project://database/Assets/EditorGUI/Fonts/{}.{}\")", css_url_part(&e.font), ext));
+            }
         }
         let (pl, pr, pv) = crate::render::text_padding(e);
         if matches!(e.kind, Kind::Button | Kind::InputField | Kind::Dropdown) {

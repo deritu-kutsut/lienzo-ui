@@ -42,7 +42,7 @@ Al terminar este tutorial se abre el editor. Puedes volver aquí cuando quieras 
     },
     Page {
         title: "Empieza con una plantilla",
-        text: "Abre Plantillas en la barra izquierda y elige una de las 12: menú principal, HUD, pausa, fin de partida, selección de nivel, inventario, diálogo de personaje, clasificación…\n\n\
+        text: "Abre Plantillas en la barra izquierda y elige una de las 13: menú principal, HUD, pausa, fin de partida, selección de nivel, inventario, diálogo de personaje, clasificación…\n\n\
 Es la forma más rápida de ver cómo se construye una interfaz completa. Todo lo que trae se puede cambiar.\n\n\
 Si prefieres empezar de cero, elige «En blanco» o Archivo › Nuevo diseño en blanco.",
     },
@@ -128,10 +128,10 @@ Los scripts corren aislados, sin acceso a archivos ni red. «Abrir carpeta» lle
         title: "Accesibilidad e idiomas",
         text: "El botón «Accesibilidad» de la barra superior permite:\n\n\
 • Cambiar el idioma de la interfaz (español, inglés, portugués, francés, alemán, italiano, ruso, chino, japonés o coreano).\n\
-• Agrandar la interfaz hasta el 200 % (también con Ctrl+Alt+= y Ctrl+Alt+-).\n\
+• Agrandar la interfaz hasta el 250 % (también con Ctrl+Alt+= y Ctrl+Alt+-).\n\
 • Activar alto contraste: texto blanco y bordes marcados.\n\
 • Reducir el movimiento: sin animaciones.\n\n\
-Los idiomas son archivos assets/i18n/<código>.tsv: para añadir uno basta con traducir en.tsv.",
+Los idiomas son archivos assets/i18n/<código>.tsv: para añadir uno basta con copiar es.tsv y traducir la copia.",
     },
 ];
 
@@ -152,7 +152,7 @@ When you finish this tutorial the editor opens. Come back any time with the “T
     },
     Page {
         title: "Start from a template",
-        text: "Open Templates in the left bar and pick one of the 12: main menu, HUD, pause, game over, level select, inventory, character dialogue, leaderboard…\n\n\
+        text: "Open Templates in the left bar and pick one of the 13: main menu, HUD, pause, game over, level select, inventory, character dialogue, leaderboard…\n\n\
 It is the fastest way to see how a complete interface is built. Everything in it can be changed.\n\n\
 To start from scratch, choose “Blank” or File › New blank design.",
     },
@@ -238,10 +238,10 @@ Scripts run sandboxed, without file or network access. “Open folder” takes y
         title: "Accessibility and languages",
         text: "The “Accessibility” button in the top bar lets you:\n\n\
 • Change the interface language (English, Spanish, Portuguese, French, German, Italian, Russian, Chinese, Japanese or Korean).\n\
-• Enlarge the interface up to 200 % (also Ctrl+Alt+= and Ctrl+Alt+-).\n\
+• Enlarge the interface up to 250 % (also Ctrl+Alt+= and Ctrl+Alt+-).\n\
 • Turn on high contrast: white text and strong borders.\n\
 • Reduce motion: no animations.\n\n\
-Languages are assets/i18n/<code>.tsv files: to add one, translate en.tsv.",
+Languages are assets/i18n/<code>.tsv files: to add one, copy es.tsv and translate the copy.",
     },
 ];
 

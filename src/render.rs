@@ -149,20 +149,7 @@ fn register(defs: &mut egui::FontDefinitions, name: &str, bytes: Vec<u8>) {
 
 /// Look for common system fonts and the library's fonts and register them with egui.
 pub fn load_system_fonts(ctx: &egui::Context) {
-    let candidates: &[(&str, &[&str])] = &[
-        ("Arial", &["C:/Windows/Fonts/arial.ttf", "/System/Library/Fonts/Supplemental/Arial.ttf", "/usr/share/fonts/truetype/msttcorefonts/Arial.ttf", "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf"]),
-        ("Segoe UI", &["C:/Windows/Fonts/segoeui.ttf"]),
-        ("Verdana", &["C:/Windows/Fonts/verdana.ttf", "/System/Library/Fonts/Supplemental/Verdana.ttf"]),
-        ("Tahoma", &["C:/Windows/Fonts/tahoma.ttf", "/System/Library/Fonts/Supplemental/Tahoma.ttf"]),
-        ("Trebuchet MS", &["C:/Windows/Fonts/trebuc.ttf", "/System/Library/Fonts/Supplemental/Trebuchet MS.ttf"]),
-        ("Georgia", &["C:/Windows/Fonts/georgia.ttf", "/System/Library/Fonts/Supplemental/Georgia.ttf"]),
-        ("Times New Roman", &["C:/Windows/Fonts/times.ttf", "/System/Library/Fonts/Supplemental/Times New Roman.ttf", "/usr/share/fonts/truetype/liberation/LiberationSerif-Regular.ttf"]),
-        ("Courier New", &["C:/Windows/Fonts/cour.ttf", "/System/Library/Fonts/Supplemental/Courier New.ttf", "/usr/share/fonts/truetype/liberation/LiberationMono-Regular.ttf"]),
-        ("Consolas", &["C:/Windows/Fonts/consola.ttf"]),
-        ("Impact", &["C:/Windows/Fonts/impact.ttf", "/System/Library/Fonts/Supplemental/Impact.ttf"]),
-        ("Comic Sans MS", &["C:/Windows/Fonts/comic.ttf", "/System/Library/Fonts/Supplemental/Comic Sans MS.ttf"]),
-        ("DejaVu Sans", &["/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"]),
-    ];
+    let candidates = system_font_candidates();
     let mut defs = egui::FontDefinitions::default();
     let mut found = Vec::new();
     let mut paths = std::collections::HashMap::new();
@@ -297,18 +284,52 @@ pub fn font_family(name: &str) -> egui::FontFamily {
 /// Pixel art mode of the current design (image filter on the canvas).
 pub static PIXEL_ART: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
 
-static TEXTURES: std::sync::Mutex<Option<std::collections::HashMap<String, Option<egui::TextureHandle>>>> = std::sync::Mutex::new(None);
+/// A cached picture: where it came from (resolved path, modified time, size) and when that was last checked.
+struct TexEntry {
+    path: std::path::PathBuf,
+    stamp: Option<(u128, u64)>,
+    checked: std::time::Instant,
+    tex: Option<egui::TextureHandle>,
+}
 
-/// Texture of an uploaded picture, loaded once and cached (None if it can't be read).
+static TEXTURES: std::sync::Mutex<Option<std::collections::HashMap<String, TexEntry>>> = std::sync::Mutex::new(None);
+
+/// How often a cached picture is looked at again on disk (the file changed, appeared or was replaced).
+const TEXTURE_RECHECK: std::time::Duration = std::time::Duration::from_millis(750);
+
+/// Forget every cached picture (another design was opened: the same relative name may be another file).
+pub fn clear_texture_cache() {
+    if let Ok(mut g) = TEXTURES.lock() {
+        *g = None;
+    }
+}
+
+fn file_stamp(path: &std::path::Path) -> Option<(u128, u64)> {
+    let m = std::fs::metadata(path).ok()?;
+    let t = m.modified().ok().and_then(|t| t.duration_since(std::time::UNIX_EPOCH).ok()).map(|d| d.as_nanos()).unwrap_or(0);
+    Some((t, m.len()))
+}
+
+/// Texture of an uploaded picture, cached by resolved path + modified time + size. A picture that is missing is
+/// looked for again every moment, so it shows up when the file appears; a changed file is reloaded (None if it can't be read).
 pub fn texture(ctx: &egui::Context, name: &str) -> Option<egui::TextureHandle> {
     let nearest = PIXEL_ART.load(std::sync::atomic::Ordering::Relaxed);
     let key = format!("{}|{}", name, nearest);
     let mut g = TEXTURES.lock().ok()?;
     let map = g.get_or_insert_with(Default::default);
-    if let Some(t) = map.get(&key) {
-        return t.clone();
+    if let Some(ent) = map.get_mut(&key) {
+        if ent.checked.elapsed() < TEXTURE_RECHECK {
+            return ent.tex.clone();
+        }
+        let path = crate::library::resolve_image(name);
+        let stamp = file_stamp(&path);
+        ent.checked = std::time::Instant::now();
+        if ent.path == path && ent.stamp == stamp {
+            return ent.tex.clone(); // same file (or still missing / still unreadable)
+        }
     }
     let path = crate::library::resolve_image(name);
+    let stamp = file_stamp(&path);
     let tex = image::open(&path).ok().map(|img| {
         let filter = if nearest { image::imageops::FilterType::Nearest } else { image::imageops::FilterType::Triangle };
         let img = if img.width().max(img.height()) > 2048 { img.resize(2048, 2048, filter) } else { img };
@@ -316,7 +337,7 @@ pub fn texture(ctx: &egui::Context, name: &str) -> Option<egui::TextureHandle> {
         let ci = egui::ColorImage::from_rgba_unmultiplied([rgba.width() as usize, rgba.height() as usize], rgba.as_raw());
         ctx.load_texture(format!("img:{}", key), ci, if nearest { egui::TextureOptions::NEAREST } else { egui::TextureOptions::LINEAR })
     });
-    map.insert(key, tex.clone());
+    map.insert(key, TexEntry { path, stamp, checked: std::time::Instant::now(), tex: tex.clone() });
     tex
 }
 
@@ -516,6 +537,17 @@ pub fn paint_element(p: &Painter, e: &Element, v: &View, hide_text: bool) {
     if !e.visible {
         return;
     }
+    // A stretched child of a parent smaller than its margins keeps a negative size in the model (so growing the
+    // parent again restores the margins); it is drawn as an empty box around the same centre.
+    if e.w < 0.0 || e.h < 0.0 {
+        let mut c = e.clone();
+        let [cx, cy] = e.center();
+        c.w = c.w.max(0.0);
+        c.h = c.h.max(0.0);
+        c.x = cx - c.w / 2.0;
+        c.y = cy - c.h / 2.0;
+        return paint_element(p, &c, v, hide_text);
+    }
     let xf = Xf::of(e, v);
     let hw = e.w / 2.0;
     let hh = e.h / 2.0;
@@ -645,8 +677,15 @@ pub fn paint_doc_thumb(p: &Painter, doc: &crate::model::Doc, rect: egui::Rect) {
 
 /// Paint one element fitted into `rect` (used for element tiles and the drag ghost).
 pub fn paint_element_thumb(p: &Painter, e: &Element, rect: egui::Rect) {
-    let zoom = (rect.width() / e.w).min(rect.height() / e.h).min(1.0);
     let mut e = e.clone();
+    // Library / community elements are untrusted: tiles never paint absurd sizes or glyphs.
+    let fin = |v: f32, lo: f32, hi: f32, d: f32| if v.is_finite() { v.clamp(lo, hi) } else { d };
+    e.w = fin(e.w, 1.0, crate::model::COORD_LIMIT, 100.0);
+    e.h = fin(e.h, 1.0, crate::model::COORD_LIMIT, 100.0);
+    e.font_size = fin(e.font_size, 1.0, 1000.0, 32.0);
+    e.stroke_w = fin(e.stroke_w, 0.0, 1000.0, 0.0);
+    e.radius = fin(e.radius, 0.0, 10_000.0, 0.0);
+    let zoom = (rect.width() / e.w).min(rect.height() / e.h).min(1.0);
     e.rot = 0.0;
     e.x = 0.0;
     e.y = 0.0;
@@ -730,4 +769,23 @@ mod slice_tests {
         assert_eq!(r, [50.0, 0.0, 150.0, 100.0]);
         assert_eq!(fit_aspect(100.0, 100.0, [0.0, 0.0]), [0.0, 0.0, 100.0, 100.0]);
     }
+}
+
+// ---- Lienzo export: system font table shared with the headless exporter (marked block)
+/// Well-known system fonts and the files they can live in (the first that exists is used).
+pub fn system_font_candidates() -> &'static [(&'static str, &'static [&'static str])] {
+    &[
+        ("Arial", &["C:/Windows/Fonts/arial.ttf", "/System/Library/Fonts/Supplemental/Arial.ttf", "/usr/share/fonts/truetype/msttcorefonts/Arial.ttf", "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf"]),
+        ("Segoe UI", &["C:/Windows/Fonts/segoeui.ttf"]),
+        ("Verdana", &["C:/Windows/Fonts/verdana.ttf", "/System/Library/Fonts/Supplemental/Verdana.ttf"]),
+        ("Tahoma", &["C:/Windows/Fonts/tahoma.ttf", "/System/Library/Fonts/Supplemental/Tahoma.ttf"]),
+        ("Trebuchet MS", &["C:/Windows/Fonts/trebuc.ttf", "/System/Library/Fonts/Supplemental/Trebuchet MS.ttf"]),
+        ("Georgia", &["C:/Windows/Fonts/georgia.ttf", "/System/Library/Fonts/Supplemental/Georgia.ttf"]),
+        ("Times New Roman", &["C:/Windows/Fonts/times.ttf", "/System/Library/Fonts/Supplemental/Times New Roman.ttf", "/usr/share/fonts/truetype/liberation/LiberationSerif-Regular.ttf"]),
+        ("Courier New", &["C:/Windows/Fonts/cour.ttf", "/System/Library/Fonts/Supplemental/Courier New.ttf", "/usr/share/fonts/truetype/liberation/LiberationMono-Regular.ttf"]),
+        ("Consolas", &["C:/Windows/Fonts/consola.ttf"]),
+        ("Impact", &["C:/Windows/Fonts/impact.ttf", "/System/Library/Fonts/Supplemental/Impact.ttf"]),
+        ("Comic Sans MS", &["C:/Windows/Fonts/comic.ttf", "/System/Library/Fonts/Supplemental/Comic Sans MS.ttf"]),
+        ("DejaVu Sans", &["/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"]),
+    ]
 }

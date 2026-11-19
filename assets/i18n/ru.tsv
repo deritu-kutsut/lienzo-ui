@@ -937,3 +937,10 @@ Imported {} ({} warnings). Save it as a project to keep it.	Импортиров
 Could not import: {}	Не удалось импортировать: {}
 {} things could not be mapped exactly:	Не удалось точно преобразовать элементов: {}
 {} (portrait)	{} (портрет)
+cleanup: {} file(s) removed before the error.	cleanup: до ошибки удалено файлов: {}.
+cleanup: call limit reached ({}); run it again if more files are queued.	cleanup: достигнут лимит вызовов ({}); запусти снова, если в очереди остались файлы.
+cleanup: {} file(s) removed, {} failed (they will be retried).	cleanup: удалено файлов: {}, с ошибкой: {} (будет повторная попытка).
+cleanup: {} file(s) removed.	cleanup: удалено файлов: {}.
+Errors: {} · Warnings: {}. Click one to select it.	Ошибки: {} · Предупреждения: {}. Нажмите на одну, чтобы выбрать её.
+Elements selected: {}	Выбрано элементов: {}
+To add a language, copy assets/i18n/es.tsv and translate it (see docs/EXTENDING.md).	Чтобы добавить язык, скопируйте assets/i18n/es.tsv и переведите копию (см. docs/EXTENDING.md).

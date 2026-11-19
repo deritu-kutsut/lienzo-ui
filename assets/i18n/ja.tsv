@@ -937,3 +937,10 @@ Imported {} ({} warnings). Save it as a project to keep it.	{} をインポー�
 Could not import: {}	インポートできませんでした: {}
 {} things could not be mapped exactly:	{} 件を正確に変換できませんでした:
 {} (portrait)	{}（縦向き）
+cleanup: {} file(s) removed before the error.	cleanup: エラーの前に {} 個のファイルを削除しました。
+cleanup: call limit reached ({}); run it again if more files are queued.	cleanup: 呼び出し回数の上限に達しました（{}）。キューにファイルが残っている場合は再度実行してください。
+cleanup: {} file(s) removed, {} failed (they will be retried).	cleanup: {} 個のファイルを削除、{} 個は失敗（再試行されます）。
+cleanup: {} file(s) removed.	cleanup: {} 個のファイルを削除しました。
+Errors: {} · Warnings: {}. Click one to select it.	エラー：{} ・ 警告：{}。クリックして選択します。
+Elements selected: {}	選択中の要素：{}
+To add a language, copy assets/i18n/es.tsv and translate it (see docs/EXTENDING.md).	言語を追加するには、assets/i18n/es.tsv をコピーして翻訳してください（docs/EXTENDING.md を参照）。
