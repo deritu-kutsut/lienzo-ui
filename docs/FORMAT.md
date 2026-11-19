@@ -183,3 +183,14 @@ assigned before automatic ones, and the design review warns about both clashing 
 * **Fonts.** `unity.defaultFont` is used by elements without `font`; fonts are existing TextMeshPro font assets found by name (also `Fonts & Materials`), an SDF asset is only created from `Assets/EditorGUI/Fonts/<name>.ttf|otf` when none exists, `unity.fallbackFonts` are appended to the font asset's fallback table when missing, and the Console warns with the characters the font cannot draw.
 * **Generated object names.** The importer's own helpers are `__border`, `__text`, `__tick`, `__canvas_background` and `__safe_area` (they can no longer collide with a `unity_name`); element GameObjects get exactly the exported `name`.
 * **First generation.** The designs waiting for a prefab are kept in `Library/LienzoUI/pending.txt` and built when Unity is idle after the generated scripts compiled; `Tools > Lienzo UI > Regenerate all prefabs` rebuilds all of them. On start / reload a prefab that is missing, older than its design, or lacks the View (or runtime helper) component is rebuilt.
+
+## Limits applied when a file is loaded
+
+Files are sanitized on load (and the same rules apply to community content), so hostile or damaged files cannot crash the editor:
+
+- At most **20 000 elements**; nesting deeper than **128 levels** is flattened (the deeper elements are moved to the root, in order).
+- Element ids must be below 2^52; an id outside that range is renumbered (parents and portrait overrides follow).
+- `anchor_min`, `anchor_max` and `pivot` (also in portrait overrides) are clamped to ±10 000; `canvas_match` to 0..1; `x`, `y`, `w`, `h` and `value` to ±1 000 000.
+- `unity_name` must not equal a name Lienzo UI generates (`__border`, `__text`, `__tick`, `__safe_area`, `__canvas_background`).
+- `unity.scripts_dir` must stay under `Assets` and cannot contain `< > " | ? *`, trailing dots or spaces, or Windows reserved device names. Font names (`font`, `unity.default_font`, `unity.fallback_fonts`) cannot contain `/`, `\`, `:` or `..`.
+- `unity.generate.imgui` is always written when the `unity` block exists; a file without a `unity` block keeps the legacy behavior (IMGUI script generated).
