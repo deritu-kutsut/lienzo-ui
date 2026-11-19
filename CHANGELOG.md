@@ -4,6 +4,10 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versio
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-11-19
+
+English-first release: names, formats, server and documentation are in English; everything you already have keeps working.
+
 ### Changed
 - **Everything is English-first.** Code, command-line flags, MCP tools and parameters, plugin manifests and Rhai function names, the `designs/` folder, sample designs, the Unity package (class, menu, sample, sprite and file names) and the documentation now use English names. Spanish stays available as a language of the interface, the tutorials and the written guides.
   - Command line: `--open`, `--save`, `--export`, `--template`, `--templates`, `--review`, `--language`, `--scale`, `--theme`, `--tab`, `--high-contrast`, `--no-tutorial`, `--test`, `--pro`…
@@ -13,6 +17,10 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versio
   - Unity package: `unity-package/build.py`, `store_images.py` and `source/`; window `Tools › Lienzo UI › Open Lienzo UI (app)`; samples and exported designs with English names, in sync with `designs/`.
   - Translation template: copy `assets/i18n/es.tsv` (the keys are the English texts).
   - Docs renamed (English names): `docs/MODERATION.md`, `docs/COMMUNITY.md`, `docs/EXTENDING.md`, `docs/TUTORIAL_BEGINNERS.es.md`, `docs/TUTORIAL_PROS.es.md`, `docs/RELEASE_NOTES_*.md` and `docs/images/` (screenshots renamed too). The old Spanish-named pages stay as one-line stubs that link to the new ones.
+
+### Added
+- The interface texts of all 10 languages are translated again against the new English source (266 new texts per language).
+- Community server: English tables, functions and wire format (v2). App versions 1.0 - 1.3.3 keep working through a compatibility layer on the server.
 
 ### Compatibility
 Nothing you already have stops working. The old Spanish command-line flags (`--abrir`, `--exportar`, `--guardar`, `--plantilla`, `--revisar`, `--comunidad-*`…), the old MCP tool names (`crear_diseno`, `captura`…, as hidden aliases) and parameter names (`archivo`, `elemento`, `cambios`…), the `LIENZO_DISENOS` variable and an existing `disenos/` folder, plugin manifests with Spanish keys and scripts with `ejecutar`/`exportar` or the Spanish test-mode functions (`mostrar`, `yo`…), and tutorial JSON files with Spanish keys are all still accepted. In the Unity package, renamed files keep the GUIDs of their old paths and the old `LienzoUIVentana` type remains as an `[Obsolete]` shim. See "Legacy names" in [docs/MCP.md](docs/MCP.md) and [docs/PLUGINS.md](docs/PLUGINS.md).
