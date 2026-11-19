@@ -4,7 +4,7 @@
 //! GUI.BeginScrollView / BeginGroup). Rectangles are computed from the same
 //! anchors as uGUI, so the layout adapts to any screen size.
 
-use super::{cf, class_name, content_height, cs_str, export_rt, image_file_name, radius_of};
+use super::{cf, class_name, comment_lines, content_height, cs_str, export_rt, image_file_name, radius_of, sanitize_line};
 use crate::model::{Doc, Element, Kind, Rgba};
 use std::collections::{HashMap, HashSet};
 use std::fmt::Write;
@@ -77,7 +77,7 @@ impl<'a> Gen<'a> {
         let op = e.opacity;
         let b = &mut self.body;
         let _ = writeln!(self.fields, "    public bool show{} = {};", n, e.visible);
-        let _ = writeln!(b, "{}// {} ({})", pad, e.name.replace('\n', " "), e.kind.unity_type());
+        let _ = writeln!(b, "{}// {} ({})", pad, sanitize_line(&e.name), e.kind.unity_type());
         let _ = writeln!(b, "{}if (show{})", pad, n);
         let _ = writeln!(b, "{}{{", pad);
         let p2 = format!("{}    ", pad);
@@ -129,7 +129,7 @@ impl<'a> Gen<'a> {
             Kind::Empty => {}
             Kind::Panel | Kind::Image | Kind::Ellipse | Kind::ScrollView => {
                 if !e.image.is_empty() {
-                    let _ = writeln!(self.fields, "    public Texture2D image{}; // {}", n, image_file_name(&e.image));
+                    let _ = writeln!(self.fields, "    public Texture2D image{}; // {}", n, sanitize_line(&image_file_name(&e.image)));
                     let _ = writeln!(b, "{}if (image{} != null) GUI.DrawTexture({}, image{}, ScaleMode.StretchToFill, true, 0f, new Color(1f, 1f, 1f, {}), 0f, {});", p2, n, r, n, cf(op), radius);
                     let _ = writeln!(b, "{}else Box({}, {}, {});", p2, r, color(e.fill, op), radius);
                 } else {
@@ -161,10 +161,10 @@ impl<'a> Gen<'a> {
                     let _ = writeln!(self.body, "{}GUI.Label({}, {}, st[{}]);", p2, inset, cs_str(&e.text), s);
                 }
                 let mut code = String::new();
-                for l in e.on_click.lines() {
+                for l in comment_lines(&e.on_click) {
                     let _ = writeln!(code, "        // {}", l);
                 }
-                let _ = writeln!(self.methods, "    /// Click on “{}”.\n    protected virtual void OnClick{}()\n    {{\n{}    }}\n", e.name.replace('\n', " "), n, if code.is_empty() { String::new() } else { format!("        // Editor “on click” code (translate it to C#):\n{}", code) });
+                let _ = writeln!(self.methods, "    /// Click on “{}”.\n    protected virtual void OnClick{}()\n    {{\n{}    }}\n", sanitize_line(&e.name), n, if code.is_empty() { String::new() } else { format!("        // Editor “on click” code (translate it to C#):\n{}", code) });
             }
             Kind::Toggle => {
                 let _ = writeln!(self.fields, "    public bool toggle{} = {};", n, e.value > 0.5);
@@ -386,7 +386,7 @@ public class {cls} : MonoBehaviour
     }}
 }}
 "#,
-        title = doc.title.replace('\n', " "),
+        title = sanitize_line(&doc.title),
         cls = cls,
         w = super::f(doc.width),
         h = super::f(doc.height),

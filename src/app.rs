@@ -219,14 +219,18 @@ impl EditorApp {
 
     // ------------------------------------------------------------------ undo
 
+    // History is frozen in test mode: the document on screen is a throw-away copy.
     pub fn can_undo(&self) -> bool {
-        !self.undo.is_empty()
+        !self.preview && !self.undo.is_empty()
     }
     pub fn can_redo(&self) -> bool {
-        !self.redo.is_empty()
+        !self.preview && !self.redo.is_empty()
     }
 
     pub fn undo(&mut self) {
+        if self.preview {
+            return;
+        }
         // Changes made while a field had focus are not a step yet: they are saved before undoing.
         if !self.preview && self.doc != self.committed {
             let prev = std::mem::replace(&mut self.committed, self.doc.clone());
@@ -240,6 +244,9 @@ impl EditorApp {
     }
 
     pub fn redo(&mut self) {
+        if self.preview {
+            return;
+        }
         if let Some(next) = self.redo.pop() {
             self.undo.push(std::mem::replace(&mut self.doc, next));
             self.committed = self.doc.clone();
@@ -730,12 +737,17 @@ impl EditorApp {
     }
 
     pub fn open_project(&mut self) {
-        match std::fs::read_to_string(&self.project_path).map_err(|e| e.to_string()).and_then(|s| serde_json::from_str::<Doc>(&s).map_err(|e| e.to_string())) {
+        match std::fs::read_to_string(&self.project_path).map_err(|e| e.to_string()).and_then(|s| serde_json::from_str::<Doc>(crate::library::strip_bom(&s)).map_err(|e| e.to_string())) {
             Ok(mut d) => {
                 self.set_preview(false);
                 crate::library::set_design_folder(std::path::Path::new(&self.project_path));
                 d.migrate_groups();
                 self.doc = d;
+                // A different document: undo must not bring the previous one back.
+                self.undo.clear();
+                self.redo.clear();
+                self.committed = self.doc.clone();
+                self.settle = 3;
                 self.sel.clear();
                 self.editing = None;
                 self.drag = None;
@@ -1225,5 +1237,55 @@ mod tests {
         assert!((n.rot + 8.0).abs() < 0.01);
         a.insert(Element::new(0, Kind::Button), None);
         assert!(a.doc.get(a.sel[0]).unwrap().name.starts_with(&format!("{} ", Kind::Button.label())));
+    }
+}
+
+#[cfg(test)]
+mod history_tests {
+    use super::*;
+
+    #[test]
+    fn open_project_clears_history_and_accepts_a_bom() {
+        let mut a = EditorApp::new(None);
+        a.doc = model::template(0, 1920.0, 1080.0);
+        a.committed = a.doc.clone();
+        // one undo step in the history
+        a.doc.title = "Changed".into();
+        a.undo.push(a.committed.clone());
+        a.committed = a.doc.clone();
+        assert!(a.can_undo());
+        let other = model::template(1, 1920.0, 1080.0);
+        let path = std::env::temp_dir().join(format!("lienzo-open-bom-{}.editorgui.json", std::process::id()));
+        let mut text = String::from('\u{feff}');
+        text.push_str(&serde_json::to_string(&other).unwrap());
+        std::fs::write(&path, text).unwrap();
+        a.project_path = path.to_string_lossy().to_string();
+        a.open_project();
+        assert_eq!(a.doc.title, other.title, "{}", a.status);
+        assert!(!a.can_undo() && !a.can_redo());
+        a.undo();
+        assert_eq!(a.doc.title, other.title, "undo after Open must not resurrect the previous document");
+        let _ = std::fs::remove_file(&path);
+    }
+
+    #[test]
+    fn undo_and_redo_do_nothing_in_test_mode() {
+        let mut a = EditorApp::new(None);
+        a.doc = model::template(0, 1920.0, 1080.0);
+        a.committed = a.doc.clone();
+        let before = a.doc.clone();
+        a.doc.title = "Edited".into();
+        a.undo.push(before.clone());
+        a.committed = a.doc.clone();
+        a.redo.push(before.clone());
+        a.set_preview(true);
+        assert!(!a.can_undo() && !a.can_redo());
+        let shown = a.doc.clone();
+        a.undo();
+        a.redo();
+        assert_eq!(a.doc, shown);
+        assert_eq!((a.undo.len(), a.redo.len()), (1, 1));
+        a.set_preview(false);
+        assert!(a.can_undo() && a.can_redo());
     }
 }

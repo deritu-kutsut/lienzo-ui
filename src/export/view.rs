@@ -2,7 +2,7 @@
 //! references to the elements (found by path) and click/value events, plus a
 //! user class (written once, never overwritten) to put the game logic in.
 
-use super::{class_name, cs_str, unity_names, unity_path};
+use super::{class_name, comment_lines, cs_str, sanitize_line, unity_names, unity_path};
 use crate::model::{Doc, Kind};
 use std::collections::HashSet;
 use std::fmt::Write;
@@ -66,7 +66,7 @@ pub fn base_script(doc: &Doc) -> String {
     let mut off = String::new();
     let mut methods = String::new();
     for it in &its {
-        let _ = writeln!(fields, "    public {} {}; // {}", it.ty, it.field, it.name.replace('\n', " "));
+        let _ = writeln!(fields, "    public {} {}; // {}", it.ty, it.field, sanitize_line(&it.name));
         let _ = writeln!(bind, "        {} = Find<{}>({});", it.field, it.ty, cs_str(&it.path));
         let (ev, sig, arg) = match it.kind {
             Kind::Button => ("onClick", "()", ""),
@@ -81,7 +81,7 @@ pub fn base_script(doc: &Doc) -> String {
         let mut body = String::new();
         if !it.code.trim().is_empty() {
             body.push_str("        // Editor “on click” code (translate it to C#):\n");
-            for l in it.code.lines() {
+            for l in comment_lines(&it.code) {
                 let _ = writeln!(body, "        // {}", l);
             }
         }
@@ -122,7 +122,7 @@ public abstract class {cls}ViewBase : MonoBehaviour
     }}
 }}
 "#,
-        title = doc.title.replace('\n', " "),
+        title = sanitize_line(&doc.title),
         cls = cls,
         fields = fields,
         bind = bind,
@@ -138,7 +138,7 @@ pub fn user_script(doc: &Doc) -> String {
     let example = its
         .iter()
         .find(|i| i.kind == Kind::Button)
-        .map(|i| format!("    protected override void On{}()\n    {{\n        Debug.Log(\"Click on {}\");\n    }}\n", i.method, i.name.replace('"', "'")))
+        .map(|i| format!("    protected override void On{}()\n    {{\n        Debug.Log({});\n    }}\n", i.method, cs_str(&format!("Click on {}", i.name))))
         .unwrap_or_default();
     format!(
         r#"// Your logic for “{title}”. Lienzo UI creates this file once and never touches it again.
@@ -148,7 +148,7 @@ public class {cls}View : {cls}ViewBase
 {{
 {example}}}
 "#,
-        title = doc.title.replace('\n', " "),
+        title = sanitize_line(&doc.title),
         cls = cls,
         example = example,
     )

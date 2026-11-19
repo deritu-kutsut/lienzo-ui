@@ -72,7 +72,23 @@ pub fn set_design_folder(file: &Path) {
 
 /// Path of an element's image: absolute, relative to the open design's folder
 /// (e.g. «pixel/sword.png») or a file in the user's library.
+/// Text of a JSON file without the UTF-8 byte order mark that some editors add (serde_json rejects it).
+pub fn strip_bom(s: &str) -> &str {
+    s.strip_prefix('\u{feff}').unwrap_or(s)
+}
+
+/// True for UNC / device paths (`\\server\share`, `//server/share`, `\\?\`) and for alternate data streams
+/// (`a.png:stream`): reading a UNC path can leak the user's NTLM hash to a remote host.
+pub fn is_unc_or_stream(name: &str) -> bool {
+    let n = name.trim_start();
+    n.starts_with("\\\\") || n.starts_with("//") || n.char_indices().any(|(i, c)| c == ':' && i != 1)
+}
+
 pub fn resolve_image(name: &str) -> PathBuf {
+    if is_unc_or_stream(name) {
+        // refused: a path that does not exist (the caller reports a missing image)
+        return images_dir().join("__blocked__");
+    }
     let p = Path::new(name);
     if p.is_absolute() {
         return p.to_path_buf();
@@ -136,14 +152,14 @@ impl Library {
         }
         for p in list(&elements_dir()) {
             if ext_of(&p) == "json" {
-                if let Some(items) = std::fs::read_to_string(&p).ok().and_then(|s| serde_json::from_str::<Vec<Element>>(&s).ok()) {
+                if let Some(items) = std::fs::read_to_string(&p).ok().and_then(|s| serde_json::from_str::<Vec<Element>>(strip_bom(&s)).ok()) {
                     self.elements.push(LibElement { name: stem(&p), path: p, items });
                 }
             }
         }
         for p in list(&templates_dir()) {
             if ext_of(&p) == "json" {
-                if let Some(mut doc) = std::fs::read_to_string(&p).ok().and_then(|s| serde_json::from_str::<Doc>(&s).ok()) {
+                if let Some(mut doc) = std::fs::read_to_string(&p).ok().and_then(|s| serde_json::from_str::<Doc>(strip_bom(&s)).ok()) {
                     doc.migrate_groups();
                     self.templates.push(LibTemplate { name: stem(&p), path: p, doc });
                 }
@@ -167,6 +183,7 @@ impl Library {
         let ext = ext_of(src);
         if ext == "json" {
             let text = std::fs::read_to_string(src).map_err(|e| e.to_string())?;
+            let text = strip_bom(&text).to_string();
             let items: Vec<Element> = serde_json::from_str::<Vec<Element>>(&text)
                 .or_else(|_| serde_json::from_str::<Element>(&text).map(|e| vec![e]))
                 .map_err(|_| "the file does not contain elements from this editor".to_string())?;
@@ -224,6 +241,7 @@ impl Library {
     /// Upload a template: a project/template .json saved by this editor.
     pub fn add_template_file(&mut self, src: &Path) -> Result<String, String> {
         let text = std::fs::read_to_string(src).map_err(|e| e.to_string())?;
+        let text = strip_bom(&text);
         let doc: Doc = serde_json::from_str(&text).map_err(|_| "the file is not a design from this editor".to_string())?;
         self.save_template(&stem(src), &doc)
     }
@@ -300,7 +318,7 @@ fn settings_path() -> PathBuf {
 
 impl Settings {
     pub fn load() -> Self {
-        let mut s: Self = std::fs::read_to_string(settings_path()).ok().and_then(|s| serde_json::from_str(&s).ok()).unwrap_or_default();
+        let mut s: Self = std::fs::read_to_string(settings_path()).ok().and_then(|s| serde_json::from_str(strip_bom(&s)).ok()).unwrap_or_default();
         if let Some(t) = &mut s.theme {
             t.name = crate::theme::canonical_name(&t.name).to_string(); // old Spanish names of the bundled themes
         }

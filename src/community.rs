@@ -698,15 +698,16 @@ fn install_plugin(bytes: &[u8]) -> Result<String, String> {
     let folder = crate::plugins::user_folder().join(format!("comunidad-{}", safe_name(name).to_lowercase()));
     std::fs::create_dir_all(&folder).map_err(|e| e.to_string())?;
     for (path, content) in &p.files {
+        if path.eq_ignore_ascii_case("plugin.json") {
+            continue; // never taken from the package: the validated manifest is serialized below
+        }
         let destination = folder.join(path); // validated: no "..", no absolute paths, only .rhai/.json
         if let Some(parent) = destination.parent() {
             std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
         }
         std::fs::write(&destination, content).map_err(|e| e.to_string())?;
     }
-    if !p.files.contains_key("plugin.json") {
-        std::fs::write(folder.join("plugin.json"), serde_json::to_string_pretty(&p.manifest).map_err(|e| e.to_string())?).map_err(|e| e.to_string())?;
-    }
+    std::fs::write(folder.join("plugin.json"), serde_json::to_string_pretty(&p.manifest).map_err(|e| e.to_string())?).map_err(|e| e.to_string())?;
     Ok(name.to_string())
 }
 
@@ -714,7 +715,6 @@ fn install_plugin(bytes: &[u8]) -> Result<String, String> {
 fn pack_plugin(folder: &std::path::Path) -> Result<Vec<u8>, String> {
     let manifest: serde_json::Value = serde_json::from_str(&std::fs::read_to_string(folder.join("plugin.json")).map_err(|_| "The folder has no plugin.json.")?).map_err(|_| "plugin.json is not valid.")?;
     let mut files = std::collections::BTreeMap::new();
-    files.insert("plugin.json".to_string(), serde_json::to_string(&manifest).map_err(|e| e.to_string())?);
     for (new, old) in [("commands", "comandos"), ("exporters", "exportadores")] {
         for x in crate::plugins::manifest_key(&manifest, new, old).and_then(|v| v.as_array()).into_iter().flatten() {
             if let Some(s) = x.get("script").and_then(|s| s.as_str()) {

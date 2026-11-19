@@ -195,10 +195,40 @@ static CURRENT: [AtomicU32; N] = [const { AtomicU32::new(0) }; N];
 static CORNERS: AtomicU32 = AtomicU32::new(5);
 static LIGHT: AtomicU32 = AtomicU32::new(0);
 static STARTED: AtomicU32 = AtomicU32::new(0);
+/// High contrast requested (set by `apply`). With a light theme it switches every color to `HC_PALETTE`.
+static HIGH_CONTRAST: AtomicU32 = AtomicU32::new(0);
+
+/// Dark palette with white text used by high contrast on top of a light theme, so the colors drawn
+/// directly by the interface (`TEXT()`, `MUTED()`, `ACCENT()`...) stay readable on the dark panels `apply` paints.
+/// Same order as `COLORS`.
+const HC_PALETTE: [[u8; 3]; N] = [
+    [8, 8, 10],      // background
+    [12, 12, 14],    // panel
+    [4, 4, 6],       // dark panel
+    [30, 30, 36],    // field
+    [52, 52, 62],    // hover
+    [170, 170, 180], // line
+    [220, 220, 230], // border
+    [255, 255, 255], // text
+    [215, 215, 225], // muted
+    [120, 180, 255], // accent
+    [0, 90, 220],    // soft accent
+    [90, 230, 130],  // ok
+    [255, 200, 60],  // warning
+    [255, 110, 190], // guide
+];
+
+fn high_contrast_on() -> bool {
+    HIGH_CONTRAST.load(Ordering::Relaxed) == 1 && is_light()
+}
 
 fn read(i: usize) -> Color32 {
     if STARTED.load(Ordering::Relaxed) == 0 {
         activate(&Theme::default());
+    }
+    if high_contrast_on() {
+        let [r, g, b] = HC_PALETTE[i];
+        return Color32::from_rgb(r, g, b);
     }
     let [r, g, b, _] = CURRENT[i].load(Ordering::Relaxed).to_be_bytes();
     Color32::from_rgb(r, g, b)
@@ -264,6 +294,7 @@ pub fn GUIDE() -> Color32 {
 
 /// Applies the theme in use. With `high_contrast`: white text, strong borders and a more visible selection.
 pub fn apply(ctx: &egui::Context, high_contrast: bool) {
+    HIGH_CONTRAST.store(high_contrast as u32, Ordering::Relaxed);
     let light = is_light() && !high_contrast;
     let r = CORNERS.load(Ordering::Relaxed).min(16) as u8;
     let strong = if light { Color32::BLACK } else { Color32::WHITE };
@@ -331,6 +362,28 @@ mod tests {
     fn bundled_themes_are_valid() {
         for t in defaults() {
             assert!(t.validate().is_ok(), "{}: {:?}", t.name, t.validate());
+        }
+    }
+
+    fn luminance(c: [u8; 3]) -> f32 {
+        let f = |v: u8| {
+            let v = v as f32 / 255.0;
+            if v <= 0.03928 { v / 12.92 } else { ((v + 0.055) / 1.055).powf(2.4) }
+        };
+        0.2126 * f(c[0]) + 0.7152 * f(c[1]) + 0.0722 * f(c[2])
+    }
+
+    fn ratio(a: [u8; 3], b: [u8; 3]) -> f32 {
+        let (x, y) = (luminance(a), luminance(b));
+        (x.max(y) + 0.05) / (x.min(y) + 0.05)
+    }
+
+    #[test]
+    fn high_contrast_palette_is_readable_on_its_dark_panels() {
+        for fg in [7, 8, 9, 11, 12] {
+            for bg in [0, 1, 2, 3] {
+                assert!(ratio(HC_PALETTE[fg], HC_PALETTE[bg]) >= 4.5, "{} on {}", COLORS[fg].0, COLORS[bg].0);
+            }
         }
     }
 

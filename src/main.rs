@@ -153,7 +153,7 @@ fn doc_from_args(args: &[String]) -> Result<Option<model::Doc>, String> {
     if let Some(file) = arg_after(args, "--open") {
         library::set_design_folder(std::path::Path::new(file));
         let text = std::fs::read_to_string(file).map_err(|e| format!("{}: {}", file, e))?;
-        let mut doc: model::Doc = serde_json::from_str(&text).map_err(|e| format!("{}: {}", file, e))?;
+        let mut doc: model::Doc = serde_json::from_str(library::strip_bom(&text)).map_err(|e| format!("{}: {}", file, e))?;
         doc.migrate_groups();
         return Ok(Some(doc));
     }

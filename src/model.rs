@@ -979,9 +979,12 @@ impl Doc {
                 seen.insert(new);
             }
         }
+        // U+2028/U+2029/U+0085 and lone \r are line breaks for C#: they would end a `//`
+        // comment or a string literal in the exported scripts.
+        let bad = |c: char, jumps: bool| (c.is_control() && !(jumps && (c == '\n' || c == '\t'))) || c == '\u{2028}' || c == '\u{2029}';
         let clear = |t: &mut String, jumps: bool| {
-            if t.chars().any(|c| c.is_control() && !(jumps && (c == '\n' || c == '\t'))) {
-                *t = t.chars().filter(|c| !c.is_control() || (jumps && (*c == '\n' || *c == '\t'))).collect();
+            if t.chars().any(|c| bad(c, jumps)) {
+                *t = t.chars().filter(|c| !bad(*c, jumps)).collect();
             }
         };
         for e in self.elements.iter_mut() {
@@ -1001,6 +1004,7 @@ impl Doc {
             // Control characters (NUL…) break the UXML and the exported scripts.
             clear(&mut e.name, false);
             clear(&mut e.text, true);
+            clear(&mut e.on_click, true);
             clear(&mut e.font, false);
             clear(&mut e.image, false);
             for o in e.options.iter_mut() {

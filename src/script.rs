@@ -71,6 +71,21 @@ fn with_el(doc: &Shared, log: &Log, name: &str, f: impl FnOnce(&mut Element)) {
     }
 }
 
+/// Sandbox limits for a Rhai engine: no `import` (no file or network module resolver), bounded memory
+/// (strings, arrays/blobs, maps), bounded recursion and expression depth, bounded operations and a
+/// wall-clock deadline (`on_progress`) so no script can hang or exhaust memory.
+pub fn harden(engine: &mut Engine, max_ops: u64, max_string: usize, max_items: usize, deadline_ms: u64) {
+    engine.set_module_resolver(rhai::module_resolvers::DummyModuleResolver::new());
+    engine.set_max_operations(max_ops);
+    engine.set_max_string_size(max_string);
+    engine.set_max_array_size(max_items); // also limits BLOBs
+    engine.set_max_map_size(max_items);
+    engine.set_max_call_levels(32);
+    engine.set_max_expr_depths(64, 32);
+    let deadline = std::time::Instant::now() + std::time::Duration::from_millis(deadline_ms);
+    engine.on_progress(move |_| if std::time::Instant::now() > deadline { Some(Dynamic::from("time limit exceeded")) } else { None });
+}
+
 /// Run `code` as if element `id` was clicked. Changes are applied to `doc`;
 /// messages and errors are appended to `log`.
 pub fn run(doc: &mut Doc, id: u64, code: &str, log: &mut Vec<String>) {
@@ -78,8 +93,7 @@ pub fn run(doc: &mut Doc, id: u64, code: &str, log: &mut Vec<String>) {
     let shared: Shared = Rc::new(RefCell::new(doc.clone()));
     let out: Log = Rc::new(RefCell::new(Vec::new()));
     let mut engine = Engine::new();
-    engine.set_max_operations(500_000);
-    engine.set_max_string_size(100_000);
+    harden(&mut engine, 500_000, 100_000, 10_000, 2000);
     {
         let o = out.clone();
         engine.on_print(move |s| o.borrow_mut().push(s.to_string()));
@@ -257,5 +271,48 @@ mod tests {
                 }
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod sandbox_tests {
+    use super::*;
+    use crate::model;
+    use std::time::{Duration, Instant};
+
+    fn err_of(code: &str) -> String {
+        let mut doc = model::template(0, 1920.0, 1080.0);
+        let id = doc.elements[0].id;
+        let mut log = Vec::new();
+        let t = Instant::now();
+        run(&mut doc, id, code, &mut log);
+        assert!(t.elapsed() < Duration::from_secs(10), "too slow: {:?} for {}", t.elapsed(), code);
+        log.iter().find(|l| l.contains("Error in the code")).cloned().unwrap_or_else(|| panic!("no error for {}: {:?}", code, log))
+    }
+
+    #[test]
+    fn hostile_scripts_fail_fast() {
+        for code in [
+            "let a = []; a.pad(300000000, 0);",
+            "let b = blob(1000000000);",
+            "let m = #{}; for i in 0..100000 { m[i.to_string()] = i; }",
+            "let s = \"x\"; s.pad(100000000, 'a');",
+            "import \"C:\\x\\m\" as m;",
+            "import \"\\\\server\\share\\m\" as m;",
+            "loop { }",
+            "fn f(n) { f(n + 1) } f(0);",
+        ] {
+            let e = err_of(code);
+            assert!(!e.is_empty());
+        }
+    }
+
+    #[test]
+    fn normal_scripts_still_work() {
+        let mut doc = model::template(0, 1920.0, 1080.0);
+        let id = doc.elements[0].id;
+        let mut log = Vec::new();
+        run(&mut doc, id, "let a = []; for i in 0..1000 { a.push(i); } message(a.len());", &mut log);
+        assert_eq!(log, vec!["1000".to_string()]);
     }
 }

@@ -4,6 +4,22 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versio
 
 ## [Unreleased]
 
+## [1.4.2] - 2026-11-19
+
+Security and stability release.
+
+### Security
+- Community templates can no longer smuggle code into the Unity scripts that Lienzo UI generates: Unicode line separators and control characters are escaped or rejected everywhere (names, texts, click scripts, titles).
+- Generated `*View.cs` examples no longer break with unusual element names, and a re-export no longer creates a duplicate `*View` class when you moved the file.
+- Click scripts and plugins run in a stricter sandbox: no imports, limits on memory and a time limit, so a script can no longer freeze the app or exhaust memory.
+- Installing a community plugin always writes the validated manifest, validates the templates it ships, and rejects Windows alternate data streams, reserved device names and network paths.
+- The published executable no longer contains build-machine paths.
+
+### Fixed
+- Undo after opening another project no longer brings back the previous design (and Save no longer overwrites the new one). Undo and Redo do nothing while Test mode is active.
+- Files saved with a UTF-8 byte order mark (for example by PowerShell) open normally.
+- High contrast with a light theme is readable.
+
 ## [1.4.1] - 2026-11-19
 
 Small polish after 1.4.0.

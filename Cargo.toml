@@ -1,6 +1,6 @@
 [package]
 name = "lienzo_ui"
-version = "1.4.1"
+version = "1.4.2"
 edition = "2024"
 
 [[bin]]
@@ -33,3 +33,8 @@ winresource = "0.1"
 
 [target.'cfg(windows)'.dependencies]
 keyring = { version = "3", features = ["windows-native"] }
+
+[profile.release]
+strip = true
+debug = false
+# panic = "abort" is not used: the network/updater threads rely on a panic only ending that thread, not the whole editor.

@@ -15,3 +15,15 @@ supabase/.branches/
 /unity-package/work/
 /unity-package/trabajo/
 /unity-package/asset-store/*.png
+
+# Local-only: server functions/tools, notes, agent config, release artifacts (never published)
+/supabase/functions/
+/supabase/MIGRATION.md
+/supabase/tools/
+/supabase/rollbacks/
+/.claude/
+/Memoria/
+/Lienzo UI.exe
+/dist/
+/target/
+/.cargo/

@@ -182,12 +182,8 @@ pub fn load_all() -> Vec<Plugin> {
 /// Sandboxed Rhai engine with limits, plus a message output (`log("…")`).
 fn engine() -> (rhai::Engine, std::rc::Rc<std::cell::RefCell<Vec<String>>>) {
     let mut e = rhai::Engine::new();
-    e.set_max_operations(20_000_000);
-    e.set_max_call_levels(64);
-    e.set_max_string_size(2_000_000);
-    e.set_max_array_size(200_000);
-    e.set_max_map_size(200_000);
-    e.set_module_resolver(rhai::module_resolvers::DummyModuleResolver::new());
+    // 5 s of wall-clock time and 5M operations: plenty for a command, never a hang. No imports, bounded arrays/blobs/maps.
+    crate::script::harden(&mut e, 5_000_000, 2_000_000, 200_000, 5000);
     let log = std::rc::Rc::new(std::cell::RefCell::new(Vec::new()));
     let l2 = log.clone();
     e.register_fn("log", move |s: &str| l2.borrow_mut().push(s.to_string()));
@@ -419,5 +415,25 @@ mod path_tests {
         for good in ["a.rhai", "sub/a.rhai", "./a.rhai"] {
             assert!(inside(c, good).is_ok(), "should accept {:?}", good);
         }
+    }
+}
+
+#[cfg(test)]
+mod sandbox_tests {
+    use super::*;
+
+    #[test]
+    fn hostile_plugin_scripts_fail_fast() {
+        let dir = std::env::temp_dir().join(format!("lienzo-plugin-sandbox-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let doc = crate::model::template(0, 1920.0, 1080.0);
+        for (i, body) in ["let a = []; a.pad(300000000, 0); d", "let b = blob(1000000000); d", "import \"C:\\x\\m\" as m; d", "loop { } d"].into_iter().enumerate() {
+            std::fs::write(dir.join(format!("h{}.rhai", i)), format!("fn run(d) {{ {} }}", body)).unwrap();
+            let t = std::time::Instant::now();
+            let r = call(&dir, &format!("h{}.rhai", i), &["run"], &doc);
+            assert!(r.is_err(), "{}", body);
+            assert!(t.elapsed() < std::time::Duration::from_secs(15), "{}", body);
+        }
+        let _ = std::fs::remove_dir_all(&dir);
     }
 }

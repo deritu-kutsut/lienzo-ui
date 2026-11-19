@@ -60,9 +60,32 @@ pub fn detect(b: &[u8]) -> Option<&'static str> {
     }
 }
 
-fn dangerous_path(s: &str) -> bool {
+/// Old rule, used on free text inside designs (it may legitimately contain `:`).
+fn dangerous_path_basic(s: &str) -> bool {
     let b = s.as_bytes();
     s.contains('\0') || s.starts_with('/') || s.starts_with('\\') || (b.len() >= 2 && b[1] == b':') || s.split(['/', '\\']).any(|p| p == "..")
+}
+
+const RESERVED: &[&str] = &["con", "prn", "aux", "nul", "conin$", "conout$", "clock$"];
+
+/// Stricter rule for file paths inside a package (they are written to disk on Windows):
+/// no NTFS streams (`:`), no trailing dots or spaces, no reserved device names (`con`, `nul.txt`, `com1`...).
+fn dangerous_path(s: &str) -> bool {
+    if dangerous_path_basic(s) || s.contains(':') || s.is_empty() || s.chars().any(|c| c.is_control()) {
+        return true;
+    }
+    s.split(['/', '\\']).any(|part| {
+        if part.is_empty() || part.ends_with('.') || part.ends_with(' ') || part.starts_with(' ') {
+            return true;
+        }
+        let stem = part.split('.').next().unwrap_or("").trim_end().to_lowercase();
+        RESERVED.contains(&stem.as_str()) || ((stem.starts_with("com") || stem.starts_with("lpt")) && stem.len() == 4 && matches!(stem.as_bytes()[3], b'1'..=b'9'))
+    })
+}
+
+/// Characters that break generated C#: control characters and line separators (U+2028, U+2029, U+0085, CR).
+fn bad_text_char(c: char) -> bool {
+    (c.is_control() && c != '\n' && c != '\t') || c == '\u{2028}' || c == '\u{2029}'
 }
 
 fn texts(v: &serde_json::Value, acc: &mut Vec<String>, depth: u32) {
@@ -100,7 +123,10 @@ fn validate_design(json: serde_json::Value, is_template: bool) -> Result<(), Str
         if external_url(s) {
             return Err("Designs cannot contain external links or paths.".into());
         }
-        if dangerous_path(s) && (s.contains('/') || s.contains('\\')) {
+        if s.chars().any(bad_text_char) {
+            return Err("Designs cannot contain control characters or line separators.".into());
+        }
+        if dangerous_path_basic(s) && (s.contains('/') || s.contains('\\')) {
             return Err("Designs cannot contain absolute paths or paths with “..”.".into());
         }
     }
@@ -127,6 +153,21 @@ fn validate_plugin(json: serde_json::Value) -> Result<Package, String> {
     if p.files.is_empty() || p.files.len() > 20 {
         return Err("A plugin has between 1 and 20 files.".into());
     }
+    // Files the manifest runs as scripts (any extension) and the ones it offers as templates.
+    let mut scripts = std::collections::HashSet::new();
+    let mut templates = std::collections::HashSet::new();
+    for (new, old) in [("commands", "comandos"), ("exporters", "exportadores")] {
+        for x in crate::plugins::manifest_key(&p.manifest, new, old).and_then(|v| v.as_array()).into_iter().flatten() {
+            if let Some(s) = x.get("script").and_then(|s| s.as_str()) {
+                scripts.insert(s.to_string());
+            }
+        }
+    }
+    for x in crate::plugins::manifest_key(&p.manifest, "templates", "plantillas").and_then(|v| v.as_array()).into_iter().flatten() {
+        if let Some(s) = x.as_str() {
+            templates.insert(s.to_string());
+        }
+    }
     for (path, content) in &p.files {
         if dangerous_path(path) || path.len() > 80 {
             return Err(format!("Path not allowed: {}", path));
@@ -135,17 +176,36 @@ fn validate_plugin(json: serde_json::Value) -> Result<Package, String> {
         if e != "rhai" && e != "json" {
             return Err(format!("Only .rhai and .json are allowed ({}).", path));
         }
-        if e == "rhai" && suspicious(content) {
+        if path.eq_ignore_ascii_case("plugin.json") {
+            // The manifest travels in `manifest`. Packages made by older versions repeated it here:
+            // that identical copy is tolerated (and never written); anything else could replace the validated manifest.
+            let same = serde_json::from_str::<serde_json::Value>(content).map(|v| v == p.manifest).unwrap_or(false);
+            if !same {
+                return Err("plugin.json must not be inside the package files.".into());
+            }
+            continue;
+        }
+        // every script is scanned, whatever its extension (a manifest can point a command to a .json file)
+        if (e != "json" || scripts.contains(path)) && suspicious(content) {
             return Err(format!("{}: contains forbidden instructions (eval, import, network, processes).", path));
         }
-    }
-    for (new, old) in [("commands", "comandos"), ("exporters", "exportadores")] {
-        for x in crate::plugins::manifest_key(&p.manifest, new, old).and_then(|v| v.as_array()).into_iter().flatten() {
-            if let Some(s) = x.get("script").and_then(|s| s.as_str()) {
-                if !p.files.contains_key(s) {
-                    return Err(format!("The manifest uses {}, which is not in the package.", s));
+        if e == "json" && !scripts.contains(path) {
+            let v: serde_json::Value = serde_json::from_str(content).map_err(|_| format!("{}: not valid JSON.", path))?;
+            if templates.contains(path) || v.get("elements").is_some() {
+                validate_design(v, true).map_err(|er| format!("{}: {}", path, er))?;
+            } else {
+                // any other data file: same text rules as a design
+                let mut t = Vec::new();
+                texts(&v, &mut t, 0);
+                if t.iter().any(|s| external_url(s) || s.chars().any(bad_text_char)) {
+                    return Err(format!("{}: contains external links or control characters.", path));
                 }
             }
+        }
+    }
+    for s in scripts.iter().chain(templates.iter()) {
+        if !p.files.contains_key(s) {
+            return Err(format!("The manifest uses {}, which is not in the package.", s));
         }
     }
     Ok(p)
@@ -385,5 +445,65 @@ mod tests_png {
         assert!(validate_png("banner", &png(1500, 500)).is_ok());
         assert!(validate_png("banner", &png(1500, 900)).is_err());
         assert!(validate_png("avatar", &[0xff, 0xd8, 0xff, 0, 0, 0]).is_err());
+    }
+}
+
+#[cfg(test)]
+mod tests_hardening {
+    use super::*;
+
+    fn pkg(manifest: &str, files: serde_json::Value) -> Vec<u8> {
+        format!(r#"{{"manifest":{},"files":{}}}"#, manifest, files).into_bytes()
+    }
+    const M: &str = r#"{"name":"Align","commands":[{"name":"x","script":"a.rhai"}]}"#;
+
+    #[test]
+    fn dangerous_paths() {
+        for bad in ["a.rhai:evil", "a.rhai:stream:$DATA", "a.rhai.", "a.rhai ", "con.rhai", "CON", "nul.json", "aux", "com1.rhai", "LPT9.json", "d/prn.rhai", "d/lpt1", "c:\\x", "/x", "..\\x", "d\\..\\x"] {
+            assert!(dangerous_path(bad), "{}", bad);
+        }
+        for ok in ["a.rhai", "sub/dir/b.json", "console.rhai", "com10.rhai", "com0.rhai", "snap.rhai"] {
+            assert!(!dangerous_path(ok), "{}", ok);
+        }
+        let b = pkg(M, serde_json::json!({ "a.rhai": "fn run(d){ d }", "x.rhai:s": "1" }));
+        assert!(validate("plugin", "p.json", &b).is_err());
+    }
+
+    #[test]
+    fn plugin_json_inside_files_is_rejected_unless_it_is_the_same_legacy_copy() {
+        let evil = pkg(M, serde_json::json!({ "a.rhai": "fn run(d){ d }", "plugin.json": r#"{"name":"Other","commands":[{"name":"y","script":"b.rhai"}]}"# }));
+        assert!(validate("plugin", "p.json", &evil).unwrap_err().contains("plugin.json"));
+        let legacy = pkg(M, serde_json::json!({ "a.rhai": "fn run(d){ d }", "plugin.json": M }));
+        assert!(validate("plugin", "p.json", &legacy).is_ok());
+    }
+
+    #[test]
+    fn template_files_are_validated_as_designs() {
+        let m = r#"{"name":"Tpl","templates":["t.json"],"commands":[{"name":"x","script":"a.rhai"}]}"#;
+        let ok = pkg(m, serde_json::json!({ "a.rhai": "fn run(d){ d }", "t.json": r#"{"elements":[{"kind":"Text","text":"Hi"}]}"# }));
+        assert!(validate("plugin", "p.json", &ok).is_ok());
+        for bad in [r#"{"elements":[{"text":"https://evil.example"}]}"#, r#"{"elements":[{"image":"C:/Users/x/a.png"}]}"#, r#"{"elements":[{"on_click":"a\u2028b"}]}"#, "{no"] {
+            let b = pkg(m, serde_json::json!({ "a.rhai": "fn run(d){ d }", "t.json": bad }));
+            assert!(validate("plugin", "p.json", &b).is_err(), "{}", bad);
+        }
+    }
+
+    #[test]
+    fn every_script_is_scanned_whatever_its_extension() {
+        let m = r#"{"name":"Sneaky","commands":[{"name":"x","script":"data.json"}]}"#;
+        let b = pkg(m, serde_json::json!({ "data.json": "eval(\"1\")" }));
+        assert!(validate("plugin", "p.json", &b).is_err());
+    }
+
+    #[test]
+    fn designs_reject_line_separators_and_control_chars() {
+        for bad in ["a\u{2028}b", "a\u{2029}b", "a\u{85}b", "a\rb", "a\u{0}b"] {
+            let j = serde_json::json!({ "elements": [{ "kind": "Button", "name": bad }] }).to_string();
+            assert!(validate("template", "t.json", j.as_bytes()).is_err(), "{:?}", bad);
+            let j = serde_json::json!({ "elements": [{ "kind": "Button", "on_click": bad }] }).to_string();
+            assert!(validate("template", "t.json", j.as_bytes()).is_err(), "{:?}", bad);
+        }
+        let ok = serde_json::json!({ "elements": [{ "kind": "Button", "name": "Time: 5/10", "on_click": "a();\nb();\tc();" }] }).to_string();
+        assert!(validate("template", "t.json", ok.as_bytes()).is_ok());
     }
 }

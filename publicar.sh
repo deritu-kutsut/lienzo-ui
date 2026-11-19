@@ -19,7 +19,12 @@ ZIP="dist/LienzoUI-windows-${VERSION}.zip"
 git diff --quiet && git diff --cached --quiet || { echo "There are uncommitted changes. Commit before publishing."; exit 1; }
 
 cargo test --quiet
-cargo build --release --quiet
+# Keep build-machine paths (user name, project folder, cargo registry) out of the published exe.
+# CARGO_ENCODED_RUSTFLAGS (separator 0x1f) because the project path may contain spaces.
+HOME_W="$(cygpath -w "$HOME" 2>/dev/null || echo "$HOME")"
+PROJECT_W="$(cygpath -w "$PWD" 2>/dev/null || echo "$PWD")"
+SEP=$'\x1f'
+CARGO_ENCODED_RUSTFLAGS="--remap-path-prefix=${HOME_W}=/home/user${SEP}--remap-path-prefix=${HOME_W}\.cargo=/cargo${SEP}--remap-path-prefix=${HOME_W}\.rustup=/rustup${SEP}--remap-path-prefix=${PROJECT_W}=/app" cargo build --release --quiet
 node mcp/probar-mcp.mjs > /dev/null
 
 rm -rf "$PACKAGE" "$ZIP"

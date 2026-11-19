@@ -94,7 +94,44 @@ pub fn safe_field(s: &str) -> String {
     if BAD.contains(&s) { format!("{}Ui", s) } else { s.to_string() }
 }
 
-/// C# string literal.
+/// True for every character that C# (or XML/USS tooling) treats as a line break.
+pub fn is_line_break(c: char) -> bool {
+    matches!(c, '\n' | '\r' | '\u{0B}' | '\u{0C}' | '\u{85}' | '\u{2028}' | '\u{2029}')
+}
+
+/// Text that is safe inside a one-line comment (`//`, `///`): every line break, control
+/// character and bidi override becomes a space, so user text can never end the comment.
+pub fn sanitize_line(s: &str) -> String {
+    s.chars()
+        .map(|c| if is_line_break(c) || c.is_control() || matches!(c, '\u{202A}'..='\u{202E}' | '\u{2066}'..='\u{2069}') { ' ' } else { c })
+        .collect()
+}
+
+/// Splits text into lines using every kind of line break (not just `\n`), each one made comment-safe.
+pub fn comment_lines(s: &str) -> Vec<String> {
+    let mut out = Vec::new();
+    let mut cur = String::new();
+    let mut prev_cr = false;
+    for c in s.chars() {
+        if is_line_break(c) {
+            if !(c == '\n' && prev_cr) {
+                out.push(sanitize_line(&cur));
+                cur.clear();
+            }
+            prev_cr = c == '\r';
+        } else {
+            prev_cr = false;
+            cur.push(c);
+        }
+    }
+    out.push(sanitize_line(&cur));
+    if out.last().is_some_and(|l| l.is_empty()) {
+        out.pop();
+    }
+    out
+}
+
+/// C# string literal. Escapes line breaks (including U+2028, U+2029, U+0085 and `\r`) and control characters.
 pub fn cs_str(s: &str) -> String {
     let mut o = String::from("\"");
     for c in s.chars() {
@@ -102,8 +139,14 @@ pub fn cs_str(s: &str) -> String {
             '\\' => o.push_str("\\\\"),
             '"' => o.push_str("\\\""),
             '\n' => o.push_str("\\n"),
-            '\r' => {}
+            '\r' => o.push_str("\\r"),
             '\t' => o.push_str("\\t"),
+            c if c.is_control() || matches!(c, '\u{2028}' | '\u{2029}' | '\u{202A}'..='\u{202E}' | '\u{2066}'..='\u{2069}') => {
+                let mut u = [0u16; 2];
+                for unit in c.encode_utf16(&mut u) {
+                    o.push_str(&format!("\\u{:04X}", unit));
+                }
+            }
             c => o.push(c),
         }
     }
@@ -111,9 +154,32 @@ pub fn cs_str(s: &str) -> String {
     o
 }
 
+/// Text for an XML comment: no `--` (invalid inside comments), no line breaks, and it cannot end with `-`.
+pub fn xml_comment(s: &str) -> String {
+    let mut t = sanitize_line(s);
+    while t.contains("--") {
+        t = t.replace("--", "- ");
+    }
+    t.trim_end_matches('-').to_string()
+}
+
+/// Text for a CSS/USS `/* */` comment: `*/` removed until none is left (`**//` would otherwise rebuild one).
+pub fn css_comment(s: &str) -> String {
+    let mut t = sanitize_line(s);
+    while t.contains("*/") {
+        t = t.replace("*/", "");
+    }
+    t
+}
+
+/// Piece of a quoted USS `url("...")`: no quotes, backslashes, parentheses or line breaks.
+pub fn css_url_part(s: &str) -> String {
+    s.chars().filter(|c| !matches!(c, '"' | '\\' | '(' | ')') && !is_line_break(*c) && !c.is_control()).collect()
+}
+
 /// XML attribute value.
 pub fn xml_attr(s: &str) -> String {
-    s.replace('&', "&amp;").replace('"', "&quot;").replace('<', "&lt;").replace('>', "&gt;").replace('\n', "&#10;")
+    s.replace('&', "&amp;").replace('"', "&quot;").replace('<', "&lt;").replace('>', "&gt;").replace('\n', "&#10;").replace('\r', "&#13;").replace('\t', "&#9;")
 }
 
 pub fn f(v: f32) -> String {
@@ -240,6 +306,57 @@ pub fn find_unity_root(dir: &Path) -> Option<PathBuf> {
     None
 }
 
+/// True if some `.cs` under `<project>/Assets` already declares `class {cls}View` (bounded textual scan).
+fn view_class_exists(root: &Path, cls: &str) -> bool {
+    let needle = format!("{}View", cls);
+    let mut stack = vec![root.join("Assets")];
+    let (mut files, mut dirs) = (0usize, 0usize);
+    while let Some(d) = stack.pop() {
+        dirs += 1;
+        if dirs > 20_000 {
+            break;
+        }
+        let Ok(rd) = std::fs::read_dir(&d) else { continue };
+        for ent in rd.flatten() {
+            let p = ent.path();
+            let Ok(ft) = ent.file_type() else { continue };
+            if ft.is_dir() {
+                stack.push(p);
+            } else if ft.is_file() && p.extension().is_some_and(|x| x.eq_ignore_ascii_case("cs")) {
+                files += 1;
+                if files > 50_000 {
+                    return false;
+                }
+                if ent.metadata().map(|m| m.len() > 2_000_000).unwrap_or(true) {
+                    continue;
+                }
+                if let Ok(t) = std::fs::read_to_string(&p) {
+                    if declares_class(&t, &needle) {
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+    false
+}
+
+/// `class <name>` as whole words (so `MainMenuViewBase` does not count as `MainMenuView`).
+fn declares_class(text: &str, name: &str) -> bool {
+    let pat = format!("class {}", name);
+    let mut from = 0;
+    while let Some(i) = text[from..].find(&pat) {
+        let a = from + i;
+        let after = text[a + pat.len()..].chars().next();
+        let before = text[..a].chars().next_back();
+        if after.is_none_or(|c| !(c.is_alphanumeric() || c == '_')) && before.is_none_or(|c| c.is_whitespace()) {
+            return true;
+        }
+        from = a + pat.len();
+    }
+    false
+}
+
 /// Write everything into `<project>/Assets/EditorGUI`. Returns the written paths (relative to the project).
 pub fn write_unity_package(doc: &Doc, project: &Path) -> Result<Vec<String>, String> {
     let root = find_unity_root(project).ok_or("that folder does not look like a Unity project (it has no Assets folder)")?;
@@ -281,9 +398,12 @@ pub fn write_unity_package(doc: &Doc, project: &Path) -> Result<Vec<String>, Str
     put(format!("{}/UI Toolkit/{}.uss", UNITY_ROOT, cls), uitk::uss(doc).as_bytes())?;
     put(format!("{}/UI Toolkit/{}.uxml", UNITY_ROOT, cls), uitk::uxml(doc).as_bytes())?;
     put(format!("{}/Scripts/{}OnGUI.cs", UNITY_ROOT, cls), imgui::script(doc).as_bytes())?;
+    let base_existed = root.join(format!("{}/Scripts/{}ViewBase.cs", UNITY_ROOT, cls)).exists();
     put(format!("{}/Scripts/{}ViewBase.cs", UNITY_ROOT, cls), view::base_script(doc).as_bytes())?;
     let user_view = format!("{}/Scripts/{}View.cs", UNITY_ROOT, cls);
-    if !root.join(&user_view).exists() {
+    // The View is user-owned: write the stub only if the user has no `{cls}View` class anywhere in
+    // the project (they may have moved or renamed the file) and the base class was not already exported.
+    if !base_existed && !view_class_exists(&root, &cls) {
         put(user_view, view::user_script(doc).as_bytes())?;
     }
     // the design last: the importer rebuilds the prefab when this file changes
@@ -368,5 +488,141 @@ mod robustness_tests {
     fn long_kind_name_is_shortened() {
         assert!(class_name(&"x".repeat(500)).chars().count() <= 64);
         assert_eq!(class_name("Main menu"), "MainMenu");
+    }
+}
+
+#[cfg(test)]
+mod hostile_tests {
+    use super::*;
+    use crate::model::{Doc, Element, Kind};
+
+    const SEPS: [char; 3] = ['\u{2028}', '\u{2029}', '\u{85}'];
+
+    /// A text that tries to end a comment / string with every kind of line break and then run `Injected()`.
+    fn evil(tag: &str) -> String {
+        format!("{tag}\u{2028}Injected1();\u{2029}Injected2();\u{85}Injected3();\rInjected4();\r\nInjected5(); \"; Injected6(); //")
+    }
+
+    fn hostile_doc() -> Doc {
+        let mut d = Doc::empty(1920.0, 1080.0);
+        d.title = evil("T");
+        for (i, k) in [Kind::Button, Kind::Text, Kind::Toggle, Kind::InputField, Kind::Dropdown, Kind::Slider, Kind::Image, Kind::Panel].into_iter().enumerate() {
+            let mut e = Element::new(i as u64 + 1, k);
+            e.name = evil("N");
+            e.text = evil("X");
+            e.on_click = evil("C");
+            e.options = vec![evil("O"), evil("P")];
+            e.image = if k == Kind::Image { format!("{}.png", evil("I")) } else { String::new() };
+            d.elements.push(e);
+        }
+        d.next_id = 100;
+        d
+    }
+
+    /// `needle` is inside a string literal or after a `//` in this line.
+    fn harmless(line: &str, needle: &str) -> bool {
+        let at = line.find(needle).unwrap();
+        let before = &line[..at];
+        let mut in_str = false;
+        let mut esc = false;
+        let mut prev = ' ';
+        for c in before.chars() {
+            if in_str {
+                if esc { esc = false } else if c == '\\' { esc = true } else if c == '"' { in_str = false }
+            } else if c == '"' {
+                in_str = true;
+            } else if c == '/' && prev == '/' {
+                return true;
+            }
+            prev = c;
+        }
+        in_str
+    }
+
+    fn check(name: &str, cs: &str) {
+        assert!(!cs.contains('\r'), "{name}: raw \r");
+        for s in SEPS {
+            assert!(!cs.contains(s), "{name}: raw U+{:04X}", s as u32);
+        }
+        for line in cs.lines() {
+            for n in 1..=6 {
+                let needle = format!("Injected{n}();");
+                if line.contains(&needle) {
+                    assert!(harmless(line, &needle), "{name}: injected statement: {line}");
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn hostile_strings_cannot_inject_csharp() {
+        let mut d = hostile_doc();
+        d.sanitize(); // what loading does: separators are removed already
+        let raw = hostile_doc(); // and the exporters must be safe even without sanitize
+        for doc in [&d, &raw] {
+            check("imgui", &imgui::script(doc));
+            check("view_base", &view::base_script(doc));
+            check("view_user", &view::user_script(doc));
+        }
+    }
+
+    #[test]
+    fn uss_uxml_comments_stay_closed() {
+        let mut d = hostile_doc();
+        d.title = "a-- b */ **// -".into();
+        d.elements[0].name = "x**//y */ z\u{2028}".into();
+        let uxml = uitk::uxml(&d);
+        for l in uxml.lines().filter(|l| l.contains("<!--")) {
+            let inner = &l[l.find("<!--").unwrap() + 4..l.rfind("-->").unwrap()];
+            assert!(!inner.contains("--") && !inner.ends_with('-'), "{l}");
+        }
+        let uss = uitk::uss(&d);
+        for l in uss.lines().filter(|l| l.starts_with("/*")) {
+            let inner = &l[2..l.rfind("*/").unwrap()];
+            assert!(!inner.contains("*/"), "{l}");
+        }
+    }
+
+    #[test]
+    fn cs_str_escapes_line_breaks() {
+        let s = cs_str("a\r\u{2028}\u{2029}\u{85}\u{0}b");
+        assert_eq!(s, "\"a\\r\\u2028\\u2029\\u0085\\u0000b\"");
+        assert_eq!(sanitize_line("a\r\nb\u{2028}c"), "a  b c");
+        assert_eq!(comment_lines("a\r\nb\rc\u{2028}d\n"), vec!["a", "b", "c", "d"]);
+    }
+
+    #[test]
+    fn model_sanitize_removes_separators() {
+        let mut d = hostile_doc();
+        d.sanitize();
+        let all = |t: &str| !t.contains(|c| c == '\r' || SEPS.contains(&c));
+        assert!(all(&d.title));
+        for e in &d.elements {
+            assert!(all(&e.name) && all(&e.text) && all(&e.on_click) && all(&e.font) && all(&e.image));
+            assert!(e.options.iter().all(|o| all(o)));
+        }
+    }
+
+    #[test]
+    fn view_stub_not_duplicated_when_moved_or_base_existed() {
+        let dir = std::env::temp_dir().join(format!("editorgui-view-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        std::fs::create_dir_all(dir.join("Assets/Game/UI")).unwrap();
+        std::fs::create_dir_all(dir.join("ProjectSettings")).unwrap();
+        let d = crate::model::template(0, 1920.0, 1080.0);
+        let cls = class_name(&d.title);
+        // the user already has the View somewhere else
+        std::fs::write(dir.join(format!("Assets/Game/UI/{cls}View.cs")), format!("public class {cls}View : {cls}ViewBase {{ }}")).unwrap();
+        let files = write_unity_package(&d, &dir).unwrap();
+        assert!(!files.iter().any(|f| f.ends_with(&format!("Scripts/{cls}View.cs"))), "{files:?}");
+        assert!(!dir.join(format!("{UNITY_ROOT}/Scripts/{cls}View.cs")).exists());
+        // ViewBase exists from a previous export and the user deleted/moved the View: treated as user-owned
+        std::fs::remove_file(dir.join(format!("Assets/Game/UI/{cls}View.cs"))).unwrap();
+        let again = write_unity_package(&d, &dir).unwrap();
+        assert!(!again.iter().any(|f| f.ends_with(&format!("Scripts/{cls}View.cs"))));
+        // a class that merely starts with the same name is not the View
+        assert!(!declares_class(&format!("class {cls}ViewBase : X"), &format!("{cls}View")));
+        assert!(declares_class(&format!("public sealed class {cls}View : X"), &format!("{cls}View")));
+        let _ = std::fs::remove_dir_all(&dir);
     }
 }
