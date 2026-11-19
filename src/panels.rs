@@ -108,7 +108,35 @@ impl EditorApp {
             .exact_size(44.0)
             .frame(egui::Frame::new().fill(PANEL_DARK()).inner_margin(Margin::symmetric(10, 6)).stroke(Stroke::new(1.0, BORDER())))
             .show(ui, |ui| {
-                ui.horizontal_centered(|ui| {
+                ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
+                        self.community_button_profile(ui);
+                        ui.add_space(4.0);
+                        self.updater_button(ui);
+                        let export = crate::icons::btn_tint("export", RichText::new(crate::i18n::t("Export to Unity")).strong().color(Color32::WHITE), Color32::WHITE).fill(ACCENT()).corner_radius(6.0);
+                        let tip = if self.settings.unity_project.is_empty() { "Choose your Unity project folder (Ctrl+E)".to_string() } else { format!("Exporta a {} (Ctrl+E)", self.settings.unity_project) };
+                        if ui.add(export).on_hover_text(tip).clicked() {
+                            self.export_to_unity(false);
+                        }
+                        if ui.add(crate::icons::btn("code", crate::i18n::t("Code…"))).on_hover_text(crate::i18n::t("View and copy JSON, UXML/USS, IMGUI and scripts (Ctrl+Shift+E)")).clicked() {
+                            self.export_open = true;
+                        }
+                        if ui.add(crate::icons::btn("save", crate::i18n::t("Save"))).on_hover_text(crate::i18n::t("Save as project or as template")).clicked() {
+                            self.save_open = true;
+                        }
+                        if ui.button(crate::i18n::t("Tutorial")).on_hover_text(crate::i18n::t("Open the beginner and pro tutorial (F1)")).clicked() {
+                            self.open_tutorial(crate::tutorial::Track::Beginner);
+                        }
+                        if ui.button(crate::i18n::t("Themes")).on_hover_text(crate::i18n::t("App colours, corners and font; community themes")).clicked() {
+                            self.themes_open = true;
+                        }
+                        if ui.add(crate::icons::btn("check", crate::i18n::t("Review"))).on_hover_text(crate::i18n::t("Checks readability, contrast, touch size and missing images before exporting")).clicked() {
+                            self.review_open = true;
+                        }
+                        if ui.button(crate::i18n::t("Accessibility")).on_hover_text(crate::i18n::t("Language, interface size, high contrast and reduced motion")).clicked() {
+                            self.accessibility_open = true;
+                        }
+                    // everything else gets the space left of the right-hand buttons
+                    ui.with_layout(Layout::left_to_right(Align::Center), |ui| {
                     ui.add(egui::Image::new(egui::include_image!("../assets/brand/icon.svg")).fit_to_exact_size(Vec2::splat(22.0)));
                     ui.label(RichText::new(crate::i18n::t("Lienzo UI")).strong().size(14.5).color(TEXT()));
                     ui.label(RichText::new(crate::i18n::t("for Unity")).size(11.5).color(MUTED()));
@@ -288,14 +316,16 @@ impl EditorApp {
                     ui.add_space(4.0);
                     // Landscape / Portrait: which layout is on screen (edits in portrait are stored as overrides)
                     let portrait = self.orientation() == Orientation::Portrait;
+                    // room left for the whole bar: labelled toggle only when there is plenty, icon-only otherwise
+                    let roomy = ui.available_width() > 560.0;
                     ui.add_enabled_ui(!self.preview, |ui| {
                         ui.spacing_mut().item_spacing.x = 2.0;
-                        let land = crate::icons::btn("orient_landscape", crate::i18n::t("Landscape")).selected(!portrait);
-                        if ui.add(land).on_hover_text(crate::i18n::t("Edit the landscape layout")).clicked() {
+                        let land = if roomy { crate::icons::btn("orient_landscape", crate::i18n::t("Landscape")) } else { crate::icons::btn("orient_landscape", "") }.selected(!portrait);
+                        if ui.add(land).on_hover_text(format!("{}: {}", crate::i18n::t("Landscape"), crate::i18n::t("Edit the landscape layout"))).clicked() {
                             self.set_orientation(Orientation::Landscape);
                         }
-                        let port = crate::icons::btn("orient_portrait", crate::i18n::t("Portrait")).selected(portrait);
-                        if ui.add(port).on_hover_text(crate::i18n::t("Edit the portrait layout: changes are stored as overrides and the landscape layout is not touched")).clicked() {
+                        let port = if roomy { crate::icons::btn("orient_portrait", crate::i18n::t("Portrait")) } else { crate::icons::btn("orient_portrait", "") }.selected(portrait);
+                        if ui.add(port).on_hover_text(format!("{}: {}", crate::i18n::t("Portrait"), crate::i18n::t("Edit the portrait layout: changes are stored as overrides and the landscape layout is not touched"))).clicked() {
                             self.set_orientation(Orientation::Portrait);
                         }
                     });
@@ -325,36 +355,18 @@ impl EditorApp {
                             }
                         });
                     }
-                    ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
-                        self.community_button_profile(ui);
-                        ui.add_space(4.0);
-                        self.updater_button(ui);
-                        let export = crate::icons::btn_tint("export", RichText::new(crate::i18n::t("Export to Unity")).strong().color(Color32::WHITE), Color32::WHITE).fill(ACCENT()).corner_radius(6.0);
-                        let tip = if self.settings.unity_project.is_empty() { "Choose your Unity project folder (Ctrl+E)".to_string() } else { format!("Exporta a {} (Ctrl+E)", self.settings.unity_project) };
-                        if ui.add(export).on_hover_text(tip).clicked() {
-                            self.export_to_unity(false);
-                        }
-                        if ui.add(crate::icons::btn("code", crate::i18n::t("Code…"))).on_hover_text(crate::i18n::t("View and copy JSON, UXML/USS, IMGUI and scripts (Ctrl+Shift+E)")).clicked() {
-                            self.export_open = true;
-                        }
-                        if ui.add(crate::icons::btn("save", crate::i18n::t("Save"))).on_hover_text(crate::i18n::t("Save as project or as template")).clicked() {
-                            self.save_open = true;
-                        }
-                        if ui.button(crate::i18n::t("Tutorial")).on_hover_text(crate::i18n::t("Open the beginner and pro tutorial (F1)")).clicked() {
-                            self.open_tutorial(crate::tutorial::Track::Beginner);
-                        }
-                        if ui.button(crate::i18n::t("Themes")).on_hover_text(crate::i18n::t("App colours, corners and font; community themes")).clicked() {
-                            self.themes_open = true;
-                        }
-                        if ui.add(crate::icons::btn("check", crate::i18n::t("Review"))).on_hover_text(crate::i18n::t("Checks readability, contrast, touch size and missing images before exporting")).clicked() {
-                            self.review_open = true;
-                        }
-                        if ui.button(crate::i18n::t("Accessibility")).on_hover_text(crate::i18n::t("Language, interface size, high contrast and reduced motion")).clicked() {
-                            self.accessibility_open = true;
-                        }
+                    // design title + resolution take what is left and truncate instead of overlapping
+                    let room = ui.available_width() - 12.0;
+                    if room >= 70.0 {
                         ui.add_space(6.0);
-                        ui.label(RichText::new(format!("{} × {}", self.doc.width, self.doc.height)).size(11.5).color(MUTED()));
-                        ui.add(egui::TextEdit::singleline(&mut self.doc.title).desired_width(180.0));
+                        let res = format!("{} × {}", self.doc.width, self.doc.height);
+                        let res_w = if room >= 190.0 { 72.0 } else { 0.0 };
+                        if res_w > 0.0 {
+                            ui.add_sized([res_w, 20.0], egui::Label::new(RichText::new(res).size(11.5).color(MUTED())).truncate());
+                        }
+                        let w = (ui.available_width() - 8.0).clamp(40.0, 180.0);
+                        ui.add(egui::TextEdit::singleline(&mut self.doc.title).desired_width(w));
+                    }
                     });
                 });
             });
@@ -1405,13 +1417,14 @@ impl EditorApp {
                     }
                 });
                 ui.end_row();
-                ui.label(crate::i18n::t("Pixel art"));
-                ui.checkbox(&mut self.doc.pixel_art, crate::i18n::t("No smoothing, whole pixels"))
-                    .on_hover_text(crate::i18n::t("Images with nearest-neighbor filtering, positions and sizes in whole pixels. In Unity: Canvas Pixel Perfect and sprites with Point filter and no compression."));
-                ui.end_row();
             });
+            // outside the Grid: a Grid cell never wraps, so long translated labels would widen the panel
+            ui.add_space(2.0);
+            ui.label(RichText::new(crate::i18n::t("Pixel art")).size(11.5).color(MUTED()));
+            ui.checkbox(&mut self.doc.pixel_art, crate::i18n::t("No smoothing, whole pixels"))
+                .on_hover_text(crate::i18n::t("Images with nearest-neighbor filtering, positions and sizes in whole pixels. In Unity: Canvas Pixel Perfect and sprites with Point filter and no compression."));
             let mut preset = None;
-            egui::ComboBox::from_id_salt("res_presets").selected_text(crate::i18n::t("Common resolutions…")).width(ui.available_width() - 8.0).show_ui(ui, |ui| {
+            egui::ComboBox::from_id_salt("res_presets").selected_text(crate::i18n::t("Common resolutions…")).width((ui.available_width() - 30.0).max(100.0)).show_ui(ui, |ui| {
                 for (name, w, h) in SIZE_PRESETS {
                     if ui.button(format!("{}  ·  {} × {}", crate::i18n::t(name), w, h)).clicked() {
                         preset = Some((*w, *h));
@@ -1496,13 +1509,13 @@ impl EditorApp {
                     ui.add(egui::DragValue::new(&mut c.plane_distance).range(0.01..=100_000.0).speed(0.5));
                     ui.end_row();
                 }
-                ui.label(t("Safe area"));
-                ui.checkbox(&mut c.safe_area, t("Respect notch and rounded corners")).on_hover_text(t("Applies the device safe area to the root, so nothing hides under a notch."));
-                ui.end_row();
-                ui.label(t("Embed"));
-                ui.checkbox(&mut c.embed, t("Embed (no own Canvas)")).on_hover_text(t("Exports a plain RectTransform meant to live under the Canvas of your game: no Canvas or CanvasScaler is created."));
-                ui.end_row();
             });
+            // checkboxes live outside the Grid so their labels wrap inside the panel
+            ui.add_space(2.0);
+            ui.label(RichText::new(t("Safe area")).size(11.5).color(MUTED()));
+            ui.checkbox(&mut c.safe_area, t("Respect notch and rounded corners")).on_hover_text(t("Applies the device safe area to the root, so nothing hides under a notch."));
+            ui.label(RichText::new(t("Embed")).size(11.5).color(MUTED()));
+            ui.checkbox(&mut c.embed, t("Embed (no own Canvas)")).on_hover_text(t("Exports a plain RectTransform meant to live under the Canvas of your game: no Canvas or CanvasScaler is created."));
         });
     }
 
@@ -1585,9 +1598,11 @@ impl EditorApp {
                 let new_id = ui.scope_id().with("unity_fallback_new");
                 let mut new_font = ui.data(|d| d.get_temp::<String>(new_id)).unwrap_or_default();
                 let mut add = false;
-                ui.horizontal(|ui| {
-                    let r = ui.add(egui::TextEdit::singleline(&mut new_font).desired_width(ui.available_width() - 70.0).char_limit(128).hint_text(t("Fallback font asset name")));
-                    add = ui.add_enabled(!new_font.trim().is_empty() && docext::valid_font_name(&new_font), crate::icons::btn("plus", t("Add")).small()).clicked() || (r.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter)) && !new_font.trim().is_empty());
+                // button first (right-aligned), the field takes what is left: never wider than the panel
+                ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
+                    add = ui.add_enabled(!new_font.trim().is_empty() && docext::valid_font_name(&new_font), crate::icons::btn("plus", t("Add")).small()).clicked();
+                    let r = ui.add(egui::TextEdit::singleline(&mut new_font).desired_width((ui.available_width() - 4.0).max(40.0)).char_limit(128).hint_text(t("Fallback font asset name")));
+                    add = add || (r.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter)) && !new_font.trim().is_empty());
                 });
                 if add {
                     u.fallback_fonts.push(new_font.trim().to_string());
