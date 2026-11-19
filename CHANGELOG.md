@@ -4,6 +4,14 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versio
 
 ## [Unreleased]
 
+## [1.4.1] - 2026-11-19
+
+Small polish after 1.4.0.
+
+### Fixed
+- Spanish-style «guillemets» in English texts (tutorial and the comments of the generated Unity scripts) are now plain curly quotes.
+- Old devlog and page images that pointed to the renamed `docs/images/` folder were repaired.
+
 ## [1.4.0] - 2026-11-19
 
 English-first release: names, formats, server and documentation are in English; everything you already have keeps working.
