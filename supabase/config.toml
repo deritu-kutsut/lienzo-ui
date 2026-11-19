@@ -5,8 +5,12 @@ project_id = "lienzo-ui"
 site_url = "https://deritu.itch.io/lienzo-ui"
 # The desktop app receives the sign-in through a temporary local address (loopback), never through an intermediary server.
 additional_redirect_urls = ["http://127.0.0.1:53682/callback"]
+# `enable_signup` here is the GLOBAL switch (every provider). It must stay true: the first GitHub / Google sign-in of a new person is a signup.
+# Email signups are closed separately in [auth.email] below. NOTE: this file configures the LOCAL stack and `supabase config push`; the LIVE
+# project's auth settings live in the dashboard and are changed by the owner by hand (see MIGRATION.md → «Dashboard settings to change»).
 enable_signup = true
 enable_anonymous_sign_ins = false
+# Only relevant if the Email provider were enabled (it must not be: there are no passwords here). Kept high on purpose in case it is switched on.
 minimum_password_length = 12
 jwt_expiry = 3600
 enable_refresh_token_rotation = true
@@ -27,22 +31,28 @@ enable_signup = false
 
 # English-named functions (used by the new app versions and the moderation web). The Spanish names below are thin wrappers over
 # the same handlers, kept so app versions 1.0 - 1.3.3 keep working. The settings of each pair must stay identical.
+#
+# verify_jwt = false for EVERY function, on purpose: each handler authenticates by itself and answers 401 before it does any work
+#   · moderate / profile / delete-account: `userId()` validates the Bearer token with `auth.getUser` (the person's session),
+#   · review: accepts moderator sessions (`auth.getUser` + the MODERATORS list) AND `lm_…` tokens, which are not JWTs, so the gateway could
+#     never verify them.
+# Leaving the gateway check on for the other three added nothing (they check again) and breaks when the project moves to asymmetric JWT
+# signing keys. Equivalent on the command line: `npx supabase functions deploy --no-verify-jwt` (use it if you deploy a single function by hand).
 [functions.moderate]
-verify_jwt = true
+verify_jwt = false
 [functions.delete-account]
-verify_jwt = true
+verify_jwt = false
 [functions.review]
-# The function authenticates by itself: it accepts moderator sessions and lm_… tokens (which are not JWTs).
 verify_jwt = false
 [functions.profile]
-verify_jwt = true
+verify_jwt = false
 
 # Legacy names (wrappers).
 [functions.moderar]
-verify_jwt = true
+verify_jwt = false
 [functions.borrar-cuenta]
-verify_jwt = true
+verify_jwt = false
 [functions.revisar]
 verify_jwt = false
 [functions.perfil]
-verify_jwt = true
+verify_jwt = false

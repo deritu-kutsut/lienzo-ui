@@ -39,6 +39,9 @@ const loadSession = () => {
 };
 // Only signed links from our Supabase are followed: nothing a user wrote.
 const safeUrl = (u) => typeof u === "string" && u.startsWith(SUPABASE_URL + "/storage/v1/object/sign/") ? u : null;
+// Public (already published) files: only <kind>/<uuid>/<file> of the public bucket, with plain characters (no «..», no encoded dots).
+const PUBLIC_URL = new RegExp("^" + SUPABASE_URL.replace(/[.]/g, "\\.") + "/storage/v1/object/public/publico/(plugin|image|font|template|element|theme|imagen|fuente|plantilla|elemento|tema)/[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}/[A-Za-z0-9_-]([A-Za-z0-9._%-]{0,150}[A-Za-z0-9_-])?$");
+const safePublicUrl = (u) => typeof u === "string" && PUBLIC_URL.test(u) && !u.includes("..") && !/%2e/i.test(u) ? u : null;
 
 // ───────── session ─────────
 let session = loadSession();
@@ -89,7 +92,11 @@ async function api(action, body = {}) {
     signOut();
     throw new Error("The session expired or the credential is no longer valid. Sign in again.");
   }
-  if (!r.ok) throw new Error(j.error || `Error ${r.status}`);
+  if (!r.ok) {
+    const e = new Error(j.error || `Error ${r.status}`);
+    e.status = r.status;
+    throw e;
+  }
   return j;
 }
 
@@ -116,11 +123,13 @@ async function act(action, body, okMessage) {
     await loadPending(false);
   } catch (e) {
     setStatus(e.message, true);
+    // 409: someone else decided it, or the author edited it after the list was loaded: show the current version.
+    if (e.status === 409) await loadPending(false);
   }
 }
 
 function image(url, alt) {
-  const u = safeUrl(url);
+  const u = safeUrl(url) || safePublicUrl(url);
   return u ? el("img", { src: u, alt, loading: "lazy", referrerpolicy: "no-referrer" }) : null;
 }
 
@@ -144,19 +153,31 @@ function contentCard(p) {
   const reason = el("input", { type: "text", placeholder: "Rejection reason (the person will see it)", maxlength: "300" });
   const isText = ["plugin", "template", "element", "theme"].includes(p.kind);
   const viewButton = el("button", { text: "View content", onclick: (ev) => showContent(p.temp_url, fileText, ev.target) });
+  // The author's CURRENT public name is not shown publicly until it is reviewed: the moderator can accept it together with the approval.
+  const acceptName = p.pending_name ? el("input", { type: "checkbox", id: `name-${p.id}` }) : null;
+  const publicLink = safePublicUrl(p.public_url);
+  // approve sends `updated_at` (the version of the text shown here): if the author edits it meanwhile the server answers 409 and the list reloads.
+  const approve = (extra, okMessage) => act("approve", { item: p.id, updated_at: p.updated_at || undefined, approve_name: acceptName && acceptName.checked ? true : undefined, ...extra }, okMessage);
   return el("div", { class: "card" },
-    el("h2", { text: p.title }, p.is_18 ? el("span", { class: "badge18", text: "+18" }) : null),
-    el("div", { class: "meta", text: `${p.kind} · by ${p.author_name || "—"} · ${p.bytes ?? "?"} bytes · ${p.created_at}` }),
+    el("h2", { text: p.title }, p.is_18 ? el("span", { class: "badge18", text: "+18" }) : null,
+      p.edited_after_approval ? el("span", { class: "badge18", text: "edited after approval" }) : null),
+    el("div", { class: "meta", text: `${p.kind} · by ${p.author_name || "—"} · ${p.bytes ?? "?"} bytes · ${p.created_at}${p.updated_at ? ` · text version ${p.updated_at}` : ""}` }),
+    p.pending_name ? el("div", { class: "reason", text: `New public name waiting for review: «${p.pending_name}» (shown publicly now: «${p.author_name || "—"}»)` }) : null,
+    p.edited_after_approval ? el("div", { class: "reason", text: "There is no new file: the author edited the text of an approved item (or it was hidden by reports). Check the current title, description and tags below; the published files are the ones linked here." }) : null,
     p.rejection_reason ? el("div", { class: "reason", text: `Why it is pending: ${p.rejection_reason}` }) : null,
     p.description ? el("p", { text: p.description }) : null,
     p.tags && p.tags.length ? el("div", { class: "tags", text: p.tags.map((t) => "#" + t).join(" ") }) : null,
-    el("div", { class: "images" }, p.kind === "image" ? image(p.temp_url, "Uploaded image") : null, image(p.icon_url, "Icon"), image(p.preview_url, "Preview")),
+    el("div", { class: "images" }, p.kind === "image" ? image(p.temp_url, "Uploaded image") : null, image(p.icon_url, "Icon"), image(p.preview_url, "Preview"),
+      p.edited_after_approval && p.kind === "image" ? image(p.public_url, "Published image") : null, p.edited_after_approval ? image(p.public_icon_url, "Published icon") : null,
+      p.edited_after_approval ? image(p.public_preview_url, "Published preview") : null),
+    p.edited_after_approval && publicLink ? el("a", { href: publicLink, rel: "noopener noreferrer", target: "_blank", text: "Open the published file" }) : null,
+    acceptName ? el("div", { class: "row" }, acceptName, el("label", { for: `name-${p.id}`, text: `Also accept the public name «${p.pending_name}»` })) : null,
     isText ? viewButton : null,
     p.kind === "font" && safeUrl(p.temp_url) ? el("a", { href: safeUrl(p.temp_url), rel: "noopener noreferrer", target: "_blank", text: "Download the font (temporary link)" }) : null,
     fileText,
     el("div", { class: "actions" },
-      el("button", { class: "ok", text: "Approve", onclick: () => act("approve", { item: p.id }, "Approved and published.") }),
-      el("button", { class: "ok", text: "Approve as +18", onclick: () => act("approve", { item: p.id, is_18: true }, "Approved as +18.") }),
+      el("button", { class: "ok", text: "Approve", onclick: () => approve({}, "Approved and published.") }),
+      el("button", { class: "ok", text: "Approve as +18", onclick: () => approve({ is_18: true }, "Approved as +18.") }),
       reason,
       el("button", { class: "bad", text: "Reject", onclick: () => act("reject", { item: p.id, reason: reason.value.trim() || "Rejected in review." }, "Rejected.") })));
 }
@@ -166,6 +187,7 @@ function profileCard(p) {
   return el("div", { class: "card" },
     el("h2", { text: `${p.class === "avatar" ? "Profile photo" : "Banner"} of ${p.public_name}` }),
     p.bio ? el("p", { class: "meta", text: p.bio }) : null,
+    p.scanned === false ? el("div", { class: "reason", text: "This image was never scanned: approving is refused until it has been rescanned." }) : null,
     el("div", { class: "images" }, image(p.temp_url, p.class)),
     el("div", { class: "actions" },
       el("button", { class: "ok", text: "Approve", onclick: () => act("approve_profile", { user: p.user, class: p.class }, "Profile image approved.") }),
