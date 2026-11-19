@@ -8,3 +8,5 @@ Bringing existing Unity interfaces in, and exporting them the way a real game ne
 - **Export options:** transparent overlays, canvas settings, safe area, scripts folder and assembly, choose the outputs, project fonts with fallback.
 - **Stable names:** exact GameObject names and rename-proof View scripts.
 - Documented file format, JSON schema and `--validate`.
+- **Security hardening (two audits):** stricter validation of community content and plugins, sandboxed scripts with memory and time limits, the exporter never overwrites your own scripts, safer paths and images, a safer release build (no build-machine paths) and server-side fixes.
+- **Stability:** deep or huge designs no longer crash the exporter, much faster duplicate/move on big designs, atomic saves, undo after opening another project.

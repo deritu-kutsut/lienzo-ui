@@ -4,6 +4,10 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versio
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-11-19
+
+Bringing existing Unity interfaces in, and exporting them the way a real game needs. Also includes the 1.4.2 security fixes below.
+
 ### Security
 - **Scripts and plugins:** `print`, `message` and plugin `log` output is capped (200 messages / 64 KB) and stops the script when exceeded; plugin scripts have lower limits (texts 64 KB, lists and maps 10,000 items, nested data counts) so a script can no longer exhaust memory with printing, nested copies or giant strings; the status bar text of a plugin command is bounded.
 - **Plugins:** an exporter's `extension` must be one of `txt`, `csv`, `json`, `xml`, `md`, `cs`, `uxml`, `uss`, `tsv` (also for plugins on disk, and the Save dialog sanitizes it). Community plugin packages: every `.json` template or design-like file is validated even when it is also listed as a command script, file names that differ only in capitals are rejected, installs are atomic (temporary folder, then rename) and folder names can no longer collide (`community-<name>-<hash>`).
@@ -16,10 +20,6 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versio
 ### Changed
 - `publicar.sh` checks the version, the changelog and the repository state, builds the package from `git ls-files`, writes forward-slash zip entries, refuses an executable that contains build-machine paths, adds `THIRD_PARTY_LICENSES.txt`, can be re-run after a failure and has a `--dry-run` mode. `Cargo.toml` now has `license`, `repository` and `description`.
 - `docs/COMMUNITY.md` uses the current English names for functions, tables and flags.
-
-## [1.5.0] - 2026-11-19
-
-Bringing existing Unity interfaces in, and exporting them the way a real game needs. Also includes the 1.4.2 security fixes below.
 
 ### Added
 - **Import from Unity** (File › Import from Unity…, or `--import-unity <file.prefab>` and `--import-unity-project <dir> --out <dir>`): turns uGUI prefabs and Lienzo UI exported designs into editable designs, keeping the GameObject names, anchors, layout groups, sprites (including sub-sprites), 9-slice borders and pixels per unit. See [docs/UNITY_IMPORT.md](docs/UNITY_IMPORT.md).
