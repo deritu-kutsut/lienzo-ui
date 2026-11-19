@@ -77,7 +77,7 @@ namespace EditorGui
 
         public static string PrefabPathFor(string jsonPath) => Root + "/Prefabs/" + Path.GetFileNameWithoutExtension(jsonPath) + ".prefab";
 
-        /// TextMeshPro needs its «TMP Essential Resources» (default font and settings). Without them
+        /// TextMeshPro needs its “TMP Essential Resources” (default font and settings). Without them
         /// texts have no font and fail when clipped inside a mask (RectMask2D).
         /// If they are missing, the official TMP window opens to import them and nothing is built.
         public static bool TmpReady()
@@ -86,7 +86,7 @@ namespace EditorGui
             if (!tmpWarned)
             {
                 tmpWarned = true;
-                Debug.LogWarning("[Lienzo UI] The «TMP Essential Resources» are missing. In the TMP Importer window press «Import TMP Essentials»: the prefabs will be generated automatically afterwards.");
+                Debug.LogWarning("[Lienzo UI] The “TMP Essential Resources” are missing. In the TMP Importer window press “Import TMP Essentials”: the prefabs will be generated automatically afterwards.");
                 EditorApplication.delayCall += TMPro.TMP_PackageResourceImporterWindow.ShowPackageImporterWindow;
             }
             return false;

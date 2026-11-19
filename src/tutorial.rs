@@ -141,7 +141,7 @@ pub const BEGINNER: &[Page] = &[
         text: "Lienzo UI is a visual editor to design your game's interfaces (menus, HUDs, windows, inventories) \
 like in a design tool, and bring them to Unity in one click.\n\n\
 Exporting gives you the same interface in uGUI with TextMeshPro, in UI Toolkit (UXML + USS) and in IMGUI.\n\n\
-When you finish this tutorial the editor opens. Come back any time with the «Tutorial» button in the top bar or F1.",
+When you finish this tutorial the editor opens. Come back any time with the “Tutorial” button in the top bar or F1.",
     },
     Page {
         title: "The editor screen",
@@ -154,11 +154,11 @@ When you finish this tutorial the editor opens. Come back any time with the «Tu
         title: "Start from a template",
         text: "Open Templates in the left bar and pick one of the 12: main menu, HUD, pause, game over, level select, inventory, character dialogue, leaderboard…\n\n\
 It is the fastest way to see how a complete interface is built. Everything in it can be changed.\n\n\
-To start from scratch, choose «Blank» or File › New blank design.",
+To start from scratch, choose “Blank” or File › New blank design.",
     },
     Page {
         title: "Add and edit elements",
-        text: "• Drag elements from Elements onto the canvas: panels, texts, buttons, toggles, sliders, input fields, dropdowns, scroll lists and images. «Ready-made components» has buttons, health and mana bars, cards and badges; Text has HUD pieces such as timer, coins or damage.\n\
+        text: "• Drag elements from Elements onto the canvas: panels, texts, buttons, toggles, sliders, input fields, dropdowns, scroll lists and images. “Ready-made components” has buttons, health and mana bars, cards and badges; Text has HUD pieces such as timer, coins or damage.\n\
 • Click selects, drag moves, corners resize and the top handle rotates.\n\
 • Double-click a text to type in it.\n\
 • Ctrl+Z / Ctrl+Y undo and redo; Ctrl+D duplicates; Del deletes; Ctrl+G groups; arrows move 1 px (Shift: 10).\n\
@@ -220,10 +220,10 @@ Read docs/EXTENDING.md to add elements, templates or exporters, and CONTRIBUTING
     },
     Page {
         title: "Pixel art",
-        text: "With nothing selected, tick «Pixel art» in the canvas Inspector:\n\n\
+        text: "With nothing selected, tick “Pixel art” in the canvas Inspector:\n\n\
 • Images are drawn without smoothing (nearest neighbor).\n\
 • Positions and sizes snap to whole pixels when you release.\n\
-• In Unity: Canvas «Pixel Perfect» and sprites with Point filter, no compression or mipmaps.\n\n\
+• In Unity: Canvas “Pixel Perfect” and sprites with Point filter, no compression or mipmaps.\n\n\
 Tip: use exact multiples of your sprite size (16 px → 32, 48, 64…) so every pixel looks the same.",
     },
     Page {
@@ -232,11 +232,11 @@ Tip: use exact multiples of your sprite size (16 px → 32, 48, 64…) so every 
 • Commands: Rhai scripts that receive the design and return it modified (undo with Ctrl+Z).\n\
 • Exporters: scripts that generate new files (for example, a CSV with every text).\n\
 • Templates: ready-made designs.\n\n\
-Scripts run sandboxed, without file or network access. «Open folder» takes you to your plugins folder; the guide is docs/PLUGINS.md.",
+Scripts run sandboxed, without file or network access. “Open folder” takes you to your plugins folder; the guide is docs/PLUGINS.md.",
     },
     Page {
         title: "Accessibility and languages",
-        text: "The «Accessibility» button in the top bar lets you:\n\n\
+        text: "The “Accessibility” button in the top bar lets you:\n\n\
 • Change the interface language (English, Spanish, Portuguese, French, German, Italian, Russian, Chinese, Japanese or Korean).\n\
 • Enlarge the interface up to 200 % (also Ctrl+Alt+= and Ctrl+Alt+-).\n\
 • Turn on high contrast: white text and strong borders.\n\
