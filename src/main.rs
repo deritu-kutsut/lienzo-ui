@@ -209,6 +209,25 @@ fn headless(args: &[String]) -> Option<i32> {
         eprintln!("{}", msg);
         return Some(2);
     }
+    if args.iter().any(|a| a == "--version" || a == "-V") {
+        println!("Lienzo UI {}", updater::CURRENT_VERSION);
+        return Some(0);
+    }
+    if args.iter().any(|a| a == "--help" || a == "-h") {
+        println!("Lienzo UI {}: visual editor for game interfaces (exports to Unity).", updater::CURRENT_VERSION);
+        println!("Without arguments it opens the editor. Windowless commands:");
+        println!("  --templates                        list the templates");
+        println!("  --validate <file>                  check a design file against the schema");
+        println!("  --open <file> | --template <n>     choose the design for the options below");
+        println!("  --review                           review the design (legibility, contrast, touch size)");
+        println!("  --save <file>                      save the design as a project");
+        println!("  --export <Unity project>           export the design to Unity");
+        println!("  --import-unity <file>              import a Unity prefab or Designs/*.json");
+        println!("  --import-unity-project <p> --out <folder>   convert every UI prefab of a project");
+        println!("  --version, --help                  these messages");
+        println!("Full reference: docs/MCP.md and README.md");
+        return Some(0);
+    }
     if args.iter().any(|a| a == "--templates") {
         for (i, t) in model::TEMPLATES.iter().enumerate() {
             println!("{}\t{}", i, t);
@@ -338,7 +357,7 @@ fn cli_usage_error(args: &[String]) -> Option<String> {
 /// True when the command line asks for a windowless mode that prints to the console.
 fn wants_console(args: &[String]) -> bool {
     const FLAGS: &[&str] = &[
-        "--templates", "--validate", "--review", "--export", "--save", "--import-unity", "--import-unity-project", "--community-upload",
+        "--help", "-h", "--version", "-V", "--templates", "--validate", "--review", "--export", "--save", "--import-unity", "--import-unity-project", "--community-upload",
         "--community-heart", "--community-follow", "--community-me", "--community-review", "--community-retry",
     ];
     args.iter().any(|a| FLAGS.contains(&a.as_str()))

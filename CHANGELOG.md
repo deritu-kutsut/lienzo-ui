@@ -4,6 +4,13 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versio
 
 ## [Unreleased]
 
+## [1.6.3] - 2026-11-19
+
+Small command-line fix.
+
+### Fixed
+- **Command line:** `--help` (`-h`) and `--version` (`-V`) now print to the console and exit. Before, they opened the editor window.
+
 ## [1.6.2] - 2026-11-19
 
 Small template fixes found in a review of every bundled template.
