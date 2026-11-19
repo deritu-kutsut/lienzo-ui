@@ -1,3 +1,5 @@
+/* Hidden until frame-guard.js confirms this is the top-level window (anti-clickjacking; frame-ancestors cannot be set from a <meta>). */
+html:not(.top-level) { display: none !important; }
 [hidden] { display: none !important; }
 :root { color-scheme: dark; --bg:#14161f; --panel:#1c1f2b; --line:#2d3142; --text:#e4e6ee; --muted:#9096aa; --accent:#6d9bff; --bad:#ff6b6b; --ok:#4cc98a; }
 * { box-sizing: border-box; }
