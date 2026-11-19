@@ -944,3 +944,136 @@ cleanup: {} file(s) removed.	cleanup：已删除 {} 个文件。
 Errors: {} · Warnings: {}. Click one to select it.	错误：{} · 警告：{}。点击其中一项即可选中。
 Elements selected: {}	已选择的元素：{}
 To add a language, copy assets/i18n/es.tsv and translate it (see docs/EXTENDING.md).	要添加语言，请复制 assets/i18n/es.tsv 并翻译副本（见 docs/EXTENDING.md）。
+HUD	HUD
+More components	更多组件
+Backgrounds	背景
+Frames	边框
+Icons	图标
+Gradients	渐变
+Built-in images are copied to your library when you use them	内置图片在使用时会复制到你的库中
+Tip: turn on Pixel art in the page settings so the sprites stay crisp.	提示：在页面设置中开启像素风，让精灵图保持清晰。
+Could not copy the pack image: {}	无法复制资源包图片：{}
+Pack image added: {}	已添加资源包图片：{}
+No images match the search	没有符合搜索的图片
+Pixel RPG HUD	像素风RPG界面
+Pixel main menu	像素风主菜单
+Primary button	主按钮
+Secondary button	次要按钮
+Danger button	危险按钮
+Success button	成功按钮
+Ghost button	幽灵按钮
+Icon button	图标按钮
+Toggle button	切换按钮
+Tabs	标签页
+Small pill button	小胶囊按钮
+Square icon button	方形图标按钮
+Link button	链接按钮
+Floating action button	悬浮操作按钮
+Health bar (classic)	生命条（经典）
+Health bar (segments)	生命条（分段）
+Health orb	生命球
+Mana bar with label	带标签的法力条
+Stamina bar	耐力条
+XP bar with level	带等级的经验条
+Boss bar	首领血条
+Minimap frame	小地图边框
+Quest tracker	任务追踪
+Skill slot (cooldown)	技能槽（冷却）
+Hotbar (5 slots)	快捷栏（5格）
+Currency counter	货币计数
+Nameplate	名牌
+Toast notification	弹出通知
+Tooltip	提示框
+Dialog with portrait	带头像的对话框
+Inventory grid 4x3	背包网格 4x3
+Compass strip	指南针条
+Avatar with ring	带圆环的头像
+Pill badge	胶囊徽章
+Ribbon banner	丝带横幅
+Divider	分隔线
+Divider with label	带标签的分隔线
+Progress ring	进度环
+Switch	开关
+Chips	标签组
+Media card	媒体卡片
+List item	列表项
+Search field	搜索框
+Stat row	属性行
+Level up	升级
+Heal	治疗
+Critical hit	暴击
+Objective	目标
+Ammo counter	弹药计数
+Wave counter	波次计数
+FPS counter	FPS计数
+Key prompt	按键提示
+History trimmed: the oldest undo steps were dropped	历史记录已精简：最早的撤销步骤已被丢弃
+Unsaved work recovered. Save it to keep it.	已恢复未保存的工作。请保存以保留。
+Recover unsaved work	恢复未保存的工作
+Recover unsaved work from {}?	恢复 {} 的未保存工作？
+Restore	恢复
+Discard	丢弃
+Open the folder	打开文件夹
+Autosave	自动保存
+Save a recovery copy every minute	每分钟保存一份恢复副本
+Fix all safe issues	修复所有可安全修复的问题
+Applies every quick fix in one undo step	一次性应用所有快速修复（可一步撤销）
+Fix	修复
+Fixes this problem (one undo step)	修复此问题（可一步撤销）
+Nothing to fix here	这里没有需要修复的内容
+Fixed {} issue(s) (Ctrl+Z undoes)	已修复 {} 个问题（Ctrl+Z 可撤销）
+Release notes	版本说明
+Full release notes	完整版本说明
+The zip must contain a single executable.	压缩包必须只包含一个可执行文件。
+The version inside the executable does not match the release; not installing.	可执行文件内的版本与发布版本不一致；不予安装。
+You appear to be offline. Check your internet connection.	你似乎已离线。请检查网络连接。
+The server took too long to answer. Try again in a moment.	服务器响应超时。请稍后再试。
+Your session expired. Sign in again.	会话已过期。请重新登录。
+Too many requests: wait {} s and try again.	请求过多：请等待 {} 秒后重试。
+Too many requests: wait a moment.	请求过多：请稍等片刻。
+You do not have permission to do this.	你没有执行此操作的权限。
+Not found.	未找到。
+Offline, showing the last known list.	离线：显示上次已知的列表。
+Terms and community guidelines	条款与社区准则
+Terms of Use	使用条款
+Community guidelines	社区准则
+Privacy	隐私
+Full text on GitHub	在 GitHub 上查看全文
+I have read and accept the Terms of Use and the Community guidelines	我已阅读并接受使用条款和社区准则
+Accept	接受
+Read and accept the Terms and guidelines…	阅读并接受条款和准则…
+Terms accepted.	已接受条款。
+This app has older legal texts than the server. Update the app to accept the new terms.	此应用的法律文本比服务器的旧。请更新应用以接受新条款。
+Export my data	导出我的数据
+Your data was saved to {}	你的数据已保存到 {}
+License	许可证
+Source	来源
+Source link (optional)	来源链接（可选）
+I own this or have the right to share it under this license	我是作者，或有权按此许可证分享
+Use an http or https link, up to 300 characters, no spaces.	请使用 http 或 https 链接，最多 300 个字符，不含空格。
+Report copyright infringement	举报版权侵权
+The work and why it is infringed (10-2000 characters)	作品及其被侵权的原因（10-2000 个字符）
+Rights holder (optional)	权利人（可选）
+Contact (optional)	联系方式（可选）
+Send claim	提交投诉
+Thanks: the item is hidden while a moderator reviews it. Details: docs/COPYRIGHT.md	谢谢：在审核员审核期间，该项目已被隐藏。详情：docs/COPYRIGHT.md
+Spam	垃圾信息
+Impersonation	冒充他人
+Personal data	个人数据
+Accept the Terms of Use to share.	请接受使用条款后再分享。
+Pick a license from the list.	请从列表中选择许可证。
+Confirm that you own this or may share it.	请确认你是作者或有权分享。
+The Terms of Use changed. Close this window and open it again to read the new version.	使用条款已更改。请关闭此窗口并重新打开以阅读新版本。
+Create your profile first.	请先创建你的个人资料。
+Too many claims today. Use the Copyright notice template on GitHub.	今天的投诉过多。请使用 GitHub 上的版权通知模板。
+Claims are blocked for now. Use the Copyright notice template on GitHub.	投诉目前被限制。请使用 GitHub 上的版权通知模板。
+That item is already under review.	该项目已在审核中。
+Your account is suspended.	你的账号已被暂停。
+Uploads are disabled for this account.	此账号已禁用上传。
+Uploads are disabled until {}.	上传已禁用，直到 {}。
+Public domain	公有领域
+Free use (proprietary)	免费使用（专有）
+Unsaved changes	有未保存的更改
+You have unsaved changes. What do you want to do?	你有未保存的更改。要怎么处理？
+Discard changes	放弃更改
+Could not check the Terms of Use right now.	暂时无法检查使用条款。

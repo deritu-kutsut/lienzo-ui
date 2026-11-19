@@ -1,0 +1,10 @@
+{
+  "name": "Rename by hierarchy",
+  "version": "1.0.0",
+  "author": "Lienzo UI",
+  "description": "Names elements after their parents (Parent_Child) and fixes duplicated names, so the Unity hierarchy is clean.",
+  "commands": [
+    { "name": "Prefix names with parents", "description": "Renames each element as Parent_Child, using its whole chain of ancestors. Safe to run twice.", "script": "prefix.rhai" },
+    { "name": "Make names unique", "description": "Adds a number to repeated names (Button, Button 2, Button 3...).", "script": "unique.rhai" }
+  ]
+}

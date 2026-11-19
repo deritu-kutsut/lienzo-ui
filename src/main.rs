@@ -8,7 +8,11 @@ mod canvas;
 mod export;
 mod icons;
 mod library;
+mod history;
+mod recovery;
 mod model;
+mod pack;
+mod presets;
 mod panels;
 mod render;
 mod script;
@@ -18,6 +22,7 @@ mod i18n;
 mod plugins;
 mod community;
 mod community_validate;
+mod community_net;
 mod tutorial;
 mod themes;
 mod updater;
@@ -49,6 +54,10 @@ const SHOT_FRAME: u64 = 120;
 const SHOT_FRAME_LONG: u64 = 420;
 
 impl eframe::App for app::EditorApp {
+    fn on_exit(&mut self) {
+        self.recovery_clean_exit();
+    }
+
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
         let ctx = ui.ctx().clone();
         self.frame_no += 1;
@@ -76,6 +85,8 @@ impl eframe::App for app::EditorApp {
         self.review_window(&ctx);
         self.themes_window(&ctx);
         self.updater_window(&ctx);
+        self.recovery_window(&ctx);
+        self.close_prompt_window(&ctx);
         self.commit(&ctx);
 
         if let Some(shot) = &self.screenshot {
@@ -452,6 +463,8 @@ fn main() -> eframe::Result<()> {
                     app.load_template(t);
                 }
             }
+            let cli_project = arg_after(&args, "--open").cloned();
+            app.recovery_startup(cli_project.as_deref());
             Ok(Box::new(app))
         }),
     );

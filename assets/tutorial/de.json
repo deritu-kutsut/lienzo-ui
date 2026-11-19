@@ -10,15 +10,35 @@
     },
     {
       "title": "Mit einer Vorlage beginnen",
-      "text": "Öffne Vorlagen in der linken Leiste und wähle eine der 13: Hauptmenü, HUD, Pausenmenü, Spielende, Levelauswahl, Inventar, Charakterdialog, Rangliste…\n\nSo siehst du am schnellsten, wie eine komplette Oberfläche aufgebaut ist. Alles darin lässt sich ändern.\n\nWenn du lieber bei null anfangen willst, wähle „Leer“ oder Datei › Neuer leerer Entwurf."
+      "text": "Öffne Vorlagen in der linken Leiste und wähle eine der 15: Hauptmenü, HUD, Pausenmenü, Spielende, Levelauswahl, Inventar, Charakterdialog, Rangliste… Zwei davon sind im Pixel-Art-Stil: Pixel-RPG-HUD und Pixel-Hauptmenü.\n\nSo siehst du am schnellsten, wie eine komplette Oberfläche aufgebaut ist. Alles darin lässt sich ändern.\n\nWenn du lieber bei null anfangen willst, wähle „Leer“ oder Datei › Neuer leerer Entwurf."
     },
     {
       "title": "Elemente hinzufügen und bearbeiten",
       "text": "• Ziehe Elemente aus der Leiste Elemente auf die Arbeitsfläche: Panels, Texte, Schaltflächen, Kästchen, Slider, Textfelder, Dropdowns, Scroll-Listen und Bilder. Unter „Fertige Komponenten“ findest du Schaltflächen, Lebens- und Manabalken, Karten und Abzeichen; unter Text Bausteine fürs HUD wie Timer, Münzen oder Schaden.\n• Klick wählt aus, Ziehen verschiebt, die Ecken ändern die Größe und der obere Griff dreht.\n• Doppelklick auf einen Text, um darin zu schreiben.\n• Strg+Z / Strg+Y machen rückgängig und wiederholen; Strg+D dupliziert; Entf löscht; Strg+G gruppiert; die Pfeiltasten verschieben um 1 px (Umschalt: 10).\n• Im Inspektor änderst du Farben, Rahmen, Schatten, Schriften und die Anker (wie sich das Element an andere Bildschirme anpasst)."
     },
     {
+      "title": "Mitgelieferte Bilder",
+      "text": "Der Tab Bilder in der linken Leiste enthält fertige Grafiken, ganz ohne eigene Dateien:\n\n• Die Chips oben filtern nach Deine Bilder, Hintergründe, Rahmen, Buttons, Symbole, Pixel-Art und Farbverläufe. Die Suche findet nach Name oder Tag.\n• Klicke auf einen Eintrag, um ihn hinzuzufügen, oder ziehe ihn auf die Arbeitsfläche. Rahmen und Buttons haben schon ihren 9-Slice-Rand und lassen sich dehnen, ohne dass die Ecken verzerrt werden. Hintergründe landen hinter allem anderen.\n• Das Bild wird beim ersten Benutzen in deine Bibliothek kopiert und zusammen mit dem Entwurf nach Unity exportiert.\n• Bei Pixel-Art-Sprites aktivierst du „Pixel-Art“ im Inspektor der Arbeitsfläche (nichts ausgewählt), damit sie scharf bleiben."
+    },
+    {
+      "title": "Hochformat-Bildschirme",
+      "text": "Smartphones hält man oft hochkant. Lienzo UI führt dafür ein zweites Layout, ohne das erste anzutasten:\n\n• Wechsle die Ansicht mit den Schaltflächen Landschaft / Porträt in der oberen Leiste.\n• Öffne bei nichts Ausgewähltem im Inspektor „Hochformat-Layout“ und klicke auf „Hochformat-Layout erstellen“. Die Elemente starten dort, wo sie im Querformat sind.\n• In der Hochformat-Ansicht ändert alles, was du verschiebst oder skalierst, nur das Hochformat-Layout. Rechtsklick auf ein Element › „Auf Querformat zurücksetzen“ macht eine Änderung rückgängig.\n• Der Export enthält beide Layouts: In Unity wechselt das Prefab von selbst zum Hochformat, wenn der Bildschirm höher als breit ist."
+    },
+    {
       "title": "Testen und nach Unity exportieren",
-      "text": "• Testen (F5): Der Entwurf wird interaktiv, und du kannst andere Bildschirme simulieren (Handy, 4:3, Ultrawide), um zu sehen, wie er sich anpasst.\n• Speichern (Strg+S): speichert das Projekt .editorgui.json, damit du später weitermachen kannst.\n• Prüfen: warnt vor kleiner Schrift, schwachem Kontrast, zu kleinen Schaltflächen zum Antippen, Elementen außerhalb der Seite und fehlenden Bildern.\n• In Unity exportieren (Strg+E): Beim ersten Mal wählst du den Ordner deines Projekts (den, der Assets enthält).\n\nWenn du in Unity zum Fenster zurückkehrst, erscheint der Entwurf als Prefab in Assets/EditorGUI/Prefabs. Außerdem gibt es das Menü Tools › Lienzo UI › Import design into scene…."
+      "text": "• Testen (F5): Der Entwurf wird interaktiv, und du kannst andere Bildschirme simulieren (Handy, 4:3, Ultrawide), um zu sehen, wie er sich anpasst.\n• Speichern (Strg+S): speichert das Projekt .editorgui.json, damit du später weitermachen kannst.\n• Prüfen: warnt vor kleiner Schrift, schwachem Kontrast, zu kleinen Schaltflächen zum Antippen, Elementen außerhalb der Seite und fehlenden Bildern. Neben jedem Problem mit sicherer Lösung gibt es eine Schaltfläche „Beheben“, und „Alle sicheren Probleme beheben“ wendet alle in einem einzigen Rückgängig-Schritt an.\n• In Unity exportieren (Strg+E): Beim ersten Mal wählst du den Ordner deines Projekts (den, der Assets enthält).\n\nWenn du in Unity zum Fenster zurückkehrst, erscheint der Entwurf als Prefab in Assets/EditorGUI/Prefabs. Außerdem gibt es das Menü Tools › Lienzo UI › Import design into scene…."
+    },
+    {
+      "title": "Aus Unity importieren",
+      "text": "Du hast schon eine Oberfläche in Unity? Hole sie in Lienzo UI:\n\n• Datei › Aus Unity importieren…\n• Wähle ein uGUI-Prefab (.prefab) oder einen Entwurf, den Lienzo UI früher exportiert hat (Assets/EditorGUI/Designs/….json).\n• Er öffnet sich als neuer, ungespeicherter Entwurf: Speichere ihn als Projekt, um ihn zu behalten.\n• Konnte etwas nicht exakt umgesetzt werden, listet ein Fenster die Warnungen auf, damit nichts stillschweigend verloren geht.\n• Findet Lienzo UI deinen Unity-Projektordner, werden die Bilder des Entwurfs automatisch gefunden."
+    },
+    {
+      "title": "Verliere deine Arbeit nicht",
+      "text": "• Automatisch speichern: Etwa jede Minute legt Lienzo UI eine Wiederherstellungskopie an. Du kannst das unter Barrierefreiheit › Automatisch speichern ausschalten.\n• Wird die App unerwartet beendet, fragt sie beim nächsten Start „Nicht gespeicherte Arbeit wiederherstellen…?“. Mit Wiederherstellen holst du sie zurück, mit Verwerfen löschst du sie. Wiederhergestellte Arbeit ist noch keine gespeicherte Datei: Drücke Strg+S, um sie zu behalten.\n• Strg+S speichert dein Projekt weiterhin wie gewohnt.\n• Rückgängig (Strg+Z) merkt sich bis zu 200 Schritte (und hat eine Speichergrenze). Werden die ältesten verworfen, zeigt die Statusleiste „Verlauf gekürzt“."
+    },
+    {
+      "title": "Community",
+      "text": "Der Tab Community in der linken Leiste ist ein gemeinsamer Katalog mit Plugins, Bildern, Schriften, Vorlagen, Elementen und Themes:\n\n• Stöbern und Installieren geht ohne Konto: suchen und auf Installieren klicken.\n• Zum Hochladen, Melden oder Herzen-Vergeben meldest du dich mit GitHub oder Google an und wählst einen öffentlichen Namen. Keine Passwörter: Die App speichert nur diesen Namen.\n• Beim Anlegen deines Profils akzeptierst du die Regeln: keine Malware, kein Hass, kein Plagiat und keine nicht gekennzeichneten Inhalte ab 18. Den vollständigen Text findest du in docs/TERMS.md und docs/COMMUNITY_GUIDELINES.md.\n• Inhalte ab 18 sind ausgeblendet, außer du meldest dich an und aktivierst „Inhalte ab 18 anzeigen“.\n• Alles Geteilte wird vor der Veröffentlichung geprüft, und du kannst melden, was gegen die Regeln verstößt."
     }
   ],
   "pro": [
@@ -31,12 +51,28 @@
       "text": "Die Arbeitsfläche funktioniert wie ein Canvas mit Canvas Scaler im Modus Scale With Screen Size: Referenzauflösung, Match Breite/Höhe und Hintergrund werden im Inspektor eingestellt, wenn nichts ausgewählt ist.\n\nJedes Element hat Anker, Pivot und Versätze wie ein RectTransform. Wenn du die Referenzauflösung änderst, folgen die Elemente ihren Ankern, genau wie in Unity.\n\nNutze Testen (F5) mit mehreren Bildschirmen, um das vor dem Export zu prüfen."
     },
     {
+      "title": "Hochformat-Layout im Detail",
+      "text": "Das Hochformat-Layout ist eine zweite Ansicht desselben Entwurfs (docs/FORMAT.md › PortraitLayout):\n\n• Es hat eine eigene Referenzauflösung, „Hochformat-Größe“ (standardmäßig 1080 × 1920).\n• Elemente ohne Override behalten ihr Quer-RectTransform und werden gegen die Hochformat-Seite neu ausgewertet: Ein vollflächiger Hintergrund dehnt sich, rechts verankerte Elemente folgen dem rechten Rand.\n• Gespeichert wird nur, was du in der Hochformat-Ansicht änderst, als Overrides (Position, Größe, Rotation, Anker, Sichtbarkeit, Schriftgröße, Layout). Rechtsklick › „Auf Querformat zurücksetzen“ entfernt einen.\n• Export: Das JSON enthält die Overrides, und das erzeugte Skript LienzoOrientationLayout wendet sie an, wenn Screen.width < Screen.height ist, und erneut bei Größenänderung.\n• „Hochformat-Layout entfernen“ löscht alle Overrides."
+    },
+    {
       "title": "Layouts, Gruppen und Listen",
       "text": "Ein Container kann seine Untergeordneten horizontal, vertikal oder im Raster anordnen (wie Horizontal/Vertical/Grid Layout Group), mit Abstand und Innenabstand.\n\nScroll-Listen (ScrollView) berechnen ihren Inhalt automatisch.\n\nGruppiere (Strg+G), um ganze Teile zu verschieben, und nutze die Hierarchie, um Ebenen neu zu ordnen: Die Reihenfolge in der Liste ist die Zeichenreihenfolge in Unity."
     },
     {
+      "title": "9-Slice und das mitgelieferte Paket",
+      "text": "Für Rahmen, Buttons und Panels, die sich dehnen:\n\n• Wähle ein Bild und setze „9-Slice“ unter „Bildeinstellungen (Unity)“: den Rand in Pixeln des Originalbilds (links, unten, rechts, oben), wie im Sprite Editor von Unity. Der Export erzeugt ein 9-Slice-Sprite.\n• „Pixel pro Einheit“: 100 hält die Ränder in ihrer Pixelgröße, 200 halbiert sie.\n• Das mitgelieferte Paket (assets/pack/manifest.json, docs/CONTENT.md) legt Schnitt und Pixel pro Einheit schon fest: Rahmen 512×512 mit Schnitt 96, Buttons 512×192.\n• Wer einen Eintrag benutzt, kopiert ihn als pack_<id>.<ext> in die Bibliothek (in „Deine Bilder“ ausgeblendet); der Exporter kopiert ihn in die Unity-Sprites.\n• Die Vorlagen Pixel-RPG-HUD und Pixel-Hauptmenü nutzen das Pixel-Paket. Aktiviere „Pixel-Art“ für die Point-Filterung."
+    },
+    {
       "title": "Logik: Klick-Code und Views",
       "text": "Im Testmodus kann jedes Element beim Klick ein kleines Skript (Rhai) ausführen: show(\"Name\"), hide, toggle, set_text, set_color, move_by… Damit kannst du Abläufe ohne Unity prototypen.\n\nIn Unity erbt <Diseño>View.cs von <Diseño>ViewBase, mit typisierten Referenzen auf jede Schaltfläche, jeden Slider und jedes Feld sowie auf Klick- und Wertereignisse. Lege dort die Spiellogik ab: Die Neuexporte berühren sie nicht."
+    },
+    {
+      "title": "Prüfen und schnelle Korrekturen",
+      "text": "Das Fenster Prüfen listet Fehler und Warnungen; ein Klick wählt das zugehörige Element aus. Sechs Probleme haben eine Schaltfläche „Beheben“ (ein Rückgängig-Schritt):\n\n• Text unter der Mindestgröße: wird auf das Minimum erhöht.\n• Zu kleines Bedienelement zum Antippen: wird um seine Mitte vergrößert.\n• Element teilweise außerhalb der Seite: wird hineinverschoben, falls es passt.\n• Doppelter Name: _2, _3… wird angehängt.\n• Fehlendes Bild: Der Verweis wird entfernt.\n• Geringer Kontrast: Die Textfarbe wird abgedunkelt oder aufgehellt.\n\n„Alle sicheren Probleme beheben“ wendet sie in mehreren Durchgängen an. Probleme wie eine Schrift mit fehlenden Zeichen haben keine automatische Korrektur. Die Korrekturen funktionieren auch im Hochformat-Layout. Per Kommandozeile: lienzo-ui --open Datei --review (Exitcode 1 bei Fehlern)."
+    },
+    {
+      "title": "Aus Unity importieren: Prefabs und CLI",
+      "text": "Datei › Aus Unity importieren… liest ein uGUI-.prefab (Unitys Text-YAML) oder eine von Lienzo UI exportierte Designs/*.json und erzeugt einen normalen Entwurf.\n\n• Was nicht abgebildet werden konnte, steht als Warnung in einer Liste.\n• Wird der Unity-Projektordner erkannt, werden Bilder in dieser Sitzung relativ dazu aufgelöst.\n• Ohne Fenster: lienzo-ui --import-unity Menue.prefab --save Menue.editorgui.json (auch mit --review und --export).\n• Ganzes Projekt: lienzo-ui --import-unity-project MeinProjekt --out Importiert wandelt jedes UI-Prefab um. Es überschreibt nie (hängt _2 an) und überspringt Prefabs ohne UI.\n• Details in docs/UNITY_IMPORT.md."
     },
     {
       "title": "Kommandozeile und Automatisierung",
@@ -53,6 +89,14 @@
     {
       "title": "Plugins",
       "text": "Der Reiter Plugins in der linken Leiste zeigt die installierten Erweiterungen. Ein Plugin ist ein Ordner mit einer plugin.json, die Folgendes hinzufügen kann:\n\n• Befehle: Rhai-Skripte, die den Entwurf erhalten und verändert zurückgeben (rückgängig mit Strg+Z).\n• Exporter: Skripte, die neue Dateien erzeugen (zum Beispiel eine CSV mit allen Texten).\n• Vorlagen: fertige Entwürfe.\n\nDie Skripte laufen isoliert, ohne Zugriff auf Dateien oder Netzwerk. „Ordner öffnen“ führt zu deinem Plugin-Ordner; die Anleitung steht in docs/PLUGINS.md."
+    },
+    {
+      "title": "Community: Plugins, Schriften und Regeln",
+      "text": "Im Tab Community fügt Installieren geteilte Inhalte mit einem Klick hinzu: Plugins, Schriften, Bilder, Vorlagen, Elemente und Themes.\n\n• Ein Community-Plugin landet in einem Ordner namens community-<Name>-<Hash>. Es wird zuerst in einen temporären Ordner geschrieben, sodass eine unterbrochene Installation nie ein halbes Plugin hinterlässt. Es erscheint im Tab Plugins.\n• Seine Skripte sind dieselben Rhai-Skripte: abgeschottet, ohne Datei- oder Netzwerkzugriff und mit Grenzen für Operationen, Zeit und Speicher (docs/PLUGINS.md).\n• Eine installierte Schrift erscheint im Tab Text und wird mit dem Entwurf nach Unity exportiert.\n• Downloads werden mit dem veröffentlichten SHA-256-Fingerabdruck geprüft; stimmt er nicht, wird nichts installiert.\n• Zum Veröffentlichen meldest du dich an (GitHub oder Google), wählst einen öffentlichen Namen und akzeptierst die Regeln. Alles wird vorher geprüft, und Inhalte ab 18 müssen gekennzeichnet sein. Siehe docs/TERMS.md, docs/COMMUNITY_GUIDELINES.md und docs/PRIVACY.md."
+    },
+    {
+      "title": "Automatisch speichern, Wiederherstellung und Rückgängig",
+      "text": "• Etwa jede Minute, während du bearbeitest, wird der vollständige Entwurf (samt Hochformat-Layout) in den Wiederherstellungsordner der App geschrieben. Nie im Testmodus. Höchstens 10 Wiederherstellungen bleiben erhalten.\n• Beim Start wird eine Wiederherstellung angeboten, die neuer als die Projektdatei ist: Wiederherstellen oder Verwerfen. Nach einem normalen Speichern wird sie nicht mehr gebraucht.\n• Sie lässt sich unter Barrierefreiheit › Automatisch speichern ausschalten.\n• Der Rückgängig-Verlauf ist auf 200 Schritte und etwa 64 MB begrenzt. Werden die ältesten Schritte verworfen, zeigt die Statusleiste „Verlauf gekürzt“.\n• Jeder Plugin-Befehl und jedes Beheben aus dem Fenster Prüfen ist ein einziger Rückgängig-Schritt."
     },
     {
       "title": "Barrierefreiheit und Sprachen",

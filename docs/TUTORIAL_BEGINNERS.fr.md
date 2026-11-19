@@ -27,7 +27,7 @@ Pour utiliser l'application en français : bouton **Accessibilité** › **Langu
 
 ## 3. Partir d'un modèle
 
-Dans **Modèles**, choisissez l'une des 12 dispositions : Menu principal, HUD de jeu, Fenêtre de dialogue, Réglages, Inventaire, Menu pause, Fin de partie, Sélection de niveau, Écran de chargement, Dialogue de personnage, Classement ou Sélection de personnage. Tout peut y être modifié, et Ctrl+Z annule le changement. Pour partir de zéro : «Vierge».
+Dans **Modèles**, choisissez l'une des 15 dispositions : Menu principal, HUD de jeu, Fenêtre de dialogue, Réglages, Inventaire, Menu pause, Fin de partie, Sélection de niveau, Écran de chargement, Dialogue de personnage, Classement ou Sélection de personnage. Tout peut y être modifié, et Ctrl+Z annule le changement. Pour partir de zéro : «Vierge». Deux d'entre eux sont en pixel art : ATH de RPG pixel art et Menu principal pixel art.
 
 ## 4. Modifier
 
@@ -63,6 +63,51 @@ Appuyez sur **Vérifier** dans la barre supérieure. L'application signale les t
 3. Faites-le glisser dans la scène, ou utilisez le menu **Tools › Lienzo UI › Import design into scene…**.
 
 Chaque fois que vous exportez à nouveau, Unity met à jour le prefab tout seul.
+
+## Images incluses
+
+L'onglet Images de la barre de gauche contient des visuels prêts à l'emploi, sans fichiers à fournir :
+
+- Les pastilles du haut filtrent par Tes images, Arrière-plans, Cadres, Boutons, Icônes, Pixel art et Dégradés. La recherche trouve par nom ou par étiquette.
+- Clique sur un élément pour l'ajouter, ou glisse-le sur le canevas. Les cadres et les boutons arrivent avec leur bordure 9-slice : ils s'étirent sans déformer les coins. Les arrière-plans se placent derrière tout le reste.
+- L'image est copiée dans ta bibliothèque la première fois que tu l'utilises, et elle est exportée vers Unity avec le design.
+- Avec les sprites en pixel art, coche « Pixel art » dans l'Inspector du canevas (rien de sélectionné) pour qu'ils restent nets.
+
+## Écrans verticaux (portrait)
+
+Les téléphones sont souvent tenus à la verticale. Lienzo UI garde une seconde mise en page pour cela, sans toucher à la première :
+
+- Change de vue avec les boutons Paysage / Portrait de la barre du haut.
+- Sans rien sélectionner, ouvre « Mise en page portrait » dans l'Inspector et clique sur « Créer la mise en page portrait ». Les éléments démarrent là où ils sont en paysage.
+- En vue portrait, ce que tu déplaces ou redimensionnes ne modifie que la mise en page portrait. Clic droit sur un élément › « Revenir au paysage » annule une modification.
+- L'export contient les deux mises en page : dans Unity, le prefab passe tout seul à la version verticale quand l'écran est plus haut que large.
+
+## Importer depuis Unity
+
+Tu as déjà une interface dans Unity ? Amène-la dans Lienzo UI :
+
+- Fichier › Importer depuis Unity…
+- Choisis un prefab uGUI (.prefab) ou un design que Lienzo UI a déjà exporté (Assets/EditorGUI/Designs/….json).
+- Il s'ouvre comme un nouveau design non enregistré : enregistre-le comme projet pour le conserver.
+- Si quelque chose n'a pas pu être converti exactement, une fenêtre liste les avertissements : rien ne se perd en silence.
+- Si le dossier de ton projet Unity est trouvé, les images du design sont retrouvées automatiquement.
+
+## Ne perds pas ton travail
+
+- Enregistrement automatique : environ chaque minute, Lienzo UI enregistre une copie de récupération. Tu peux le désactiver dans Accessibilité › Enregistrement automatique.
+- Si l'application se ferme de façon inattendue, elle te demande la fois suivante « Récupérer le travail non enregistré… ? ». Clique sur Restaurer pour le retrouver ou sur Ignorer pour l'abandonner. Le travail récupéré n'est pas encore un fichier enregistré : appuie sur Ctrl+S pour le conserver.
+- Ctrl+S enregistre toujours ton projet comme d'habitude.
+- Annuler (Ctrl+Z) garde jusqu'à 200 étapes (avec une limite de mémoire). Si les plus anciennes sont supprimées, la barre d'état affiche « Historique réduit ».
+
+## Communauté
+
+L'onglet Communauté de la barre de gauche est un catalogue partagé de plugins, d'images, de polices, de modèles, d'éléments et de thèmes :
+
+- Parcourir et installer ne demande aucun compte : cherche puis clique sur Installer.
+- Pour publier, signaler ou donner des cœurs, tu te connectes avec GitHub ou Google et tu choisis un nom public. Pas de mots de passe : l'app ne garde que ce nom.
+- En créant ton profil, tu acceptes les règles : pas de malware, de haine, de plagiat ni de contenu +18 non signalé. Le texte complet se trouve dans docs/TERMS.md et docs/COMMUNITY_GUIDELINES.md.
+- Le contenu +18 est masqué, sauf si tu te connectes et actives « Afficher le contenu +18 ».
+- Tout ce qui est partagé est vérifié avant publication, et tu peux signaler ce qui enfreint les règles.
 
 ## Étapes suivantes
 

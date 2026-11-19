@@ -2,6 +2,7 @@
 //! It opens by itself the first time Lienzo UI starts; when finished or skipped, the editor remains.
 //! The "Tutorial" button in the top bar or F1 reopens it.
 //! To add a page, add an element to `BEGINNER` and `PRO` (English) and to `BEGINNER_ES` and `PRO_ES` (Spanish), plus a page in each `assets/tutorial/<code>.json`.
+//! The template page names the number of templates: keep it in sync with `model::TEMPLATES` (a test checks it).
 
 use crate::app::EditorApp;
 use crate::theme::{ACCENT, LINE, MUTED, PANEL, TEXT};
@@ -42,7 +43,7 @@ Al terminar este tutorial se abre el editor. Puedes volver aquí cuando quieras 
     },
     Page {
         title: "Empieza con una plantilla",
-        text: "Abre Plantillas en la barra izquierda y elige una de las 13: menú principal, HUD, pausa, fin de partida, selección de nivel, inventario, diálogo de personaje, clasificación…\n\n\
+        text: "Abre Plantillas en la barra izquierda y elige una de las 15: menú principal, HUD, pausa, fin de partida, selección de nivel, inventario, diálogo de personaje, clasificación… Dos de ellas tienen estilo pixel art: HUD RPG pixel art y Menú principal pixel art.\n\n\
 Es la forma más rápida de ver cómo se construye una interfaz completa. Todo lo que trae se puede cambiar.\n\n\
 Si prefieres empezar de cero, elige «En blanco» o Archivo › Nuevo diseño en blanco.",
     },
@@ -55,12 +56,32 @@ Si prefieres empezar de cero, elige «En blanco» o Archivo › Nuevo diseño en
 • En el Inspector cambias colores, bordes, sombras, fuentes y las anclas (cómo se adapta el elemento a otras pantallas).",
     },
     Page {
+        title: "Imágenes incluidas",
+        text: "La pestaña Imágenes de la barra izquierda trae arte listo para usar, sin necesidad de archivos:\n\n• Las etiquetas de arriba filtran por Tus imágenes, Fondos, Marcos, Botones, Iconos, Pixel art y Degradados. El buscador encuentra por nombre o etiqueta.\n• Haz clic en una imagen para añadirla, o arrástrala al lienzo. Los marcos y botones traen su borde 9-slice, así que se estiran sin deformar las esquinas. Los fondos se colocan detrás de todo.\n• La imagen se copia a tu biblioteca la primera vez que la usas y se exporta a Unity con el diseño.\n• Con los sprites de pixel art, marca «Pixel art» en el Inspector del lienzo (sin nada seleccionado) para que se vean nítidos.",
+    },
+    Page {
+        title: "Pantallas verticales",
+        text: "Los móviles suelen usarse en vertical. Lienzo UI guarda un segundo diseño para eso, sin tocar el primero:\n\n• Cambia de vista con los botones Paisaje / Retrato de la barra superior.\n• Sin nada seleccionado, abre «Diseño vertical» en el Inspector y pulsa «Crear diseño vertical». Los elementos empiezan donde están en horizontal.\n• En la vista vertical, lo que muevas o redimensiones solo cambia el diseño vertical. Clic derecho en un elemento › «Volver a horizontal» deshace un cambio.\n• La exportación lleva los dos diseños: en Unity el prefab pasa solo al vertical cuando la pantalla es más alta que ancha.",
+    },
+    Page {
         title: "Probar y exportar a Unity",
         text: "• Probar (F5): el diseño se vuelve interactivo y puedes simular otras pantallas (móvil, 4:3, ultrapanorámica) para ver cómo se adapta.\n\
 • Guardar (Ctrl+S): guarda el proyecto .editorgui.json para seguir otro día.\n\
-• Revisar: avisa de letra pequeña, poco contraste, botones pequeños para tocar, elementos fuera de la página e imágenes que faltan.\n\
+• Revisar: avisa de letra pequeña, poco contraste, botones pequeños para tocar, elementos fuera de la página, nombres repetidos e imágenes que faltan. Junto a cada problema con solución segura hay un botón «Corregir», y «Corregir todos los problemas seguros» los arregla todos en un solo paso de deshacer.\n\
 • Exportar a Unity (Ctrl+E): la primera vez elige la carpeta de tu proyecto (la que contiene Assets).\n\n\
 En Unity, al volver a la ventana, el diseño aparece como prefab en Assets/EditorGUI/Prefabs. También tienes el menú Tools › Lienzo UI › Import design into scene….",
+    },
+    Page {
+        title: "Importar desde Unity",
+        text: "¿Ya tienes una interfaz en Unity? Tráela a Lienzo UI:\n\n• Archivo › Importar desde Unity…\n• Elige un prefab de uGUI (.prefab) o un diseño que Lienzo UI exportó antes (Assets/EditorGUI/Designs/….json).\n• Se abre como un diseño nuevo sin guardar: guárdalo como proyecto para conservarlo.\n• Si algo no se pudo convertir con exactitud, una ventana muestra los avisos, así que nada se pierde en silencio.\n• Si encuentra la carpeta de tu proyecto de Unity, las imágenes del diseño se localizan solas.",
+    },
+    Page {
+        title: "No pierdas tu trabajo",
+        text: "• Autoguardado: más o menos cada minuto Lienzo UI guarda una copia de recuperación. Puedes desactivarlo en Accesibilidad › Autoguardado.\n• Si la aplicación se cierra de forma inesperada, la próxima vez pregunta «¿Recuperar el trabajo sin guardar…?». Pulsa Restaurar para recuperarlo o Descartar para olvidarlo. Lo recuperado aún no es un archivo guardado: pulsa Ctrl+S para conservarlo.\n• Ctrl+S sigue guardando tu proyecto como siempre.\n• Deshacer (Ctrl+Z) recuerda hasta 200 pasos (y tiene un límite de memoria). Si se descartan los más antiguos, la barra de estado muestra «Historial recortado».",
+    },
+    Page {
+        title: "Comunidad",
+        text: "La pestaña Comunidad de la barra izquierda es un catálogo compartido de plugins, imágenes, fuentes, plantillas, elementos y temas:\n\n• Explorar e instalar no necesita cuenta: busca y pulsa Instalar.\n• Para subir, reportar o dar corazones inicias sesión con GitHub o Google y eliges un nombre público. Sin contraseñas: la app solo guarda ese nombre.\n• Al crear tu perfil aceptas las reglas: nada de malware, odio, plagio ni contenido +18 sin marcar. El texto completo está en docs/TERMS.md y docs/COMMUNITY_GUIDELINES.md.\n• El contenido +18 está oculto salvo que inicies sesión y actives «Mostrar contenido +18».\n• Todo lo que se comparte se revisa antes de publicarse, y puedes reportar lo que incumpla las reglas.",
     },
 ];
 
@@ -82,15 +103,31 @@ Cada elemento tiene anclas, pivote y desplazamientos como un RectTransform. Al c
 Usa Probar (F5) con varias pantallas para comprobarlo antes de exportar.",
     },
     Page {
+        title: "Diseño vertical al detalle",
+        text: "El diseño vertical es una segunda vista del mismo diseño (docs/FORMAT.md › PortraitLayout):\n\n• Tiene su propia resolución de referencia, «Tamaño vertical» (1080 × 1920 por defecto).\n• Los elementos sin excepción conservan su RectTransform horizontal y se reevalúan contra la página vertical: un fondo a pantalla completa se estira, los anclados a la derecha siguen el borde derecho.\n• Solo se guarda lo que cambias en la vista vertical, como excepciones (posición, tamaño, rotación, anclajes, visibilidad, tamaño de fuente, layout). Clic derecho › «Volver a horizontal» quita una.\n• Exportación: el JSON lleva las excepciones y el script generado LienzoOrientationLayout las aplica cuando Screen.width < Screen.height, y de nuevo si cambia el tamaño.\n• «Quitar diseño vertical» borra todas las excepciones.",
+    },
+    Page {
         title: "Layouts, grupos y listas",
         text: "Un contenedor puede ordenar a sus hijos en horizontal, vertical o cuadrícula (como Horizontal/Vertical/Grid Layout Group), con espaciado y relleno.\n\n\
 Las listas con scroll (ScrollView) calculan su contenido solas.\n\n\
 Agrupa (Ctrl+G) para mover partes enteras y usa la Jerarquía para reordenar capas: el orden de la lista es el orden de dibujo en Unity.",
     },
     Page {
+        title: "9-slice y el paquete incluido",
+        text: "Para marcos, botones y paneles que se estiran:\n\n• Selecciona una Imagen y define «9-slice» en «Ajustes de imagen (Unity)»: el borde en píxeles de la imagen original (izquierda, abajo, derecha, arriba), como en el Sprite Editor de Unity. La exportación genera un Sprite 9-slice.\n• «Píxeles por unidad»: 100 mantiene los bordes en su tamaño en píxeles, 200 los reduce a la mitad.\n• El paquete incluido (assets/pack/manifest.json, docs/CONTENT.md) ya define el corte y los píxeles por unidad: los marcos son de 512×512 con corte 96, los botones de 512×192.\n• Usar una imagen la copia a tu biblioteca como pack_<id>.<ext> (oculta en «Tus imágenes»); el exportador la copia a los Sprites de Unity.\n• Las plantillas HUD RPG pixel art y Menú principal pixel art usan el paquete pixel. Activa «Pixel art» para el filtro Point.",
+    },
+    Page {
         title: "Lógica: código al hacer clic y vistas",
         text: "En Probar, cada elemento puede ejecutar un pequeño script (Rhai) al hacer clic: show(\"Name\"), hide, toggle, set_text, set_color, move_by… Sirve para prototipar flujos sin Unity.\n\n\
 En Unity, <Diseño>View.cs hereda de <Diseño>ViewBase con referencias tipadas a cada botón, slider o campo, y eventos de clic y de valor. Pon ahí la lógica del juego: las reexportaciones no la tocan.",
+    },
+    Page {
+        title: "Revisión y correcciones rápidas",
+        text: "La ventana Revisar lista errores y avisos; haz clic en uno para seleccionar su elemento. Seis problemas tienen un botón «Corregir» (un paso de deshacer):\n\n• Texto por debajo del tamaño mínimo: se sube al mínimo.\n• Control demasiado pequeño para tocar: se agranda alrededor de su centro.\n• Elemento parcialmente fuera de la página: se mueve dentro, si cabe.\n• Nombre repetido: se añade _2, _3…\n• Imagen que falta: se quita la referencia.\n• Poco contraste: se oscurece o aclara el color del texto.\n\n«Corregir todos los problemas seguros» los aplica en varias pasadas. Problemas como una fuente sin ciertos caracteres no tienen corrección automática. Las correcciones también funcionan en el diseño vertical. Por línea de comandos: lienzo-ui --open archivo --review (código 1 si hay errores).",
+    },
+    Page {
+        title: "Importar desde Unity: prefabs y CLI",
+        text: "Archivo › Importar desde Unity… lee un .prefab de uGUI (el YAML de texto de Unity) o un Designs/*.json exportado por Lienzo UI y crea un diseño normal.\n\n• Lo que no se pudo convertir aparece como avisos.\n• Si detecta la carpeta del proyecto de Unity, las imágenes se resuelven contra ella durante esa sesión.\n• Sin ventana: lienzo-ui --import-unity Menu.prefab --save Menu.editorgui.json (también con --review y --export).\n• Proyecto completo: lienzo-ui --import-unity-project MiProyecto --out Importados convierte todos los prefabs de interfaz. Nunca sobrescribe (añade _2) y omite los prefabs sin interfaz.\n• Detalles en docs/UNITY_IMPORT.md.",
     },
     Page {
         title: "Línea de comandos y automatización",
@@ -125,6 +162,14 @@ Consejo: usa tamaños múltiplos exactos de tus sprites (16 px → 32, 48, 64…
 Los scripts corren aislados, sin acceso a archivos ni red. «Abrir carpeta» lleva a tu carpeta de plugins; la guía está en docs/PLUGINS.md.",
     },
     Page {
+        title: "Comunidad: plugins, fuentes y normas",
+        text: "En la pestaña Comunidad, Instalar añade contenido compartido con un clic: plugins, fuentes, imágenes, plantillas, elementos y temas.\n\n• Un plugin de la comunidad va a una carpeta llamada community-<nombre>-<hash>. Se escribe primero en una carpeta temporal, así que una instalación interrumpida nunca deja un plugin a medias. Aparece en la pestaña Plugins.\n• Sus scripts son los mismos Rhai: aislados, sin acceso a archivos ni red y con límites de operaciones, tiempo y memoria (docs/PLUGINS.md).\n• Una fuente instalada se añade a la pestaña Texto y se exporta a Unity con el diseño.\n• Las descargas se comprueban con la huella SHA-256 publicada; si no coincide, no se instala nada.\n• Para publicar inicias sesión (GitHub o Google), eliges un nombre público y aceptas las reglas. Todo se revisa antes y el contenido +18 debe marcarse. Ver docs/TERMS.md, docs/COMMUNITY_GUIDELINES.md y docs/PRIVACY.md.",
+    },
+    Page {
+        title: "Autoguardado, recuperación y deshacer",
+        text: "• Más o menos cada minuto, mientras editas, el diseño completo (con el diseño vertical) se escribe en la carpeta de recuperación de la app. Nunca en modo Probar. Se conservan como máximo 10 recuperaciones.\n• Al iniciar, si hay una recuperación más reciente que el archivo del proyecto, se ofrece: Restaurar o Descartar. Tras un Guardar normal ya no hace falta.\n• Se puede desactivar en Accesibilidad › Autoguardado.\n• El historial de deshacer está limitado a 200 pasos y unos 64 MB. Cuando se descartan los pasos más antiguos, la barra de estado muestra «Historial recortado».\n• Cada comando de plugin y cada Corregir de la ventana Revisar es un solo paso de deshacer.",
+    },
+    Page {
         title: "Accesibilidad e idiomas",
         text: "El botón «Accesibilidad» de la barra superior permite:\n\n\
 • Cambiar el idioma de la interfaz (español, inglés, portugués, francés, alemán, italiano, ruso, chino, japonés o coreano).\n\
@@ -152,7 +197,7 @@ When you finish this tutorial the editor opens. Come back any time with the “T
     },
     Page {
         title: "Start from a template",
-        text: "Open Templates in the left bar and pick one of the 13: main menu, HUD, pause, game over, level select, inventory, character dialogue, leaderboard…\n\n\
+        text: "Open Templates in the left bar and pick one of the 15: main menu, HUD, pause, game over, level select, inventory, character dialogue, leaderboard… Two of them are in pixel art style: Pixel RPG HUD and Pixel main menu.\n\n\
 It is the fastest way to see how a complete interface is built. Everything in it can be changed.\n\n\
 To start from scratch, choose “Blank” or File › New blank design.",
     },
@@ -165,12 +210,32 @@ To start from scratch, choose “Blank” or File › New blank design.",
 • In the Inspector you change colors, borders, shadows, fonts and the anchors (how the element adapts to other screens).",
     },
     Page {
+        title: "Built-in images",
+        text: "The Images tab in the left bar includes ready-made art, no files needed:\n\n• The chips at the top filter by Your images, Backgrounds, Frames, Buttons, Icons, Pixel art and Gradients. The search box finds items by name or tag.\n• Click an item to add it, or drag it onto the canvas. Frames and buttons come with their 9-slice border, so they stretch without distorting the corners. Backgrounds go behind everything else.\n• The picture is copied to your library the first time you use it, and it is exported to Unity with the design.\n• With the pixel art sprites, tick “Pixel art” in the canvas Inspector (nothing selected) so they stay crisp.",
+    },
+    Page {
+        title: "Vertical (portrait) screens",
+        text: "Phones are often held upright. Lienzo UI keeps a second layout for that, without touching the first one:\n\n• Switch the view with the Landscape / Portrait buttons in the top bar.\n• With nothing selected, open “Portrait layout” in the Inspector and press “Create portrait layout”. Elements start where they are in landscape.\n• In Portrait view, whatever you move or resize changes only the portrait layout. Right-click an element › “Reset to landscape” to undo one change.\n• The export carries both layouts: in Unity the prefab switches to the vertical one by itself when the screen is taller than it is wide.",
+    },
+    Page {
         title: "Test and export to Unity",
         text: "• Test (F5): the design becomes interactive and you can simulate other screens (phone, 4:3, ultrawide) to see how it adapts.\n\
 • Save (Ctrl+S): saves the .editorgui.json project to keep working later.\n\
-• Review: warns about small text, low contrast, buttons too small to tap, elements outside the page and missing images.\n\
+• Review: warns about small text, low contrast, buttons too small to tap, elements outside the page, repeated names and missing images. Next to each problem with a safe solution there is a “Fix” button, and “Fix all safe issues” applies them all in one undo step.\n\
 • Export to Unity (Ctrl+E): the first time, choose your project folder (the one that contains Assets).\n\n\
 Back in Unity, when you return to the window, the design appears as a prefab in Assets/EditorGUI/Prefabs. There is also the menu Tools › Lienzo UI › Import design into scene….",
+    },
+    Page {
+        title: "Import from Unity",
+        text: "Already have an interface in Unity? Bring it into Lienzo UI:\n\n• File › Import from Unity…\n• Choose a uGUI prefab (.prefab) or a design that Lienzo UI exported before (Assets/EditorGUI/Designs/….json).\n• It opens as a new, unsaved design: save it as a project to keep it.\n• If something could not be converted exactly, a window lists the warnings, so nothing is lost silently.\n• If it finds your Unity project folder, the images of the design are found automatically.",
+    },
+    Page {
+        title: "Never lose your work",
+        text: "• Autosave: about every minute Lienzo UI saves a recovery copy. You can turn it off in Accessibility › Autosave.\n• If the app closes unexpectedly, the next time it asks “Recover unsaved work…?”. Press Restore to get it back or Discard to drop it. Recovered work is not a saved file yet: press Ctrl+S to keep it.\n• Ctrl+S still saves your project as usual.\n• Undo (Ctrl+Z) remembers up to 200 steps (and a memory limit). If the oldest ones are dropped, the status bar says “History trimmed”.",
+    },
+    Page {
+        title: "Community",
+        text: "The Community tab in the left bar is a shared catalog of plugins, images, fonts, templates, elements and themes:\n\n• Browsing and installing needs no account: search and press Install.\n• To upload, report or give hearts you sign in with GitHub or Google and choose a public name. No passwords: the app only keeps that name.\n• When you create your profile you accept the rules: no malware, hate, plagiarism or unmarked 18+ content. The full text is in docs/TERMS.md and docs/COMMUNITY_GUIDELINES.md.\n• 18+ content is hidden unless you sign in and turn on “Show 18+ content”.\n• Everything shared is reviewed before it is published, and you can report anything that breaks the rules.",
     },
 ];
 
@@ -192,15 +257,31 @@ Each element has anchors, pivot and offsets like a RectTransform. When the refer
 Use Test (F5) with several screens before exporting.",
     },
     Page {
+        title: "Portrait layout in detail",
+        text: "The portrait layout is a second view of the same design (docs/FORMAT.md › PortraitLayout):\n\n• It has its own reference resolution, “Portrait size” (1080 × 1920 by default).\n• Elements without an override keep their landscape RectTransform and are re-evaluated against the portrait page: a full-page background stretches, right-anchored elements follow the right edge.\n• Only what you change in Portrait view is stored, as overrides (position, size, rotation, anchors, visibility, font size, layout). Right-click › “Reset to landscape” removes one.\n• Export: the JSON carries the overrides and the generated LienzoOrientationLayout script applies them when Screen.width < Screen.height, and again when the size changes.\n• “Remove portrait layout” deletes every override.",
+    },
+    Page {
         title: "Layouts, groups and lists",
         text: "A container can arrange its children horizontally, vertically or in a grid (like Horizontal/Vertical/Grid Layout Group), with spacing and padding.\n\n\
 Scroll lists (ScrollView) compute their content automatically.\n\n\
 Group (Ctrl+G) to move whole parts and use the Hierarchy to reorder layers: the list order is the drawing order in Unity.",
     },
     Page {
+        title: "9-slice and the built-in pack",
+        text: "For frames, buttons and panels that stretch:\n\n• Select an Image and set “9-slice” in “Image settings (Unity)”: the border in source-image pixels (left, bottom, right, top), like Unity's Sprite Editor. The export generates a 9-slice Sprite.\n• “Pixels per unit”: 100 keeps the borders at their pixel size, 200 makes them half as big.\n• The built-in pack (assets/pack/manifest.json, docs/CONTENT.md) already sets slice and pixels per unit: frames are 512×512 with slice 96, buttons 512×192.\n• Using an item copies it to your library as pack_<id>.<ext> (hidden from “Your images”); the exporter copies it to the Unity Sprites.\n• The templates Pixel RPG HUD and Pixel main menu use the pixel pack. Turn on “Pixel art” for Point filtering.",
+    },
+    Page {
         title: "Logic: click scripts and views",
         text: "In Test mode each element can run a small Rhai script on click: show(\"Name\"), hide, toggle, set_text, set_color, move_by… Useful to prototype flows without Unity.\n\n\
 In Unity, <Design>View.cs inherits from <Design>ViewBase with typed references to every button, slider or field, and click and value events. Put your game logic there: re-exports never touch it.",
+    },
+    Page {
+        title: "Review and quick fixes",
+        text: "The Review window lists errors and warnings; click one to select its element. Six problems have a “Fix” button (one undo step):\n\n• Text below the minimum size: raised to the minimum.\n• Control too small to tap: enlarged around its center.\n• Element partly outside the page: moved inside, if it fits.\n• Repeated name: _2, _3… is appended.\n• Missing image: the reference is removed.\n• Low contrast: the text color is darkened or lightened.\n\n“Fix all safe issues” applies them in a few passes. Problems such as a font that lacks characters have no automatic fix. Fixes also work in the portrait layout. From the command line: lienzo-ui --open file --review (exit code 1 on errors).",
+    },
+    Page {
+        title: "Import from Unity: prefabs and CLI",
+        text: "File › Import from Unity… reads a uGUI .prefab (Unity's text YAML) or a Designs/*.json exported by Lienzo UI and creates an ordinary design.\n\n• What could not be mapped is listed as warnings.\n• When it detects the Unity project folder, images resolve against it for that session.\n• Headless: lienzo-ui --import-unity Menu.prefab --save Menu.editorgui.json (also with --review and --export).\n• Whole project: lienzo-ui --import-unity-project MyProject --out Imported converts every UI prefab. It never overwrites (it adds _2) and skips prefabs without UI.\n• Details in docs/UNITY_IMPORT.md.",
     },
     Page {
         title: "Command line and automation",
@@ -233,6 +314,14 @@ Tip: use exact multiples of your sprite size (16 px → 32, 48, 64…) so every 
 • Exporters: scripts that generate new files (for example, a CSV with every text).\n\
 • Templates: ready-made designs.\n\n\
 Scripts run sandboxed, without file or network access. “Open folder” takes you to your plugins folder; the guide is docs/PLUGINS.md.",
+    },
+    Page {
+        title: "Community: plugins, fonts and rules",
+        text: "In the Community tab, Install adds shared content with one click: plugins, fonts, images, templates, elements and themes.\n\n• A community plugin goes to a folder named community-<name>-<hash>. It is written to a temporary folder first, so an interrupted install never leaves half a plugin. It shows up in the Plugins tab.\n• Its scripts are the same Rhai scripts: sandboxed, with no file or network access and limits on operations, time and memory (docs/PLUGINS.md).\n• An installed font is added to the Text tab and exported to Unity with the design.\n• Downloads are checked against the published SHA-256 fingerprint; if it does not match, nothing is installed.\n• To publish you sign in (GitHub or Google), choose a public name and accept the rules. Everything is reviewed first and 18+ content must be marked. See docs/TERMS.md, docs/COMMUNITY_GUIDELINES.md and docs/PRIVACY.md.",
+    },
+    Page {
+        title: "Autosave, recovery and undo",
+        text: "• About every minute, while you edit, the full design (portrait layout included) is written to the app's recovery folder. Never in Test mode. At most 10 recoveries are kept.\n• At startup, a recovery newer than the project file is offered: Restore or Discard. After a normal Save it is no longer needed.\n• It can be turned off in Accessibility › Autosave.\n• The undo history is bounded to 200 steps and about 64 MB. When the oldest steps are dropped the status bar says “History trimmed”.\n• Each plugin command and each Fix from the Review window is one undo step.",
     },
     Page {
         title: "Accessibility and languages",
@@ -445,6 +534,19 @@ mod tests {
         // Every interface language has its own tutorial (Spanish and English are in the code).
         for (code, _, _) in crate::i18n::LANGUAGES {
             assert!(matches!(*code, "es" | "en") || TUTORIALS.iter().any(|(c, _)| c == code), "{} has no tutorial", code);
+        }
+    }
+
+    /// The template page (beginner page 3) must state the real number of templates.
+    #[test]
+    fn template_count_is_current() {
+        let n = crate::model::TEMPLATES.len().to_string();
+        let has_number = |t: &str| t.split(|c: char| !c.is_ascii_digit()).any(|w| w == n);
+        assert!(has_number(BEGINNER[2].text), "English template page does not mention {}", n);
+        assert!(has_number(BEGINNER_ES[2].text), "Spanish template page does not mention {}", n);
+        for (code, json) in TUTORIALS {
+            let t: TutorialJson = serde_json::from_str(json).unwrap();
+            assert!(has_number(&t.beginner[2].text), "{}: template page does not mention {}", code, n);
         }
     }
 

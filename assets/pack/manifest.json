@@ -1,0 +1,1975 @@
+[
+ {
+  "id": "bg_forest",
+  "category": "backgrounds",
+  "name": "Forest",
+  "file": "backgrounds/forest.jpg",
+  "tags": [
+   "background",
+   "forest",
+   "nature",
+   "trees",
+   "green"
+  ],
+  "pixel": false
+ },
+ {
+  "id": "bg_space",
+  "category": "backgrounds",
+  "name": "Space",
+  "file": "backgrounds/space.jpg",
+  "tags": [
+   "background",
+   "space",
+   "stars",
+   "night",
+   "sci-fi"
+  ],
+  "pixel": false
+ },
+ {
+  "id": "bg_dungeon",
+  "category": "backgrounds",
+  "name": "Dungeon",
+  "file": "backgrounds/dungeon.jpg",
+  "tags": [
+   "background",
+   "dungeon",
+   "dark",
+   "stone",
+   "fantasy"
+  ],
+  "pixel": false
+ },
+ {
+  "id": "bg_neon_city",
+  "category": "backgrounds",
+  "name": "Neon City",
+  "file": "backgrounds/neon_city.jpg",
+  "tags": [
+   "background",
+   "city",
+   "neon",
+   "cyberpunk",
+   "night"
+  ],
+  "pixel": false
+ },
+ {
+  "id": "bg_desert",
+  "category": "backgrounds",
+  "name": "Desert",
+  "file": "backgrounds/desert.jpg",
+  "tags": [
+   "background",
+   "desert",
+   "sand",
+   "hot",
+   "dunes"
+  ],
+  "pixel": false
+ },
+ {
+  "id": "bg_ocean",
+  "category": "backgrounds",
+  "name": "Ocean",
+  "file": "backgrounds/ocean.jpg",
+  "tags": [
+   "background",
+   "ocean",
+   "sea",
+   "water",
+   "blue"
+  ],
+  "pixel": false
+ },
+ {
+  "id": "bg_snow",
+  "category": "backgrounds",
+  "name": "Snow",
+  "file": "backgrounds/snow.jpg",
+  "tags": [
+   "background",
+   "snow",
+   "winter",
+   "ice",
+   "cold"
+  ],
+  "pixel": false
+ },
+ {
+  "id": "bg_sunset",
+  "category": "backgrounds",
+  "name": "Sunset",
+  "file": "backgrounds/sunset.jpg",
+  "tags": [
+   "background",
+   "sunset",
+   "sky",
+   "evening",
+   "orange"
+  ],
+  "pixel": false
+ },
+ {
+  "id": "bg_cave",
+  "category": "backgrounds",
+  "name": "Cave",
+  "file": "backgrounds/cave.jpg",
+  "tags": [
+   "background",
+   "cave",
+   "dark",
+   "rocks",
+   "underground"
+  ],
+  "pixel": false
+ },
+ {
+  "id": "bg_candy",
+  "category": "backgrounds",
+  "name": "Candy",
+  "file": "backgrounds/candy.jpg",
+  "tags": [
+   "background",
+   "candy",
+   "sweet",
+   "pink",
+   "cute"
+  ],
+  "pixel": false
+ },
+ {
+  "id": "frame_wood",
+  "category": "frames",
+  "name": "Wood Frame",
+  "file": "frames/wood.png",
+  "slice": [
+   96,
+   96,
+   96,
+   96
+  ],
+  "ppu": 100,
+  "tags": [
+   "frame",
+   "panel",
+   "border",
+   "wood",
+   "brown",
+   "rustic",
+   "fantasy"
+  ],
+  "pixel": false
+ },
+ {
+  "id": "frame_stone",
+  "category": "frames",
+  "name": "Stone Frame",
+  "file": "frames/stone.png",
+  "slice": [
+   96,
+   96,
+   96,
+   96
+  ],
+  "ppu": 100,
+  "tags": [
+   "frame",
+   "panel",
+   "border",
+   "stone",
+   "grey",
+   "castle",
+   "fantasy"
+  ],
+  "pixel": false
+ },
+ {
+  "id": "frame_gold",
+  "category": "frames",
+  "name": "Gold Frame",
+  "file": "frames/gold.png",
+  "slice": [
+   96,
+   96,
+   96,
+   96
+  ],
+  "ppu": 100,
+  "tags": [
+   "frame",
+   "panel",
+   "border",
+   "gold",
+   "ornate",
+   "royal",
+   "luxury"
+  ],
+  "pixel": false
+ },
+ {
+  "id": "frame_scifi",
+  "category": "frames",
+  "name": "Scifi Frame",
+  "file": "frames/scifi.png",
+  "slice": [
+   96,
+   96,
+   96,
+   96
+  ],
+  "ppu": 100,
+  "tags": [
+   "frame",
+   "panel",
+   "border",
+   "sci-fi",
+   "tech",
+   "blue",
+   "future"
+  ],
+  "pixel": false
+ },
+ {
+  "id": "frame_parchment",
+  "category": "frames",
+  "name": "Parchment Frame",
+  "file": "frames/parchment.png",
+  "slice": [
+   96,
+   96,
+   96,
+   96
+  ],
+  "ppu": 100,
+  "tags": [
+   "frame",
+   "panel",
+   "border",
+   "parchment",
+   "paper",
+   "old",
+   "quest"
+  ],
+  "pixel": false
+ },
+ {
+  "id": "frame_glass",
+  "category": "frames",
+  "name": "Glass Frame",
+  "file": "frames/glass.png",
+  "slice": [
+   96,
+   96,
+   96,
+   96
+  ],
+  "ppu": 100,
+  "tags": [
+   "frame",
+   "panel",
+   "border",
+   "glass",
+   "transparent",
+   "modern",
+   "clean"
+  ],
+  "pixel": false
+ },
+ {
+  "id": "frame_leather",
+  "category": "frames",
+  "name": "Leather Frame",
+  "file": "frames/leather.png",
+  "slice": [
+   96,
+   96,
+   96,
+   96
+  ],
+  "ppu": 100,
+  "tags": [
+   "frame",
+   "panel",
+   "border",
+   "leather",
+   "brown",
+   "stitched",
+   "rpg"
+  ],
+  "pixel": false
+ },
+ {
+  "id": "frame_neon",
+  "category": "frames",
+  "name": "Neon Frame",
+  "file": "frames/neon.png",
+  "slice": [
+   96,
+   96,
+   96,
+   96
+  ],
+  "ppu": 100,
+  "tags": [
+   "frame",
+   "panel",
+   "border",
+   "neon",
+   "glow",
+   "cyberpunk",
+   "arcade"
+  ],
+  "pixel": false
+ },
+ {
+  "id": "btn_wood",
+  "category": "buttons",
+  "name": "Wood Button",
+  "file": "buttons/wood.png",
+  "slice": [
+   64,
+   48,
+   64,
+   48
+  ],
+  "ppu": 100,
+  "tags": [
+   "button",
+   "ui",
+   "wood",
+   "brown",
+   "rustic"
+  ],
+  "pixel": false
+ },
+ {
+  "id": "btn_stone",
+  "category": "buttons",
+  "name": "Stone Button",
+  "file": "buttons/stone.png",
+  "slice": [
+   64,
+   48,
+   64,
+   48
+  ],
+  "ppu": 100,
+  "tags": [
+   "button",
+   "ui",
+   "stone",
+   "grey",
+   "castle"
+  ],
+  "pixel": false
+ },
+ {
+  "id": "btn_gold",
+  "category": "buttons",
+  "name": "Gold Button",
+  "file": "buttons/gold.png",
+  "slice": [
+   64,
+   48,
+   64,
+   48
+  ],
+  "ppu": 100,
+  "tags": [
+   "button",
+   "ui",
+   "gold",
+   "royal",
+   "luxury"
+  ],
+  "pixel": false
+ },
+ {
+  "id": "btn_scifi",
+  "category": "buttons",
+  "name": "Scifi Button",
+  "file": "buttons/scifi.png",
+  "slice": [
+   64,
+   48,
+   64,
+   48
+  ],
+  "ppu": 100,
+  "tags": [
+   "button",
+   "ui",
+   "sci-fi",
+   "tech",
+   "blue"
+  ],
+  "pixel": false
+ },
+ {
+  "id": "btn_glass",
+  "category": "buttons",
+  "name": "Glass Button",
+  "file": "buttons/glass.png",
+  "slice": [
+   64,
+   48,
+   64,
+   48
+  ],
+  "ppu": 100,
+  "tags": [
+   "button",
+   "ui",
+   "glass",
+   "modern",
+   "clean"
+  ],
+  "pixel": false
+ },
+ {
+  "id": "btn_candy",
+  "category": "buttons",
+  "name": "Candy Button",
+  "file": "buttons/candy.png",
+  "slice": [
+   64,
+   48,
+   64,
+   48
+  ],
+  "ppu": 100,
+  "tags": [
+   "button",
+   "ui",
+   "candy",
+   "pink",
+   "sweet"
+  ],
+  "pixel": false
+ },
+ {
+  "id": "btn_neon",
+  "category": "buttons",
+  "name": "Neon Button",
+  "file": "buttons/neon.png",
+  "slice": [
+   64,
+   48,
+   64,
+   48
+  ],
+  "ppu": 100,
+  "tags": [
+   "button",
+   "ui",
+   "neon",
+   "glow",
+   "arcade"
+  ],
+  "pixel": false
+ },
+ {
+  "id": "btn_leaf",
+  "category": "buttons",
+  "name": "Leaf Button",
+  "file": "buttons/leaf.png",
+  "slice": [
+   64,
+   48,
+   64,
+   48
+  ],
+  "ppu": 100,
+  "tags": [
+   "button",
+   "ui",
+   "leaf",
+   "green",
+   "nature"
+  ],
+  "pixel": false
+ },
+ {
+  "id": "icon_heart",
+  "category": "icons",
+  "name": "Heart",
+  "file": "icons/heart.png",
+  "ppu": 100,
+  "tags": [
+   "icon",
+   "heart",
+   "health",
+   "life"
+  ],
+  "pixel": false
+ },
+ {
+  "id": "icon_mana",
+  "category": "icons",
+  "name": "Mana",
+  "file": "icons/mana.png",
+  "ppu": 100,
+  "tags": [
+   "icon",
+   "mana",
+   "magic",
+   "drop"
+  ],
+  "pixel": false
+ },
+ {
+  "id": "icon_coin",
+  "category": "icons",
+  "name": "Coin",
+  "file": "icons/coin.png",
+  "ppu": 100,
+  "tags": [
+   "icon",
+   "coin",
+   "gold",
+   "currency"
+  ],
+  "pixel": false
+ },
+ {
+  "id": "icon_gem",
+  "category": "icons",
+  "name": "Gem",
+  "file": "icons/gem.png",
+  "ppu": 100,
+  "tags": [
+   "icon",
+   "gem",
+   "diamond",
+   "crystal"
+  ],
+  "pixel": false
+ },
+ {
+  "id": "icon_star",
+  "category": "icons",
+  "name": "Star",
+  "file": "icons/star.png",
+  "ppu": 100,
+  "tags": [
+   "icon",
+   "star",
+   "favorite",
+   "rating"
+  ],
+  "pixel": false
+ },
+ {
+  "id": "icon_key",
+  "category": "icons",
+  "name": "Key",
+  "file": "icons/key.png",
+  "ppu": 100,
+  "tags": [
+   "icon",
+   "key",
+   "unlock",
+   "item"
+  ],
+  "pixel": false
+ },
+ {
+  "id": "icon_sword",
+  "category": "icons",
+  "name": "Sword",
+  "file": "icons/sword.png",
+  "ppu": 100,
+  "tags": [
+   "icon",
+   "sword",
+   "weapon",
+   "attack"
+  ],
+  "pixel": false
+ },
+ {
+  "id": "icon_shield",
+  "category": "icons",
+  "name": "Shield",
+  "file": "icons/shield.png",
+  "ppu": 100,
+  "tags": [
+   "icon",
+   "shield",
+   "defense",
+   "armor"
+  ],
+  "pixel": false
+ },
+ {
+  "id": "icon_potion",
+  "category": "icons",
+  "name": "Potion",
+  "file": "icons/potion.png",
+  "ppu": 100,
+  "tags": [
+   "icon",
+   "potion",
+   "flask",
+   "consumable"
+  ],
+  "pixel": false
+ },
+ {
+  "id": "icon_scroll",
+  "category": "icons",
+  "name": "Scroll",
+  "file": "icons/scroll.png",
+  "ppu": 100,
+  "tags": [
+   "icon",
+   "scroll",
+   "quest",
+   "paper"
+  ],
+  "pixel": false
+ },
+ {
+  "id": "icon_bomb",
+  "category": "icons",
+  "name": "Bomb",
+  "file": "icons/bomb.png",
+  "ppu": 100,
+  "tags": [
+   "icon",
+   "bomb",
+   "explosive",
+   "weapon"
+  ],
+  "pixel": false
+ },
+ {
+  "id": "icon_crown",
+  "category": "icons",
+  "name": "Crown",
+  "file": "icons/crown.png",
+  "ppu": 100,
+  "tags": [
+   "icon",
+   "crown",
+   "king",
+   "rank"
+  ],
+  "pixel": false
+ },
+ {
+  "id": "icon_lock",
+  "category": "icons",
+  "name": "Lock",
+  "file": "icons/lock.png",
+  "ppu": 100,
+  "tags": [
+   "icon",
+   "lock",
+   "locked",
+   "secure"
+  ],
+  "pixel": false
+ },
+ {
+  "id": "icon_clock",
+  "category": "icons",
+  "name": "Clock",
+  "file": "icons/clock.png",
+  "ppu": 100,
+  "tags": [
+   "icon",
+   "clock",
+   "time",
+   "timer"
+  ],
+  "pixel": false
+ },
+ {
+  "id": "icon_map",
+  "category": "icons",
+  "name": "Map",
+  "file": "icons/map.png",
+  "ppu": 100,
+  "tags": [
+   "icon",
+   "map",
+   "world",
+   "navigation"
+  ],
+  "pixel": false
+ },
+ {
+  "id": "icon_chest",
+  "category": "icons",
+  "name": "Chest",
+  "file": "icons/chest.png",
+  "ppu": 100,
+  "tags": [
+   "icon",
+   "chest",
+   "loot",
+   "treasure"
+  ],
+  "pixel": false
+ },
+ {
+  "id": "px_heart_full",
+  "category": "pixel",
+  "name": "Heart Full",
+  "file": "pixel/heart_full.png",
+  "ppu": 100,
+  "tags": [
+   "pixel",
+   "heart",
+   "health",
+   "life",
+   "hud"
+  ],
+  "pixel": true,
+  "native": [
+   16,
+   16
+  ]
+ },
+ {
+  "id": "px_heart_half",
+  "category": "pixel",
+  "name": "Heart Half",
+  "file": "pixel/heart_half.png",
+  "ppu": 100,
+  "tags": [
+   "pixel",
+   "heart",
+   "health",
+   "life",
+   "hud"
+  ],
+  "pixel": true,
+  "native": [
+   16,
+   16
+  ]
+ },
+ {
+  "id": "px_heart_empty",
+  "category": "pixel",
+  "name": "Heart Empty",
+  "file": "pixel/heart_empty.png",
+  "ppu": 100,
+  "tags": [
+   "pixel",
+   "heart",
+   "health",
+   "life",
+   "hud"
+  ],
+  "pixel": true,
+  "native": [
+   16,
+   16
+  ]
+ },
+ {
+  "id": "px_heart_container",
+  "category": "pixel",
+  "name": "Heart Container",
+  "file": "pixel/heart_container.png",
+  "ppu": 100,
+  "tags": [
+   "pixel",
+   "heart",
+   "health",
+   "life",
+   "hud"
+  ],
+  "pixel": true,
+  "native": [
+   16,
+   16
+  ]
+ },
+ {
+  "id": "px_mana",
+  "category": "pixel",
+  "name": "Mana Drop",
+  "file": "pixel/mana.png",
+  "ppu": 100,
+  "tags": [
+   "pixel",
+   "mana",
+   "magic",
+   "drop",
+   "hud"
+  ],
+  "pixel": true,
+  "native": [
+   16,
+   16
+  ]
+ },
+ {
+  "id": "px_coin",
+  "category": "pixel",
+  "name": "Coin",
+  "file": "pixel/coin.png",
+  "ppu": 100,
+  "tags": [
+   "pixel",
+   "coin",
+   "gold",
+   "money",
+   "currency"
+  ],
+  "pixel": true,
+  "native": [
+   16,
+   16
+  ]
+ },
+ {
+  "id": "px_gem_red",
+  "category": "pixel",
+  "name": "Gem Red",
+  "file": "pixel/gem_red.png",
+  "ppu": 100,
+  "tags": [
+   "pixel",
+   "gem",
+   "jewel",
+   "crystal",
+   "red"
+  ],
+  "pixel": true,
+  "native": [
+   16,
+   16
+  ]
+ },
+ {
+  "id": "px_gem_blue",
+  "category": "pixel",
+  "name": "Gem Blue",
+  "file": "pixel/gem_blue.png",
+  "ppu": 100,
+  "tags": [
+   "pixel",
+   "gem",
+   "jewel",
+   "crystal",
+   "blue"
+  ],
+  "pixel": true,
+  "native": [
+   16,
+   16
+  ]
+ },
+ {
+  "id": "px_gem_green",
+  "category": "pixel",
+  "name": "Gem Green",
+  "file": "pixel/gem_green.png",
+  "ppu": 100,
+  "tags": [
+   "pixel",
+   "gem",
+   "jewel",
+   "crystal",
+   "green"
+  ],
+  "pixel": true,
+  "native": [
+   16,
+   16
+  ]
+ },
+ {
+  "id": "px_gem_yellow",
+  "category": "pixel",
+  "name": "Gem Yellow",
+  "file": "pixel/gem_yellow.png",
+  "ppu": 100,
+  "tags": [
+   "pixel",
+   "gem",
+   "jewel",
+   "crystal",
+   "yellow"
+  ],
+  "pixel": true,
+  "native": [
+   16,
+   16
+  ]
+ },
+ {
+  "id": "px_star",
+  "category": "pixel",
+  "name": "Star",
+  "file": "pixel/star.png",
+  "ppu": 100,
+  "tags": [
+   "pixel",
+   "star",
+   "rating",
+   "favorite"
+  ],
+  "pixel": true,
+  "native": [
+   16,
+   16
+  ]
+ },
+ {
+  "id": "px_key",
+  "category": "pixel",
+  "name": "Key",
+  "file": "pixel/key.png",
+  "ppu": 100,
+  "tags": [
+   "pixel",
+   "key",
+   "item",
+   "unlock"
+  ],
+  "pixel": true,
+  "native": [
+   16,
+   16
+  ]
+ },
+ {
+  "id": "px_sword",
+  "category": "pixel",
+  "name": "Sword",
+  "file": "pixel/sword.png",
+  "ppu": 100,
+  "tags": [
+   "pixel",
+   "sword",
+   "weapon",
+   "attack",
+   "item"
+  ],
+  "pixel": true,
+  "native": [
+   16,
+   16
+  ]
+ },
+ {
+  "id": "px_shield",
+  "category": "pixel",
+  "name": "Shield",
+  "file": "pixel/shield.png",
+  "ppu": 100,
+  "tags": [
+   "pixel",
+   "shield",
+   "defense",
+   "armor",
+   "item"
+  ],
+  "pixel": true,
+  "native": [
+   16,
+   16
+  ]
+ },
+ {
+  "id": "px_potion_red",
+  "category": "pixel",
+  "name": "Potion Red",
+  "file": "pixel/potion_red.png",
+  "ppu": 100,
+  "tags": [
+   "pixel",
+   "potion",
+   "item",
+   "consumable",
+   "red"
+  ],
+  "pixel": true,
+  "native": [
+   16,
+   16
+  ]
+ },
+ {
+  "id": "px_potion_blue",
+  "category": "pixel",
+  "name": "Potion Blue",
+  "file": "pixel/potion_blue.png",
+  "ppu": 100,
+  "tags": [
+   "pixel",
+   "potion",
+   "item",
+   "consumable",
+   "blue"
+  ],
+  "pixel": true,
+  "native": [
+   16,
+   16
+  ]
+ },
+ {
+  "id": "px_potion_green",
+  "category": "pixel",
+  "name": "Potion Green",
+  "file": "pixel/potion_green.png",
+  "ppu": 100,
+  "tags": [
+   "pixel",
+   "potion",
+   "item",
+   "consumable",
+   "green"
+  ],
+  "pixel": true,
+  "native": [
+   16,
+   16
+  ]
+ },
+ {
+  "id": "px_scroll",
+  "category": "pixel",
+  "name": "Scroll",
+  "file": "pixel/scroll.png",
+  "ppu": 100,
+  "tags": [
+   "pixel",
+   "scroll",
+   "quest",
+   "map",
+   "item"
+  ],
+  "pixel": true,
+  "native": [
+   16,
+   16
+  ]
+ },
+ {
+  "id": "px_bomb",
+  "category": "pixel",
+  "name": "Bomb",
+  "file": "pixel/bomb.png",
+  "ppu": 100,
+  "tags": [
+   "pixel",
+   "bomb",
+   "weapon",
+   "item"
+  ],
+  "pixel": true,
+  "native": [
+   16,
+   16
+  ]
+ },
+ {
+  "id": "px_crown",
+  "category": "pixel",
+  "name": "Crown",
+  "file": "pixel/crown.png",
+  "ppu": 100,
+  "tags": [
+   "pixel",
+   "crown",
+   "king",
+   "rank",
+   "item"
+  ],
+  "pixel": true,
+  "native": [
+   16,
+   16
+  ]
+ },
+ {
+  "id": "px_chest_closed",
+  "category": "pixel",
+  "name": "Chest Closed",
+  "file": "pixel/chest_closed.png",
+  "ppu": 100,
+  "tags": [
+   "pixel",
+   "chest",
+   "loot",
+   "treasure"
+  ],
+  "pixel": true,
+  "native": [
+   16,
+   16
+  ]
+ },
+ {
+  "id": "px_chest_open",
+  "category": "pixel",
+  "name": "Chest Open",
+  "file": "pixel/chest_open.png",
+  "ppu": 100,
+  "tags": [
+   "pixel",
+   "chest",
+   "loot",
+   "treasure"
+  ],
+  "pixel": true,
+  "native": [
+   16,
+   16
+  ]
+ },
+ {
+  "id": "px_chest_32",
+  "category": "pixel",
+  "name": "Chest Large",
+  "file": "pixel/chest_32.png",
+  "ppu": 100,
+  "tags": [
+   "pixel",
+   "chest",
+   "loot",
+   "treasure",
+   "large"
+  ],
+  "pixel": true,
+  "native": [
+   32,
+   32
+  ]
+ },
+ {
+  "id": "px_tree",
+  "category": "pixel",
+  "name": "Tree",
+  "file": "pixel/tree.png",
+  "ppu": 100,
+  "tags": [
+   "pixel",
+   "tree",
+   "nature",
+   "scenery",
+   "large"
+  ],
+  "pixel": true,
+  "native": [
+   32,
+   32
+  ]
+ },
+ {
+  "id": "px_bush",
+  "category": "pixel",
+  "name": "Bush",
+  "file": "pixel/bush.png",
+  "ppu": 100,
+  "tags": [
+   "pixel",
+   "bush",
+   "nature",
+   "scenery"
+  ],
+  "pixel": true,
+  "native": [
+   16,
+   16
+  ]
+ },
+ {
+  "id": "px_rock",
+  "category": "pixel",
+  "name": "Rock",
+  "file": "pixel/rock.png",
+  "ppu": 100,
+  "tags": [
+   "pixel",
+   "rock",
+   "stone",
+   "scenery"
+  ],
+  "pixel": true,
+  "native": [
+   16,
+   16
+  ]
+ },
+ {
+  "id": "px_flower",
+  "category": "pixel",
+  "name": "Flower",
+  "file": "pixel/flower.png",
+  "ppu": 100,
+  "tags": [
+   "pixel",
+   "flower",
+   "nature",
+   "scenery"
+  ],
+  "pixel": true,
+  "native": [
+   16,
+   16
+  ]
+ },
+ {
+  "id": "px_mushroom",
+  "category": "pixel",
+  "name": "Mushroom",
+  "file": "pixel/mushroom.png",
+  "ppu": 100,
+  "tags": [
+   "pixel",
+   "mushroom",
+   "nature",
+   "scenery"
+  ],
+  "pixel": true,
+  "native": [
+   16,
+   16
+  ]
+ },
+ {
+  "id": "px_skull",
+  "category": "pixel",
+  "name": "Skull",
+  "file": "pixel/skull.png",
+  "ppu": 100,
+  "tags": [
+   "pixel",
+   "skull",
+   "danger",
+   "death"
+  ],
+  "pixel": true,
+  "native": [
+   16,
+   16
+  ]
+ },
+ {
+  "id": "px_arrow",
+  "category": "pixel",
+  "name": "Arrow",
+  "file": "pixel/arrow.png",
+  "ppu": 100,
+  "tags": [
+   "pixel",
+   "arrow",
+   "weapon",
+   "ammo"
+  ],
+  "pixel": true,
+  "native": [
+   16,
+   16
+  ]
+ },
+ {
+  "id": "px_torch",
+  "category": "pixel",
+  "name": "Torch",
+  "file": "pixel/torch.png",
+  "ppu": 100,
+  "tags": [
+   "pixel",
+   "torch",
+   "fire",
+   "light"
+  ],
+  "pixel": true,
+  "native": [
+   16,
+   16
+  ]
+ },
+ {
+  "id": "px_fire",
+  "category": "pixel",
+  "name": "Fire",
+  "file": "pixel/fire.png",
+  "ppu": 100,
+  "tags": [
+   "pixel",
+   "fire",
+   "flame",
+   "effect"
+  ],
+  "pixel": true,
+  "native": [
+   16,
+   16
+  ]
+ },
+ {
+  "id": "px_snowflake",
+  "category": "pixel",
+  "name": "Snowflake",
+  "file": "pixel/snowflake.png",
+  "ppu": 100,
+  "tags": [
+   "pixel",
+   "snowflake",
+   "ice",
+   "cold",
+   "effect"
+  ],
+  "pixel": true,
+  "native": [
+   16,
+   16
+  ]
+ },
+ {
+  "id": "px_panel_stone",
+  "category": "pixel",
+  "name": "Panel Stone",
+  "file": "pixel/panel_stone.png",
+  "ppu": 50,
+  "tags": [
+   "pixel",
+   "panel",
+   "frame",
+   "window",
+   "ui"
+  ],
+  "pixel": true,
+  "native": [
+   48,
+   48
+  ],
+  "slice": [
+   24,
+   24,
+   24,
+   24
+  ]
+ },
+ {
+  "id": "px_panel_wood",
+  "category": "pixel",
+  "name": "Panel Wood",
+  "file": "pixel/panel_wood.png",
+  "ppu": 50,
+  "tags": [
+   "pixel",
+   "panel",
+   "frame",
+   "window",
+   "ui"
+  ],
+  "pixel": true,
+  "native": [
+   48,
+   48
+  ],
+  "slice": [
+   24,
+   24,
+   24,
+   24
+  ]
+ },
+ {
+  "id": "px_panel_gold",
+  "category": "pixel",
+  "name": "Panel Gold",
+  "file": "pixel/panel_gold.png",
+  "ppu": 50,
+  "tags": [
+   "pixel",
+   "panel",
+   "frame",
+   "window",
+   "ui"
+  ],
+  "pixel": true,
+  "native": [
+   48,
+   48
+  ],
+  "slice": [
+   24,
+   24,
+   24,
+   24
+  ]
+ },
+ {
+  "id": "px_button_blue",
+  "category": "pixel",
+  "name": "Button Blue",
+  "file": "pixel/button_blue.png",
+  "ppu": 50,
+  "tags": [
+   "pixel",
+   "button",
+   "ui",
+   "blue"
+  ],
+  "pixel": true,
+  "native": [
+   48,
+   16
+  ],
+  "slice": [
+   20,
+   16,
+   20,
+   16
+  ]
+ },
+ {
+  "id": "px_button_green",
+  "category": "pixel",
+  "name": "Button Green",
+  "file": "pixel/button_green.png",
+  "ppu": 50,
+  "tags": [
+   "pixel",
+   "button",
+   "ui",
+   "green"
+  ],
+  "pixel": true,
+  "native": [
+   48,
+   16
+  ],
+  "slice": [
+   20,
+   16,
+   20,
+   16
+  ]
+ },
+ {
+  "id": "px_button_red",
+  "category": "pixel",
+  "name": "Button Red",
+  "file": "pixel/button_red.png",
+  "ppu": 50,
+  "tags": [
+   "pixel",
+   "button",
+   "ui",
+   "red"
+  ],
+  "pixel": true,
+  "native": [
+   48,
+   16
+  ],
+  "slice": [
+   20,
+   16,
+   20,
+   16
+  ]
+ },
+ {
+  "id": "px_button_yellow",
+  "category": "pixel",
+  "name": "Button Yellow",
+  "file": "pixel/button_yellow.png",
+  "ppu": 50,
+  "tags": [
+   "pixel",
+   "button",
+   "ui",
+   "yellow"
+  ],
+  "pixel": true,
+  "native": [
+   48,
+   16
+  ],
+  "slice": [
+   20,
+   16,
+   20,
+   16
+  ]
+ },
+ {
+  "id": "px_bar_health_bg",
+  "category": "pixel",
+  "name": "Health Bar Back",
+  "file": "pixel/bar_health_bg.png",
+  "ppu": 50,
+  "tags": [
+   "pixel",
+   "bar",
+   "health",
+   "hud",
+   "background"
+  ],
+  "pixel": true,
+  "native": [
+   64,
+   8
+  ],
+  "slice": [
+   16,
+   0,
+   16,
+   0
+  ]
+ },
+ {
+  "id": "px_bar_health_fill",
+  "category": "pixel",
+  "name": "Health Bar Fill",
+  "file": "pixel/bar_health_fill.png",
+  "ppu": 50,
+  "tags": [
+   "pixel",
+   "bar",
+   "health",
+   "hud",
+   "fill"
+  ],
+  "pixel": true,
+  "native": [
+   64,
+   8
+  ],
+  "slice": [
+   16,
+   0,
+   16,
+   0
+  ]
+ },
+ {
+  "id": "px_bar_mana_bg",
+  "category": "pixel",
+  "name": "Mana Bar Back",
+  "file": "pixel/bar_mana_bg.png",
+  "ppu": 50,
+  "tags": [
+   "pixel",
+   "bar",
+   "mana",
+   "hud",
+   "background"
+  ],
+  "pixel": true,
+  "native": [
+   64,
+   8
+  ],
+  "slice": [
+   16,
+   0,
+   16,
+   0
+  ]
+ },
+ {
+  "id": "px_bar_mana_fill",
+  "category": "pixel",
+  "name": "Mana Bar Fill",
+  "file": "pixel/bar_mana_fill.png",
+  "ppu": 50,
+  "tags": [
+   "pixel",
+   "bar",
+   "mana",
+   "hud",
+   "fill"
+  ],
+  "pixel": true,
+  "native": [
+   64,
+   8
+  ],
+  "slice": [
+   16,
+   0,
+   16,
+   0
+  ]
+ },
+ {
+  "id": "px_bar_xp_bg",
+  "category": "pixel",
+  "name": "XP Bar Back",
+  "file": "pixel/bar_xp_bg.png",
+  "ppu": 50,
+  "tags": [
+   "pixel",
+   "bar",
+   "xp",
+   "hud",
+   "background"
+  ],
+  "pixel": true,
+  "native": [
+   64,
+   8
+  ],
+  "slice": [
+   16,
+   0,
+   16,
+   0
+  ]
+ },
+ {
+  "id": "px_bar_xp_fill",
+  "category": "pixel",
+  "name": "XP Bar Fill",
+  "file": "pixel/bar_xp_fill.png",
+  "ppu": 50,
+  "tags": [
+   "pixel",
+   "bar",
+   "xp",
+   "hud",
+   "fill"
+  ],
+  "pixel": true,
+  "native": [
+   64,
+   8
+  ],
+  "slice": [
+   16,
+   0,
+   16,
+   0
+  ]
+ },
+ {
+  "id": "px_slot",
+  "category": "pixel",
+  "name": "Slot Frame",
+  "file": "pixel/slot.png",
+  "ppu": 50,
+  "tags": [
+   "pixel",
+   "slot",
+   "inventory",
+   "frame",
+   "ui"
+  ],
+  "pixel": true,
+  "native": [
+   24,
+   24
+  ],
+  "slice": [
+   12,
+   12,
+   12,
+   12
+  ]
+ },
+ {
+  "id": "px_dialog",
+  "category": "pixel",
+  "name": "Dialog Box",
+  "file": "pixel/dialog.png",
+  "ppu": 50,
+  "tags": [
+   "pixel",
+   "dialog",
+   "text",
+   "box",
+   "ui"
+  ],
+  "pixel": true,
+  "native": [
+   64,
+   32
+  ],
+  "slice": [
+   20,
+   20,
+   20,
+   20
+  ]
+ },
+ {
+  "id": "px_cursor",
+  "category": "pixel",
+  "name": "Cursor",
+  "file": "pixel/cursor.png",
+  "ppu": 100,
+  "tags": [
+   "pixel",
+   "cursor",
+   "pointer",
+   "ui"
+  ],
+  "pixel": true,
+  "native": [
+   16,
+   16
+  ]
+ },
+ {
+  "id": "px_checkbox_off",
+  "category": "pixel",
+  "name": "Checkbox Off",
+  "file": "pixel/checkbox_off.png",
+  "ppu": 100,
+  "tags": [
+   "pixel",
+   "checkbox",
+   "toggle",
+   "ui"
+  ],
+  "pixel": true,
+  "native": [
+   16,
+   16
+  ]
+ },
+ {
+  "id": "px_checkbox_on",
+  "category": "pixel",
+  "name": "Checkbox On",
+  "file": "pixel/checkbox_on.png",
+  "ppu": 100,
+  "tags": [
+   "pixel",
+   "checkbox",
+   "toggle",
+   "ui"
+  ],
+  "pixel": true,
+  "native": [
+   16,
+   16
+  ]
+ },
+ {
+  "id": "px_arrow_left",
+  "category": "pixel",
+  "name": "Arrow Left",
+  "file": "pixel/arrow_left.png",
+  "ppu": 100,
+  "tags": [
+   "pixel",
+   "arrow",
+   "ui",
+   "left",
+   "navigation"
+  ],
+  "pixel": true,
+  "native": [
+   16,
+   16
+  ]
+ },
+ {
+  "id": "px_arrow_down",
+  "category": "pixel",
+  "name": "Arrow Down",
+  "file": "pixel/arrow_down.png",
+  "ppu": 100,
+  "tags": [
+   "pixel",
+   "arrow",
+   "ui",
+   "down",
+   "navigation"
+  ],
+  "pixel": true,
+  "native": [
+   16,
+   16
+  ]
+ },
+ {
+  "id": "px_arrow_right",
+  "category": "pixel",
+  "name": "Arrow Right",
+  "file": "pixel/arrow_right.png",
+  "ppu": 100,
+  "tags": [
+   "pixel",
+   "arrow",
+   "ui",
+   "right",
+   "navigation"
+  ],
+  "pixel": true,
+  "native": [
+   16,
+   16
+  ]
+ },
+ {
+  "id": "px_arrow_up",
+  "category": "pixel",
+  "name": "Arrow Up",
+  "file": "pixel/arrow_up.png",
+  "ppu": 100,
+  "tags": [
+   "pixel",
+   "arrow",
+   "ui",
+   "up",
+   "navigation"
+  ],
+  "pixel": true,
+  "native": [
+   16,
+   16
+  ]
+ },
+ {
+  "id": "icon_bolt",
+  "category": "icons",
+  "name": "Lightning",
+  "file": "icons/bolt.png",
+  "tags": [
+   "icon",
+   "lightning",
+   "energy",
+   "power"
+  ],
+  "pixel": false
+ },
+ {
+  "id": "icon_fire",
+  "category": "icons",
+  "name": "Fire",
+  "file": "icons/fire.png",
+  "tags": [
+   "icon",
+   "fire",
+   "flame",
+   "hot"
+  ],
+  "pixel": false
+ },
+ {
+  "id": "icon_ice",
+  "category": "icons",
+  "name": "Ice crystal",
+  "file": "icons/ice.png",
+  "tags": [
+   "icon",
+   "ice",
+   "crystal",
+   "cold"
+  ],
+  "pixel": false
+ },
+ {
+  "id": "icon_hammer",
+  "category": "icons",
+  "name": "Hammer",
+  "file": "icons/hammer.png",
+  "tags": [
+   "icon",
+   "hammer",
+   "weapon",
+   "tool"
+  ],
+  "pixel": false
+ },
+ {
+  "id": "icon_axe",
+  "category": "icons",
+  "name": "Axe",
+  "file": "icons/axe.png",
+  "tags": [
+   "icon",
+   "axe",
+   "weapon"
+  ],
+  "pixel": false
+ },
+ {
+  "id": "icon_bow",
+  "category": "icons",
+  "name": "Bow",
+  "file": "icons/bow.png",
+  "tags": [
+   "icon",
+   "bow",
+   "arrow",
+   "weapon"
+  ],
+  "pixel": false
+ },
+ {
+  "id": "icon_staff",
+  "category": "icons",
+  "name": "Magic staff",
+  "file": "icons/staff.png",
+  "tags": [
+   "icon",
+   "staff",
+   "magic",
+   "wand"
+  ],
+  "pixel": false
+ },
+ {
+  "id": "icon_ring",
+  "category": "icons",
+  "name": "Ring",
+  "file": "icons/ring.png",
+  "tags": [
+   "icon",
+   "ring",
+   "jewelry",
+   "gem"
+  ],
+  "pixel": false
+ },
+ {
+  "id": "icon_book",
+  "category": "icons",
+  "name": "Spellbook",
+  "file": "icons/book.png",
+  "tags": [
+   "icon",
+   "book",
+   "spell",
+   "magic"
+  ],
+  "pixel": false
+ },
+ {
+  "id": "icon_trophy",
+  "category": "icons",
+  "name": "Trophy",
+  "file": "icons/trophy.png",
+  "tags": [
+   "icon",
+   "trophy",
+   "cup",
+   "win"
+  ],
+  "pixel": false
+ },
+ {
+  "id": "icon_medal",
+  "category": "icons",
+  "name": "Medal",
+  "file": "icons/medal.png",
+  "tags": [
+   "icon",
+   "medal",
+   "award",
+   "win"
+  ],
+  "pixel": false
+ }
+]

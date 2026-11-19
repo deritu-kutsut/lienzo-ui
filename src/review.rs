@@ -17,6 +17,38 @@ pub struct Problem {
     /// Text in Spanish (translated when displayed with `i18n::tf`).
     pub template: &'static str,
     pub data: Vec<String>,
+    /// One-click quick fix, when there is a safe one.
+    pub fix: Option<Fix>,
+    /// The problem is in the portrait layout (the fix is applied there).
+    pub portrait: bool,
+}
+
+/// Safe automatic fixes offered by the review window (each one is a pure `Doc` -> `Doc` change, see [`apply_fix`]).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Fix {
+    /// Raise the text size to the minimum.
+    TextSize,
+    /// Raise a control to the minimum touch size, keeping its centre.
+    Touch,
+    /// Rename a duplicated name (appends _2, _3...).
+    UniqueName,
+    /// Move a partly off-page element inside the page.
+    MoveInside,
+    /// Remove a reference to an image file that does not exist.
+    RemoveImage,
+    /// Darken / lighten the text colour until the contrast is enough.
+    Contrast,
+}
+
+/// A missing image reference may be removed automatically only when it is a plain relative library / design-folder name:
+/// an absolute, UNC, stream, `unity:` or otherwise blocked path may be missing only because this machine cannot see it.
+pub fn removable_missing_image(name: &str) -> bool {
+    !name.starts_with("unity:") && !crate::library::is_unc_or_stream(name) && !std::path::Path::new(name).is_absolute() && crate::library::resolve_image(name) != crate::library::blocked_path() && !crate::library::resolve_image(name).exists()
+}
+
+/// Fixes that "Fix all safe issues" never applies on its own (deleting a reference loses information).
+fn is_bulk_fix(f: Fix) -> bool {
+    f != Fix::RemoveImage
 }
 
 /// Minimum legible font size at 1080 p height (scaled with the reference resolution).
@@ -167,7 +199,7 @@ fn review_layout(doc: &Doc, portrait: bool) -> Vec<Problem> {
     let vis = visible_all(doc);
     let mut image_ok: std::collections::HashMap<&str, bool> = std::collections::HashMap::new();
     for (idx, e) in doc.elements.iter().enumerate() {
-        let mut p = |level, template, data: Vec<String>| out.push(Problem { level, id: e.id, element: e.name.clone(), template, data });
+        let mut p = |level, template, data: Vec<String>, fix: Option<Fix>| out.push(Problem { level, id: e.id, element: e.name.clone(), template, data, fix, portrait });
         if !vis[idx] {
             continue;
         }
@@ -175,7 +207,7 @@ fn review_layout(doc: &Doc, portrait: bool) -> Vec<Problem> {
         if with_text {
             let min = MIN_FONT * scale;
             if e.font_size < min {
-                p(Level::Warning, "{} px text: hard to read on small screens (recommended minimum {} px)", vec![below(e.font_size, min), format!("{:.0}", min)]);
+                p(Level::Warning, "{} px text: hard to read on small screens (recommended minimum {} px)", vec![below(e.font_size, min), format!("{:.0}", min)], Some(Fix::TextSize));
             }
             // WCAG does not require contrast for disabled controls.
             let disabled = !e.interactable && matches!(e.kind, Kind::Button | Kind::Toggle);
@@ -186,27 +218,29 @@ fn review_layout(doc: &Doc, portrait: bool) -> Vec<Problem> {
             let min_c = if big { 3.0 } else { 4.5 };
             if c < min_c && !disabled {
                 let level = if c < 2.0 { Level::Error } else { Level::Warning };
-                p(level, "Text contrast {}:1 (WCAG asks for {}:1)", vec![floor1(c), format!("{:.1}", min_c)]);
+                let fix = contrast_color(doc, &vis, idx).map(|_| Fix::Contrast);
+                p(level, "Text contrast {}:1 (WCAG asks for {}:1)", vec![floor1(c), format!("{:.1}", min_c)], fix);
             }
         }
         if is_pressable(e) {
             let min = MIN_TOUCH * scale;
             if e.w.min(e.h) < min {
-                p(Level::Warning, "{} px control: hard to tap with a finger (recommended minimum {} px)", vec![below(e.w.min(e.h), min), format!("{:.0}", min)]);
+                p(Level::Warning, "{} px control: hard to tap with a finger (recommended minimum {} px)", vec![below(e.w.min(e.h), min), format!("{:.0}", min)], Some(Fix::Touch));
             }
         }
         let outside = e.x + e.w < 0.0 || e.y + e.h < 0.0 || e.x > doc.width || e.y > doc.height;
         if outside && e.rot.abs() < 0.01 {
-            p(Level::Error, "Completely outside the page: it will not be visible in the game", vec![]);
+            p(Level::Error, "Completely outside the page: it will not be visible in the game", vec![], None);
         } else if e.parent.is_none() && (e.x < -1.0 || e.y < -1.0 || e.x + e.w > doc.width + 1.0 || e.y + e.h > doc.height + 1.0) && e.rot.abs() < 0.01 {
-            p(Level::Warning, "Partly outside the page", vec![]);
+            let fits = e.w <= doc.width + 1.0 && e.h <= doc.height + 1.0;
+            p(Level::Warning, "Partly outside the page", vec![], fits.then_some(Fix::MoveInside));
         }
         // Checks that do not depend on the layout (names, files) are made once, on the landscape design.
         if !portrait && is_pressable(e) && names.get(e.name.as_str()).copied().unwrap_or(0) > 1 {
-            p(Level::Warning, "Several elements share this name: GameObject.Find and scripts will only find the first one", vec![]);
+            p(Level::Warning, "Several elements share this name: GameObject.Find and scripts will only find the first one", vec![], Some(Fix::UniqueName));
         }
         if !portrait && e.kind == Kind::Image && !e.image.is_empty() && !*image_ok.entry(e.image.as_str()).or_insert_with(|| crate::library::resolve_image(&e.image).exists()) {
-            p(Level::Error, "Missing image “{}”: it will be exported empty", vec![e.image.clone()]);
+            p(Level::Error, "Missing image “{}”: it will be exported empty", vec![e.image.clone()], removable_missing_image(&e.image).then_some(Fix::RemoveImage));
         }
     }
     if portrait {
@@ -397,7 +431,7 @@ fn font_problems(doc: &Doc, vis: &[bool], out: &mut Vec<Problem>, cmap_of: &dyn 
         let missing = missing_chars(&cmap, &text);
         if !missing.is_empty() {
             let list: Vec<String> = missing.iter().take(12).map(|c| c.to_string()).collect();
-            out.push(Problem { level: Level::Warning, id: e.id, element: e.name.clone(), template: "Font {} lacks characters: {}", data: vec![e.font.clone(), list.join(" ")] });
+            out.push(Problem { level: Level::Warning, id: e.id, element: e.name.clone(), template: "Font {} lacks characters: {}", data: vec![e.font.clone(), list.join(" ")], fix: None, portrait: false });
         }
     }
 }
@@ -408,7 +442,7 @@ fn unity_name_problems(doc: &Doc, out: &mut Vec<Problem>) {
     let mut seen: std::collections::HashMap<(Option<usize>, String), u64> = std::collections::HashMap::new();
     let par = doc.parent_indices(&doc.index_map());
     for (i, e) in doc.elements.iter().enumerate() {
-        let mut p = |template, data: Vec<String>| out.push(Problem { level: Level::Warning, id: e.id, element: e.name.clone(), template, data });
+        let mut p = |template, data: Vec<String>| out.push(Problem { level: Level::Warning, id: e.id, element: e.name.clone(), template, data, fix: None, portrait: false });
         if let Some(u) = e.unity_name.as_deref() {
             if !crate::docext::valid_unity_name(u) {
                 p("Invalid Unity name “{}”: it must not be empty, contain “/” or control characters, or exceed 128 characters (the display name is used instead)", vec![u.to_string()]);
@@ -420,6 +454,163 @@ fn unity_name_problems(doc: &Doc, out: &mut Vec<Problem>) {
             p("Two siblings resolve to the same Unity name “{}”: the exporter will rename this one", vec![name]);
         }
     }
+}
+
+// ---------------------------------------------------------------- quick fixes (pure: Doc in, Doc out)
+
+/// Scale of the minimums for this page (same as the checks use).
+fn page_scale(doc: &Doc) -> f32 {
+    (doc.height.min(doc.width) / 1080.0).max(0.1)
+}
+
+/// Contrast the text needs: 3:1 for large text, 4.5:1 otherwise.
+fn needed_contrast(e: &Element, scale: f32) -> f32 {
+    let big = e.font_size >= 24.0 * scale || (e.bold && e.font_size >= 18.7 * scale);
+    if big { 3.0 } else { 4.5 }
+}
+
+/// New text colour for `idx` that reaches the needed contrast with the smallest change (towards black or white).
+/// None when it already passes or no colour can (e.g. a nearly transparent text).
+fn contrast_color(doc: &Doc, vis: &[bool], idx: usize) -> Option<Rgba> {
+    let e = &doc.elements[idx];
+    let bg = background_of(doc, vis, idx);
+    let need = needed_contrast(e, page_scale(doc));
+    let eval = |c: Rgba| contrast(blend(seen(c, e.opacity), bg), bg);
+    if eval(e.text_color) >= need {
+        return None;
+    }
+    let mut best: Option<(u32, Rgba)> = None;
+    for alpha in [e.text_color[3], 255] {
+        for target in [0u8, 255u8] {
+            for t in 1..=100u32 {
+                let mix = |v: u8| (v as f32 + (target as f32 - v as f32) * t as f32 / 100.0).round() as u8;
+                let c = [mix(e.text_color[0]), mix(e.text_color[1]), mix(e.text_color[2]), alpha];
+                if eval(c) >= need + 0.02 {
+                    if best.is_none_or(|(bt, _)| t < bt) {
+                        best = Some((t, c));
+                    }
+                    break;
+                }
+            }
+        }
+        if best.is_some() {
+            break;
+        }
+    }
+    best.map(|(_, c)| c)
+}
+
+/// Applies one quick fix to element `id` of this (already resolved) design. Returns false when there was nothing to fix.
+pub fn apply_fix(doc: &mut Doc, id: u64, fix: Fix) -> bool {
+    let Some(idx) = doc.index_of(id) else { return false };
+    let scale = page_scale(doc);
+    match fix {
+        Fix::TextSize => {
+            let min = MIN_FONT * scale;
+            let e = &mut doc.elements[idx];
+            if e.font_size >= min {
+                return false;
+            }
+            e.font_size = min.ceil();
+            true
+        }
+        Fix::Touch => {
+            let min = (MIN_TOUCH * scale).ceil();
+            let mut f = doc.elements[idx].frame();
+            if f.w.min(f.h) >= MIN_TOUCH * scale {
+                return false;
+            }
+            f.w = f.w.max(min);
+            f.h = f.h.max(min);
+            doc.set_frame_keep_children(id, &f);
+            true
+        }
+        Fix::UniqueName => {
+            let name = doc.elements[idx].name.clone();
+            if doc.elements.iter().filter(|o| o.name == name).count() <= 1 {
+                return false;
+            }
+            let used: std::collections::HashSet<&str> = doc.elements.iter().map(|o| o.name.as_str()).collect();
+            let new = (2..).map(|n| format!("{}_{}", name, n)).find(|c| !used.contains(c.as_str())).unwrap_or_default();
+            doc.elements[idx].name = new;
+            true
+        }
+        Fix::MoveInside => {
+            let e = &doc.elements[idx];
+            if e.parent.is_some() || e.w > doc.width + 1.0 || e.h > doc.height + 1.0 {
+                return false;
+            }
+            let nx = e.x.clamp(0.0, (doc.width - e.w).max(0.0));
+            let ny = e.y.clamp(0.0, (doc.height - e.h).max(0.0));
+            let (dx, dy) = (nx - e.x, ny - e.y);
+            if dx == 0.0 && dy == 0.0 {
+                return false;
+            }
+            doc.translate_subtree(id, dx, dy);
+            true
+        }
+        Fix::RemoveImage => {
+            let e = &mut doc.elements[idx];
+            if e.kind != Kind::Image || e.image.is_empty() || crate::library::resolve_image(&e.image).exists() || !removable_missing_image(&e.image) {
+                return false;
+            }
+            e.image.clear();
+            true
+        }
+        Fix::Contrast => {
+            let vis = visible_all(doc);
+            match contrast_color(doc, &vis, idx) {
+                Some(c) => {
+                    doc.elements[idx].text_color = c;
+                    true
+                }
+                None => false,
+            }
+        }
+    }
+}
+
+/// Runs `f` on the layout the problem belongs to: the design itself (landscape) or its resolved portrait layout, whose
+/// edit is folded back into the full design as overrides.
+fn fix_in(doc: &mut Doc, portrait: bool, f: impl FnOnce(&mut Doc) -> bool) -> bool {
+    if portrait && doc.portrait.is_some() {
+        let old = doc.resolved_for(crate::docext::Orientation::Portrait);
+        let mut new = old.clone();
+        let ok = f(&mut new);
+        if ok {
+            new.apply_layouts();
+            crate::app::fold_portrait_edit(doc, &old, &new);
+        }
+        ok
+    } else {
+        let ok = f(doc);
+        if ok {
+            doc.apply_layouts();
+        }
+        ok
+    }
+}
+
+/// Applies the quick fix of a problem (landscape or portrait layout). False when it has no fix or nothing changed.
+pub fn fix_problem(doc: &mut Doc, p: &Problem) -> bool {
+    let Some(fix) = p.fix else { return false };
+    fix_in(doc, p.portrait, |d| apply_fix(d, p.id, fix))
+}
+
+/// Fixes every problem that has a safe fix (a few passes: a bigger text needs less contrast...). Returns how many fixes were applied.
+pub fn fix_all(doc: &mut Doc) -> usize {
+    const ORDER: [Fix; 5] = [Fix::TextSize, Fix::Touch, Fix::MoveInside, Fix::UniqueName, Fix::Contrast];
+    let mut total = 0;
+    for _ in 0..4 {
+        let mut todo: Vec<Problem> = review(doc).into_iter().filter(|p| p.fix.is_some_and(is_bulk_fix)).collect();
+        todo.sort_by_key(|p| ORDER.iter().position(|f| Some(*f) == p.fix));
+        let n = todo.iter().filter(|p| fix_problem(doc, p)).count();
+        total += n;
+        if n == 0 {
+            break;
+        }
+    }
+    total
 }
 
 /// Text of a problem in the current language.
@@ -557,7 +748,11 @@ mod tests {
     fn bundled_templates_without_errors() {
         for i in 0..crate::model::TEMPLATES.len() {
             let d = crate::model::template(i, 1920.0, 1080.0);
-            let errors: Vec<String> = review(&d).iter().filter(|p| p.level == Level::Error).map(|p| format!("{}: {}", p.element, describe(p))).collect();
+            let errors: Vec<String> = review(&d).iter().filter(|p| p.level == Level::Error)
+                // pack images are extracted on demand into the library, which another test relocates through APPDATA; pack.rs tests that path
+                .filter(|p| !p.data.iter().any(|a| a.starts_with("pack_")))
+                .map(|p| format!("{}: {}", p.element, describe(p)))
+                .collect();
             assert!(errors.is_empty(), "{}: {:?}", crate::model::TEMPLATES[i], errors);
         }
     }
@@ -592,6 +787,9 @@ impl crate::app::EditorApp {
         let problems = self.review_cache.as_ref().map(|c| c.problems.clone()).unwrap_or_default();
         let mut open = true;
         let mut choose = None;
+        let mut fix_one: Option<Problem> = None;
+        let mut fix_every = false;
+        let can_fix = !self.preview;
         egui::Window::new(t("Review design")).open(&mut open).collapsible(false).default_width(460.0).show(ctx, |ui| {
             let errors = problems.iter().filter(|p| p.level == Level::Error).count();
             let warnings = problems.len() - errors;
@@ -599,6 +797,9 @@ impl crate::app::EditorApp {
                 ui.label(RichText::new(t("No issues: the design passes every check.")).color(crate::theme::ACCENT()));
             } else {
                 ui.label(crate::i18n::tf("Errors: {} · Warnings: {}. Click one to select it.", &[&errors.to_string(), &warnings.to_string()]));
+                if problems.iter().any(|p| p.fix.is_some_and(is_bulk_fix)) && ui.add_enabled(can_fix, egui::Button::new(t("Fix all safe issues"))).on_hover_text(t("Applies every quick fix in one undo step")).clicked() {
+                    fix_every = true;
+                }
             }
             ui.add_space(6.0);
             egui::ScrollArea::vertical().max_height(360.0).show(ui, |ui| {
@@ -608,6 +809,9 @@ impl crate::app::EditorApp {
                         Level::Warning => (t("Warning"), Color32::from_rgb(230, 170, 60)),
                     };
                     ui.horizontal_wrapped(|ui| {
+                        if p.fix.is_some() && ui.add_enabled(can_fix, egui::Button::new(t("Fix")).small()).on_hover_text(t("Fixes this problem (one undo step)")).clicked() {
+                            fix_one = Some(p.clone());
+                        }
                         ui.label(RichText::new(label).strong().color(col));
                         if ui.link(&p.element).clicked() {
                             choose = Some(p.id);
@@ -621,6 +825,19 @@ impl crate::app::EditorApp {
         });
         if let Some(id) = choose {
             self.sel = vec![id];
+        }
+        if fix_every || fix_one.is_some() {
+            let mut n = 0;
+            let one = fix_one;
+            self.edit_full(|d| {
+                n = match &one {
+                    Some(p) => fix_problem(d, p) as usize,
+                    None => fix_all(d),
+                };
+            });
+            self.commit_state(false); // one undo step per click
+            self.review_cache = None; // the list is rebuilt next frame
+            self.status = if n == 0 { t("Nothing to fix here") } else { crate::i18n::tf("Fixed {} issue(s) (Ctrl+Z undoes)", &[&n.to_string()]) };
         }
         self.review_open = open;
     }
@@ -824,5 +1041,278 @@ mod portrait_tests {
         let ps = review(&d);
         assert!(ps.iter().any(|p| p.template.starts_with("{} px text") && p.element.contains("(portrait)")));
         assert!(!ps.iter().any(|p| p.template.starts_with("{} px text") && !p.element.contains("(portrait)")));
+    }
+}
+
+#[cfg(test)]
+mod fix_tests {
+    use super::*;
+    use crate::model::{Doc, Element, Kind};
+
+    fn doc() -> Doc {
+        let mut d = Doc::empty(1920.0, 1080.0);
+        d.background = [255, 255, 255, 255];
+        d
+    }
+
+    fn has(d: &Doc, id: u64, fix: Fix) -> bool {
+        review(d).iter().any(|p| p.id == id && p.fix == Some(fix))
+    }
+
+    #[test]
+    fn text_size_is_raised_to_the_minimum() {
+        let mut d = doc();
+        let mut t = Element::new(0, Kind::Text);
+        t.text = "hola".into();
+        t.text_color = [0, 0, 0, 255];
+        t.font_size = 12.0;
+        let id = d.add(t);
+        assert!(has(&d, id, Fix::TextSize));
+        assert!(apply_fix(&mut d, id, Fix::TextSize));
+        assert_eq!(d.get(id).unwrap().font_size, 18.0);
+        assert!(!review(&d).iter().any(|p| p.template.starts_with("{} px text")));
+        assert!(!apply_fix(&mut d, id, Fix::TextSize), "second time: nothing to do");
+        // a 4K page scales the minimum
+        let mut big = Doc::empty(3840.0, 2160.0);
+        let mut t = Element::new(0, Kind::Text);
+        t.text = "x".into();
+        t.font_size = 20.0;
+        let id = big.add(t);
+        assert!(apply_fix(&mut big, id, Fix::TextSize));
+        assert_eq!(big.get(id).unwrap().font_size, 36.0);
+    }
+
+    #[test]
+    fn touch_size_keeps_the_centre() {
+        let mut d = doc();
+        let mut b = Element::new(0, Kind::Button);
+        b.x = 100.0;
+        b.y = 100.0;
+        b.w = 40.0;
+        b.h = 90.0;
+        let id = d.add(b);
+        let c0 = d.get(id).unwrap().center();
+        assert!(has(&d, id, Fix::Touch));
+        assert!(apply_fix(&mut d, id, Fix::Touch));
+        let e = d.get(id).unwrap();
+        assert_eq!((e.w, e.h), (64.0, 90.0), "only the short side grows");
+        assert_eq!(e.center(), c0);
+        assert!(!review(&d).iter().any(|p| p.template.starts_with("{} px control")));
+    }
+
+    #[test]
+    fn duplicate_names_get_a_suffix() {
+        let mut d = doc();
+        let ids: Vec<u64> = (0..3)
+            .map(|i| {
+                let mut b = Element::new(0, Kind::Button);
+                b.name = "Play".into();
+                b.x = 100.0 + 200.0 * i as f32;
+                b.y = 100.0;
+                b.w = 100.0;
+                b.h = 100.0;
+                d.add(b)
+            })
+            .collect();
+        assert!(has(&d, ids[1], Fix::UniqueName));
+        assert!(apply_fix(&mut d, ids[1], Fix::UniqueName));
+        assert_eq!(d.get(ids[1]).unwrap().name, "Play_2");
+        assert!(apply_fix(&mut d, ids[2], Fix::UniqueName));
+        assert_eq!(d.get(ids[2]).unwrap().name, "Play_3", "skips names already taken");
+        assert!(!review(&d).iter().any(|p| p.template.contains("GameObject.Find")));
+        assert!(!apply_fix(&mut d, ids[0], Fix::UniqueName), "now unique");
+    }
+
+    #[test]
+    fn partly_off_page_elements_move_inside_with_their_children() {
+        let mut d = doc();
+        let mut p = Element::new(0, Kind::Panel);
+        p.x = 1800.0;
+        p.y = -30.0;
+        p.w = 300.0;
+        p.h = 200.0;
+        let pid = d.add(p);
+        let mut c = Element::new(0, Kind::Text);
+        c.text = "child text".into();
+        c.font_size = 30.0;
+        c.x = 1810.0;
+        c.y = -20.0;
+        c.w = 100.0;
+        c.h = 40.0;
+        c.parent = Some(pid);
+        let cid = d.add(c);
+        assert!(has(&d, pid, Fix::MoveInside));
+        assert!(apply_fix(&mut d, pid, Fix::MoveInside));
+        let e = d.get(pid).unwrap();
+        assert_eq!((e.x, e.y), (1620.0, 0.0));
+        let ch = d.get(cid).unwrap();
+        assert_eq!((ch.x, ch.y), (1630.0, 10.0), "children move with the parent");
+        assert!(!review(&d).iter().any(|p| p.template == "Partly outside the page"));
+        // an element bigger than the page has no safe fix
+        let mut d = doc();
+        let mut p = Element::new(0, Kind::Panel);
+        p.x = -10.0;
+        p.w = 3000.0;
+        p.h = 100.0;
+        let id = d.add(p);
+        assert!(!has(&d, id, Fix::MoveInside));
+        assert!(!apply_fix(&mut d, id, Fix::MoveInside));
+    }
+
+    #[test]
+    fn missing_image_reference_is_removed() {
+        let mut d = doc();
+        let mut i = Element::new(0, Kind::Image);
+        i.image = "definitely-missing-image-xyz.png".into();
+        i.w = 100.0;
+        i.h = 100.0;
+        let id = d.add(i);
+        assert!(has(&d, id, Fix::RemoveImage));
+        assert!(apply_fix(&mut d, id, Fix::RemoveImage));
+        assert!(d.get(id).unwrap().image.is_empty());
+        assert!(!review(&d).iter().any(|p| p.template.starts_with("Missing image")));
+        assert!(!apply_fix(&mut d, id, Fix::RemoveImage));
+    }
+
+    #[test]
+    fn unsafe_image_paths_get_no_remove_fix_and_fix_all_never_removes_images() {
+        for bad in ["C:/Users/someone/pics/missing.png", "/etc/missing.png", r"\server\share\missing.png", "unity:Assets/missing.png", "../up/missing.png", "a/b.png:stream"] {
+            let mut d = doc();
+            let mut i = Element::new(0, Kind::Image);
+            i.image = bad.into();
+            i.w = 100.0;
+            i.h = 100.0;
+            let id = d.add(i);
+            assert!(review(&d).iter().any(|p| p.template.starts_with("Missing image")), "{} still reported", bad);
+            assert!(!has(&d, id, Fix::RemoveImage), "{}: no fix offered", bad);
+            assert!(!apply_fix(&mut d, id, Fix::RemoveImage), "{}: not applied", bad);
+            assert_eq!(d.get(id).unwrap().image, bad);
+        }
+        // a plain relative missing file does have the fix, but "Fix all" leaves it alone
+        let mut d = doc();
+        let mut i = Element::new(0, Kind::Image);
+        i.image = "definitely-missing-image-xyz.png".into();
+        i.w = 100.0;
+        i.h = 100.0;
+        let id = d.add(i);
+        assert!(has(&d, id, Fix::RemoveImage));
+        assert_eq!(fix_all(&mut d), 0);
+        assert_eq!(d.get(id).unwrap().image, "definitely-missing-image-xyz.png");
+    }
+
+    #[test]
+    fn contrast_is_reached_by_darkening_or_lightening() {
+        // light grey on white: darken
+        let mut d = doc();
+        let mut t = Element::new(0, Kind::Text);
+        t.text = "hola".into();
+        t.text_color = [200, 200, 200, 255];
+        t.font_size = 20.0;
+        let id = d.add(t);
+        assert!(has(&d, id, Fix::Contrast));
+        assert!(apply_fix(&mut d, id, Fix::Contrast));
+        let c = d.get(id).unwrap().text_color;
+        assert!(c[0] < 200, "darker");
+        assert!(!review(&d).iter().any(|p| p.template.starts_with("Text contrast")));
+        // dark grey on a dark background: lighten
+        let mut d = doc();
+        d.background = [10, 10, 10, 255];
+        let mut t = Element::new(0, Kind::Text);
+        t.text = "hola".into();
+        t.text_color = [40, 40, 40, 255];
+        t.font_size = 20.0;
+        let id = d.add(t);
+        assert!(apply_fix(&mut d, id, Fix::Contrast));
+        assert!(d.get(id).unwrap().text_color[0] > 40, "lighter");
+        assert!(!review(&d).iter().any(|p| p.template.starts_with("Text contrast")));
+        // a text so transparent that no colour can reach the ratio is not offered a fix
+        let mut d = doc();
+        let mut t = Element::new(0, Kind::Text);
+        t.text = "x".into();
+        t.text_color = [0, 0, 0, 255];
+        t.opacity = 0.2;
+        t.font_size = 20.0;
+        let id = d.add(t);
+        assert!(!has(&d, id, Fix::Contrast));
+    }
+
+    #[test]
+    fn fix_all_clears_every_safe_problem_and_portrait_goes_to_overrides() {
+        let mut d = doc();
+        let mut t = Element::new(0, Kind::Text);
+        t.name = "Title".into();
+        t.text = "hello".into();
+        t.text_color = [230, 230, 230, 255];
+        t.font_size = 10.0;
+        t.x = 1900.0;
+        t.y = 50.0;
+        t.w = 100.0;
+        t.h = 40.0;
+        d.add(t);
+        for _ in 0..2 {
+            let mut b = Element::new(0, Kind::Button);
+            b.name = "Play".into();
+            b.x = 100.0;
+            b.y = 100.0;
+            b.w = 30.0;
+            b.h = 30.0;
+            d.add(b);
+        }
+        let before = review(&d).len();
+        assert!(before >= 5);
+        let n = fix_all(&mut d);
+        assert!(n >= 5, "{}", n);
+        let left: Vec<String> = review(&d).iter().filter(|p| p.fix.is_some()).map(describe).collect();
+        assert!(left.is_empty(), "{:?}", left);
+        // portrait: a problem that only exists in the portrait layout is fixed there, not in the landscape layout
+        let mut d = doc();
+        let mut t = Element::new(0, Kind::Text);
+        t.text = "hello".into();
+        t.text_color = [0, 0, 0, 255];
+        t.font_size = 30.0;
+        t.x = 100.0;
+        t.y = 100.0;
+        t.w = 200.0;
+        t.h = 50.0;
+        let id = d.add(t);
+        d.portrait = Some(crate::docext::PortraitLayout { width: 1080.0, height: 1920.0, overrides: vec![] });
+        let mut ov = crate::docext::ElementOverride::new(id);
+        ov.font_size = Some(10.0);
+        d.portrait.as_mut().unwrap().overrides.push(ov);
+        let ps = review(&d);
+        let pp = ps.iter().find(|p| p.portrait && p.fix == Some(Fix::TextSize)).expect("portrait text size problem");
+        assert!(fix_problem(&mut d, pp));
+        assert_eq!(d.get(id).unwrap().font_size, 30.0, "landscape untouched");
+        assert!(!review(&d).iter().any(|p| p.template.starts_with("{} px text")));
+        assert_eq!(d.resolved_for(crate::docext::Orientation::Portrait).get(id).unwrap().font_size, 18.0);
+    }
+
+    #[test]
+    fn fix_buttons_make_one_undo_step() {
+        let mut a = crate::app::EditorApp::new(None);
+        a.settings.read_only = true;
+        a.doc = doc();
+        let mut b = Element::new(0, Kind::Button);
+        b.w = 20.0;
+        b.h = 20.0;
+        b.x = 100.0;
+        b.y = 100.0;
+        let id = a.doc.add(b);
+        let mut t = Element::new(0, Kind::Text);
+        t.text = "x".into();
+        t.font_size = 8.0;
+        a.doc.add(t);
+        for _ in 0..5 {
+            a.commit_state(false);
+        }
+        let steps = a.undo.len();
+        a.edit_full(|d| {
+            fix_all(d);
+        });
+        a.commit_state(false);
+        assert_eq!(a.undo.len(), steps + 1);
+        assert!(a.doc.get(id).unwrap().w >= 64.0);
+        a.undo();
+        assert_eq!(a.doc.get(id).unwrap().w, 20.0);
     }
 }

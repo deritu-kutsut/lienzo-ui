@@ -72,8 +72,12 @@ pub enum Drop {
 pub struct EditorApp {
     pub doc: Doc,
     pub sel: Vec<u64>,
-    pub(crate) undo: Vec<Doc>,
-    pub(crate) redo: Vec<Doc>,
+    pub(crate) undo: crate::history::History,
+    pub(crate) redo: crate::history::History,
+    /// "History trimmed" was already shown in the status bar.
+    history_trim_notified: bool,
+    /// Autosave / crash recovery bookkeeping.
+    pub recovery: crate::recovery::Session,
     committed: Doc,
     settle: u32,
     pub zoom: f32,
@@ -189,8 +193,10 @@ impl EditorApp {
             real: None,
             doc,
             sel: first_button.into_iter().collect(),
-            undo: Vec::new(),
-            redo: Vec::new(),
+            undo: Default::default(),
+            redo: Default::default(),
+            history_trim_notified: false,
+            recovery: Default::default(),
             settle: 3,
             zoom: 0.5,
             pan: Vec2::ZERO,
@@ -273,6 +279,7 @@ impl EditorApp {
             self.redo.push(cur);
             self.committed = prev.clone();
             self.load_full(prev);
+            self.recovery.note_edit();
             self.after_history();
         }
     }
@@ -286,6 +293,7 @@ impl EditorApp {
             self.undo.push(cur);
             self.committed = next.clone();
             self.load_full(next);
+            self.recovery.note_edit();
             self.after_history();
         }
     }
@@ -306,6 +314,7 @@ impl EditorApp {
         }
         let busy = ctx.input(|i| i.pointer.any_down()) || ctx.memory(|m| m.focused().is_some()) || self.drag.is_some();
         self.commit_state(busy);
+        self.autosave_tick(busy);
     }
 
     /// The state half of [`commit`] (no egui): folds the portrait edits and records the undo step.
@@ -328,10 +337,18 @@ impl EditorApp {
             let cur = self.real_doc().clone();
             let prev = std::mem::replace(&mut self.committed, cur);
             self.undo.push(prev);
-            if self.undo.len() > 200 {
-                self.undo.remove(0);
-            }
             self.redo.clear();
+            self.recovery.note_edit();
+            self.note_history_trim();
+        }
+    }
+
+    /// Says once in the status bar that the oldest undo steps were dropped (step or memory budget).
+    fn note_history_trim(&mut self) {
+        let trimmed = self.undo.take_trimmed();
+        if trimmed && !self.history_trim_notified {
+            self.history_trim_notified = true;
+            self.status = crate::i18n::t("History trimmed: the oldest undo steps were dropped");
         }
     }
 
@@ -424,6 +441,8 @@ impl EditorApp {
             let prev = std::mem::replace(&mut self.committed, real.clone());
             self.undo.push(prev);
             self.redo.clear();
+            self.recovery.note_edit();
+            self.note_history_trim();
         }
         self.real = Some(Doc::default());
         self.load_full(real);
@@ -980,6 +999,7 @@ impl EditorApp {
         match serde_json::to_string_pretty(self.doc_real()).map_err(|e| e.to_string()).and_then(|s| crate::library::write_atomic(std::path::Path::new(&self.project_path), s.as_bytes()).map_err(|e| e.to_string())) {
             Ok(()) => {
                 self.status = crate::i18n::tf("Project saved to {}", &[&self.project_path]);
+                self.recovery_after_save();
                 self.remember_project();
             }
             Err(e) => self.status = crate::i18n::tf("Could not save: {}", &[&e.to_string()]),
@@ -1002,6 +1022,8 @@ impl EditorApp {
                 self.editing = None;
                 self.drag = None;
                 self.fit_pending = true;
+                self.recovery.bound = Some(self.project_path.clone());
+                self.recovery.reset();
                 self.status = format!("{} {}", crate::i18n::t("Project opened:"), self.project_path);
                 self.remember_project();
                 // LIENZO_SELECT=<element id>: start with that element selected (screenshots and tests).
@@ -1210,6 +1232,8 @@ impl EditorApp {
                 self.leave_portrait();
                 self.doc = imp.doc;
                 self.project_path = String::new();
+                self.recovery.bound = None;
+                self.recovery.note_edit();
                 self.sel.clear();
                 self.editing = None;
                 self.fit_pending = true;
@@ -1438,6 +1462,204 @@ impl EditorApp {
                 }
             }
         });
+    }
+}
+
+impl EditorApp {
+    // ------------------------------------------------------------- autosave / crash recovery
+
+    /// Called every frame from `commit`: writes the recovery file when it is time (never in test mode, mid-gesture or when disabled).
+    pub fn autosave_tick(&mut self, busy: bool) {
+        if self.preview || self.screenshot.is_some() || self.recovery.offer.is_some() {
+            return;
+        }
+        let now = std::time::Instant::now();
+        if self.recovery.due(now, busy, !self.settings.no_autosave) {
+            self.autosave_now();
+            self.recovery.wrote(now);
+        }
+    }
+
+    /// Writes the full real design (landscape + portrait overrides) to the recovery folder. Never in test mode.
+    pub fn autosave_now(&mut self) -> bool {
+        if self.preview {
+            return false;
+        }
+        self.fold();
+        let doc = self.doc_real();
+        let Ok(json) = serde_json::to_string(doc) else { return false };
+        let meta = crate::recovery::Meta { path: self.recovery.bound.clone().unwrap_or_default(), title: doc.title.clone(), saved_at_ms: crate::recovery::now_ms() };
+        crate::recovery::write(&self.recovery.dir, &self.recovery.key(), &json, &meta).is_ok()
+    }
+
+    /// After a successful Save: the recovery is no longer needed and the design is bound to the saved file.
+    fn recovery_after_save(&mut self) {
+        let old = self.recovery.key();
+        crate::recovery::remove(&self.recovery.dir, &old);
+        self.recovery.bound = Some(self.project_path.clone());
+        crate::recovery::remove(&self.recovery.dir, &self.recovery.key());
+        self.recovery.mark_saved();
+    }
+
+    /// Clean exit: the recovery of this design is deleted, but only when nothing unsaved would be lost
+    /// (the design is saved, or the user chose "Discard changes"). A dirty design is autosaved one last time.
+    pub fn recovery_clean_exit(&mut self) {
+        if self.screenshot.is_some() || self.recovery.offer.is_some() {
+            return; // the user never answered the offer: keep it for the next start
+        }
+        if self.recovery.dirty() && !self.recovery.discard_ok {
+            self.autosave_now();
+            return;
+        }
+        crate::recovery::remove(&self.recovery.dir, &self.recovery.key());
+    }
+
+    /// True when closing the window (or restarting into a new version) would lose unsaved changes.
+    pub fn has_unsaved_changes(&self) -> bool {
+        self.screenshot.is_none() && !self.preview && self.recovery.dirty() && !self.recovery.discard_ok
+    }
+
+    /// Updater "Restart now": asks first when there are unsaved changes. Returns true when it may proceed now.
+    pub fn request_restart(&mut self, exe: &std::path::Path) -> bool {
+        if self.has_unsaved_changes() {
+            self.recovery.pending_restart = Some(exe.to_path_buf());
+            self.recovery.close_prompt = true;
+            return false;
+        }
+        true
+    }
+
+    /// Shows the save / discard / cancel dialog when a close (or restart) was requested with unsaved changes.
+    pub fn close_prompt_window(&mut self, ctx: &egui::Context) {
+        if ctx.input(|i| i.viewport().close_requested()) && self.has_unsaved_changes() {
+            ctx.send_viewport_cmd(egui::ViewportCommand::CancelClose);
+            self.recovery.close_prompt = true;
+        }
+        if !self.recovery.close_prompt {
+            return;
+        }
+        let mut action = 0; // 1 save, 2 discard, 3 cancel
+        egui::Window::new(crate::i18n::t("Unsaved changes")).collapsible(false).resizable(false).anchor(egui::Align2::CENTER_CENTER, [0.0, 0.0]).show(ctx, |ui| {
+            ui.label(crate::i18n::t("You have unsaved changes. What do you want to do?"));
+            ui.add_space(6.0);
+            ui.horizontal(|ui| {
+                if ui.button(crate::i18n::t("Save")).clicked() {
+                    action = 1;
+                }
+                if ui.button(crate::i18n::t("Discard changes")).clicked() {
+                    action = 2;
+                }
+                if ui.button(crate::i18n::t("Cancel")).clicked() {
+                    action = 3;
+                }
+            });
+        });
+        match action {
+            1 => {
+                if self.recovery.bound.is_some() { self.save_project() } else { self.save_project_as() }
+                if self.recovery.dirty() {
+                    return; // the save was cancelled or failed: stay in the dialog
+                }
+                self.finish_close(ctx);
+            }
+            2 => {
+                self.recovery.discard_ok = true;
+                self.finish_close(ctx);
+            }
+            3 => {
+                self.recovery.close_prompt = false;
+                self.recovery.pending_restart = None;
+            }
+            _ => {}
+        }
+    }
+
+    fn finish_close(&mut self, ctx: &egui::Context) {
+        self.recovery.close_prompt = false;
+        match self.recovery.pending_restart.take() {
+            Some(exe) => crate::updater::restart(ctx, &exe),
+            None => ctx.send_viewport_cmd(egui::ViewportCommand::Close),
+        }
+    }
+
+    /// Startup: removes stale recoveries and looks for one to offer (`project` = design given on the command line).
+    pub fn recovery_startup(&mut self, project: Option<&str>) {
+        if self.screenshot.is_some() {
+            return;
+        }
+        crate::recovery::cleanup_stale(&self.recovery.dir, crate::recovery::now_ms());
+        let key = project.map(|p| crate::recovery::key_for(Some(p)));
+        self.recovery.offer = crate::recovery::pick_offer(&self.recovery.dir, key.as_deref());
+    }
+
+    /// Restore: the saved copy becomes the open design, unsaved (it stays marked as changed and the file is kept until Save / exit).
+    pub fn recovery_restore(&mut self) {
+        let Some(e) = self.recovery.offer.take() else { return };
+        let s_json = crate::recovery::read_capped(&e.design).unwrap_or_default();
+        match Doc::from_json_str(&s_json) {
+            Ok(d) => {
+                self.set_preview(false);
+                // The path stored next to a recovery is untrusted data: the design is always restored as unsaved
+                // (not bound to any file); the user picks where to save it.
+                self.real = None;
+                self.doc = d;
+                self.undo.clear();
+                self.redo.clear();
+                self.committed = self.doc.clone();
+                self.settle = 3;
+                self.sel.clear();
+                self.editing = None;
+                self.drag = None;
+                self.fit_pending = true;
+                self.recovery.bound = None;
+                self.recovery.discard_ok = false;
+                // keep the file under this instance's key, so a second crash does not lose it
+                if self.recovery.key() != e.key {
+                    let meta = crate::recovery::Meta { path: String::new(), title: e.meta.title.clone(), saved_at_ms: crate::recovery::now_ms() };
+                    let copied = crate::recovery::write(&self.recovery.dir, &self.recovery.key(), &s_json, &meta).is_ok();
+                    if copied {
+                        crate::recovery::remove(&self.recovery.dir, &e.key);
+                    }
+                }
+                self.recovery.note_edit();
+                self.status = crate::i18n::t("Unsaved work recovered. Save it to keep it.");
+            }
+            Err(err) => self.status = crate::i18n::tf("Could not open: {}", &[&err]),
+        }
+    }
+
+    pub fn recovery_discard(&mut self) {
+        if let Some(e) = self.recovery.offer.take() {
+            crate::recovery::remove(&self.recovery.dir, &e.key);
+        }
+    }
+
+    pub fn recovery_window(&mut self, ctx: &egui::Context) {
+        let Some(e) = self.recovery.offer.clone() else { return };
+        let mut action = 0; // 1 restore, 2 discard
+        egui::Window::new(crate::i18n::t("Recover unsaved work")).collapsible(false).resizable(false).anchor(egui::Align2::CENTER_CENTER, [0.0, 0.0]).show(ctx, |ui| {
+            ui.label(crate::i18n::tf("Recover unsaved work from {}?", &[&crate::recovery::format_time(e.meta.saved_at_ms)]));
+            let what = if e.meta.path.is_empty() { e.meta.title.clone() } else { format!("{} ({})", e.meta.title, e.meta.path) };
+            ui.label(egui::RichText::new(what).small().weak());
+            ui.add_space(6.0);
+            ui.horizontal(|ui| {
+                if ui.button(crate::i18n::t("Restore")).clicked() {
+                    action = 1;
+                }
+                if ui.button(crate::i18n::t("Discard")).clicked() {
+                    action = 2;
+                }
+                if ui.button(crate::i18n::t("Open the folder")).clicked() {
+                    let _ = std::fs::create_dir_all(&self.recovery.dir);
+                    let _ = webbrowser::open(&self.recovery.dir.to_string_lossy());
+                }
+            });
+        });
+        match action {
+            1 => self.recovery_restore(),
+            2 => self.recovery_discard(),
+            _ => {}
+        }
     }
 }
 

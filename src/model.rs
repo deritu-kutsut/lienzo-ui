@@ -1533,6 +1533,8 @@ pub const TEMPLATES: &[&str] = &[
     "Character dialogue",
     "Leaderboard",
     "Character select",
+    "Pixel RPG HUD",
+    "Pixel main menu",
 ];
 
 pub fn blank_template() -> usize {
@@ -1554,6 +1556,20 @@ fn put(doc: &mut Doc, parent: Option<u64>, kind: Kind, name: &str, rect: [f32; 4
     e.parent = parent;
     f(&mut e);
     doc.add(e)
+}
+
+/// An Image element that uses a built-in pack picture (see `pack.rs`): the file is `pack_<id>.<ext>` and the 9-slice and
+/// pixels-per-unit come from the manifest. The file is copied to the library the first time something needs it.
+fn px(doc: &mut Doc, parent: Option<u64>, name: &str, id: &str, rect: [f32; 4], f: impl FnOnce(&mut Element)) -> u64 {
+    put(doc, parent, Kind::Image, name, rect, |e| {
+        e.radius = 0.0;
+        if let Some(it) = crate::pack::item(id) {
+            e.image = crate::pack::library_name(it);
+            e.slice = it.slice;
+            e.ppu = it.ppu;
+        }
+        f(e);
+    })
 }
 
 fn anchor(e: &mut Element, min: [f32; 2], max: [f32; 2]) {
@@ -2229,6 +2245,149 @@ fn template_at(index: usize, width: f32, height: f32) -> Doc {
                 e.shadow.on = true;
                 anchor(e, [0.5, 0.0], [0.5, 0.0]);
                 e.on_click = "message(\"Character chosen: Mage\");".into();
+            });
+        }
+        13 => {
+            d.title = "Pixel RPG HUD".into();
+            d.pixel_art = true;
+            d.background = [110, 180, 235, 255];
+            put(&mut d, None, Kind::Image, "Sky", [0.0, 0.0, w, h], |e| {
+                e.fill = [110, 180, 235, 255];
+                e.fill2 = [205, 236, 250, 255];
+                e.radius = 0.0;
+                e.raycast = false;
+                anchor(e, [0.0, 0.0], [1.0, 1.0]);
+            });
+            put(&mut d, None, Kind::Panel, "Ground", [0.0, h - 250.0, w, 250.0], |e| {
+                e.fill = [64, 150, 84, 255];
+                e.radius = 0.0;
+                e.raycast = false;
+                anchor(e, [0.0, 0.0], [1.0, 0.0]);
+                e.pivot = [0.5, 0.0];
+            });
+            for (i, (id, x, y, s)) in [("tree", 0.58, 0.33, 384.0), ("tree", 0.80, 0.30, 384.0), ("bush", 0.70, 0.67, 192.0), ("rock", 0.90, 0.69, 192.0), ("flower", 0.52, 0.72, 192.0), ("mushroom", 0.10, 0.70, 192.0)].iter().enumerate() {
+                px(&mut d, None, &format!("Scenery {}", i + 1), &format!("px_{}", id), [w * x, h * y, *s, *s], |e| e.raycast = false);
+            }
+            // top-left: hearts, health and mana in a stone frame
+            let hud = px(&mut d, None, "Status panel", "px_panel_stone", [40.0, 40.0, 560.0, 270.0], |e| {
+                anchor(e, [0.0, 1.0], [0.0, 1.0]);
+                e.pivot = [0.0, 1.0];
+            });
+            for (i, id) in ["px_heart_full", "px_heart_full", "px_heart_full", "px_heart_half", "px_heart_empty"].iter().enumerate() {
+                px(&mut d, Some(hud), &format!("Heart {}", i + 1), id, [72.0 + i as f32 * 72.0, 66.0, 64.0, 64.0], |_| {});
+            }
+            px(&mut d, Some(hud), "Health back", "px_bar_health_bg", [72.0, 144.0, 440.0, 48.0], |_| {});
+            px(&mut d, Some(hud), "Health fill", "px_bar_health_fill", [78.0, 150.0, 300.0, 36.0], |_| {});
+            px(&mut d, Some(hud), "Mana back", "px_bar_mana_bg", [72.0, 206.0, 440.0, 48.0], |_| {});
+            px(&mut d, Some(hud), "Mana fill", "px_bar_mana_fill", [78.0, 212.0, 220.0, 36.0], |_| {});
+            // top-right: coins
+            let purse = px(&mut d, None, "Coin panel", "px_panel_wood", [w - 480.0, 40.0, 440.0, 140.0], |e| {
+                anchor(e, [1.0, 1.0], [1.0, 1.0]);
+                e.pivot = [1.0, 1.0];
+            });
+            px(&mut d, Some(purse), "Coin", "px_coin", [w - 440.0, 62.0, 96.0, 96.0], |_| {});
+            put(&mut d, Some(purse), Kind::Panel, "Coin plate", [w - 340.0, 72.0, 290.0, 80.0], |e| {
+                e.fill = [64, 38, 24, 255];
+                e.radius = 0.0;
+                e.raycast = false;
+            });
+            put(&mut d, Some(purse), Kind::Text, "Coin amount", [w - 330.0, 78.0, 270.0, 64.0], |e| {
+                e.text = "x 1 250".into();
+                e.font_size = 56.0;
+                e.bold = true;
+                e.align = 2;
+                e.text_color = [255, 240, 170, 255];
+            });
+            // top-centre: dialogue
+            let dlg = px(&mut d, None, "Dialog box", "px_dialog", [w / 2.0 - 400.0, 40.0, 800.0, 170.0], |e| {
+                anchor(e, [0.5, 1.0], [0.5, 1.0]);
+                e.pivot = [0.5, 1.0];
+            });
+            put(&mut d, Some(dlg), Kind::Panel, "Dialog plate", [w / 2.0 - 372.0, 60.0, 744.0, 112.0], |e| {
+                e.fill = [51, 60, 87, 255];
+                e.radius = 0.0;
+                e.raycast = false;
+            });
+            put(&mut d, Some(dlg), Kind::Text, "Dialog text", [w / 2.0 - 360.0, 66.0, 720.0, 100.0], |e| {
+                e.text = "Hero: The forest is quiet... too quiet.".into();
+                e.font_size = 34.0;
+                e.text_color = [255, 255, 255, 255];
+                e.align = 0;
+            });
+            // bottom: hotbar
+            let items = ["px_potion_red", "px_sword", "px_shield", "px_key", "px_scroll"];
+            for (i, id) in items.iter().enumerate() {
+                let x = w / 2.0 - 352.0 + i as f32 * 144.0;
+                px(&mut d, None, &format!("Slot {}", i + 1), "px_slot", [x, h - 170.0, 128.0, 128.0], |e| anchor(e, [0.5, 0.0], [0.5, 0.0]));
+                px(&mut d, None, &format!("Item {}", i + 1), id, [x + 16.0, h - 154.0, 96.0, 96.0], |e| {
+                    e.raycast = false;
+                    anchor(e, [0.5, 0.0], [0.5, 0.0]);
+                });
+            }
+        }
+        14 => {
+            d.title = "Pixel main menu".into();
+            d.pixel_art = true;
+            d.background = [30, 20, 70, 255];
+            put(&mut d, None, Kind::Image, "Night sky", [0.0, 0.0, w, h], |e| {
+                e.fill = [24, 16, 60, 255];
+                e.fill2 = [120, 60, 140, 255];
+                e.radius = 0.0;
+                e.raycast = false;
+                anchor(e, [0.0, 0.0], [1.0, 1.0]);
+            });
+            for (i, (x, y)) in [(0.08, 0.10), (0.22, 0.28), (0.35, 0.08), (0.62, 0.12), (0.80, 0.26), (0.92, 0.08)].iter().enumerate() {
+                px(&mut d, None, &format!("Star {}", i + 1), "px_star", [w * x, h * y, 64.0, 64.0], |e| e.raycast = false);
+            }
+            put(&mut d, None, Kind::Panel, "Ground", [0.0, h - 220.0, w, 220.0], |e| {
+                e.fill = [38, 96, 70, 255];
+                e.radius = 0.0;
+                e.raycast = false;
+                anchor(e, [0.0, 0.0], [1.0, 0.0]);
+                e.pivot = [0.5, 0.0];
+            });
+            for (i, (id, x, y, s)) in [("tree", 0.03, 0.50, 384.0), ("tree", 0.80, 0.52, 384.0), ("bush", 0.20, 0.78, 192.0), ("bush", 0.72, 0.80, 192.0), ("torch", 0.30, 0.58, 192.0), ("torch", 0.64, 0.58, 192.0)].iter().enumerate() {
+                px(&mut d, None, &format!("Scenery {}", i + 1), &format!("px_{}", id), [w * x, h * y, *s, *s], |e| e.raycast = false);
+            }
+            put(&mut d, None, Kind::Text, "Title", [w / 2.0 - 600.0, h * 0.08, 1200.0, 140.0], |e| {
+                e.text = "PIXEL QUEST".into();
+                e.font_size = 120.0;
+                e.bold = true;
+                e.text_color = [255, 214, 90, 255];
+                e.shadow.on = true;
+                e.shadow.offset = [8.0, -8.0];
+                e.shadow.color = [20, 10, 40, 255];
+                anchor(e, [0.5, 1.0], [0.5, 1.0]);
+                e.pivot = [0.5, 1.0];
+            });
+            let menu = put(&mut d, None, Kind::Empty, "Menu", [w / 2.0 - 240.0, h * 0.34, 480.0, 560.0], |e| {
+                e.layout.mode = LayoutMode::Vertical;
+                e.layout.spacing = [0.0, 20.0];
+                e.layout.padding = [0.0, 0.0, 0.0, 0.0];
+                e.layout.align = 1;
+            });
+            for (l, id) in [("Play", "px_button_green"), ("Options", "px_button_blue"), ("Credits", "px_button_yellow"), ("Exit", "px_button_red")] {
+                let slot = put(&mut d, Some(menu), Kind::Empty, &format!("{} button", l), [0.0, 0.0, 480.0, 120.0], |_| {});
+                px(&mut d, Some(slot), &format!("{} frame", l), id, [0.0, 0.0, 480.0, 120.0], |e| e.raycast = false);
+                put(&mut d, Some(slot), Kind::Button, &format!("{} click", l), [0.0, 0.0, 480.0, 120.0], |e| {
+                    e.text = l.to_string();
+                    e.font_size = 48.0;
+                    e.bold = true;
+                    e.fill = [0, 0, 0, 0];
+                    e.text_color = [255, 255, 255, 255];
+                    e.shadow.on = true;
+                    e.shadow.color = [0, 0, 0, 200];
+                    e.shadow.offset = [3.0, -3.0];
+                    e.on_click = format!("message(\"Open menu: {}\");", l);
+                });
+            }
+            put(&mut d, None, Kind::Text, "Version", [w - 260.0, h - 70.0, 220.0, 40.0], |e| {
+                e.text = "v1.0".into();
+                e.font_size = 26.0;
+                e.align = 2;
+                e.text_color = [225, 225, 245, 255];
+                e.pivot = [1.0, 0.0];
+                anchor(e, [1.0, 0.0], [1.0, 0.0]);
             });
         }
         _ => {}

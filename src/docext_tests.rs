@@ -282,6 +282,10 @@ fn templates_have_no_new_keys() {
         let v = serde_json::to_value(template(t, 1920.0, 1080.0)).unwrap();
         for e in v["elements"].as_array().unwrap() {
             for k in NEW_EL_KEYS {
+                // the pixel-art templates (13, 14) stretch their built-in pack pictures with a 9-slice
+                if t >= 13 && (k == "slice" || k == "ppu") {
+                    continue;
+                }
                 assert!(e.get(k).is_none());
             }
         }

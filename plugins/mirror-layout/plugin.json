@@ -1,0 +1,10 @@
+{
+  "name": "Mirror layout",
+  "version": "1.0.0",
+  "author": "Lienzo UI",
+  "description": "Flips the whole design horizontally (for right-to-left languages) or vertically, including anchors, text alignment and layout groups.",
+  "commands": [
+    { "name": "Mirror horizontally (RTL)", "description": "Left <-> right: positions, anchors, pivots, text alignment, rotation, shadows and horizontal layout groups.", "script": "horizontal.rhai" },
+    { "name": "Mirror vertically", "description": "Top <-> bottom: positions, anchors, pivots, vertical alignment, rotation, shadows and vertical layout groups.", "script": "vertical.rhai" }
+  ]
+}

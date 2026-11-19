@@ -1,0 +1,9 @@
+{
+  "name": "Design spec (Markdown)",
+  "version": "1.0.0",
+  "author": "Lienzo UI",
+  "description": "Exports a Markdown spec of the design for developers: canvas settings, element tree with sizes, colors and texts, and the colors in use.",
+  "exporters": [
+    { "name": "Design spec", "extension": "md", "script": "spec.rhai" }
+  ]
+}

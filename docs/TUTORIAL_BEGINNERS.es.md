@@ -25,7 +25,7 @@ Tu primera interfaz con Lienzo UI y tu primera exportación a Unity. No necesita
 
 ## 3. Empieza con una plantilla
 
-En **Plantillas** elige una de las 12: Menú principal, HUD de juego, Ventana de diálogo, Ajustes, Inventario, Menú de pausa, Fin de partida, Selección de nivel, Pantalla de carga, Diálogo de personaje, Clasificación o Selección de personaje. Todo lo que trae se puede cambiar y Ctrl+Z deshace el cambio. Para empezar de cero: «En blanco».
+En **Plantillas** elige una de las 15: Menú principal, HUD de juego, Ventana de diálogo, Ajustes, Inventario, Menú de pausa, Fin de partida, Selección de nivel, Pantalla de carga, Diálogo de personaje, Clasificación o Selección de personaje. Todo lo que trae se puede cambiar y Ctrl+Z deshace el cambio. Para empezar de cero: «En blanco». Dos de ellas tienen estilo pixel art: HUD RPG pixel art y Menú principal pixel art.
 
 ## 4. Edita
 
@@ -61,6 +61,51 @@ Pulsa **Revisar** en la barra superior. Avisa de letra demasiado pequeña, poco 
 3. Arrástralo a la escena, o usa **Tools › Lienzo UI › Import design into scene…**.
 
 Cada vez que vuelvas a exportar, Unity actualiza el prefab solo.
+
+## Imágenes incluidas
+
+La pestaña Imágenes de la barra izquierda trae arte listo para usar, sin necesidad de archivos:
+
+- Las etiquetas de arriba filtran por Tus imágenes, Fondos, Marcos, Botones, Iconos, Pixel art y Degradados. El buscador encuentra por nombre o etiqueta.
+- Haz clic en una imagen para añadirla, o arrástrala al lienzo. Los marcos y botones traen su borde 9-slice, así que se estiran sin deformar las esquinas. Los fondos se colocan detrás de todo.
+- La imagen se copia a tu biblioteca la primera vez que la usas y se exporta a Unity con el diseño.
+- Con los sprites de pixel art, marca «Pixel art» en el Inspector del lienzo (sin nada seleccionado) para que se vean nítidos.
+
+## Pantallas verticales
+
+Los móviles suelen usarse en vertical. Lienzo UI guarda un segundo diseño para eso, sin tocar el primero:
+
+- Cambia de vista con los botones Paisaje / Retrato de la barra superior.
+- Sin nada seleccionado, abre «Diseño vertical» en el Inspector y pulsa «Crear diseño vertical». Los elementos empiezan donde están en horizontal.
+- En la vista vertical, lo que muevas o redimensiones solo cambia el diseño vertical. Clic derecho en un elemento › «Volver a horizontal» deshace un cambio.
+- La exportación lleva los dos diseños: en Unity el prefab pasa solo al vertical cuando la pantalla es más alta que ancha.
+
+## Importar desde Unity
+
+¿Ya tienes una interfaz en Unity? Tráela a Lienzo UI:
+
+- Archivo › Importar desde Unity…
+- Elige un prefab de uGUI (.prefab) o un diseño que Lienzo UI exportó antes (Assets/EditorGUI/Designs/….json).
+- Se abre como un diseño nuevo sin guardar: guárdalo como proyecto para conservarlo.
+- Si algo no se pudo convertir con exactitud, una ventana muestra los avisos, así que nada se pierde en silencio.
+- Si encuentra la carpeta de tu proyecto de Unity, las imágenes del diseño se localizan solas.
+
+## No pierdas tu trabajo
+
+- Autoguardado: más o menos cada minuto Lienzo UI guarda una copia de recuperación. Puedes desactivarlo en Accesibilidad › Autoguardado.
+- Si la aplicación se cierra de forma inesperada, la próxima vez pregunta «¿Recuperar el trabajo sin guardar…?». Pulsa Restaurar para recuperarlo o Descartar para olvidarlo. Lo recuperado aún no es un archivo guardado: pulsa Ctrl+S para conservarlo.
+- Ctrl+S sigue guardando tu proyecto como siempre.
+- Deshacer (Ctrl+Z) recuerda hasta 200 pasos (y tiene un límite de memoria). Si se descartan los más antiguos, la barra de estado muestra «Historial recortado».
+
+## Comunidad
+
+La pestaña Comunidad de la barra izquierda es un catálogo compartido de plugins, imágenes, fuentes, plantillas, elementos y temas:
+
+- Explorar e instalar no necesita cuenta: busca y pulsa Instalar.
+- Para subir, reportar o dar corazones inicias sesión con GitHub o Google y eliges un nombre público. Sin contraseñas: la app solo guarda ese nombre.
+- Al crear tu perfil aceptas las reglas: nada de malware, odio, plagio ni contenido +18 sin marcar. El texto completo está en docs/TERMS.md y docs/COMMUNITY_GUIDELINES.md.
+- El contenido +18 está oculto salvo que inicies sesión y actives «Mostrar contenido +18».
+- Todo lo que se comparte se revisa antes de publicarse, y puedes reportar lo que incumpla las reglas.
 
 ## Siguientes pasos
 

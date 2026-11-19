@@ -1,0 +1,12 @@
+{
+  "name": "Distribute siblings",
+  "version": "1.0.0",
+  "author": "Lienzo UI",
+  "description": "Spacing tools for groups of sibling elements: spread them evenly or stack them with a fixed gap, moving their children along.",
+  "commands": [
+    { "name": "Spread evenly (horizontal)", "description": "Keeps the first and last sibling and makes every horizontal gap equal.", "script": "spread_h.rhai" },
+    { "name": "Spread evenly (vertical)", "description": "Keeps the first and last sibling and makes every vertical gap equal.", "script": "spread_v.rhai" },
+    { "name": "Stack in a row (16 px gap)", "description": "Places siblings left to right with a 16 px gap.", "script": "stack_h.rhai" },
+    { "name": "Stack in a column (16 px gap)", "description": "Places siblings top to bottom with a 16 px gap.", "script": "stack_v.rhai" }
+  ]
+}

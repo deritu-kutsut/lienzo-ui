@@ -93,3 +93,64 @@ Rust + [egui](https://github.com/emilk/egui):
 | `src/script.rs` | Scripts Rhai del modo Probar |
 
 Para ampliarlo: [EXTENDING.md](EXTENDING.md).
+
+## Diseño vertical al detalle
+
+El diseño vertical es una segunda vista del mismo diseño (docs/FORMAT.md › PortraitLayout):
+
+- Tiene su propia resolución de referencia, «Tamaño vertical» (1080 × 1920 por defecto).
+- Los elementos sin excepción conservan su RectTransform horizontal y se reevalúan contra la página vertical: un fondo a pantalla completa se estira, los anclados a la derecha siguen el borde derecho.
+- Solo se guarda lo que cambias en la vista vertical, como excepciones (posición, tamaño, rotación, anclajes, visibilidad, tamaño de fuente, layout). Clic derecho › «Volver a horizontal» quita una.
+- Exportación: el JSON lleva las excepciones y el script generado LienzoOrientationLayout las aplica cuando Screen.width < Screen.height, y de nuevo si cambia el tamaño.
+- «Quitar diseño vertical» borra todas las excepciones.
+
+## 9-slice y el paquete incluido
+
+Para marcos, botones y paneles que se estiran:
+
+- Selecciona una Imagen y define «9-slice» en «Ajustes de imagen (Unity)»: el borde en píxeles de la imagen original (izquierda, abajo, derecha, arriba), como en el Sprite Editor de Unity. La exportación genera un Sprite 9-slice.
+- «Píxeles por unidad»: 100 mantiene los bordes en su tamaño en píxeles, 200 los reduce a la mitad.
+- El paquete incluido (assets/pack/manifest.json, docs/CONTENT.md) ya define el corte y los píxeles por unidad: los marcos son de 512×512 con corte 96, los botones de 512×192.
+- Usar una imagen la copia a tu biblioteca como pack_<id>.<ext> (oculta en «Tus imágenes»); el exportador la copia a los Sprites de Unity.
+- Las plantillas HUD RPG pixel art y Menú principal pixel art usan el paquete pixel. Activa «Pixel art» para el filtro Point.
+
+## Revisión y correcciones rápidas
+
+La ventana Revisar lista errores y avisos; haz clic en uno para seleccionar su elemento. Seis problemas tienen un botón «Corregir» (un paso de deshacer):
+
+- Texto por debajo del tamaño mínimo: se sube al mínimo.
+- Control demasiado pequeño para tocar: se agranda alrededor de su centro.
+- Elemento parcialmente fuera de la página: se mueve dentro, si cabe.
+- Nombre repetido: se añade _2, _3…
+- Imagen que falta: se quita la referencia.
+- Poco contraste: se oscurece o aclara el color del texto.
+
+«Corregir todos los problemas seguros» los aplica en varias pasadas. Problemas como una fuente sin ciertos caracteres no tienen corrección automática. Las correcciones también funcionan en el diseño vertical. Por línea de comandos: lienzo-ui --open archivo --review (código 1 si hay errores).
+
+## Importar desde Unity: prefabs y CLI
+
+Archivo › Importar desde Unity… lee un .prefab de uGUI (el YAML de texto de Unity) o un Designs/*.json exportado por Lienzo UI y crea un diseño normal.
+
+- Lo que no se pudo convertir aparece como avisos.
+- Si detecta la carpeta del proyecto de Unity, las imágenes se resuelven contra ella durante esa sesión.
+- Sin ventana: lienzo-ui --import-unity Menu.prefab --save Menu.editorgui.json (también con --review y --export).
+- Proyecto completo: lienzo-ui --import-unity-project MiProyecto --out Importados convierte todos los prefabs de interfaz. Nunca sobrescribe (añade _2) y omite los prefabs sin interfaz.
+- Detalles en docs/UNITY_IMPORT.md.
+
+## Comunidad: plugins, fuentes y normas
+
+En la pestaña Comunidad, Instalar añade contenido compartido con un clic: plugins, fuentes, imágenes, plantillas, elementos y temas.
+
+- Un plugin de la comunidad va a una carpeta llamada community-<nombre>-<hash>. Se escribe primero en una carpeta temporal, así que una instalación interrumpida nunca deja un plugin a medias. Aparece en la pestaña Plugins.
+- Sus scripts son los mismos Rhai: aislados, sin acceso a archivos ni red y con límites de operaciones, tiempo y memoria (docs/PLUGINS.md).
+- Una fuente instalada se añade a la pestaña Texto y se exporta a Unity con el diseño.
+- Las descargas se comprueban con la huella SHA-256 publicada; si no coincide, no se instala nada.
+- Para publicar inicias sesión (GitHub o Google), eliges un nombre público y aceptas las reglas. Todo se revisa antes y el contenido +18 debe marcarse. Ver docs/TERMS.md, docs/COMMUNITY_GUIDELINES.md y docs/PRIVACY.md.
+
+## Autoguardado, recuperación y deshacer
+
+- Más o menos cada minuto, mientras editas, el diseño completo (con el diseño vertical) se escribe en la carpeta de recuperación de la app. Nunca en modo Probar. Se conservan como máximo 10 recuperaciones.
+- Al iniciar, si hay una recuperación más reciente que el archivo del proyecto, se ofrece: Restaurar o Descartar. Tras un Guardar normal ya no hace falta.
+- Se puede desactivar en Accesibilidad › Autoguardado.
+- El historial de deshacer está limitado a 200 pasos y unos 64 MB. Cuando se descartan los pasos más antiguos, la barra de estado muestra «Historial recortado».
+- Cada comando de plugin y cada Corregir de la ventana Revisar es un solo paso de deshacer.

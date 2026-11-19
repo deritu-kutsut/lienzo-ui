@@ -944,3 +944,136 @@ cleanup: {} file(s) removed.	cleanup: {} arquivo(s) removido(s).
 Errors: {} · Warnings: {}. Click one to select it.	Erros: {} · Avisos: {}. Clique em um para selecioná-lo.
 Elements selected: {}	Elementos selecionados: {}
 To add a language, copy assets/i18n/es.tsv and translate it (see docs/EXTENDING.md).	Para adicionar um idioma, copie assets/i18n/es.tsv e traduza-o (veja docs/EXTENDING.md).
+HUD	HUD
+More components	Mais componentes
+Backgrounds	Planos de fundo
+Frames	Molduras
+Icons	Ícones
+Gradients	Gradientes
+Built-in images are copied to your library when you use them	As imagens incluídas são copiadas para a sua biblioteca quando você as usa
+Tip: turn on Pixel art in the page settings so the sprites stay crisp.	Dica: ative Pixel art nas configurações da página para que os sprites fiquem nítidos.
+Could not copy the pack image: {}	Não foi possível copiar a imagem do pacote: {}
+Pack image added: {}	Imagem do pacote adicionada: {}
+No images match the search	Nenhuma imagem corresponde à busca
+Pixel RPG HUD	HUD de RPG pixel art
+Pixel main menu	Menu principal pixel art
+Primary button	Botão principal
+Secondary button	Botão secundário
+Danger button	Botão de perigo
+Success button	Botão de sucesso
+Ghost button	Botão fantasma
+Icon button	Botão de ícone
+Toggle button	Botão alternável
+Tabs	Abas
+Small pill button	Botão pílula pequeno
+Square icon button	Botão de ícone quadrado
+Link button	Botão de link
+Floating action button	Botão de ação flutuante
+Health bar (classic)	Barra de vida (clássica)
+Health bar (segments)	Barra de vida (segmentos)
+Health orb	Orbe de vida
+Mana bar with label	Barra de mana com rótulo
+Stamina bar	Barra de estamina
+XP bar with level	Barra de XP com nível
+Boss bar	Barra de chefe
+Minimap frame	Moldura de minimapa
+Quest tracker	Rastreador de missão
+Skill slot (cooldown)	Slot de habilidade (recarga)
+Hotbar (5 slots)	Barra de atalhos (5 slots)
+Currency counter	Contador de moeda
+Nameplate	Placa de nome
+Toast notification	Notificação rápida
+Tooltip	Dica de ferramenta
+Dialog with portrait	Diálogo com retrato
+Inventory grid 4x3	Grade de inventário 4x3
+Compass strip	Faixa de bússola
+Avatar with ring	Avatar com anel
+Pill badge	Distintivo pílula
+Ribbon banner	Faixa de fita
+Divider	Divisor
+Divider with label	Divisor com rótulo
+Progress ring	Anel de progresso
+Switch	Interruptor
+Chips	Chips
+Media card	Cartão de mídia
+List item	Item de lista
+Search field	Campo de busca
+Stat row	Linha de estatística
+Level up	Subiu de nível
+Heal	Cura
+Critical hit	Golpe crítico
+Objective	Objetivo
+Ammo counter	Contador de munição
+Wave counter	Contador de onda
+FPS counter	Contador de FPS
+Key prompt	Indicação de tecla
+History trimmed: the oldest undo steps were dropped	Histórico reduzido: os passos mais antigos foram descartados
+Unsaved work recovered. Save it to keep it.	Trabalho não salvo recuperado. Salve para mantê-lo.
+Recover unsaved work	Recuperar trabalho não salvo
+Recover unsaved work from {}?	Recuperar o trabalho não salvo de {}?
+Restore	Restaurar
+Discard	Descartar
+Open the folder	Abrir a pasta
+Autosave	Salvamento automático
+Save a recovery copy every minute	Salvar uma cópia de recuperação a cada minuto
+Fix all safe issues	Corrigir todos os problemas seguros
+Applies every quick fix in one undo step	Aplica todas as correções rápidas em um único passo de desfazer
+Fix	Corrigir
+Fixes this problem (one undo step)	Corrige este problema (um passo de desfazer)
+Nothing to fix here	Nada a corrigir aqui
+Fixed {} issue(s) (Ctrl+Z undoes)	{} problema(s) corrigido(s) (Ctrl+Z desfaz)
+Release notes	Notas da versão
+Full release notes	Notas completas da versão
+The zip must contain a single executable.	O zip deve conter um único executável.
+The version inside the executable does not match the release; not installing.	A versão do executável não corresponde à publicada; não será instalada.
+You appear to be offline. Check your internet connection.	Parece que você está offline. Verifique sua conexão com a internet.
+The server took too long to answer. Try again in a moment.	O servidor demorou demais para responder. Tente novamente em instantes.
+Your session expired. Sign in again.	Sua sessão expirou. Entre novamente.
+Too many requests: wait {} s and try again.	Muitas solicitações: aguarde {} s e tente novamente.
+Too many requests: wait a moment.	Muitas solicitações: aguarde um momento.
+You do not have permission to do this.	Você não tem permissão para fazer isso.
+Not found.	Não encontrado.
+Offline, showing the last known list.	Offline: mostrando a última lista conhecida.
+Terms and community guidelines	Termos e normas da comunidade
+Terms of Use	Termos de uso
+Community guidelines	Normas da comunidade
+Privacy	Privacidade
+Full text on GitHub	Texto completo no GitHub
+I have read and accept the Terms of Use and the Community guidelines	Li e aceito os Termos de uso e as Normas da comunidade
+Accept	Aceitar
+Read and accept the Terms and guidelines…	Ler e aceitar os Termos e as normas…
+Terms accepted.	Termos aceitos.
+This app has older legal texts than the server. Update the app to accept the new terms.	Este app tem textos legais mais antigos que o servidor. Atualize o app para aceitar os novos termos.
+Export my data	Exportar meus dados
+Your data was saved to {}	Seus dados foram salvos em {}
+License	Licença
+Source	Fonte
+Source link (optional)	Link da fonte (opcional)
+I own this or have the right to share it under this license	Sou o autor ou tenho o direito de compartilhar sob esta licença
+Use an http or https link, up to 300 characters, no spaces.	Use um link http ou https, de até 300 caracteres e sem espaços.
+Report copyright infringement	Denunciar violação de direitos autorais
+The work and why it is infringed (10-2000 characters)	A obra e por que ela é infringida (10-2000 caracteres)
+Rights holder (optional)	Titular dos direitos (opcional)
+Contact (optional)	Contato (opcional)
+Send claim	Enviar reclamação
+Thanks: the item is hidden while a moderator reviews it. Details: docs/COPYRIGHT.md	Obrigado: o item fica oculto enquanto um moderador o analisa. Detalhes: docs/COPYRIGHT.md
+Spam	Spam
+Impersonation	Falsidade de identidade
+Personal data	Dados pessoais
+Accept the Terms of Use to share.	Aceite os Termos de uso para compartilhar.
+Pick a license from the list.	Escolha uma licença da lista.
+Confirm that you own this or may share it.	Confirme que você é o autor ou que pode compartilhar.
+The Terms of Use changed. Close this window and open it again to read the new version.	Os Termos de uso mudaram. Feche esta janela e abra-a de novo para ler a nova versão.
+Create your profile first.	Crie primeiro o seu perfil.
+Too many claims today. Use the Copyright notice template on GitHub.	Reclamações demais hoje. Use o modelo de aviso de direitos autorais no GitHub.
+Claims are blocked for now. Use the Copyright notice template on GitHub.	As reclamações estão bloqueadas por enquanto. Use o modelo de aviso de direitos autorais no GitHub.
+That item is already under review.	Esse item já está em análise.
+Your account is suspended.	Sua conta está suspensa.
+Uploads are disabled for this account.	Os envios estão desativados para esta conta.
+Uploads are disabled until {}.	Os envios estão desativados até {}.
+Public domain	Domínio público
+Free use (proprietary)	Uso livre (proprietária)
+Unsaved changes	Alterações não salvas
+You have unsaved changes. What do you want to do?	Você tem alterações não salvas. O que deseja fazer?
+Discard changes	Descartar alterações
+Could not check the Terms of Use right now.	Não foi possível verificar os Termos de uso agora.

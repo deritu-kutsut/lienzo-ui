@@ -151,20 +151,107 @@ pub fn verify_sha256(bytes: &[u8], expected: &str) -> Result<(), String> {
     if !expected.is_empty() && hex.eq_ignore_ascii_case(expected) { Ok(()) } else { Err("The download doesn't match the published checksum; not installing.".into()) }
 }
 
-/// Extracts only the executable from the zip (`LienzoUI-<v>/lienzo-ui.exe`); no other name is written to disk.
+fn le16(b: &[u8], i: usize) -> Option<u16> {
+    Some(u16::from_le_bytes(b.get(i..i.checked_add(2)?)?.try_into().ok()?))
+}
+
+fn le32(b: &[u8], i: usize) -> Option<u32> {
+    Some(u32::from_le_bytes(b.get(i..i.checked_add(4)?)?.try_into().ok()?))
+}
+
+/// Checks the PE (Windows executable) headers and returns the file version of its version resource
+/// (`major, minor, patch, build`), or None when the program has no readable version resource.
+/// Err when it is not a valid PE file.
+pub fn pe_version(exe: &[u8]) -> Result<Option<[u16; 4]>, String> {
+    let bad = || "The executable in the zip does not look valid.".to_string();
+    if exe.get(..2) != Some(b"MZ") {
+        return Err(bad());
+    }
+    let pe = le32(exe, 0x3c).ok_or_else(bad)? as usize;
+    if exe.get(pe..pe.checked_add(4).ok_or_else(bad)?) != Some(b"PE\0\0") {
+        return Err(bad());
+    }
+    let machine = le16(exe, pe + 4).ok_or_else(bad)?;
+    let nsec = le16(exe, pe + 6).ok_or_else(bad)? as usize;
+    let opt_size = le16(exe, pe + 20).ok_or_else(bad)? as usize;
+    let opt = pe + 24;
+    let magic = le16(exe, opt).ok_or_else(bad)?;
+    if !matches!(machine, 0x14c | 0x8664 | 0xaa64) || !matches!(magic, 0x10b | 0x20b) || nsec == 0 || nsec > 96 || opt_size < 96 {
+        return Err(bad());
+    }
+    let plus = magic == 0x20b;
+    let n_dirs = le32(exe, opt + if plus { 108 } else { 92 }).ok_or_else(bad)? as usize;
+    let dirs = opt + if plus { 112 } else { 96 };
+    let sections = opt + opt_size;
+    if exe.len() < sections + nsec * 40 {
+        return Err(bad());
+    }
+    let rva_to_off = |rva: u32| -> Option<usize> {
+        for i in 0..nsec {
+            let s = sections + i * 40;
+            let (va, raw_size, raw_ptr) = (le32(exe, s + 12)?, le32(exe, s + 16)?, le32(exe, s + 20)?);
+            if rva >= va && rva - va < raw_size {
+                return Some(raw_ptr as usize + (rva - va) as usize);
+            }
+        }
+        None
+    };
+    if n_dirs <= 2 {
+        return Ok(None);
+    }
+    let Some(res_rva) = le32(exe, dirs + 16).filter(|r| *r != 0) else { return Ok(None) };
+    let Some(base) = rva_to_off(res_rva) else { return Ok(None) };
+    // resource directory: entry `idx` of the directory at `dir` -> (id, target offset, target is a directory)
+    let entry = |dir: usize, idx: usize| -> Option<(u32, usize, bool)> {
+        let named = le16(exe, dir + 12)? as usize;
+        let ids = le16(exe, dir + 14)? as usize;
+        if idx >= named + ids {
+            return None;
+        }
+        let e = dir + 16 + idx * 8;
+        let (id, off) = (le32(exe, e)?, le32(exe, e + 4)?);
+        Some((id, base + (off & 0x7fff_ffff) as usize, off & 0x8000_0000 != 0))
+    };
+    let count = |dir: usize| le16(exe, dir + 12).unwrap_or(0) as usize + le16(exe, dir + 14).unwrap_or(0) as usize;
+    // type RT_VERSION (16) -> first name -> first language -> data entry
+    let Some((_, d1, true)) = (0..count(base).min(64)).filter_map(|i| entry(base, i)).find(|(id, _, dir)| *id == 16 && *dir) else { return Ok(None) };
+    let Some((_, d2, true)) = entry(d1, 0) else { return Ok(None) };
+    let Some((_, leaf, false)) = entry(d2, 0) else { return Ok(None) };
+    let (Some(data_rva), Some(size)) = (le32(exe, leaf), le32(exe, leaf + 4)) else { return Ok(None) };
+    let Some(off) = rva_to_off(data_rva) else { return Ok(None) };
+    let data = exe.get(off..off.saturating_add((size as usize).min(1024))).unwrap_or(&[]);
+    // VS_FIXEDFILEINFO starts with the signature 0xFEEF04BD, a few bytes after the "VS_VERSION_INFO" key
+    let Some(sig) = (0..data.len().saturating_sub(16)).step_by(2).find(|&i| le32(data, i) == Some(0xFEEF_04BD)) else { return Ok(None) };
+    let (Some(ms), Some(ls)) = (le32(data, sig + 8), le32(data, sig + 12)) else { return Ok(None) };
+    Ok(Some([(ms >> 16) as u16, ms as u16, (ls >> 16) as u16, ls as u16]))
+}
+
+/// Extracts the executable from the zip. The zip must contain exactly ONE `.exe` (`LienzoUI-<v>/lienzo-ui.exe`), it must be a
+/// valid PE file and its version resource (required) must match the release; no other name is written to disk.
 pub fn extract_exe(zip: &[u8], version: &str) -> Result<Vec<u8>, String> {
     let mut a = zip::ZipArchive::new(std::io::Cursor::new(zip)).map_err(|_| "The downloaded zip is not valid.".to_string())?;
     let name = format!("LienzoUI-{}/lienzo-ui.exe", version);
     // Compress-Archive in old Windows PowerShell stores paths with "\": they are compared normalized.
-    let idx = (0..a.len()).find(|&i| a.by_index_raw(i).is_ok_and(|f| f.name().is_ok_and(|n| n.replace('\\', "/") == name))).ok_or("The zip does not contain lienzo-ui.exe.")?;
+    let exes: Vec<usize> = (0..a.len()).filter(|&i| a.by_index_raw(i).is_ok_and(|f| !f.is_dir() && f.name().is_ok_and(|n| n.to_ascii_lowercase().ends_with(".exe")))).collect();
+    if exes.len() > 1 {
+        return Err("The zip must contain a single executable.".into());
+    }
+    let idx = exes.first().copied().filter(|&i| a.by_index_raw(i).is_ok_and(|f| f.name().is_ok_and(|n| n.replace('\\', "/") == name))).ok_or("The zip does not contain lienzo-ui.exe.")?;
     let mut f = a.by_index(idx).map_err(|_| "The zip could not be read.".to_string())?;
     if f.size() > MAX_EXE {
         return Err("The executable in the zip is too large.".into());
     }
     let mut out = Vec::with_capacity(f.size() as usize);
-    f.by_ref().take(MAX_EXE + 1).read_to_end(&mut out).map_err(|_| "No se pudo descomprimir.".to_string())?;
-    if out.len() as u64 > MAX_EXE || out.len() < 4096 || &out[..2] != b"MZ" {
+    f.by_ref().take(MAX_EXE + 1).read_to_end(&mut out).map_err(|_| "The zip could not be read.".to_string())?;
+    if out.len() as u64 > MAX_EXE || out.len() < 4096 {
         return Err("The executable in the zip does not look valid.".into());
+    }
+    // The version resource is required: an executable that does not say which version it is cannot be checked against the release.
+    let Some(v) = pe_version(&out)? else {
+        return Err("The executable has no version information; not installing.".into());
+    };
+    if parse_version(version).is_none_or(|w| (v[0] as u32, v[1] as u32, v[2] as u32) != w) {
+        return Err("The version inside the executable does not match the release; not installing.".into());
     }
     Ok(out)
 }
@@ -207,10 +294,23 @@ fn download_and_install(n: &Release) -> Result<(String, std::path::PathBuf), Str
         return Err(format!("The download responded {}.", r.status().as_u16()));
     }
     let zip = r.body_mut().with_config().limit(MAX_ZIP).read_to_vec().map_err(|_| "The download is too large or was cut off.".to_string())?;
-    verify_sha256(&zip, &n.sha256)?;
-    let bytes = extract_exe(&zip, &n.version)?;
-    replace_exe(&exe, &bytes)?;
+    install_zip(&exe, &zip, n)?;
     Ok((n.version.clone(), exe))
+}
+
+/// Verifies the downloaded zip (SHA-256, single valid executable of the right version) and only then swaps `exe`
+/// (the previous one stays as `.old` and is put back if the swap fails). Nothing is touched when a check fails.
+pub fn install_zip(exe: &std::path::Path, zip: &[u8], n: &Release) -> Result<(), String> {
+    verify_sha256(zip, &n.sha256)?;
+    let bytes = extract_exe(zip, &n.version)?;
+    replace_exe(exe, &bytes)
+}
+
+/// First 600 characters of the release notes (cut at a character boundary, with an ellipsis when longer).
+pub fn notes_preview(notes: &str) -> String {
+    let mut it = notes.trim().chars();
+    let head: String = it.by_ref().take(600).collect();
+    if it.next().is_some() { format!("{}…", head.trim_end()) } else { head }
 }
 
 /// Deletes the old .exe left by the previous update.
@@ -223,7 +323,7 @@ pub fn clean_leftovers() {
     }
 }
 
-fn restart(ctx: &egui::Context, exe: &std::path::Path) {
+pub(crate) fn restart(ctx: &egui::Context, exe: &std::path::Path) {
     if std::process::Command::new(exe).spawn().is_ok() {
         ctx.send_viewport_cmd(egui::ViewportCommand::Close);
     }
@@ -335,9 +435,13 @@ impl EditorApp {
                 State::Available(n) => {
                     ui.label(RichText::new(format!("{} {}", t("A new version is available:"), n.version)).strong().color(ACCENT()));
                     if !n.notes.is_empty() {
+                        ui.label(RichText::new(t("Release notes")).small().strong());
                         egui::ScrollArea::vertical().max_height(180.0).show(ui, |ui| {
-                            ui.label(RichText::new(&n.notes).small().color(MUTED()));
+                            ui.label(RichText::new(notes_preview(&n.notes)).small().color(MUTED()));
                         });
+                        if n.notes.trim().chars().count() > 600 && ui.link(t("Full release notes")).clicked() {
+                            let _ = webbrowser::open(RELEASES_PAGE);
+                        }
                     }
                     ui.add_space(6.0);
                     ui.horizontal(|ui| {
@@ -409,7 +513,9 @@ impl EditorApp {
             self.updater_search();
         }
         if let Some(exe) = restart_exe {
-            restart(ctx, &exe);
+            if self.request_restart(&exe) {
+                restart(ctx, &exe);
+            }
         }
         self.updater.open = open;
     }
@@ -431,10 +537,57 @@ mod tests {
         buf.into_inner()
     }
 
-    fn fake_exe() -> Vec<u8> {
-        let mut v = b"MZ".to_vec();
+    /// A minimal but structurally valid PE32+ file; with `version` it carries a version resource.
+    fn fake_exe_with(version: Option<[u16; 4]>) -> Vec<u8> {
+        let mut v = vec![0u8; 0x800];
+        v[..2].copy_from_slice(b"MZ");
+        v[0x3c..0x40].copy_from_slice(&0x40u32.to_le_bytes());
+        let pe = 0x40;
+        v[pe..pe + 4].copy_from_slice(b"PE\0\0");
+        v[pe + 4..pe + 6].copy_from_slice(&0x8664u16.to_le_bytes()); // machine
+        v[pe + 6..pe + 8].copy_from_slice(&1u16.to_le_bytes()); // one section
+        v[pe + 20..pe + 22].copy_from_slice(&240u16.to_le_bytes()); // optional header size
+        let opt = pe + 24;
+        v[opt..opt + 2].copy_from_slice(&0x20bu16.to_le_bytes());
+        v[opt + 108..opt + 112].copy_from_slice(&16u32.to_le_bytes()); // data directories
+        let sec = opt + 240;
+        v[sec..sec + 6].copy_from_slice(b".rsrc\0");
+        v[sec + 8..sec + 12].copy_from_slice(&0x200u32.to_le_bytes()); // virtual size
+        v[sec + 12..sec + 16].copy_from_slice(&0x1000u32.to_le_bytes()); // rva
+        v[sec + 16..sec + 20].copy_from_slice(&0x400u32.to_le_bytes()); // raw size
+        v[sec + 20..sec + 24].copy_from_slice(&0x400u32.to_le_bytes()); // raw pointer
+        if let Some(ver) = version {
+            let dd = opt + 112 + 16;
+            v[dd..dd + 4].copy_from_slice(&0x1000u32.to_le_bytes());
+            v[dd + 4..dd + 8].copy_from_slice(&0x200u32.to_le_bytes());
+            let r = 0x400;
+            let mut put = |at: usize, x: u32| v[r + at..r + at + 4].copy_from_slice(&x.to_le_bytes());
+            // root: one id entry (type 16) -> dir at 0x18 -> one entry (id 1) -> dir at 0x30 -> one entry (lang) -> data entry at 0x48
+            put(12, 1 << 16);
+            put(16, 16);
+            put(20, 0x8000_0000 | 0x18);
+            put(0x18 + 12, 1 << 16);
+            put(0x18 + 16, 1);
+            put(0x18 + 20, 0x8000_0000 | 0x30);
+            put(0x30 + 12, 1 << 16);
+            put(0x30 + 16, 0x409);
+            put(0x30 + 20, 0x48);
+            put(0x48, 0x1000 + 0x58); // data rva
+            put(0x48 + 4, 0x60); // size
+            // VS_VERSION_INFO: header, key, padding, then VS_FIXEDFILEINFO
+            let d = 0x58;
+            v[r + d + 6..r + d + 6 + 32].copy_from_slice(&"VS_VERSION_INFO\0".encode_utf16().flat_map(|c| c.to_le_bytes()).collect::<Vec<u8>>());
+            let mut put = |at: usize, x: u32| v[r + d + at..r + d + at + 4].copy_from_slice(&x.to_le_bytes());
+            put(40, 0xFEEF_04BD);
+            put(40 + 8, ((ver[0] as u32) << 16) | ver[1] as u32);
+            put(40 + 12, ((ver[2] as u32) << 16) | ver[3] as u32);
+        }
         v.resize(8192, 7);
         v
+    }
+
+    fn fake_exe() -> Vec<u8> {
+        fake_exe_with(None)
     }
 
     #[test]
@@ -499,14 +652,131 @@ aviso");
 
     #[test]
     fn extracts_only_the_expected_exe() {
-        let ok = zip_with("LienzoUI-1.2.0/lienzo-ui.exe", &fake_exe());
+        let ok = zip_with("LienzoUI-1.2.0/lienzo-ui.exe", &fake_exe_with(Some([1, 2, 0, 0])));
         assert_eq!(extract_exe(&ok, "1.2.0").unwrap().len(), 8192);
         assert!(extract_exe(&zip_with("LienzoUI-1.2.0/otro.exe", &fake_exe()), "1.2.0").is_err());
-        assert_eq!(extract_exe(&zip_with("LienzoUI-1.2.0\\lienzo-ui.exe", &fake_exe()), "1.2.0").unwrap().len(), 8192);
-        assert!(extract_exe(&zip_with("../lienzo-ui.exe", &fake_exe()), "1.2.0").is_err());
+        assert_eq!(extract_exe(&zip_with("LienzoUI-1.2.0\\lienzo-ui.exe", &fake_exe_with(Some([1, 2, 0, 0]))), "1.2.0").unwrap().len(), 8192);
+        assert!(extract_exe(&zip_with("../lienzo-ui.exe", &fake_exe_with(Some([1, 2, 0, 0]))), "1.2.0").is_err());
         assert!(extract_exe(&zip_with("LienzoUI-1.2.0/lienzo-ui.exe", b"MZ corto"), "1.2.0").is_err());
         assert!(extract_exe(&zip_with("LienzoUI-1.2.0/lienzo-ui.exe", &vec![1u8; 8192]), "1.2.0").is_err());
         assert!(extract_exe(b"no es un zip", "1.2.0").is_err());
+    }
+
+    fn zip_with_files(files: &[(&str, &[u8])]) -> Vec<u8> {
+        let mut buf = std::io::Cursor::new(Vec::new());
+        {
+            let mut z = zip::ZipWriter::new(&mut buf);
+            for (n, d) in files {
+                z.start_file(*n, zip::write::SimpleFileOptions::default()).unwrap();
+                z.write_all(d).unwrap();
+            }
+            z.finish().unwrap();
+        }
+        buf.into_inner()
+    }
+
+    #[test]
+    fn the_pe_header_and_the_version_resource_are_checked() {
+        assert_eq!(pe_version(&fake_exe()).unwrap(), None, "valid PE without a version resource");
+        assert_eq!(pe_version(&fake_exe_with(Some([1, 2, 0, 0]))).unwrap(), Some([1, 2, 0, 0]));
+        // broken headers
+        let mut bad = fake_exe();
+        bad[0x40] = b'X'; // no PE signature
+        assert!(pe_version(&bad).is_err());
+        let mut bad = fake_exe();
+        bad[0x44] = 0; // unknown machine
+        bad[0x45] = 0;
+        assert!(pe_version(&bad).is_err());
+        let mut bad = fake_exe();
+        bad[0x3c..0x40].copy_from_slice(&0xFFFF_FFF0u32.to_le_bytes()); // e_lfanew out of range
+        assert!(pe_version(&bad).is_err());
+        assert!(pe_version(b"MZ").is_err() && pe_version(&[]).is_err());
+        // truncated resource tables do not panic
+        for cut in [0x120, 0x200, 0x410, 0x440, 0x470, 0x500] {
+            let mut t = fake_exe_with(Some([1, 2, 0, 0]));
+            t.truncate(cut);
+            let _ = pe_version(&t);
+        }
+        // through the zip: the right version passes, another one (or a bad PE) is refused
+        let name = "LienzoUI-1.2.0/lienzo-ui.exe";
+        assert!(extract_exe(&zip_with(name, &fake_exe_with(Some([1, 2, 0, 0]))), "1.2.0").is_ok());
+        let e = extract_exe(&zip_with(name, &fake_exe_with(Some([1, 1, 9, 0]))), "1.2.0").unwrap_err();
+        assert!(e.contains("does not match"), "{}", e);
+        assert!(extract_exe(&zip_with(name, &fake_exe_with(Some([1, 2, 0, 0]))), "1.2.1").is_err());
+        let mut nope = fake_exe();
+        nope[0x41] = 0; // MZ intact is not enough
+        nope[0x42] = 0;
+        nope[0x43] = 0;
+        assert!(extract_exe(&zip_with(name, &nope), "1.2.0").is_err());
+    }
+
+    #[test]
+    fn an_exe_without_a_version_resource_is_refused() {
+        let name = "LienzoUI-1.2.0/lienzo-ui.exe";
+        let e = extract_exe(&zip_with(name, &fake_exe()), "1.2.0").unwrap_err();
+        assert!(e.contains("no version"), "{}", e);
+        assert!(extract_exe(&zip_with(name, &fake_exe_with(Some([1, 2, 0, 0]))), "1.2.0").is_ok());
+    }
+
+    #[test]
+    fn the_zip_must_hold_a_single_exe() {
+        let good = fake_exe_with(Some([1, 2, 0, 0]));
+        let name = "LienzoUI-1.2.0/lienzo-ui.exe";
+        assert!(extract_exe(&zip_with_files(&[(name, &good), ("LienzoUI-1.2.0/README.txt", b"hi")]), "1.2.0").is_ok(), "other non-exe files are ignored");
+        let e = extract_exe(&zip_with_files(&[(name, &good), ("LienzoUI-1.2.0/helper.exe", &good)]), "1.2.0").unwrap_err();
+        assert!(e.contains("single executable"), "{}", e);
+        assert!(extract_exe(&zip_with_files(&[(name, &good), ("other/LIENZO-UI.EXE", &good)]), "1.2.0").is_err());
+        assert!(extract_exe(&zip_with_files(&[("README.txt", b"x")]), "1.2.0").is_err());
+    }
+
+    #[test]
+    fn install_checks_everything_before_touching_the_exe() {
+        let dir = std::env::temp_dir().join(format!("lienzo-inst-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        std::fs::create_dir_all(&dir).unwrap();
+        let exe = dir.join("lienzo-ui.exe");
+        std::fs::write(&exe, b"current").unwrap();
+        let name = "LienzoUI-1.2.0/lienzo-ui.exe";
+        let zip = zip_with(name, &fake_exe_with(Some([1, 2, 0, 0])));
+        let hex = |b: &[u8]| -> String { Sha256::digest(b).iter().map(|x| format!("{:02x}", x)).collect() };
+        let rel = |sha: String| Release { version: "1.2.0".into(), notes: String::new(), url_zip: "x".into(), sha256: sha };
+        // wrong hash, wrong version in the PE, two exes: the current exe stays
+        assert!(install_zip(&exe, &zip, &rel("0".repeat(64))).is_err());
+        let wrong = zip_with(name, &fake_exe_with(Some([9, 9, 9, 0])));
+        assert!(install_zip(&exe, &wrong, &rel(hex(&wrong))).is_err());
+        let two = zip_with_files(&[(name, &fake_exe()), ("LienzoUI-1.2.0/b.exe", &fake_exe())]);
+        assert!(install_zip(&exe, &two, &rel(hex(&two))).is_err());
+        assert_eq!(std::fs::read(&exe).unwrap(), b"current");
+        assert!(!path_with_extension(&exe, ".old").exists() && !path_with_extension(&exe, ".new").exists());
+        // everything right: replaced, the old one is kept for the rollback
+        install_zip(&exe, &zip, &rel(hex(&zip))).unwrap();
+        assert_eq!(std::fs::read(&exe).unwrap().len(), 8192);
+        assert_eq!(std::fs::read(path_with_extension(&exe, ".old")).unwrap(), b"current");
+        // rollback: the destination cannot be renamed into place -> the old exe is back
+        let blocked = dir.join("sub").join("lienzo-ui.exe");
+        assert!(replace_exe(&blocked, &fake_exe()).is_err());
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    /// The real executable built by this project (when a release build exists) has a valid PE header and the crate's version.
+    #[test]
+    fn the_real_release_exe_passes_the_pe_check() {
+        let exe = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("target/release/lienzo-ui.exe");
+        let Ok(bytes) = std::fs::read(exe) else { return };
+        let v = pe_version(&bytes).expect("valid PE").expect("the release exe must carry a version resource");
+        {
+            assert_eq!(Some((v[0] as u32, v[1] as u32, v[2] as u32)), parse_version(CURRENT_VERSION));
+        }
+    }
+
+    #[test]
+    fn notes_preview_is_600_characters() {
+        assert_eq!(notes_preview("short"), "short");
+        let long = "é".repeat(700);
+        let p = notes_preview(&long);
+        assert_eq!(p.chars().count(), 601);
+        assert!(p.ends_with('…'));
+        assert_eq!(notes_preview(&"a".repeat(600)).chars().count(), 600, "exactly 600: no ellipsis");
     }
 
     #[test]

@@ -27,7 +27,7 @@ Para usar o app em português: botão **Acessibilidade** › **Idioma** › Port
 
 ## 3. Comece com um modelo
 
-Em **Modelos**, escolha um dos 12 layouts: Menu principal, HUD de jogo, Janela de diálogo, Configurações, Inventário, Menu de pausa, Fim de jogo, Seleção de fase, Tela de carregamento, Diálogo de personagem, Classificação ou Seleção de personagem. Tudo o que ele traz pode ser alterado, e Ctrl+Z desfaz a alteração. Para começar do zero: «Em branco».
+Em **Modelos**, escolha um dos 15 layouts: Menu principal, HUD de jogo, Janela de diálogo, Configurações, Inventário, Menu de pausa, Fim de jogo, Seleção de fase, Tela de carregamento, Diálogo de personagem, Classificação ou Seleção de personagem. Tudo o que ele traz pode ser alterado, e Ctrl+Z desfaz a alteração. Para começar do zero: «Em branco». Duas delas têm estilo pixel art: HUD de RPG pixel art e Menu principal pixel art.
 
 ## 4. Edite
 
@@ -63,6 +63,51 @@ Clique em **Revisar** na barra superior. Ele avisa sobre fonte pequena demais pa
 3. Arraste-o para a cena ou use o menu **Tools › Lienzo UI › Import design into scene…**.
 
 Sempre que você exportar novamente, o Unity atualiza o prefab sozinho.
+
+## Imagens incluídas
+
+A aba Imagens na barra à esquerda traz arte pronta para usar, sem precisar de arquivos:
+
+- Os chips no topo filtram por Suas imagens, Planos de fundo, Molduras, Botões, Ícones, Pixel art e Gradientes. A busca encontra por nome ou tag.
+- Clique em um item para adicioná-lo ou arraste-o para o canvas. Molduras e botões vêm com a borda 9-slice, então esticam sem deformar os cantos. Os planos de fundo ficam atrás de tudo.
+- A imagem é copiada para a sua biblioteca na primeira vez que você a usa e é exportada para o Unity junto com o design.
+- Com os sprites de pixel art, marque “Pixel art” no Inspetor do canvas (sem nada selecionado) para que fiquem nítidos.
+
+## Telas verticais
+
+Celulares costumam ser usados na vertical. O Lienzo UI guarda um segundo layout para isso, sem mexer no primeiro:
+
+- Troque a visualização com os botões Paisagem / Retrato da barra superior.
+- Sem nada selecionado, abra “Layout vertical” no Inspetor e clique em “Criar layout vertical”. Os elementos começam onde estão na horizontal.
+- Na visualização vertical, o que você mover ou redimensionar altera só o layout vertical. Clique direito em um elemento › “Voltar ao horizontal” desfaz uma alteração.
+- A exportação leva os dois layouts: no Unity o prefab muda sozinho para o vertical quando a tela é mais alta do que larga.
+
+## Importar do Unity
+
+Já tem uma interface no Unity? Traga-a para o Lienzo UI:
+
+- Arquivo › Importar do Unity…
+- Escolha um prefab de uGUI (.prefab) ou um design que o Lienzo UI exportou antes (Assets/EditorGUI/Designs/….json).
+- Ele abre como um design novo, sem salvar: salve-o como projeto para mantê-lo.
+- Se algo não puder ser convertido com exatidão, uma janela lista os avisos, então nada se perde em silêncio.
+- Se ele encontrar a pasta do seu projeto Unity, as imagens do design são localizadas automaticamente.
+
+## Não perca seu trabalho
+
+- Salvamento automático: mais ou menos a cada minuto o Lienzo UI salva uma cópia de recuperação. Você pode desativar em Acessibilidade › Salvamento automático.
+- Se o aplicativo fechar de forma inesperada, na próxima vez ele pergunta “Recuperar o trabalho não salvo…?”. Clique em Restaurar para recuperá-lo ou em Descartar para ignorá-lo. O trabalho recuperado ainda não é um arquivo salvo: pressione Ctrl+S para mantê-lo.
+- Ctrl+S continua salvando o seu projeto como sempre.
+- Desfazer (Ctrl+Z) lembra até 200 passos (e tem um limite de memória). Se os mais antigos forem descartados, a barra de status mostra “Histórico reduzido”.
+
+## Comunidade
+
+A aba Comunidade na barra à esquerda é um catálogo compartilhado de plugins, imagens, fontes, modelos, elementos e temas:
+
+- Explorar e instalar não exige conta: pesquise e clique em Instalar.
+- Para enviar, denunciar ou dar corações, você entra com GitHub ou Google e escolhe um nome público. Sem senhas: o app guarda apenas esse nome.
+- Ao criar seu perfil você aceita as regras: nada de malware, ódio, plágio nem conteúdo +18 sem marcação. O texto completo está em docs/TERMS.md e docs/COMMUNITY_GUIDELINES.md.
+- O conteúdo +18 fica oculto, a menos que você entre na conta e ative “Mostrar conteúdo +18”.
+- Tudo o que é compartilhado é revisado antes de ser publicado, e você pode denunciar o que violar as regras.
 
 ## Próximos passos
 

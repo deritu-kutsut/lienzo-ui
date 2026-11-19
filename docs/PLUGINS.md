@@ -100,6 +100,25 @@ Each element has, among others: `id`, `name`, `kind` (`"Panel"`, `"Image"`, `"Te
 | `plugins/snap-to-grid` | "Snap to 8 px" command |
 | `plugins/text-to-csv` | Exporter of all texts to CSV (for translating) |
 | `plugins/extra-templates` | "Blacksmith shop" template |
+| `plugins/rename-by-hierarchy` | Commands: prefix names with their parents (Parent_Child), make names unique |
+| `plugins/recolor-palette` | Commands: Ocean, Sunset, Forest and Mono palettes, invert colors |
+| `plugins/placeholder-text` | Commands: fill empty texts with lorem ipsum sized to the box, remove it |
+| `plugins/grid-generator` | Commands: 3x3 grid, 6x4 inventory, 9-slot hotbar, 3x2 card grid (with Grid Layout Group) |
+| `plugins/mirror-layout` | Commands: mirror horizontally (right-to-left languages) or vertically |
+| `plugins/distribute-siblings` | Commands: spread siblings evenly, stack them with a 16 px gap |
+| `plugins/size-normalizer` | Commands: equalize buttons or sibling sizes, make sizes even |
+| `plugins/safe-area-guides` | Commands: add phone safe-area or title-safe guides, remove them |
+| `plugins/button-set-generator` | Commands: main menu column, OK / Cancel, Yes / No / Cancel, tab bar |
+| `plugins/text-case-tools` | Commands: UPPERCASE, lowercase, Title Case, Sentence case |
+| `plugins/accessibility-report` | Exporter: Markdown report of contrast, text size and touch target problems |
+| `plugins/design-spec-markdown` | Exporter: Markdown element tree with sizes, colors and texts |
+| `plugins/localization-sheet` | Exporters: translator TSV sheet and JSON key/value file |
+| `plugins/palette-export` | Exporters: color palette as Markdown table or USS variables |
+
+The commands only receive the design (they do not know the selection), so the bundled ones work on the whole design or on groups of siblings.
+Very large designs (roughly more than 200 elements) can exceed the 10,000 item limit of the script engine; the command then stops with an error and changes nothing.
+
+The ready-to-upload community versions of these plugins, plus a set of free fonts, are described in [community-pack/README.md](../community-pack/README.md).
 
 ## Testing a plugin
 

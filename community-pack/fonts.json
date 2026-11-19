@@ -1,0 +1,347 @@
+{
+  "generated_from": "https://github.com/google/fonts",
+  "fonts": [
+    {
+      "family": "Audiowide",
+      "slug": "audiowide",
+      "file": "fonts/audiowide/Audiowide-Regular.ttf",
+      "license_file": "fonts/audiowide/OFL.txt",
+      "authors": "Astigmatic",
+      "license": "SIL Open Font License 1.1",
+      "license_spdx": "OFL-1.1",
+      "copyright": "Copyright (c) 2012, Brian J. Bonislawsky DBA Astigmatic (AOETI) (astigma@astigmatic.com), with Reserved Font Names \"Audiowide\"",
+      "source": "https://github.com/google/fonts/tree/main/ofl/audiowide",
+      "download": "https://raw.githubusercontent.com/google/fonts/main/ofl/audiowide/Audiowide-Regular.ttf",
+      "sha256": "c7c0f2b0f6fad8c623e31772ce79f94a4edb9321ffce9fce978ea892d20ae730",
+      "size_bytes": 69916,
+      "labels": [
+        "sci-fi",
+        "tech",
+        "display"
+      ]
+    },
+    {
+      "family": "Bangers",
+      "slug": "bangers",
+      "file": "fonts/bangers/Bangers-Regular.ttf",
+      "license_file": "fonts/bangers/OFL.txt",
+      "authors": "Vernon Adams",
+      "license": "SIL Open Font License 1.1",
+      "license_spdx": "OFL-1.1",
+      "copyright": "Copyright 2010 The Bangers Project Authors (https://github.com/googlefonts/bangers)",
+      "source": "https://github.com/google/fonts/tree/main/ofl/bangers",
+      "download": "https://raw.githubusercontent.com/google/fonts/main/ofl/bangers/Bangers-Regular.ttf",
+      "sha256": "4160a7311de9342674cce9160cde9fcbb30f48190397d86ff1b70b455af65824",
+      "size_bytes": 93148,
+      "labels": [
+        "comic",
+        "action",
+        "display"
+      ]
+    },
+    {
+      "family": "Black Ops One",
+      "slug": "black-ops-one",
+      "file": "fonts/black-ops-one/BlackOpsOne-Regular.ttf",
+      "license_file": "fonts/black-ops-one/OFL.txt",
+      "authors": "James Grieshaber, Eben Sorkin",
+      "license": "SIL Open Font License 1.1",
+      "license_spdx": "OFL-1.1",
+      "copyright": "Copyright 2022 The Black-Ops Project Authors (https://github.com/googlefonts/googlefonts-project-template)",
+      "source": "https://github.com/google/fonts/tree/main/ofl/blackopsone",
+      "download": "https://raw.githubusercontent.com/google/fonts/main/ofl/blackopsone/BlackOpsOne-Regular.ttf",
+      "sha256": "282a825b5f294377387e3969f765408157dbea8da0f5d0aae68c6bc704b145b3",
+      "size_bytes": 166532,
+      "labels": [
+        "military",
+        "stencil",
+        "display"
+      ]
+    },
+    {
+      "family": "Bungee",
+      "slug": "bungee",
+      "file": "fonts/bungee/Bungee-Regular.ttf",
+      "license_file": "fonts/bungee/OFL.txt",
+      "authors": "David Jonathan Ross",
+      "license": "SIL Open Font License 1.1",
+      "license_spdx": "OFL-1.1",
+      "copyright": "Copyright 2023 The Bungee Project Authors (https://github.com/djrrb/Bungee)",
+      "source": "https://github.com/google/fonts/tree/main/ofl/bungee",
+      "download": "https://raw.githubusercontent.com/google/fonts/main/ofl/bungee/Bungee-Regular.ttf",
+      "sha256": "c4f5361ce120af3e6b9156d0bf379fa19cda2ea0cd18ac01fd99596c6bf66e3f",
+      "size_bytes": 118996,
+      "labels": [
+        "signage",
+        "display",
+        "bold"
+      ]
+    },
+    {
+      "family": "Creepster",
+      "slug": "creepster",
+      "file": "fonts/creepster/Creepster-Regular.ttf",
+      "license_file": "fonts/creepster/OFL.txt",
+      "authors": "Sideshow",
+      "license": "SIL Open Font License 1.1",
+      "license_spdx": "OFL-1.1",
+      "copyright": "Copyright (c) 2011, Font Diner, Inc (diner@fontdiner.com),",
+      "source": "https://github.com/google/fonts/tree/main/ofl/creepster",
+      "download": "https://raw.githubusercontent.com/google/fonts/main/ofl/creepster/Creepster-Regular.ttf",
+      "sha256": "402aeb734586c74aecd3dbdc454589b1fb12e2e1c71f782fd019ae68066d9f44",
+      "size_bytes": 62724,
+      "labels": [
+        "horror",
+        "halloween",
+        "display"
+      ]
+    },
+    {
+      "family": "Jacquard 12",
+      "slug": "jacquard-12",
+      "file": "fonts/jacquard-12/Jacquard12-Regular.ttf",
+      "license_file": "fonts/jacquard-12/OFL.txt",
+      "authors": "Sarah Cadigan-Fried",
+      "license": "SIL Open Font License 1.1",
+      "license_spdx": "OFL-1.1",
+      "copyright": "Copyright 2023 The Soft Type Project Authors (https://github.com/scfried/soft-type-jacquard)",
+      "source": "https://github.com/google/fonts/tree/main/ofl/jacquard12",
+      "download": "https://raw.githubusercontent.com/google/fonts/main/ofl/jacquard12/Jacquard12-Regular.ttf",
+      "sha256": "b1560583565a37f3d3a25cf2572df3efd2d773ecdcbb459dcd7ea0398cb840d1",
+      "size_bytes": 118448,
+      "labels": [
+        "pixel",
+        "blackletter",
+        "fantasy"
+      ]
+    },
+    {
+      "family": "Jersey 10",
+      "slug": "jersey-10",
+      "file": "fonts/jersey-10/Jersey10-Regular.ttf",
+      "license_file": "fonts/jersey-10/OFL.txt",
+      "authors": "Sarah Cadigan-Fried",
+      "license": "SIL Open Font License 1.1",
+      "license_spdx": "OFL-1.1",
+      "copyright": "Copyright 2023 The Soft Type Project Authors (https://github.com/scfried/soft-type-jersey)",
+      "source": "https://github.com/google/fonts/tree/main/ofl/jersey10",
+      "download": "https://raw.githubusercontent.com/google/fonts/main/ofl/jersey10/Jersey10-Regular.ttf",
+      "sha256": "db9cbd091617048a145d249daa2b815fe7083be6ab66ac26626e21a4e01c3e82",
+      "size_bytes": 77732,
+      "labels": [
+        "pixel",
+        "sport",
+        "game"
+      ]
+    },
+    {
+      "family": "Lilita One",
+      "slug": "lilita-one",
+      "file": "fonts/lilita-one/LilitaOne-Regular.ttf",
+      "license_file": "fonts/lilita-one/OFL.txt",
+      "authors": "Juan Montoreano",
+      "license": "SIL Open Font License 1.1",
+      "license_spdx": "OFL-1.1",
+      "copyright": "Copyright (c) 2011 Juan Montoreano (juan@remolacha.biz),",
+      "source": "https://github.com/google/fonts/tree/main/ofl/lilitaone",
+      "download": "https://raw.githubusercontent.com/google/fonts/main/ofl/lilitaone/LilitaOne-Regular.ttf",
+      "sha256": "f5b641c45c69d772ee4eda687bc9fda411d5cad6b0b45371491da4580cbc8d59",
+      "size_bytes": 28092,
+      "labels": [
+        "rounded",
+        "casual",
+        "display"
+      ]
+    },
+    {
+      "family": "Luckiest Guy",
+      "slug": "luckiest-guy",
+      "file": "fonts/luckiest-guy/LuckiestGuy-Regular.ttf",
+      "license_file": "fonts/luckiest-guy/LICENSE.txt",
+      "authors": "Astigmatic",
+      "license": "Apache License 2.0",
+      "license_spdx": "Apache-2.0",
+      "copyright": null,
+      "source": "https://github.com/google/fonts/tree/main/apache/luckiestguy",
+      "download": "https://raw.githubusercontent.com/google/fonts/main/apache/luckiestguy/LuckiestGuy-Regular.ttf",
+      "sha256": "cfbdd68a039f92df51cf3721506af6242e64594c6325fe0bedbeff3fe385d980",
+      "size_bytes": 73320,
+      "labels": [
+        "comic",
+        "casual",
+        "display"
+      ]
+    },
+    {
+      "family": "MedievalSharp",
+      "slug": "medievalsharp",
+      "file": "fonts/medievalsharp/MedievalSharp.ttf",
+      "license_file": "fonts/medievalsharp/OFL.txt",
+      "authors": "Wojciech Kalinowski",
+      "license": "SIL Open Font License 1.1",
+      "license_spdx": "OFL-1.1",
+      "copyright": "Copyright (c) 2011, wmk69 (wmk69@o2.pl),",
+      "source": "https://github.com/google/fonts/tree/main/ofl/medievalsharp",
+      "download": "https://raw.githubusercontent.com/google/fonts/main/ofl/medievalsharp/MedievalSharp.ttf",
+      "sha256": "74cb2e6738bd7703adf120802f68fba0c9ddb9147a08e6847f1005b1e55df5a5",
+      "size_bytes": 148712,
+      "labels": [
+        "medieval",
+        "fantasy",
+        "rpg"
+      ]
+    },
+    {
+      "family": "Pirata One",
+      "slug": "pirata-one",
+      "file": "fonts/pirata-one/PirataOne-Regular.ttf",
+      "license_file": "fonts/pirata-one/OFL.txt",
+      "authors": "Rodrigo Fuenzalida, Nicolas Massi",
+      "license": "SIL Open Font License 1.1",
+      "license_spdx": "OFL-1.1",
+      "copyright": "Copyright (c) 2012, Rodrigo Fuenzalida, Nicolas Massi (www.taip.com.ar / abc.taip.com.ar), with Reserved Font Name 'Pirata'",
+      "source": "https://github.com/google/fonts/tree/main/ofl/pirataone",
+      "download": "https://raw.githubusercontent.com/google/fonts/main/ofl/pirataone/PirataOne-Regular.ttf",
+      "sha256": "5347a2e155589ecf667d4b766613c8ee003edde9f83717fd24c09599a4b1ecc0",
+      "size_bytes": 56316,
+      "labels": [
+        "blackletter",
+        "pirate",
+        "fantasy"
+      ]
+    },
+    {
+      "family": "Press Start 2P",
+      "slug": "press-start-2p",
+      "file": "fonts/press-start-2p/PressStart2P-Regular.ttf",
+      "license_file": "fonts/press-start-2p/OFL.txt",
+      "authors": "CodeMan38",
+      "license": "SIL Open Font License 1.1",
+      "license_spdx": "OFL-1.1",
+      "copyright": "Copyright 2012 The Press Start 2P Project Authors (cody@zone38.net), with Reserved Font Name \"Press Start 2P\".",
+      "source": "https://github.com/google/fonts/tree/main/ofl/pressstart2p",
+      "download": "https://raw.githubusercontent.com/google/fonts/main/ofl/pressstart2p/PressStart2P-Regular.ttf",
+      "sha256": "034c77f1f05ec89421e4a63f0e3a4ca1ecf852cc6d2bf611f126f275728e017d",
+      "size_bytes": 118204,
+      "labels": [
+        "pixel",
+        "retro",
+        "game"
+      ]
+    },
+    {
+      "family": "Rajdhani",
+      "slug": "rajdhani",
+      "file": "fonts/rajdhani/Rajdhani-Regular.ttf",
+      "license_file": "fonts/rajdhani/OFL.txt",
+      "authors": "Indian Type Foundry",
+      "license": "SIL Open Font License 1.1",
+      "license_spdx": "OFL-1.1",
+      "copyright": "Copyright (c) 2014, Indian Type Foundry (info@indiantypefoundry.com).",
+      "source": "https://github.com/google/fonts/tree/main/ofl/rajdhani",
+      "download": "https://raw.githubusercontent.com/google/fonts/main/ofl/rajdhani/Rajdhani-Regular.ttf",
+      "sha256": "6e1fc228a8318251a6e569502ec57bac1e4656c582f92f59ccecc4688e039b98",
+      "size_bytes": 377860,
+      "labels": [
+        "sans",
+        "tech",
+        "ui"
+      ]
+    },
+    {
+      "family": "Righteous",
+      "slug": "righteous",
+      "file": "fonts/righteous/Righteous-Regular.ttf",
+      "license_file": "fonts/righteous/OFL.txt",
+      "authors": "Astigmatic",
+      "license": "SIL Open Font License 1.1",
+      "license_spdx": "OFL-1.1",
+      "copyright": "Copyright (c) 2011 by Brian J. Bonislawsky DBA Astigmatic (AOETI)",
+      "source": "https://github.com/google/fonts/tree/main/ofl/righteous",
+      "download": "https://raw.githubusercontent.com/google/fonts/main/ofl/righteous/Righteous-Regular.ttf",
+      "sha256": "2ffb3fe5c27d7e6571210b800448c4e234e651b46c6b4426c1bb567e5341348a",
+      "size_bytes": 43104,
+      "labels": [
+        "display",
+        "retro",
+        "rounded"
+      ]
+    },
+    {
+      "family": "Share Tech Mono",
+      "slug": "share-tech-mono",
+      "file": "fonts/share-tech-mono/ShareTechMono-Regular.ttf",
+      "license_file": "fonts/share-tech-mono/OFL.txt",
+      "authors": "Carrois Apostrophe",
+      "license": "SIL Open Font License 1.1",
+      "license_spdx": "OFL-1.1",
+      "copyright": "Copyright (c) 2012, Carrois Type Design, Ralph du Carrois (post@carrois.com www.carrois.com), with Reserved Font Name 'Share'",
+      "source": "https://github.com/google/fonts/tree/main/ofl/sharetechmono",
+      "download": "https://raw.githubusercontent.com/google/fonts/main/ofl/sharetechmono/ShareTechMono-Regular.ttf",
+      "sha256": "9ceab1f87414829af259c0f537573ae03ef7dd3147c0b27a36a1a0beb6732677",
+      "size_bytes": 43272,
+      "labels": [
+        "monospace",
+        "tech",
+        "ui"
+      ]
+    },
+    {
+      "family": "Silkscreen",
+      "slug": "silkscreen",
+      "file": "fonts/silkscreen/Silkscreen-Regular.ttf",
+      "license_file": "fonts/silkscreen/OFL.txt",
+      "authors": "Jason Kottke",
+      "license": "SIL Open Font License 1.1",
+      "license_spdx": "OFL-1.1",
+      "copyright": "Copyright 2001 The Silkscreen Project Authors (https://github.com/googlefonts/silkscreen)",
+      "source": "https://github.com/google/fonts/tree/main/ofl/silkscreen",
+      "download": "https://raw.githubusercontent.com/google/fonts/main/ofl/silkscreen/Silkscreen-Regular.ttf",
+      "sha256": "c845473330b94c2079ce9af01c51ac8ba2d99c24f4d14c039843bbb8e642ebd8",
+      "size_bytes": 32220,
+      "labels": [
+        "pixel",
+        "retro",
+        "game"
+      ]
+    },
+    {
+      "family": "Uncial Antiqua",
+      "slug": "uncial-antiqua",
+      "file": "fonts/uncial-antiqua/UncialAntiqua-Regular.ttf",
+      "license_file": "fonts/uncial-antiqua/OFL.txt",
+      "authors": "Astigmatic",
+      "license": "SIL Open Font License 1.1",
+      "license_spdx": "OFL-1.1",
+      "copyright": "Copyright (c) 2011 by Brian J. Bonislawsky DBA Astigmatic (AOETI)",
+      "source": "https://github.com/google/fonts/tree/main/ofl/uncialantiqua",
+      "download": "https://raw.githubusercontent.com/google/fonts/main/ofl/uncialantiqua/UncialAntiqua-Regular.ttf",
+      "sha256": "33a5128b59d1c95d4f3788164f4ab3a1196f0a982263cb2cd278c47418366766",
+      "size_bytes": 63404,
+      "labels": [
+        "medieval",
+        "fantasy",
+        "rpg"
+      ]
+    },
+    {
+      "family": "VT323",
+      "slug": "vt323",
+      "file": "fonts/vt323/VT323-Regular.ttf",
+      "license_file": "fonts/vt323/OFL.txt",
+      "authors": "Peter Hull",
+      "license": "SIL Open Font License 1.1",
+      "license_spdx": "OFL-1.1",
+      "copyright": "Copyright 2011, The VT323 Project Authors (peter.hull@oikoi.com)",
+      "source": "https://github.com/google/fonts/tree/main/ofl/vt323",
+      "download": "https://raw.githubusercontent.com/google/fonts/main/ofl/vt323/VT323-Regular.ttf",
+      "sha256": "cf4de751ada78ceac033dbe16a687742939995b77bc2a052ae17a4957958594d",
+      "size_bytes": 153116,
+      "labels": [
+        "pixel",
+        "terminal",
+        "monospace"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "name": "Size normalizer",
+  "version": "1.0.0",
+  "author": "Lienzo UI",
+  "description": "Makes buttons and sibling elements the same size, or rounds all sizes to even numbers, keeping each element centered.",
+  "commands": [
+    { "name": "Equalize all buttons", "description": "Every Button gets the width and height of the largest one.", "script": "buttons.rhai" },
+    { "name": "Equalize sibling widths", "description": "Same-kind siblings take the width of the widest one.", "script": "widths.rhai" },
+    { "name": "Equalize sibling heights", "description": "Same-kind siblings take the height of the tallest one.", "script": "heights.rhai" },
+    { "name": "Equalize sibling sizes", "description": "Same-kind siblings take the largest width and height of their group.", "script": "sizes.rhai" },
+    { "name": "Make sizes even", "description": "Rounds every width and height to an even number of pixels.", "script": "even.rhai" }
+  ]
+}

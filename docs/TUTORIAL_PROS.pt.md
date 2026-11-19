@@ -93,3 +93,64 @@ Rust + [egui](https://github.com/emilk/egui):
 | `src/script.rs` | Scripts Rhai do modo Testar |
 
 Para estendê-lo: [EXTENDING.md](EXTENDING.md).
+
+## Layout vertical em detalhe
+
+O layout vertical é uma segunda visualização do mesmo design (docs/FORMAT.md › PortraitLayout):
+
+- Tem a sua própria resolução de referência, “Tamanho vertical” (1080 × 1920 por padrão).
+- Elementos sem exceção mantêm o RectTransform horizontal e são reavaliados em relação à página vertical: um fundo de tela cheia se estica, e os ancorados à direita acompanham a borda direita.
+- Só é guardado o que você altera na visualização vertical, como exceções (posição, tamanho, rotação, âncoras, visibilidade, tamanho da fonte, layout). Clique direito › “Voltar ao horizontal” remove uma.
+- Exportação: o JSON leva as exceções e o script gerado LienzoOrientationLayout as aplica quando Screen.width < Screen.height, e de novo quando o tamanho muda.
+- “Remover layout vertical” apaga todas as exceções.
+
+## 9-slice e o pacote incluído
+
+Para molduras, botões e painéis que esticam:
+
+- Selecione uma Imagem e defina “9-slice” em “Ajustes de imagem (Unity)”: a borda em pixels da imagem original (esquerda, abaixo, direita, acima), como no Sprite Editor do Unity. A exportação gera um Sprite 9-slice.
+- “Pixels por unidade”: 100 mantém as bordas no tamanho em pixels, 200 as reduz à metade.
+- O pacote incluído (assets/pack/manifest.json, docs/CONTENT.md) já define o corte e os pixels por unidade: molduras de 512×512 com corte 96, botões de 512×192.
+- Usar um item o copia para a sua biblioteca como pack_<id>.<ext> (oculto em “Suas imagens”); o exportador o copia para os Sprites do Unity.
+- Os modelos Pixel RPG HUD e Pixel main menu usam o pacote pixel. Ative “Pixel art” para o filtro Point.
+
+## Revisão e correções rápidas
+
+A janela Revisar lista erros e avisos; clique em um para selecionar o elemento. Seis problemas têm um botão “Corrigir” (um passo de desfazer):
+
+- Texto abaixo do tamanho mínimo: aumentado até o mínimo.
+- Controle pequeno demais para tocar: ampliado em torno do centro.
+- Elemento parcialmente fora da página: movido para dentro, se couber.
+- Nome repetido: acrescenta-se _2, _3…
+- Imagem ausente: a referência é removida.
+- Pouco contraste: a cor do texto é escurecida ou clareada.
+
+“Corrigir todos os problemas seguros” aplica tudo em algumas passadas. Problemas como uma fonte sem certos caracteres não têm correção automática. As correções também funcionam no layout vertical. Pela linha de comando: lienzo-ui --open arquivo --review (código 1 se houver erros).
+
+## Importar do Unity: prefabs e CLI
+
+Arquivo › Importar do Unity… lê um .prefab de uGUI (o YAML de texto do Unity) ou um Designs/*.json exportado pelo Lienzo UI e cria um design comum.
+
+- O que não pôde ser convertido aparece como avisos.
+- Se detectar a pasta do projeto Unity, as imagens são resolvidas a partir dela durante a sessão.
+- Sem janela: lienzo-ui --import-unity Menu.prefab --save Menu.editorgui.json (também com --review e --export).
+- Projeto inteiro: lienzo-ui --import-unity-project MeuProjeto --out Importados converte todos os prefabs de interface. Nunca sobrescreve (acrescenta _2) e ignora prefabs sem interface.
+- Detalhes em docs/UNITY_IMPORT.md.
+
+## Comunidade: plugins, fontes e regras
+
+Na aba Comunidade, Instalar adiciona conteúdo compartilhado com um clique: plugins, fontes, imagens, modelos, elementos e temas.
+
+- Um plugin da comunidade vai para uma pasta chamada community-<nome>-<hash>. Ele é gravado primeiro em uma pasta temporária, então uma instalação interrompida nunca deixa um plugin pela metade. Aparece na aba Plugins.
+- Os scripts são os mesmos Rhai: isolados, sem acesso a arquivos nem à rede e com limites de operações, tempo e memória (docs/PLUGINS.md).
+- Uma fonte instalada é adicionada à aba Texto e exportada para o Unity junto com o design.
+- Os downloads são conferidos com a impressão digital SHA-256 publicada; se não coincidir, nada é instalado.
+- Para publicar, você entra (GitHub ou Google), escolhe um nome público e aceita as regras. Tudo é revisado antes e o conteúdo +18 precisa ser marcado. Veja docs/TERMS.md, docs/COMMUNITY_GUIDELINES.md e docs/PRIVACY.md.
+
+## Salvamento automático, recuperação e desfazer
+
+- Mais ou menos a cada minuto, enquanto você edita, o design completo (com o layout vertical) é gravado na pasta de recuperação do app. Nunca no modo Testar. No máximo 10 recuperações são mantidas.
+- Ao iniciar, se houver uma recuperação mais recente que o arquivo do projeto, ela é oferecida: Restaurar ou Descartar. Depois de um Salvar normal ela deixa de ser necessária.
+- Pode ser desativado em Acessibilidade › Salvamento automático.
+- O histórico de desfazer é limitado a 200 passos e cerca de 64 MB. Quando os passos mais antigos são descartados, a barra de status mostra “Histórico reduzido”.
+- Cada comando de plugin e cada Corrigir da janela Revisar é um único passo de desfazer.

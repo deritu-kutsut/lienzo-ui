@@ -524,6 +524,82 @@ mod audit_tests {
         let _ = std::fs::remove_dir_all(&dir);
     }
 
+    /// Exports a hostile design (formula cells, control characters, comment / table / heading breakers) with a bundled
+    /// plugin. The plugin folders that are not tracked in git are skipped when they are missing.
+    fn hostile_export(plugin: &str, exporter: usize, tweak: impl Fn(&mut crate::model::Doc)) -> Option<String> {
+        let folder = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("plugins").join(plugin);
+        if !folder.join("plugin.json").exists() {
+            return None;
+        }
+        let p = load(&folder);
+        assert!(p.error.is_none(), "{}: {:?}", plugin, p.error);
+        let mut doc = crate::model::template(0, 1920.0, 1080.0);
+        tweak(&mut doc);
+        Some(run_exporter(&p.folder, &p.exporters[exporter], &doc).unwrap_or_else(|e| panic!("{}: {}", plugin, e)))
+    }
+
+    /// Indexes of the elements that carry text in the sample design.
+    fn texty(d: &crate::model::Doc) -> Vec<usize> {
+        let v: Vec<usize> = (0..d.elements.len()).filter(|&i| !d.elements[i].text.is_empty() && matches!(d.elements[i].kind, crate::model::Kind::Text | crate::model::Kind::Button)).collect();
+        assert!(v.len() >= 3);
+        v
+    }
+
+    #[test]
+    fn exporters_neutralise_formulas_control_characters_and_markdown_breakers() {
+        // spreadsheet formulas: TSV and CSV cells that start with = + - @ get an apostrophe
+        let tweak = |d: &mut crate::model::Doc| {
+            let t = texty(d);
+            d.elements[t[0]].text = "=HYPERLINK(\"http://x\")".into();
+            d.elements[t[0]].name = "@cmd".into();
+            d.elements[t[1]].text = "-5 gold".into();
+            d.elements[t[2]].text = "+1".into();
+        };
+        for (plugin, sep) in [("localization-sheet", '\t'), ("text-to-csv", ',')] {
+            if let Some(out) = hostile_export(plugin, 0, tweak) {
+                for line in out.lines() {
+                    for cell in line.split(sep) {
+                        let c = cell.trim_matches('"');
+                        assert!(!c.starts_with(['=', '+', '-', '@']), "{}: formula cell survived: {}", plugin, c);
+                    }
+                }
+                assert!(out.contains("'=HYPERLINK") && out.contains("'-5 gold"), "{}: {}", plugin, out);
+            }
+        }
+        // JSON: control characters (below 0x20) are \u00XX escapes, the result is valid JSON
+        let json_exp = hostile_export("localization-sheet", 1, |d| { let t = texty(d); d.elements[t[0]].text = "a\u{1}b\u{1f}c\td\u{8}e".into(); });
+        if let Some(out) = json_exp {
+            assert!(out.chars().all(|c| c as u32 >= 32 || c == '\n'), "raw control char left: {:?}", out);
+            let v: serde_json::Value = serde_json::from_str(&out).expect("valid JSON");
+            assert!(v.as_object().unwrap().values().any(|s| s.as_str() == Some("a\u{1}b\u{1f}c\td\u{8}e")), "{}", out);
+        }
+        // USS: the title cannot close the comment, no control characters
+        let uss = hostile_export("palette-export", 1, |d| d.title = "x */ :root{--a:1} /* \n\u{1}y".into());
+        if let Some(out) = uss {
+            let first = out.lines().next().unwrap();
+            assert!(first.starts_with("/* Colors of ") && first.ends_with(" */"), "{}", first);
+            assert_eq!(first.matches("*/").count(), 1, "the title closed the comment: {}", first);
+            assert!(!out.contains('\u{1}') && !out.lines().nth(1).unwrap().contains("--a"), "{}", out);
+        }
+        // Markdown: names and titles cannot break table rows, headings or inline code
+        let md = |d: &mut crate::model::Doc| {
+            d.title = "T\n# injected".into();
+            let i = texty(d)[0];
+            d.elements[i].name = "a|b`c\nd\re".into();
+            d.elements[i].text = "t`x|y\n".into();
+            d.elements[i].font_size = 8.0;
+        };
+        for (plugin, idx) in [("accessibility-report", 0), ("design-spec-markdown", 0), ("palette-export", 0)] {
+            if let Some(out) = hostile_export(plugin, idx, md) {
+                assert!(!out.lines().any(|l| l.starts_with("# injected")), "{}: heading injected", plugin);
+                assert!(!out.contains("a|b") && !out.contains("c\nd"), "{}: {}", plugin, out);
+                if plugin != "palette-export" {
+                    assert!(out.contains("a/b'c d e"), "{}: {}", plugin, out);
+                }
+            }
+        }
+    }
+
     #[test]
     fn command_output_with_unsafe_image_is_rejected() {
         let dir = temp("out");

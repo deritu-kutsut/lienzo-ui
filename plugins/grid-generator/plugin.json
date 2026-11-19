@@ -1,0 +1,12 @@
+{
+  "name": "Grid generator",
+  "version": "1.0.0",
+  "author": "Lienzo UI",
+  "description": "Creates ready-made grids of slots (inventory, hotbar, cards, 3x3) with a Grid Layout Group, centered on the canvas.",
+  "commands": [
+    { "name": "Grid 3 x 3 panels", "description": "Nine 160 px square panels in a Grid Layout Group.", "script": "grid3x3.rhai" },
+    { "name": "Inventory 6 x 4", "description": "Twenty-four 112 px slots (4 rows, 6 columns).", "script": "inventory6x4.rhai" },
+    { "name": "Hotbar 9 slots", "description": "One row of nine 96 px slots.", "script": "hotbar9.rhai" },
+    { "name": "Card grid 3 x 2", "description": "Six tall card panels (260 x 340) in 2 rows.", "script": "cards3x2.rhai" }
+  ]
+}

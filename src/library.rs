@@ -293,6 +293,10 @@ pub fn resolve_image(name: &str) -> PathBuf {
     }
     let lib = images_dir();
     let candidate = lib.join(name);
+    // A built-in pack image (`pack_<id>.<ext>`) that is not in the library yet is copied there the first time it is needed.
+    if name.starts_with("pack_") && !candidate.exists() {
+        crate::pack::ensure_named(&lib, name);
+    }
     if candidate.exists() && !inside(&candidate, &lib) {
         return blocked_path();
     }
@@ -364,7 +368,10 @@ impl Library {
         self.elements.clear();
         self.templates.clear();
         for p in list(&images_dir()) {
-            if IMAGE_EXTS.contains(&ext_of(&p).as_str()) {
+            // `pack_*` files are copies of the built-in pack (see pack.rs): they belong to the pack tiles, not to "Your images"
+            // (only those that really match the built-in manifest: a user's own `pack_cat.png` stays visible)
+            let is_pack_copy = crate::pack::is_pack_copy(&p);
+            if IMAGE_EXTS.contains(&ext_of(&p).as_str()) && !is_pack_copy {
                 if let Some((w, h)) = image_size(&p) {
                     self.images.push(LibImage { file: p.file_name().unwrap().to_string_lossy().into(), w, h });
                 }
@@ -550,6 +557,8 @@ pub struct Settings {
     pub skip_update_check: bool,
     #[serde(alias = "version_omitida")]
     pub skipped_version: String,
+    /// Autosave / crash recovery turned off (it is on by default).
+    pub no_autosave: bool,
     /// Interface theme (None = the default one).
     #[serde(alias = "tema")]
     pub theme: Option<crate::theme::Theme>,

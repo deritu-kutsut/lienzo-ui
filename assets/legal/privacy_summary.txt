@@ -1,0 +1,11 @@
+Lienzo UI Community - Privacy (summary, version 1.0)
+Full text: https://github.com/deritu-kutsut/lienzo-ui/blob/main/docs/PRIVACY.md
+
+- The app has no telemetry. It contacts the Community service only when you open the Community tab.
+- Stored: an account id from your GitHub or Google sign-in (never a password, and your email is not copied into our tables), your public name, optional profile data, your uploads, your reports, the terms version you accepted, and moderation records.
+- Your hearts and who you follow are private. Only totals are public.
+- Automatic moderation and malware scanning use third-party services: uploaded files and text are sent to them, not your email or account id.
+- A managed hosting provider stores the data for us.
+- You can export your data and delete your account from the app. Deleting removes your profile, uploads and their files.
+- The Community is not for children under 13. Adult content needs a declaration that you are 18 or older.
+- Questions: open an issue in the project repository on GitHub.

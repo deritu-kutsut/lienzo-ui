@@ -1,0 +1,10 @@
+{
+  "name": "Localization sheet",
+  "version": "1.0.0",
+  "author": "Lienzo UI",
+  "description": "Exports every text of the design with a stable key for translators: a TSV sheet with an empty translation column, or a JSON key/value file.",
+  "exporters": [
+    { "name": "Translator sheet", "extension": "tsv", "script": "sheet.rhai" },
+    { "name": "Texts as JSON keys", "extension": "json", "script": "json.rhai" }
+  ]
+}

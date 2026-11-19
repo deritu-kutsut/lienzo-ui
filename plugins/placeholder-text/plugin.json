@@ -1,0 +1,10 @@
+{
+  "name": "Placeholder text",
+  "version": "1.0.0",
+  "author": "Lienzo UI",
+  "description": "Fills empty texts with lorem ipsum that fits each box, and removes it again when the real content arrives.",
+  "commands": [
+    { "name": "Fill empty texts", "description": "Gives lorem ipsum to empty Text elements (sized to the box), labels to empty buttons and toggles, hints to input fields and options to empty dropdowns.", "script": "fill.rhai" },
+    { "name": "Remove lorem ipsum", "description": "Clears every text that starts with Lorem.", "script": "clear.rhai" }
+  ]
+}

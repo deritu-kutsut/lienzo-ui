@@ -1,0 +1,15 @@
+Lienzo UI Community - Terms of Use (summary, version 1.0)
+This is a short summary. The full text is the Terms of Use: https://github.com/deritu-kutsut/lienzo-ui/blob/main/docs/TERMS.md
+
+- The desktop app stays free and open source (MIT). These terms cover only the online Community.
+- You must be at least 13 years old. 18+ content is only for accounts that declare they are 18 or older.
+- Share only what you own or have the right to share. Copyrighted content you are not allowed to share is not allowed.
+- Pick a licence for everything you upload. You keep ownership; you let the Community host it and let other users download and use it in their own projects under that licence.
+- No malware or hidden code, no hate or harassment, no sexual content involving minors, no illegal content, no impersonation, no personal data of others, no gambling or money schemes.
+- Uploads are checked by automatic moderation and malware scanning, and sometimes by a person. Content can be hidden or removed.
+- Copyright claims hide content first. Three upheld copyright claims mean an upload ban.
+- The service is provided as is, without warranties. Use community content at your own risk and check its licence.
+- You can delete your account at any time.
+- New versions of the terms may ask you to accept again.
+
+By pressing Accept you agree to the Terms of Use, the Community Guidelines, the Privacy Policy and the Copyright and Takedown Policy.

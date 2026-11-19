@@ -93,3 +93,64 @@ Rust + [egui](https://github.com/emilk/egui):
 | `src/script.rs` | Script Rhai per la modalità Prova |
 
 Per estenderlo: [EXTENDING.md](EXTENDING.md).
+
+## Layout verticale nel dettaglio
+
+Il layout verticale è una seconda vista dello stesso design (docs/FORMAT.md › PortraitLayout):
+
+- Ha una propria risoluzione di riferimento, «Dimensione verticale» (1080 × 1920 per impostazione predefinita).
+- Gli elementi senza eccezione mantengono il RectTransform orizzontale e vengono rivalutati rispetto alla pagina verticale: uno sfondo a tutta pagina si allunga, quelli ancorati a destra seguono il bordo destro.
+- Viene salvato solo ciò che modifichi nella vista verticale, come eccezioni (posizione, dimensione, rotazione, ancoraggi, visibilità, dimensione del carattere, layout). Clic destro › «Torna a orizzontale» ne rimuove una.
+- Esportazione: il JSON contiene le eccezioni e lo script generato LienzoOrientationLayout le applica quando Screen.width < Screen.height, e di nuovo quando la dimensione cambia.
+- «Rimuovi layout verticale» elimina tutte le eccezioni.
+
+## 9-slice e pacchetto incluso
+
+Per cornici, pulsanti e pannelli che si allungano:
+
+- Seleziona un'Immagine e imposta «9-slice» in «Impostazioni immagine (Unity)»: il bordo in pixel dell'immagine originale (sinistra, basso, destra, alto), come nello Sprite Editor di Unity. L'esportazione genera uno Sprite 9-slice.
+- «Pixel per unità»: 100 mantiene i bordi alla loro dimensione in pixel, 200 li dimezza.
+- Il pacchetto incluso (assets/pack/manifest.json, docs/CONTENT.md) imposta già il taglio e i pixel per unità: cornici 512×512 con taglio 96, pulsanti 512×192.
+- Usare un elemento lo copia nella tua libreria come pack_<id>.<ext> (nascosto in «Le tue immagini»); l'esportatore lo copia negli Sprite di Unity.
+- I modelli HUD RPG pixel art e Menu principale pixel art usano il pacchetto pixel. Attiva «Pixel art» per il filtro Point.
+
+## Controllo e correzioni rapide
+
+La finestra Controlla elenca errori e avvisi; fai clic su uno per selezionarne l'elemento. Sei problemi hanno un pulsante «Correggi» (un passaggio di annullamento):
+
+- Testo sotto la dimensione minima: portato al minimo.
+- Controllo troppo piccolo da toccare: ingrandito attorno al centro.
+- Elemento in parte fuori dalla pagina: spostato dentro, se ci sta.
+- Nome ripetuto: si aggiunge _2, _3…
+- Immagine mancante: il riferimento viene rimosso.
+- Basso contrasto: il colore del testo viene scurito o schiarito.
+
+«Correggi tutti i problemi sicuri» li applica in alcuni passaggi. Problemi come un font senza certi caratteri non hanno correzione automatica. Le correzioni funzionano anche nel layout verticale. Da riga di comando: lienzo-ui --open file --review (codice 1 se ci sono errori).
+
+## Importare da Unity: prefab e CLI
+
+File › Importa da Unity… legge un .prefab uGUI (il YAML di testo di Unity) o un Designs/*.json esportato da Lienzo UI e crea un design normale.
+
+- Ciò che non si è potuto convertire compare come avvisi.
+- Se rileva la cartella del progetto Unity, le immagini vengono risolte rispetto ad essa durante la sessione.
+- Senza finestra: lienzo-ui --import-unity Menu.prefab --save Menu.editorgui.json (anche con --review e --export).
+- Progetto intero: lienzo-ui --import-unity-project MioProgetto --out Importati converte tutti i prefab di interfaccia. Non sovrascrive mai (aggiunge _2) e salta i prefab senza interfaccia.
+- Dettagli in docs/UNITY_IMPORT.md.
+
+## Community: plugin, font e regole
+
+Nella scheda Community, Installa aggiunge contenuti condivisi con un clic: plugin, font, immagini, modelli, elementi e temi.
+
+- Un plugin della community va in una cartella chiamata community-<nome>-<hash>. Viene scritto prima in una cartella temporanea, quindi un'installazione interrotta non lascia mai un plugin a metà. Compare nella scheda Plugin.
+- I suoi script sono gli stessi Rhai: isolati, senza accesso a file né rete e con limiti di operazioni, tempo e memoria (docs/PLUGINS.md).
+- Un font installato viene aggiunto alla scheda Testo ed esportato in Unity con il design.
+- I download vengono verificati con l'impronta SHA-256 pubblicata; se non corrisponde, non si installa nulla.
+- Per pubblicare accedi (GitHub o Google), scegli un nome pubblico e accetti le regole. Tutto viene controllato prima e i contenuti +18 vanno segnalati. Vedi docs/TERMS.md, docs/COMMUNITY_GUIDELINES.md e docs/PRIVACY.md.
+
+## Salvataggio automatico, recupero e annulla
+
+- Circa ogni minuto, mentre modifichi, il design completo (layout verticale incluso) viene scritto nella cartella di recupero dell'app. Mai in modalità Prova. Si conservano al massimo 10 recuperi.
+- All'avvio viene offerto un recupero più recente del file di progetto: Ripristina o Scarta. Dopo un normale Salva non serve più.
+- Si può disattivare in Accessibilità › Salvataggio automatico.
+- La cronologia di annullamento è limitata a 200 passaggi e a circa 64 MB. Quando i passaggi più vecchi vengono scartati, la barra di stato mostra «Cronologia ridotta».
+- Ogni comando di plugin e ogni Correggi della finestra Controlla è un solo passaggio di annullamento.

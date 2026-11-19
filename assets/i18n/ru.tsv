@@ -944,3 +944,136 @@ cleanup: {} file(s) removed.	cleanup: удалено файлов: {}.
 Errors: {} · Warnings: {}. Click one to select it.	Ошибки: {} · Предупреждения: {}. Нажмите на одну, чтобы выбрать её.
 Elements selected: {}	Выбрано элементов: {}
 To add a language, copy assets/i18n/es.tsv and translate it (see docs/EXTENDING.md).	Чтобы добавить язык, скопируйте assets/i18n/es.tsv и переведите копию (см. docs/EXTENDING.md).
+HUD	HUD
+More components	Другие компоненты
+Backgrounds	Фоны
+Frames	Рамки
+Icons	Иконки
+Gradients	Градиенты
+Built-in images are copied to your library when you use them	Встроенные изображения копируются в вашу библиотеку, когда вы их используете
+Tip: turn on Pixel art in the page settings so the sprites stay crisp.	Совет: включите Pixel art в настройках страницы, чтобы спрайты оставались чёткими.
+Could not copy the pack image: {}	Не удалось скопировать изображение из набора: {}
+Pack image added: {}	Изображение из набора добавлено: {}
+No images match the search	Нет изображений, подходящих под поиск
+Pixel RPG HUD	HUD пиксельной RPG
+Pixel main menu	Главное меню в пикселях
+Primary button	Основная кнопка
+Secondary button	Второстепенная кнопка
+Danger button	Кнопка опасности
+Success button	Кнопка успеха
+Ghost button	Прозрачная кнопка
+Icon button	Кнопка-иконка
+Toggle button	Кнопка-переключатель
+Tabs	Вкладки
+Small pill button	Малая кнопка-пилюля
+Square icon button	Квадратная кнопка-иконка
+Link button	Кнопка-ссылка
+Floating action button	Плавающая кнопка действия
+Health bar (classic)	Полоса здоровья (классическая)
+Health bar (segments)	Полоса здоровья (сегменты)
+Health orb	Сфера здоровья
+Mana bar with label	Полоса маны с подписью
+Stamina bar	Полоса выносливости
+XP bar with level	Полоса опыта с уровнем
+Boss bar	Полоса босса
+Minimap frame	Рамка миникарты
+Quest tracker	Трекер заданий
+Skill slot (cooldown)	Слот навыка (перезарядка)
+Hotbar (5 slots)	Панель быстрого доступа (5 слотов)
+Currency counter	Счётчик валюты
+Nameplate	Табличка с именем
+Toast notification	Всплывающее уведомление
+Tooltip	Подсказка
+Dialog with portrait	Диалог с портретом
+Inventory grid 4x3	Сетка инвентаря 4x3
+Compass strip	Полоса компаса
+Avatar with ring	Аватар с кольцом
+Pill badge	Значок-пилюля
+Ribbon banner	Лента-баннер
+Divider	Разделитель
+Divider with label	Разделитель с подписью
+Progress ring	Кольцо прогресса
+Switch	Переключатель
+Chips	Чипы
+Media card	Медиакарточка
+List item	Элемент списка
+Search field	Поле поиска
+Stat row	Строка характеристики
+Level up	Новый уровень
+Heal	Лечение
+Critical hit	Критический удар
+Objective	Цель
+Ammo counter	Счётчик патронов
+Wave counter	Счётчик волн
+FPS counter	Счётчик FPS
+Key prompt	Подсказка клавиши
+History trimmed: the oldest undo steps were dropped	История сокращена: самые старые шаги удалены
+Unsaved work recovered. Save it to keep it.	Несохранённая работа восстановлена. Сохраните её, чтобы не потерять.
+Recover unsaved work	Восстановить несохранённую работу
+Recover unsaved work from {}?	Восстановить несохранённую работу от {}?
+Restore	Восстановить
+Discard	Отбросить
+Open the folder	Открыть папку
+Autosave	Автосохранение
+Save a recovery copy every minute	Сохранять резервную копию каждую минуту
+Fix all safe issues	Исправить все безопасные проблемы
+Applies every quick fix in one undo step	Применяет все быстрые исправления одним шагом отмены
+Fix	Исправить
+Fixes this problem (one undo step)	Исправляет эту проблему (один шаг отмены)
+Nothing to fix here	Здесь нечего исправлять
+Fixed {} issue(s) (Ctrl+Z undoes)	Исправлено проблем: {} (Ctrl+Z отменяет)
+Release notes	Примечания к выпуску
+Full release notes	Полные примечания к выпуску
+The zip must contain a single executable.	Архив должен содержать ровно один исполняемый файл.
+The version inside the executable does not match the release; not installing.	Версия исполняемого файла не совпадает с выпуском; установка отменена.
+You appear to be offline. Check your internet connection.	Похоже, вы не в сети. Проверьте подключение к интернету.
+The server took too long to answer. Try again in a moment.	Сервер слишком долго не отвечает. Повторите попытку чуть позже.
+Your session expired. Sign in again.	Сеанс истёк. Войдите снова.
+Too many requests: wait {} s and try again.	Слишком много запросов: подождите {} с и повторите.
+Too many requests: wait a moment.	Слишком много запросов: подождите немного.
+You do not have permission to do this.	У вас нет прав на это действие.
+Not found.	Не найдено.
+Offline, showing the last known list.	Нет сети: показан последний известный список.
+Terms and community guidelines	Условия и правила сообщества
+Terms of Use	Условия использования
+Community guidelines	Правила сообщества
+Privacy	Конфиденциальность
+Full text on GitHub	Полный текст на GitHub
+I have read and accept the Terms of Use and the Community guidelines	Я прочитал(а) и принимаю Условия использования и Правила сообщества
+Accept	Принять
+Read and accept the Terms and guidelines…	Прочитать и принять Условия и правила…
+Terms accepted.	Условия приняты.
+This app has older legal texts than the server. Update the app to accept the new terms.	В этом приложении юридические тексты старее, чем на сервере. Обновите приложение, чтобы принять новые условия.
+Export my data	Экспортировать мои данные
+Your data was saved to {}	Ваши данные сохранены в {}
+License	Лицензия
+Source	Источник
+Source link (optional)	Ссылка на источник (необязательно)
+I own this or have the right to share it under this license	Я автор или имею право делиться этим на условиях данной лицензии
+Use an http or https link, up to 300 characters, no spaces.	Используйте ссылку http или https длиной до 300 символов, без пробелов.
+Report copyright infringement	Сообщить о нарушении авторских прав
+The work and why it is infringed (10-2000 characters)	Произведение и почему оно нарушено (10-2000 символов)
+Rights holder (optional)	Правообладатель (необязательно)
+Contact (optional)	Контакт (необязательно)
+Send claim	Отправить заявление
+Thanks: the item is hidden while a moderator reviews it. Details: docs/COPYRIGHT.md	Спасибо: элемент скрыт, пока его проверяет модератор. Подробности: docs/COPYRIGHT.md
+Spam	Спам
+Impersonation	Выдача себя за другого
+Personal data	Личные данные
+Accept the Terms of Use to share.	Примите Условия использования, чтобы делиться.
+Pick a license from the list.	Выберите лицензию из списка.
+Confirm that you own this or may share it.	Подтвердите, что вы автор или можете этим делиться.
+The Terms of Use changed. Close this window and open it again to read the new version.	Условия использования изменились. Закройте это окно и откройте снова, чтобы прочитать новую версию.
+Create your profile first.	Сначала создайте профиль.
+Too many claims today. Use the Copyright notice template on GitHub.	Слишком много заявлений за сегодня. Используйте шаблон уведомления об авторских правах на GitHub.
+Claims are blocked for now. Use the Copyright notice template on GitHub.	Заявления пока заблокированы. Используйте шаблон уведомления об авторских правах на GitHub.
+That item is already under review.	Этот элемент уже на проверке.
+Your account is suspended.	Ваша учётная запись приостановлена.
+Uploads are disabled for this account.	Загрузка отключена для этой учётной записи.
+Uploads are disabled until {}.	Загрузка отключена до {}.
+Public domain	Общественное достояние
+Free use (proprietary)	Свободное использование (проприетарная)
+Unsaved changes	Несохранённые изменения
+You have unsaved changes. What do you want to do?	У вас есть несохранённые изменения. Что сделать?
+Discard changes	Отменить изменения
+Could not check the Terms of Use right now.	Сейчас не удалось проверить Условия использования.

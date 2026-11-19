@@ -27,7 +27,7 @@ Um die App auf Englisch zu verwenden: Schaltfläche **Barrierefreiheit** › **S
 
 ## 3. Mit einer Vorlage beginnen
 
-Unter **Vorlagen** wählst du eines von 12 Layouts: Hauptmenü, Spiel-HUD, Dialogfenster, Einstellungen, Inventar, Pausenmenü, Spielende, Levelauswahl, Ladebildschirm, Charakterdialog, Rangliste oder Charakterauswahl. Alles darin kannst du ändern, und Strg+Z macht die Änderung rückgängig. Um von vorne zu beginnen: «Leer».
+Unter **Vorlagen** wählst du eines von 15 Layouts: Hauptmenü, Spiel-HUD, Dialogfenster, Einstellungen, Inventar, Pausenmenü, Spielende, Levelauswahl, Ladebildschirm, Charakterdialog, Rangliste oder Charakterauswahl. Alles darin kannst du ändern, und Strg+Z macht die Änderung rückgängig. Um von vorne zu beginnen: «Leer». Zwei davon sind im Pixel-Art-Stil: Pixel-RPG-HUD und Pixel-Hauptmenü.
 
 ## 4. Bearbeiten
 
@@ -63,6 +63,51 @@ Drücke **Prüfen** in der oberen Leiste. Es warnt vor zu kleiner Schrift, schwa
 3. Zieh es in die Szene, oder nutze das Menü **Tools › Lienzo UI › Import design into scene…**.
 
 Bei jedem erneuten Export aktualisiert Unity das Prefab von selbst.
+
+## Mitgelieferte Bilder
+
+Der Tab Bilder in der linken Leiste enthält fertige Grafiken, ganz ohne eigene Dateien:
+
+- Die Chips oben filtern nach Deine Bilder, Hintergründe, Rahmen, Buttons, Symbole, Pixel-Art und Farbverläufe. Die Suche findet nach Name oder Tag.
+- Klicke auf einen Eintrag, um ihn hinzuzufügen, oder ziehe ihn auf die Arbeitsfläche. Rahmen und Buttons haben schon ihren 9-Slice-Rand und lassen sich dehnen, ohne dass die Ecken verzerrt werden. Hintergründe landen hinter allem anderen.
+- Das Bild wird beim ersten Benutzen in deine Bibliothek kopiert und zusammen mit dem Entwurf nach Unity exportiert.
+- Bei Pixel-Art-Sprites aktivierst du „Pixel-Art“ im Inspektor der Arbeitsfläche (nichts ausgewählt), damit sie scharf bleiben.
+
+## Hochformat-Bildschirme
+
+Smartphones hält man oft hochkant. Lienzo UI führt dafür ein zweites Layout, ohne das erste anzutasten:
+
+- Wechsle die Ansicht mit den Schaltflächen Landschaft / Porträt in der oberen Leiste.
+- Öffne bei nichts Ausgewähltem im Inspektor „Hochformat-Layout“ und klicke auf „Hochformat-Layout erstellen“. Die Elemente starten dort, wo sie im Querformat sind.
+- In der Hochformat-Ansicht ändert alles, was du verschiebst oder skalierst, nur das Hochformat-Layout. Rechtsklick auf ein Element › „Auf Querformat zurücksetzen“ macht eine Änderung rückgängig.
+- Der Export enthält beide Layouts: In Unity wechselt das Prefab von selbst zum Hochformat, wenn der Bildschirm höher als breit ist.
+
+## Aus Unity importieren
+
+Du hast schon eine Oberfläche in Unity? Hole sie in Lienzo UI:
+
+- Datei › Aus Unity importieren…
+- Wähle ein uGUI-Prefab (.prefab) oder einen Entwurf, den Lienzo UI früher exportiert hat (Assets/EditorGUI/Designs/….json).
+- Er öffnet sich als neuer, ungespeicherter Entwurf: Speichere ihn als Projekt, um ihn zu behalten.
+- Konnte etwas nicht exakt umgesetzt werden, listet ein Fenster die Warnungen auf, damit nichts stillschweigend verloren geht.
+- Findet Lienzo UI deinen Unity-Projektordner, werden die Bilder des Entwurfs automatisch gefunden.
+
+## Verliere deine Arbeit nicht
+
+- Automatisch speichern: Etwa jede Minute legt Lienzo UI eine Wiederherstellungskopie an. Du kannst das unter Barrierefreiheit › Automatisch speichern ausschalten.
+- Wird die App unerwartet beendet, fragt sie beim nächsten Start „Nicht gespeicherte Arbeit wiederherstellen…?“. Mit Wiederherstellen holst du sie zurück, mit Verwerfen löschst du sie. Wiederhergestellte Arbeit ist noch keine gespeicherte Datei: Drücke Strg+S, um sie zu behalten.
+- Strg+S speichert dein Projekt weiterhin wie gewohnt.
+- Rückgängig (Strg+Z) merkt sich bis zu 200 Schritte (und hat eine Speichergrenze). Werden die ältesten verworfen, zeigt die Statusleiste „Verlauf gekürzt“.
+
+## Community
+
+Der Tab Community in der linken Leiste ist ein gemeinsamer Katalog mit Plugins, Bildern, Schriften, Vorlagen, Elementen und Themes:
+
+- Stöbern und Installieren geht ohne Konto: suchen und auf Installieren klicken.
+- Zum Hochladen, Melden oder Herzen-Vergeben meldest du dich mit GitHub oder Google an und wählst einen öffentlichen Namen. Keine Passwörter: Die App speichert nur diesen Namen.
+- Beim Anlegen deines Profils akzeptierst du die Regeln: keine Malware, kein Hass, kein Plagiat und keine nicht gekennzeichneten Inhalte ab 18. Den vollständigen Text findest du in docs/TERMS.md und docs/COMMUNITY_GUIDELINES.md.
+- Inhalte ab 18 sind ausgeblendet, außer du meldest dich an und aktivierst „Inhalte ab 18 anzeigen“.
+- Alles Geteilte wird vor der Veröffentlichung geprüft, und du kannst melden, was gegen die Regeln verstößt.
 
 ## Nächste Schritte
 

@@ -944,3 +944,136 @@ cleanup: {} file(s) removed.	cleanup: {} 個のファイルを削除しました
 Errors: {} · Warnings: {}. Click one to select it.	エラー：{} ・ 警告：{}。クリックして選択します。
 Elements selected: {}	選択中の要素：{}
 To add a language, copy assets/i18n/es.tsv and translate it (see docs/EXTENDING.md).	言語を追加するには、assets/i18n/es.tsv をコピーして翻訳してください（docs/EXTENDING.md を参照）。
+HUD	HUD
+More components	その他のコンポーネント
+Backgrounds	背景
+Frames	フレーム
+Icons	アイコン
+Gradients	グラデーション
+Built-in images are copied to your library when you use them	内蔵画像は使用時にライブラリへコピーされます
+Tip: turn on Pixel art in the page settings so the sprites stay crisp.	ヒント：ページ設定でピクセルアートを有効にすると、スプライトが鮮明に表示されます。
+Could not copy the pack image: {}	パックの画像をコピーできませんでした：{}
+Pack image added: {}	パックの画像を追加しました：{}
+No images match the search	検索に一致する画像がありません
+Pixel RPG HUD	ピクセルRPG HUD
+Pixel main menu	ピクセルメインメニュー
+Primary button	プライマリボタン
+Secondary button	セカンダリボタン
+Danger button	危険ボタン
+Success button	成功ボタン
+Ghost button	ゴーストボタン
+Icon button	アイコンボタン
+Toggle button	トグルボタン
+Tabs	タブ
+Small pill button	小さなピルボタン
+Square icon button	四角アイコンボタン
+Link button	リンクボタン
+Floating action button	フローティングアクションボタン
+Health bar (classic)	体力バー（クラシック）
+Health bar (segments)	体力バー（セグメント）
+Health orb	体力オーブ
+Mana bar with label	ラベル付きマナバー
+Stamina bar	スタミナバー
+XP bar with level	レベル付き経験値バー
+Boss bar	ボスバー
+Minimap frame	ミニマップ枠
+Quest tracker	クエストトラッカー
+Skill slot (cooldown)	スキルスロット（クールダウン）
+Hotbar (5 slots)	ホットバー（5スロット）
+Currency counter	通貨カウンター
+Nameplate	ネームプレート
+Toast notification	トースト通知
+Tooltip	ツールチップ
+Dialog with portrait	肖像付きダイアログ
+Inventory grid 4x3	インベントリグリッド 4x3
+Compass strip	コンパスバー
+Avatar with ring	リング付きアバター
+Pill badge	ピルバッジ
+Ribbon banner	リボンバナー
+Divider	区切り線
+Divider with label	ラベル付き区切り線
+Progress ring	プログレスリング
+Switch	スイッチ
+Chips	チップ
+Media card	メディアカード
+List item	リスト項目
+Search field	検索フィールド
+Stat row	ステータス行
+Level up	レベルアップ
+Heal	回復
+Critical hit	クリティカル
+Objective	目標
+Ammo counter	弾薬カウンター
+Wave counter	ウェーブカウンター
+FPS counter	FPSカウンター
+Key prompt	キープロンプト
+History trimmed: the oldest undo steps were dropped	履歴を整理しました：古い元に戻す手順を破棄しました
+Unsaved work recovered. Save it to keep it.	未保存の作業を復元しました。保存して残してください。
+Recover unsaved work	未保存の作業を復元
+Recover unsaved work from {}?	{} の未保存の作業を復元しますか？
+Restore	復元
+Discard	破棄
+Open the folder	フォルダーを開く
+Autosave	自動保存
+Save a recovery copy every minute	1分ごとに復元用コピーを保存
+Fix all safe issues	安全な問題をすべて修正
+Applies every quick fix in one undo step	すべてのクイック修正を1回の元に戻す操作で適用
+Fix	修正
+Fixes this problem (one undo step)	この問題を修正（元に戻す操作1回分）
+Nothing to fix here	ここで修正するものはありません
+Fixed {} issue(s) (Ctrl+Z undoes)	{} 件の問題を修正しました（Ctrl+Z で元に戻せます）
+Release notes	リリースノート
+Full release notes	リリースノート全文
+The zip must contain a single executable.	zip には実行ファイルが1つだけ含まれている必要があります。
+The version inside the executable does not match the release; not installing.	実行ファイルのバージョンがリリースと一致しないため、インストールしません。
+You appear to be offline. Check your internet connection.	オフラインのようです。インターネット接続を確認してください。
+The server took too long to answer. Try again in a moment.	サーバーの応答に時間がかかりすぎました。しばらくしてからもう一度お試しください。
+Your session expired. Sign in again.	セッションの有効期限が切れました。もう一度サインインしてください。
+Too many requests: wait {} s and try again.	リクエストが多すぎます。{} 秒待ってからもう一度お試しください。
+Too many requests: wait a moment.	リクエストが多すぎます。しばらくお待ちください。
+You do not have permission to do this.	この操作を行う権限がありません。
+Not found.	見つかりません。
+Offline, showing the last known list.	オフライン：最後に取得した一覧を表示しています。
+Terms and community guidelines	規約とコミュニティガイドライン
+Terms of Use	利用規約
+Community guidelines	コミュニティガイドライン
+Privacy	プライバシー
+Full text on GitHub	GitHub で全文を読む
+I have read and accept the Terms of Use and the Community guidelines	利用規約とコミュニティガイドラインを読み、同意します
+Accept	同意する
+Read and accept the Terms and guidelines…	規約とガイドラインを読んで同意する…
+Terms accepted.	規約に同意しました。
+This app has older legal texts than the server. Update the app to accept the new terms.	このアプリの法的文書はサーバーより古い版です。新しい規約に同意するにはアプリを更新してください。
+Export my data	自分のデータをエクスポート
+Your data was saved to {}	データを {} に保存しました
+License	ライセンス
+Source	ソース
+Source link (optional)	ソースへのリンク（任意）
+I own this or have the right to share it under this license	自分の作品である、またはこのライセンスで共有する権利があります
+Use an http or https link, up to 300 characters, no spaces.	http または https のリンクを、300 文字以内、スペースなしで入力してください。
+Report copyright infringement	著作権侵害を報告
+The work and why it is infringed (10-2000 characters)	作品と、侵害されている理由（10-2000 文字）
+Rights holder (optional)	権利者（任意）
+Contact (optional)	連絡先（任意）
+Send claim	申し立てを送信
+Thanks: the item is hidden while a moderator reviews it. Details: docs/COPYRIGHT.md	ありがとうございます。モデレーターが確認する間、この項目は非表示になります。詳細: docs/COPYRIGHT.md
+Spam	スパム
+Impersonation	なりすまし
+Personal data	個人情報
+Accept the Terms of Use to share.	共有するには利用規約に同意してください。
+Pick a license from the list.	リストからライセンスを選んでください。
+Confirm that you own this or may share it.	自分の作品である、または共有する権利があることを確認してください。
+The Terms of Use changed. Close this window and open it again to read the new version.	利用規約が変更されました。このウィンドウを閉じて開き直し、新しい版を読んでください。
+Create your profile first.	先にプロフィールを作成してください。
+Too many claims today. Use the Copyright notice template on GitHub.	本日の申し立てが多すぎます。GitHub の著作権通知テンプレートを使ってください。
+Claims are blocked for now. Use the Copyright notice template on GitHub.	申し立ては現在ブロックされています。GitHub の著作権通知テンプレートを使ってください。
+That item is already under review.	この項目はすでに確認中です。
+Your account is suspended.	アカウントは停止されています。
+Uploads are disabled for this account.	このアカウントではアップロードが無効です。
+Uploads are disabled until {}.	{} までアップロードが無効です。
+Public domain	パブリックドメイン
+Free use (proprietary)	自由利用（プロプライエタリ）
+Unsaved changes	未保存の変更
+You have unsaved changes. What do you want to do?	未保存の変更があります。どうしますか？
+Discard changes	変更を破棄
+Could not check the Terms of Use right now.	現在、利用規約を確認できませんでした。

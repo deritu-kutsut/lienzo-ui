@@ -1,0 +1,7 @@
+Lienzo UI Community - Copyright and takedown (summary, version 1.0)
+Full text: https://github.com/deritu-kutsut/lienzo-ui/blob/main/docs/COPYRIGHT.md
+
+- Think something here infringes your copyright? Use Report > Copyright on the item, or open a "Copyright notice" issue on GitHub.
+- Say what work is infringed, which item it is, who you are, and confirm in good faith that you are the rights holder or act for them. False notices can have legal consequences and are ignored if repeated.
+- The item is hidden first, then a moderator decides. If the claim is upheld the item is removed and the uploader gets a strike. Three strikes mean an upload ban.
+- Uploaders can send a counter-notice. If the claimant does not start legal action within 10 to 14 business days, the item is restored.

@@ -1,0 +1,9 @@
+{
+  "name": "Accessibility report",
+  "version": "1.0.0",
+  "author": "Lienzo UI",
+  "description": "Exports a Markdown report with contrast, text size, touch target and text overflow problems of the design.",
+  "exporters": [
+    { "name": "Accessibility report", "extension": "md", "script": "report.rhai" }
+  ]
+}

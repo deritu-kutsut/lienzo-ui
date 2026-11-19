@@ -10,15 +10,35 @@
     },
     {
       "title": "Comece com um modelo",
-      "text": "Abra Modelos na barra à esquerda e escolha um dos 13: menu principal, HUD, pausa, fim de jogo, seleção de fase, inventário, diálogo de personagem, classificação…\n\nÉ a forma mais rápida de ver como uma interface completa é construída. Tudo o que vem nele pode ser alterado.\n\nSe preferir começar do zero, escolha «Em branco» ou Arquivo › Novo design em branco."
+      "text": "Abra Modelos na barra à esquerda e escolha um dos 15: menu principal, HUD, pausa, fim de jogo, seleção de fase, inventário, diálogo de personagem, classificação… Duas delas têm estilo pixel art: HUD de RPG pixel art e Menu principal pixel art.\n\nÉ a forma mais rápida de ver como uma interface completa é construída. Tudo o que vem nele pode ser alterado.\n\nSe preferir começar do zero, escolha «Em branco» ou Arquivo › Novo design em branco."
     },
     {
       "title": "Adicionar e editar elementos",
       "text": "• Arraste elementos de Elementos para a tela: painéis, textos, botões, caixas de seleção, sliders, campos de texto, menus suspensos, listas com rolagem e imagens. Em «Componentes prontos» há botões, barras de vida e mana, cartões e insígnias; em Texto, peças de HUD como temporizador, moedas ou dano.\n• Clique seleciona, arrastar move, os cantos mudam o tamanho e a alça superior gira.\n• Clique duas vezes em um texto para escrever nele.\n• Ctrl+Z / Ctrl+Y desfazem e refazem; Ctrl+D duplica; Del exclui; Ctrl+G agrupa; as setas movem 1 px (Shift: 10).\n• No Inspetor você muda cores, bordas, sombras, fontes e as âncoras (como o elemento se adapta a outras telas)."
     },
     {
+      "title": "Imagens incluídas",
+      "text": "A aba Imagens na barra à esquerda traz arte pronta para usar, sem precisar de arquivos:\n\n• Os chips no topo filtram por Suas imagens, Planos de fundo, Molduras, Botões, Ícones, Pixel art e Gradientes. A busca encontra por nome ou tag.\n• Clique em um item para adicioná-lo ou arraste-o para o canvas. Molduras e botões vêm com a borda 9-slice, então esticam sem deformar os cantos. Os planos de fundo ficam atrás de tudo.\n• A imagem é copiada para a sua biblioteca na primeira vez que você a usa e é exportada para o Unity junto com o design.\n• Com os sprites de pixel art, marque “Pixel art” no Inspetor do canvas (sem nada selecionado) para que fiquem nítidos."
+    },
+    {
+      "title": "Telas verticais",
+      "text": "Celulares costumam ser usados na vertical. O Lienzo UI guarda um segundo layout para isso, sem mexer no primeiro:\n\n• Troque a visualização com os botões Paisagem / Retrato da barra superior.\n• Sem nada selecionado, abra “Layout vertical” no Inspetor e clique em “Criar layout vertical”. Os elementos começam onde estão na horizontal.\n• Na visualização vertical, o que você mover ou redimensionar altera só o layout vertical. Clique direito em um elemento › “Voltar ao horizontal” desfaz uma alteração.\n• A exportação leva os dois layouts: no Unity o prefab muda sozinho para o vertical quando a tela é mais alta do que larga."
+    },
+    {
       "title": "Testar e exportar para Unity",
-      "text": "• Testar (F5): o design fica interativo e você pode simular outras telas (celular, 4:3, ultrawide) para ver como ele se adapta.\n• Salvar (Ctrl+S): salva o projeto .editorgui.json para continuar outro dia.\n• Revisar: avisa sobre fonte pequena, pouco contraste, botões pequenos para tocar, elementos fora da página e imagens ausentes.\n• Exportar para Unity (Ctrl+E): na primeira vez, escolha a pasta do seu projeto (a que contém Assets).\n\nNo Unity, ao voltar para a janela, o design aparece como prefab em Assets/EditorGUI/Prefabs. Você também tem o menu Tools › Lienzo UI › Import design into scene…."
+      "text": "• Testar (F5): o design fica interativo e você pode simular outras telas (celular, 4:3, ultrawide) para ver como ele se adapta.\n• Salvar (Ctrl+S): salva o projeto .editorgui.json para continuar outro dia.\n• Revisar: avisa sobre fonte pequena, pouco contraste, botões pequenos para tocar, elementos fora da página e imagens ausentes. Ao lado de cada problema com solução segura há um botão “Corrigir”, e “Corrigir todos os problemas seguros” aplica todos em um único passo de desfazer.\n• Exportar para Unity (Ctrl+E): na primeira vez, escolha a pasta do seu projeto (a que contém Assets).\n\nNo Unity, ao voltar para a janela, o design aparece como prefab em Assets/EditorGUI/Prefabs. Você também tem o menu Tools › Lienzo UI › Import design into scene…."
+    },
+    {
+      "title": "Importar do Unity",
+      "text": "Já tem uma interface no Unity? Traga-a para o Lienzo UI:\n\n• Arquivo › Importar do Unity…\n• Escolha um prefab de uGUI (.prefab) ou um design que o Lienzo UI exportou antes (Assets/EditorGUI/Designs/….json).\n• Ele abre como um design novo, sem salvar: salve-o como projeto para mantê-lo.\n• Se algo não puder ser convertido com exatidão, uma janela lista os avisos, então nada se perde em silêncio.\n• Se ele encontrar a pasta do seu projeto Unity, as imagens do design são localizadas automaticamente."
+    },
+    {
+      "title": "Não perca seu trabalho",
+      "text": "• Salvamento automático: mais ou menos a cada minuto o Lienzo UI salva uma cópia de recuperação. Você pode desativar em Acessibilidade › Salvamento automático.\n• Se o aplicativo fechar de forma inesperada, na próxima vez ele pergunta “Recuperar o trabalho não salvo…?”. Clique em Restaurar para recuperá-lo ou em Descartar para ignorá-lo. O trabalho recuperado ainda não é um arquivo salvo: pressione Ctrl+S para mantê-lo.\n• Ctrl+S continua salvando o seu projeto como sempre.\n• Desfazer (Ctrl+Z) lembra até 200 passos (e tem um limite de memória). Se os mais antigos forem descartados, a barra de status mostra “Histórico reduzido”."
+    },
+    {
+      "title": "Comunidade",
+      "text": "A aba Comunidade na barra à esquerda é um catálogo compartilhado de plugins, imagens, fontes, modelos, elementos e temas:\n\n• Explorar e instalar não exige conta: pesquise e clique em Instalar.\n• Para enviar, denunciar ou dar corações, você entra com GitHub ou Google e escolhe um nome público. Sem senhas: o app guarda apenas esse nome.\n• Ao criar seu perfil você aceita as regras: nada de malware, ódio, plágio nem conteúdo +18 sem marcação. O texto completo está em docs/TERMS.md e docs/COMMUNITY_GUIDELINES.md.\n• O conteúdo +18 fica oculto, a menos que você entre na conta e ative “Mostrar conteúdo +18”.\n• Tudo o que é compartilhado é revisado antes de ser publicado, e você pode denunciar o que violar as regras."
     }
   ],
   "pro": [
@@ -31,12 +51,28 @@
       "text": "A tela funciona como um Canvas com Canvas Scaler no modo Scale With Screen Size: resolução de referência, match largura/altura e fundo são ajustados no Inspetor sem nada selecionado.\n\nCada elemento tem âncoras, pivô e deslocamentos como um RectTransform. Ao mudar a resolução de referência, os elementos seguem suas âncoras, igual ao Unity.\n\nUse Testar (F5) com várias telas para conferir antes de exportar."
     },
     {
+      "title": "Layout vertical em detalhe",
+      "text": "O layout vertical é uma segunda visualização do mesmo design (docs/FORMAT.md › PortraitLayout):\n\n• Tem a sua própria resolução de referência, “Tamanho vertical” (1080 × 1920 por padrão).\n• Elementos sem exceção mantêm o RectTransform horizontal e são reavaliados em relação à página vertical: um fundo de tela cheia se estica, e os ancorados à direita acompanham a borda direita.\n• Só é guardado o que você altera na visualização vertical, como exceções (posição, tamanho, rotação, âncoras, visibilidade, tamanho da fonte, layout). Clique direito › “Voltar ao horizontal” remove uma.\n• Exportação: o JSON leva as exceções e o script gerado LienzoOrientationLayout as aplica quando Screen.width < Screen.height, e de novo quando o tamanho muda.\n• “Remover layout vertical” apaga todas as exceções."
+    },
+    {
       "title": "Layouts, grupos e listas",
       "text": "Um contêiner pode organizar seus filhos na horizontal, vertical ou em grade (como Horizontal/Vertical/Grid Layout Group), com espaçamento e preenchimento.\n\nAs listas com rolagem (ScrollView) calculam seu conteúdo sozinhas.\n\nAgrupe (Ctrl+G) para mover partes inteiras e use a Hierarquia para reordenar camadas: a ordem da lista é a ordem de desenho no Unity."
     },
     {
+      "title": "9-slice e o pacote incluído",
+      "text": "Para molduras, botões e painéis que esticam:\n\n• Selecione uma Imagem e defina “9-slice” em “Ajustes de imagem (Unity)”: a borda em pixels da imagem original (esquerda, abaixo, direita, acima), como no Sprite Editor do Unity. A exportação gera um Sprite 9-slice.\n• “Pixels por unidade”: 100 mantém as bordas no tamanho em pixels, 200 as reduz à metade.\n• O pacote incluído (assets/pack/manifest.json, docs/CONTENT.md) já define o corte e os pixels por unidade: molduras de 512×512 com corte 96, botões de 512×192.\n• Usar um item o copia para a sua biblioteca como pack_<id>.<ext> (oculto em “Suas imagens”); o exportador o copia para os Sprites do Unity.\n• Os modelos Pixel RPG HUD e Pixel main menu usam o pacote pixel. Ative “Pixel art” para o filtro Point."
+    },
+    {
       "title": "Lógica: código ao clicar e views",
       "text": "Em Testar, cada elemento pode executar um pequeno script (Rhai) ao clicar: show(\"Name\"), hide, toggle, set_text, set_color, move_by… Serve para prototipar fluxos sem o Unity.\n\nNo Unity, <Design>View.cs herda de <Design>ViewBase com referências tipadas para cada botão, slider ou campo, e eventos de clique e de valor. Coloque aí a lógica do jogo: as reexportações não mexem nele."
+    },
+    {
+      "title": "Revisão e correções rápidas",
+      "text": "A janela Revisar lista erros e avisos; clique em um para selecionar o elemento. Seis problemas têm um botão “Corrigir” (um passo de desfazer):\n\n• Texto abaixo do tamanho mínimo: aumentado até o mínimo.\n• Controle pequeno demais para tocar: ampliado em torno do centro.\n• Elemento parcialmente fora da página: movido para dentro, se couber.\n• Nome repetido: acrescenta-se _2, _3…\n• Imagem ausente: a referência é removida.\n• Pouco contraste: a cor do texto é escurecida ou clareada.\n\n“Corrigir todos os problemas seguros” aplica tudo em algumas passadas. Problemas como uma fonte sem certos caracteres não têm correção automática. As correções também funcionam no layout vertical. Pela linha de comando: lienzo-ui --open arquivo --review (código 1 se houver erros)."
+    },
+    {
+      "title": "Importar do Unity: prefabs e CLI",
+      "text": "Arquivo › Importar do Unity… lê um .prefab de uGUI (o YAML de texto do Unity) ou um Designs/*.json exportado pelo Lienzo UI e cria um design comum.\n\n• O que não pôde ser convertido aparece como avisos.\n• Se detectar a pasta do projeto Unity, as imagens são resolvidas a partir dela durante a sessão.\n• Sem janela: lienzo-ui --import-unity Menu.prefab --save Menu.editorgui.json (também com --review e --export).\n• Projeto inteiro: lienzo-ui --import-unity-project MeuProjeto --out Importados converte todos os prefabs de interface. Nunca sobrescreve (acrescenta _2) e ignora prefabs sem interface.\n• Detalhes em docs/UNITY_IMPORT.md."
     },
     {
       "title": "Linha de comando e automação",
@@ -53,6 +89,14 @@
     {
       "title": "Plugins",
       "text": "A aba Plugins da barra à esquerda lista os complementos instalados. Um plugin é uma pasta com plugin.json que pode adicionar:\n\n• Comandos: scripts Rhai que recebem o design e o devolvem modificado (podem ser desfeitos com Ctrl+Z).\n• Exportadores: scripts que geram novos arquivos (por exemplo, um CSV com todos os textos).\n• Modelos: designs prontos para usar.\n\nOs scripts rodam isolados, sem acesso a arquivos nem rede. «Abrir pasta» leva à sua pasta de plugins; o guia está em docs/PLUGINS.md."
+    },
+    {
+      "title": "Comunidade: plugins, fontes e regras",
+      "text": "Na aba Comunidade, Instalar adiciona conteúdo compartilhado com um clique: plugins, fontes, imagens, modelos, elementos e temas.\n\n• Um plugin da comunidade vai para uma pasta chamada community-<nome>-<hash>. Ele é gravado primeiro em uma pasta temporária, então uma instalação interrompida nunca deixa um plugin pela metade. Aparece na aba Plugins.\n• Os scripts são os mesmos Rhai: isolados, sem acesso a arquivos nem à rede e com limites de operações, tempo e memória (docs/PLUGINS.md).\n• Uma fonte instalada é adicionada à aba Texto e exportada para o Unity junto com o design.\n• Os downloads são conferidos com a impressão digital SHA-256 publicada; se não coincidir, nada é instalado.\n• Para publicar, você entra (GitHub ou Google), escolhe um nome público e aceita as regras. Tudo é revisado antes e o conteúdo +18 precisa ser marcado. Veja docs/TERMS.md, docs/COMMUNITY_GUIDELINES.md e docs/PRIVACY.md."
+    },
+    {
+      "title": "Salvamento automático, recuperação e desfazer",
+      "text": "• Mais ou menos a cada minuto, enquanto você edita, o design completo (com o layout vertical) é gravado na pasta de recuperação do app. Nunca no modo Testar. No máximo 10 recuperações são mantidas.\n• Ao iniciar, se houver uma recuperação mais recente que o arquivo do projeto, ela é oferecida: Restaurar ou Descartar. Depois de um Salvar normal ela deixa de ser necessária.\n• Pode ser desativado em Acessibilidade › Salvamento automático.\n• O histórico de desfazer é limitado a 200 passos e cerca de 64 MB. Quando os passos mais antigos são descartados, a barra de status mostra “Histórico reduzido”.\n• Cada comando de plugin e cada Corrigir da janela Revisar é um único passo de desfazer."
     },
     {
       "title": "Acessibilidade e idiomas",

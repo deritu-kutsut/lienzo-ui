@@ -1,0 +1,19 @@
+Lienzo UI Community - Guidelines (summary, version 1.0)
+Full text: https://github.com/deritu-kutsut/lienzo-ui/blob/main/docs/COMMUNITY_GUIDELINES.md
+
+DO
+- Share your own work, or work you may share, and say so truthfully.
+- Declare a licence and, when there is one, a source link for every item. Give the credit the licence asks for.
+- Describe items honestly. Mark adult content as 18+.
+- Say when AI made a significant part of it. You are still responsible for the rights.
+- Report problems with the Report button.
+
+DON'T
+- Upload fonts, images, icons or code you cannot share (ripped from games, single-user licences, paid packs).
+- Hide a licence or a source, or remove an author's credit.
+- Upload anything unsafe: hidden code, obfuscated scripts, files that are not what they claim.
+- Post hate or harassment, or any sexual content involving minors (real, drawn or AI-generated).
+- Impersonate people, brands, the project or the moderators.
+- Share other people's personal data, or your own keys and tokens.
+- Promote real-money gambling, scams or pay-to-earn schemes.
+- Spam, use several accounts, dodge limits, or file false reports.

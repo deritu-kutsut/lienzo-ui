@@ -93,3 +93,64 @@ Rust + [egui](https://github.com/emilk/egui):
 | `src/script.rs` | Rhai-Skripte für den Testmodus |
 
 Um es zu erweitern: [EXTENDING.md](EXTENDING.md).
+
+## Hochformat-Layout im Detail
+
+Das Hochformat-Layout ist eine zweite Ansicht desselben Entwurfs (docs/FORMAT.md › PortraitLayout):
+
+- Es hat eine eigene Referenzauflösung, „Hochformat-Größe“ (standardmäßig 1080 × 1920).
+- Elemente ohne Override behalten ihr Quer-RectTransform und werden gegen die Hochformat-Seite neu ausgewertet: Ein vollflächiger Hintergrund dehnt sich, rechts verankerte Elemente folgen dem rechten Rand.
+- Gespeichert wird nur, was du in der Hochformat-Ansicht änderst, als Overrides (Position, Größe, Rotation, Anker, Sichtbarkeit, Schriftgröße, Layout). Rechtsklick › „Auf Querformat zurücksetzen“ entfernt einen.
+- Export: Das JSON enthält die Overrides, und das erzeugte Skript LienzoOrientationLayout wendet sie an, wenn Screen.width < Screen.height ist, und erneut bei Größenänderung.
+- „Hochformat-Layout entfernen“ löscht alle Overrides.
+
+## 9-Slice und das mitgelieferte Paket
+
+Für Rahmen, Buttons und Panels, die sich dehnen:
+
+- Wähle ein Bild und setze „9-Slice“ unter „Bildeinstellungen (Unity)“: den Rand in Pixeln des Originalbilds (links, unten, rechts, oben), wie im Sprite Editor von Unity. Der Export erzeugt ein 9-Slice-Sprite.
+- „Pixel pro Einheit“: 100 hält die Ränder in ihrer Pixelgröße, 200 halbiert sie.
+- Das mitgelieferte Paket (assets/pack/manifest.json, docs/CONTENT.md) legt Schnitt und Pixel pro Einheit schon fest: Rahmen 512×512 mit Schnitt 96, Buttons 512×192.
+- Wer einen Eintrag benutzt, kopiert ihn als pack_<id>.<ext> in die Bibliothek (in „Deine Bilder“ ausgeblendet); der Exporter kopiert ihn in die Unity-Sprites.
+- Die Vorlagen Pixel-RPG-HUD und Pixel-Hauptmenü nutzen das Pixel-Paket. Aktiviere „Pixel-Art“ für die Point-Filterung.
+
+## Prüfen und schnelle Korrekturen
+
+Das Fenster Prüfen listet Fehler und Warnungen; ein Klick wählt das zugehörige Element aus. Sechs Probleme haben eine Schaltfläche „Beheben“ (ein Rückgängig-Schritt):
+
+- Text unter der Mindestgröße: wird auf das Minimum erhöht.
+- Zu kleines Bedienelement zum Antippen: wird um seine Mitte vergrößert.
+- Element teilweise außerhalb der Seite: wird hineinverschoben, falls es passt.
+- Doppelter Name: _2, _3… wird angehängt.
+- Fehlendes Bild: Der Verweis wird entfernt.
+- Geringer Kontrast: Die Textfarbe wird abgedunkelt oder aufgehellt.
+
+„Alle sicheren Probleme beheben“ wendet sie in mehreren Durchgängen an. Probleme wie eine Schrift mit fehlenden Zeichen haben keine automatische Korrektur. Die Korrekturen funktionieren auch im Hochformat-Layout. Per Kommandozeile: lienzo-ui --open Datei --review (Exitcode 1 bei Fehlern).
+
+## Aus Unity importieren: Prefabs und CLI
+
+Datei › Aus Unity importieren… liest ein uGUI-.prefab (Unitys Text-YAML) oder eine von Lienzo UI exportierte Designs/*.json und erzeugt einen normalen Entwurf.
+
+- Was nicht abgebildet werden konnte, steht als Warnung in einer Liste.
+- Wird der Unity-Projektordner erkannt, werden Bilder in dieser Sitzung relativ dazu aufgelöst.
+- Ohne Fenster: lienzo-ui --import-unity Menue.prefab --save Menue.editorgui.json (auch mit --review und --export).
+- Ganzes Projekt: lienzo-ui --import-unity-project MeinProjekt --out Importiert wandelt jedes UI-Prefab um. Es überschreibt nie (hängt _2 an) und überspringt Prefabs ohne UI.
+- Details in docs/UNITY_IMPORT.md.
+
+## Community: Plugins, Schriften und Regeln
+
+Im Tab Community fügt Installieren geteilte Inhalte mit einem Klick hinzu: Plugins, Schriften, Bilder, Vorlagen, Elemente und Themes.
+
+- Ein Community-Plugin landet in einem Ordner namens community-<Name>-<Hash>. Es wird zuerst in einen temporären Ordner geschrieben, sodass eine unterbrochene Installation nie ein halbes Plugin hinterlässt. Es erscheint im Tab Plugins.
+- Seine Skripte sind dieselben Rhai-Skripte: abgeschottet, ohne Datei- oder Netzwerkzugriff und mit Grenzen für Operationen, Zeit und Speicher (docs/PLUGINS.md).
+- Eine installierte Schrift erscheint im Tab Text und wird mit dem Entwurf nach Unity exportiert.
+- Downloads werden mit dem veröffentlichten SHA-256-Fingerabdruck geprüft; stimmt er nicht, wird nichts installiert.
+- Zum Veröffentlichen meldest du dich an (GitHub oder Google), wählst einen öffentlichen Namen und akzeptierst die Regeln. Alles wird vorher geprüft, und Inhalte ab 18 müssen gekennzeichnet sein. Siehe docs/TERMS.md, docs/COMMUNITY_GUIDELINES.md und docs/PRIVACY.md.
+
+## Automatisch speichern, Wiederherstellung und Rückgängig
+
+- Etwa jede Minute, während du bearbeitest, wird der vollständige Entwurf (samt Hochformat-Layout) in den Wiederherstellungsordner der App geschrieben. Nie im Testmodus. Höchstens 10 Wiederherstellungen bleiben erhalten.
+- Beim Start wird eine Wiederherstellung angeboten, die neuer als die Projektdatei ist: Wiederherstellen oder Verwerfen. Nach einem normalen Speichern wird sie nicht mehr gebraucht.
+- Sie lässt sich unter Barrierefreiheit › Automatisch speichern ausschalten.
+- Der Rückgängig-Verlauf ist auf 200 Schritte und etwa 64 MB begrenzt. Werden die ältesten Schritte verworfen, zeigt die Statusleiste „Verlauf gekürzt“.
+- Jeder Plugin-Befehl und jedes Beheben aus dem Fenster Prüfen ist ein einziger Rückgängig-Schritt.

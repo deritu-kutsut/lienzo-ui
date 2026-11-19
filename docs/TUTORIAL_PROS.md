@@ -93,3 +93,64 @@ Rust + [egui](https://github.com/emilk/egui):
 | `src/script.rs` | Rhai scripts for Test mode |
 
 To extend it: [EXTENDING.md](EXTENDING.md).
+
+## Portrait layout in detail
+
+The portrait layout is a second view of the same design (docs/FORMAT.md › PortraitLayout):
+
+- It has its own reference resolution, “Portrait size” (1080 × 1920 by default).
+- Elements without an override keep their landscape RectTransform and are re-evaluated against the portrait page: a full-page background stretches, right-anchored elements follow the right edge.
+- Only what you change in Portrait view is stored, as overrides (position, size, rotation, anchors, visibility, font size, layout). Right-click › “Reset to landscape” removes one.
+- Export: the JSON carries the overrides and the generated LienzoOrientationLayout script applies them when Screen.width < Screen.height, and again when the size changes.
+- “Remove portrait layout” deletes every override.
+
+## 9-slice and the built-in pack
+
+For frames, buttons and panels that stretch:
+
+- Select an Image and set “9-slice” in “Image settings (Unity)”: the border in source-image pixels (left, bottom, right, top), like Unity's Sprite Editor. The export generates a 9-slice Sprite.
+- “Pixels per unit”: 100 keeps the borders at their pixel size, 200 makes them half as big.
+- The built-in pack (assets/pack/manifest.json, docs/CONTENT.md) already sets slice and pixels per unit: frames are 512×512 with slice 96, buttons 512×192.
+- Using an item copies it to your library as pack_<id>.<ext> (hidden from “Your images”); the exporter copies it to the Unity Sprites.
+- The templates Pixel RPG HUD and Pixel main menu use the pixel pack. Turn on “Pixel art” for Point filtering.
+
+## Review and quick fixes
+
+The Review window lists errors and warnings; click one to select its element. Six problems have a “Fix” button (one undo step):
+
+- Text below the minimum size: raised to the minimum.
+- Control too small to tap: enlarged around its center.
+- Element partly outside the page: moved inside, if it fits.
+- Repeated name: _2, _3… is appended.
+- Missing image: the reference is removed.
+- Low contrast: the text color is darkened or lightened.
+
+“Fix all safe issues” applies them in a few passes. Problems such as a font that lacks characters have no automatic fix. Fixes also work in the portrait layout. From the command line: lienzo-ui --open file --review (exit code 1 on errors).
+
+## Import from Unity: prefabs and CLI
+
+File › Import from Unity… reads a uGUI .prefab (Unity's text YAML) or a Designs/*.json exported by Lienzo UI and creates an ordinary design.
+
+- What could not be mapped is listed as warnings.
+- When it detects the Unity project folder, images resolve against it for that session.
+- Headless: lienzo-ui --import-unity Menu.prefab --save Menu.editorgui.json (also with --review and --export).
+- Whole project: lienzo-ui --import-unity-project MyProject --out Imported converts every UI prefab. It never overwrites (it adds _2) and skips prefabs without UI.
+- Details in docs/UNITY_IMPORT.md.
+
+## Community: plugins, fonts and rules
+
+In the Community tab, Install adds shared content with one click: plugins, fonts, images, templates, elements and themes.
+
+- A community plugin goes to a folder named community-<name>-<hash>. It is written to a temporary folder first, so an interrupted install never leaves half a plugin. It shows up in the Plugins tab.
+- Its scripts are the same Rhai scripts: sandboxed, with no file or network access and limits on operations, time and memory (docs/PLUGINS.md).
+- An installed font is added to the Text tab and exported to Unity with the design.
+- Downloads are checked against the published SHA-256 fingerprint; if it does not match, nothing is installed.
+- To publish you sign in (GitHub or Google), choose a public name and accept the rules. Everything is reviewed first and 18+ content must be marked. See docs/TERMS.md, docs/COMMUNITY_GUIDELINES.md and docs/PRIVACY.md.
+
+## Autosave, recovery and undo
+
+- About every minute, while you edit, the full design (portrait layout included) is written to the app's recovery folder. Never in Test mode. At most 10 recoveries are kept.
+- At startup, a recovery newer than the project file is offered: Restore or Discard. After a normal Save it is no longer needed.
+- It can be turned off in Accessibility › Autosave.
+- The undo history is bounded to 200 steps and about 64 MB. When the oldest steps are dropped the status bar says “History trimmed”.
+- Each plugin command and each Fix from the Review window is one undo step.

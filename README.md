@@ -119,6 +119,11 @@ Moderation lives in a web panel (also usable by AIs with revocable tokens): [doc
 | [MCP server](docs/MCP.md) | Connect any AI (your own key or a local model) to Lienzo UI, or script it with an AI API |
 | [Contributing](CONTRIBUTING.md) · [Changelog](CHANGELOG.md) | Pull requests and releases |
 
+## Legal
+
+The desktop app is MIT-licensed and works offline. The online Community is covered by its own rules:
+[Terms of Use](docs/TERMS.md) · [Community Guidelines](docs/COMMUNITY_GUIDELINES.md) · [Privacy Policy](docs/PRIVACY.md) · [Copyright and Takedown Policy](docs/COPYRIGHT.md) · [Moderator playbook](docs/ENFORCEMENT.md)
+
 ## License
 
 [MIT](LICENSE). Independent project, not affiliated with Unity Technologies or Canva. Built with the help of AI (Claude); cover art generated with ChatGPT.

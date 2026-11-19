@@ -69,6 +69,14 @@ impl EditorApp {
                 ui.label(t("Reduce motion"));
                 change |= ui.checkbox(&mut self.settings.reduce_motion, t("No animations in the interface")).changed();
                 ui.end_row();
+
+                ui.label(t("Autosave"));
+                let mut on = !self.settings.no_autosave;
+                if ui.checkbox(&mut on, t("Save a recovery copy every minute")).changed() {
+                    self.settings.no_autosave = !on;
+                    change = true;
+                }
+                ui.end_row();
             });
             ui.add_space(8.0);
             ui.label(RichText::new(t("Shortcuts: Ctrl+Alt+= and Ctrl+Alt+- change the interface size; F1 opens the tutorial.")).small().color(MUTED()));

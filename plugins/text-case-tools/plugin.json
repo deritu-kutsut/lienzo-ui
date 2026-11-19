@@ -1,0 +1,12 @@
+{
+  "name": "Text case tools",
+  "version": "1.0.0",
+  "author": "Lienzo UI",
+  "description": "Changes the capitalization of every text of the design: UPPERCASE, lowercase, Title Case or Sentence case.",
+  "commands": [
+    { "name": "UPPERCASE all texts", "description": "Converts every text and dropdown option to capitals.", "script": "upper.rhai" },
+    { "name": "lowercase all texts", "description": "Converts every text and dropdown option to lowercase.", "script": "lower.rhai" },
+    { "name": "Title Case all texts", "description": "Capitalizes the first letter of every word.", "script": "title.rhai" },
+    { "name": "Sentence case all texts", "description": "Capitalizes only the first letter of each text.", "script": "sentence.rhai" }
+  ]
+}

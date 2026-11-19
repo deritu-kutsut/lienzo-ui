@@ -1,0 +1,12 @@
+{
+  "name": "Button set generator",
+  "version": "1.0.0",
+  "author": "Lienzo UI",
+  "description": "Creates ready-made groups of buttons (main menu, OK / Cancel, Yes / No / Cancel, tab bar) with layout groups, centered on the canvas.",
+  "commands": [
+    { "name": "Main menu column", "description": "Play, Options and Quit buttons in a Vertical Layout Group.", "script": "menu.rhai" },
+    { "name": "OK / Cancel pair", "description": "Two buttons side by side in a Horizontal Layout Group.", "script": "okcancel.rhai" },
+    { "name": "Yes / No / Cancel row", "description": "Three buttons in a Horizontal Layout Group.", "script": "yesno.rhai" },
+    { "name": "Tab bar (4 tabs)", "description": "Home, Play, Shop and Settings buttons in a Horizontal Layout Group.", "script": "tabs.rhai" }
+  ]
+}

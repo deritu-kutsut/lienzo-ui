@@ -93,3 +93,64 @@ Rust + [egui](https://github.com/emilk/egui) :
 | `src/script.rs` | Scripts Rhai pour le mode Test |
 
 Pour l'étendre : [EXTENDING.md](EXTENDING.md).
+
+## Mise en page portrait en détail
+
+La mise en page portrait est une seconde vue du même design (docs/FORMAT.md › PortraitLayout) :
+
+- Elle a sa propre résolution de référence, « Taille portrait » (1080 × 1920 par défaut).
+- Les éléments sans exception gardent leur RectTransform paysage et sont réévalués par rapport à la page portrait : un fond plein écran s'étire, ceux ancrés à droite suivent le bord droit.
+- Seul ce que tu modifies en vue portrait est enregistré, sous forme d'exceptions (position, taille, rotation, ancres, visibilité, taille de police, layout). Clic droit › « Revenir au paysage » en supprime une.
+- Export : le JSON contient les exceptions et le script généré LienzoOrientationLayout les applique quand Screen.width < Screen.height, puis de nouveau si la taille change.
+- « Supprimer la mise en page portrait » efface toutes les exceptions.
+
+## 9-slice et pack intégré
+
+Pour les cadres, boutons et panneaux qui s'étirent :
+
+- Sélectionne une Image et définis « 9-slice » dans « Réglages de l'image (Unity) » : la bordure en pixels de l'image source (gauche, bas, droite, haut), comme dans le Sprite Editor d'Unity. L'export génère un Sprite 9-slice.
+- « Pixels par unité » : 100 garde les bordures à leur taille en pixels, 200 les réduit de moitié.
+- Le pack intégré (assets/pack/manifest.json, docs/CONTENT.md) définit déjà le découpage et les pixels par unité : cadres de 512×512 avec découpage 96, boutons de 512×192.
+- Utiliser un élément le copie dans ta bibliothèque sous le nom pack_<id>.<ext> (masqué dans « Tes images ») ; l'exporteur le copie dans les Sprites d'Unity.
+- Les modèles ATH de RPG pixel art et Menu principal pixel art utilisent le pack pixel. Active « Pixel art » pour le filtre Point.
+
+## Vérification et corrections rapides
+
+La fenêtre Vérifier liste les erreurs et les avertissements ; clique sur l'un d'eux pour sélectionner son élément. Six problèmes ont un bouton « Corriger » (une étape d'annulation) :
+
+- Texte sous la taille minimale : porté au minimum.
+- Contrôle trop petit pour être touché : agrandi autour de son centre.
+- Élément en partie hors de la page : déplacé à l'intérieur, s'il y tient.
+- Nom répété : _2, _3… est ajouté.
+- Image manquante : la référence est supprimée.
+- Contraste faible : la couleur du texte est assombrie ou éclaircie.
+
+« Corriger tous les problèmes sûrs » les applique en quelques passes. Des problèmes comme une police sans certains caractères n'ont pas de correction automatique. Les corrections fonctionnent aussi dans la mise en page portrait. En ligne de commande : lienzo-ui --open fichier --review (code 1 en cas d'erreurs).
+
+## Importer depuis Unity : prefabs et CLI
+
+Fichier › Importer depuis Unity… lit un .prefab uGUI (le YAML texte d'Unity) ou un Designs/*.json exporté par Lienzo UI et crée un design ordinaire.
+
+- Ce qui n'a pas pu être converti apparaît sous forme d'avertissements.
+- Si le dossier du projet Unity est détecté, les images sont résolues par rapport à lui pendant la session.
+- Sans fenêtre : lienzo-ui --import-unity Menu.prefab --save Menu.editorgui.json (aussi avec --review et --export).
+- Projet entier : lienzo-ui --import-unity-project MonProjet --out Importes convertit tous les prefabs d'interface. Il n'écrase jamais (il ajoute _2) et ignore les prefabs sans interface.
+- Détails dans docs/UNITY_IMPORT.md.
+
+## Communauté : plugins, polices et règles
+
+Dans l'onglet Communauté, Installer ajoute du contenu partagé en un clic : plugins, polices, images, modèles, éléments et thèmes.
+
+- Un plugin de la communauté va dans un dossier nommé community-<nom>-<hash>. Il est d'abord écrit dans un dossier temporaire : une installation interrompue ne laisse jamais un plugin à moitié installé. Il apparaît dans l'onglet Plugins.
+- Ses scripts sont les mêmes scripts Rhai : isolés, sans accès aux fichiers ni au réseau, avec des limites d'opérations, de temps et de mémoire (docs/PLUGINS.md).
+- Une police installée est ajoutée à l'onglet Texte et exportée vers Unity avec le design.
+- Les téléchargements sont vérifiés avec l'empreinte SHA-256 publiée ; si elle ne correspond pas, rien n'est installé.
+- Pour publier, tu te connectes (GitHub ou Google), tu choisis un nom public et tu acceptes les règles. Tout est vérifié avant, et le contenu +18 doit être signalé. Voir docs/TERMS.md, docs/COMMUNITY_GUIDELINES.md et docs/PRIVACY.md.
+
+## Enregistrement automatique, récupération et annulation
+
+- Environ chaque minute, pendant que tu modifies, le design complet (mise en page portrait comprise) est écrit dans le dossier de récupération de l'app. Jamais en mode Test. 10 récupérations au maximum sont conservées.
+- Au démarrage, une récupération plus récente que le fichier du projet est proposée : Restaurer ou Ignorer. Après un Enregistrer normal, elle n'est plus utile.
+- On peut la désactiver dans Accessibilité › Enregistrement automatique.
+- L'historique d'annulation est limité à 200 étapes et environ 64 Mo. Quand les plus anciennes sont supprimées, la barre d'état affiche « Historique réduit ».
+- Chaque commande de plugin et chaque Corriger de la fenêtre Vérifier compte pour une seule étape d'annulation.

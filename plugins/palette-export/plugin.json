@@ -1,0 +1,10 @@
+{
+  "name": "Palette export",
+  "version": "1.0.0",
+  "author": "Lienzo UI",
+  "description": "Exports the colors used by the design as a Markdown table or as USS variables for Unity UI Toolkit, most used first.",
+  "exporters": [
+    { "name": "Palette table", "extension": "md", "script": "md.rhai" },
+    { "name": "Palette as USS variables", "extension": "uss", "script": "uss.rhai" }
+  ]
+}

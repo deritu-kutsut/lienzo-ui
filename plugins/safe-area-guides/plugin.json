@@ -1,0 +1,11 @@
+{
+  "name": "Safe area guides",
+  "version": "1.0.0",
+  "author": "Lienzo UI",
+  "description": "Adds locked, translucent guides for phone notches and home bars, or a 5% title-safe margin, and removes them when you are done.",
+  "commands": [
+    { "name": "Add phone safe-area guides", "description": "Marks the notch, corner and home bar areas (landscape or portrait, depending on the design).", "script": "add.rhai" },
+    { "name": "Add title-safe margin guides", "description": "Marks a 5% margin on every side.", "script": "title.rhai" },
+    { "name": "Remove guides", "description": "Deletes the guide panels added by this plugin.", "script": "remove.rhai" }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "name": "Recolor palette",
+  "version": "1.0.0",
+  "author": "Lienzo UI",
+  "description": "Recolors the whole design with a ready-made palette (Ocean, Sunset, Forest, Mono) or inverts its colors, keeping the contrast of the text.",
+  "commands": [
+    { "name": "Palette: Ocean", "description": "Maps every color of the design, background included, to a blue palette by brightness.", "script": "ocean.rhai" },
+    { "name": "Palette: Sunset", "description": "Maps every color of the design to a purple, red and orange palette by brightness.", "script": "sunset.rhai" },
+    { "name": "Palette: Forest", "description": "Maps every color of the design to a green palette by brightness.", "script": "forest.rhai" },
+    { "name": "Palette: Mono", "description": "Maps every color of the design to shades of gray.", "script": "mono.rhai" },
+    { "name": "Invert colors", "description": "Inverts the RGB of every color (light to dark and back).", "script": "invert.rhai" }
+  ]
+}

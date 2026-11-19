@@ -944,3 +944,136 @@ cleanup: {} file(s) removed.	cleanup: 파일 {}개를 삭제했습니다.
 Errors: {} · Warnings: {}. Click one to select it.	오류: {} · 경고: {}. 하나를 클릭하면 선택됩니다.
 Elements selected: {}	선택한 요소: {}
 To add a language, copy assets/i18n/es.tsv and translate it (see docs/EXTENDING.md).	언어를 추가하려면 assets/i18n/es.tsv를 복사해 번역하세요 (docs/EXTENDING.md 참고).
+HUD	HUD
+More components	더 많은 구성요소
+Backgrounds	배경
+Frames	프레임
+Icons	아이콘
+Gradients	그라디언트
+Built-in images are copied to your library when you use them	내장 이미지는 사용할 때 라이브러리로 복사됩니다
+Tip: turn on Pixel art in the page settings so the sprites stay crisp.	팁: 스프라이트가 선명하게 보이도록 페이지 설정에서 픽셀 아트를 켜세요.
+Could not copy the pack image: {}	팩 이미지를 복사할 수 없습니다: {}
+Pack image added: {}	팩 이미지를 추가했습니다: {}
+No images match the search	검색과 일치하는 이미지가 없습니다
+Pixel RPG HUD	픽셀 RPG HUD
+Pixel main menu	픽셀 메인 메뉴
+Primary button	기본 버튼
+Secondary button	보조 버튼
+Danger button	위험 버튼
+Success button	성공 버튼
+Ghost button	고스트 버튼
+Icon button	아이콘 버튼
+Toggle button	토글 버튼
+Tabs	탭
+Small pill button	작은 알약 버튼
+Square icon button	사각 아이콘 버튼
+Link button	링크 버튼
+Floating action button	플로팅 액션 버튼
+Health bar (classic)	체력 바 (클래식)
+Health bar (segments)	체력 바 (분할)
+Health orb	체력 구슬
+Mana bar with label	라벨이 있는 마나 바
+Stamina bar	스태미나 바
+XP bar with level	레벨이 있는 경험치 바
+Boss bar	보스 바
+Minimap frame	미니맵 프레임
+Quest tracker	퀘스트 추적기
+Skill slot (cooldown)	스킬 슬롯 (재사용 대기)
+Hotbar (5 slots)	핫바 (5칸)
+Currency counter	재화 카운터
+Nameplate	이름표
+Toast notification	토스트 알림
+Tooltip	툴팁
+Dialog with portrait	초상화가 있는 대화창
+Inventory grid 4x3	인벤토리 격자 4x3
+Compass strip	나침반 바
+Avatar with ring	링이 있는 아바타
+Pill badge	알약 배지
+Ribbon banner	리본 배너
+Divider	구분선
+Divider with label	라벨이 있는 구분선
+Progress ring	진행 링
+Switch	스위치
+Chips	칩
+Media card	미디어 카드
+List item	목록 항목
+Search field	검색 필드
+Stat row	능력치 행
+Level up	레벨 업
+Heal	회복
+Critical hit	치명타
+Objective	목표
+Ammo counter	탄약 카운터
+Wave counter	웨이브 카운터
+FPS counter	FPS 카운터
+Key prompt	키 안내
+History trimmed: the oldest undo steps were dropped	기록 정리됨: 가장 오래된 실행 취소 단계를 삭제했습니다
+Unsaved work recovered. Save it to keep it.	저장되지 않은 작업을 복구했습니다. 저장하여 보관하세요.
+Recover unsaved work	저장되지 않은 작업 복구
+Recover unsaved work from {}?	{}의 저장되지 않은 작업을 복구할까요?
+Restore	복원
+Discard	삭제
+Open the folder	폴더 열기
+Autosave	자동 저장
+Save a recovery copy every minute	1분마다 복구 사본 저장
+Fix all safe issues	안전한 문제 모두 수정
+Applies every quick fix in one undo step	모든 빠른 수정을 한 번의 실행 취소 단계로 적용
+Fix	수정
+Fixes this problem (one undo step)	이 문제를 수정합니다(실행 취소 한 단계)
+Nothing to fix here	여기서 수정할 내용이 없습니다
+Fixed {} issue(s) (Ctrl+Z undoes)	{}개 문제를 수정했습니다(Ctrl+Z로 취소)
+Release notes	릴리스 노트
+Full release notes	전체 릴리스 노트
+The zip must contain a single executable.	zip에는 실행 파일이 하나만 있어야 합니다.
+The version inside the executable does not match the release; not installing.	실행 파일의 버전이 릴리스와 일치하지 않아 설치하지 않습니다.
+You appear to be offline. Check your internet connection.	오프라인 상태인 것 같습니다. 인터넷 연결을 확인하세요.
+The server took too long to answer. Try again in a moment.	서버 응답이 너무 오래 걸립니다. 잠시 후 다시 시도하세요.
+Your session expired. Sign in again.	세션이 만료되었습니다. 다시 로그인하세요.
+Too many requests: wait {} s and try again.	요청이 너무 많습니다. {}초 후에 다시 시도하세요.
+Too many requests: wait a moment.	요청이 너무 많습니다. 잠시 기다려 주세요.
+You do not have permission to do this.	이 작업을 수행할 권한이 없습니다.
+Not found.	찾을 수 없습니다.
+Offline, showing the last known list.	오프라인: 마지막으로 알려진 목록을 표시합니다.
+Terms and community guidelines	약관 및 커뮤니티 규칙
+Terms of Use	이용 약관
+Community guidelines	커뮤니티 규칙
+Privacy	개인정보 보호
+Full text on GitHub	GitHub에서 전문 보기
+I have read and accept the Terms of Use and the Community guidelines	이용 약관과 커뮤니티 규칙을 읽었으며 동의합니다
+Accept	동의
+Read and accept the Terms and guidelines…	약관과 규칙 읽고 동의하기…
+Terms accepted.	약관에 동의했습니다.
+This app has older legal texts than the server. Update the app to accept the new terms.	이 앱의 법적 문서가 서버보다 오래된 버전입니다. 새 약관에 동의하려면 앱을 업데이트하세요.
+Export my data	내 데이터 내보내기
+Your data was saved to {}	데이터를 {}에 저장했습니다
+License	라이선스
+Source	출처
+Source link (optional)	출처 링크(선택)
+I own this or have the right to share it under this license	제가 저작자이거나 이 라이선스로 공유할 권리가 있습니다
+Use an http or https link, up to 300 characters, no spaces.	http 또는 https 링크를 공백 없이 300자 이내로 입력하세요.
+Report copyright infringement	저작권 침해 신고
+The work and why it is infringed (10-2000 characters)	저작물과 침해되는 이유 (10-2000자)
+Rights holder (optional)	권리자(선택)
+Contact (optional)	연락처(선택)
+Send claim	신고 보내기
+Thanks: the item is hidden while a moderator reviews it. Details: docs/COPYRIGHT.md	감사합니다. 운영자가 검토하는 동안 이 항목은 숨겨집니다. 자세한 내용: docs/COPYRIGHT.md
+Spam	스팸
+Impersonation	사칭
+Personal data	개인 정보
+Accept the Terms of Use to share.	공유하려면 이용 약관에 동의하세요.
+Pick a license from the list.	목록에서 라이선스를 선택하세요.
+Confirm that you own this or may share it.	저작자이거나 공유할 권리가 있음을 확인하세요.
+The Terms of Use changed. Close this window and open it again to read the new version.	이용 약관이 변경되었습니다. 이 창을 닫았다가 다시 열어 새 버전을 읽어 보세요.
+Create your profile first.	먼저 프로필을 만드세요.
+Too many claims today. Use the Copyright notice template on GitHub.	오늘 신고가 너무 많습니다. GitHub의 저작권 통지 템플릿을 사용하세요.
+Claims are blocked for now. Use the Copyright notice template on GitHub.	신고가 현재 차단되어 있습니다. GitHub의 저작권 통지 템플릿을 사용하세요.
+That item is already under review.	해당 항목은 이미 검토 중입니다.
+Your account is suspended.	계정이 정지되었습니다.
+Uploads are disabled for this account.	이 계정은 업로드가 비활성화되었습니다.
+Uploads are disabled until {}.	{}까지 업로드가 비활성화됩니다.
+Public domain	퍼블릭 도메인
+Free use (proprietary)	자유 이용(독점)
+Unsaved changes	저장되지 않은 변경 사항
+You have unsaved changes. What do you want to do?	저장되지 않은 변경 사항이 있습니다. 어떻게 할까요?
+Discard changes	변경 사항 버리기
+Could not check the Terms of Use right now.	지금은 이용 약관을 확인할 수 없습니다.

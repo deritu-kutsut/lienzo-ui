@@ -769,6 +769,7 @@ impl EditorApp {
                 }
             });
         }
+        self.preset_sections(ui);
         ui.add_space(6.0);
         hint(ui, &crate::i18n::t("Click adds to the center (or inside the selected panel/container). Drag to drop wherever you want: if you drop it on a panel, it becomes a child."));
         self.my_elements(ui);
@@ -880,7 +881,9 @@ impl EditorApp {
             sub.radius = 10.0;
             sub.w = 820.0;
             sub.h = 70.0;
-            for (label, proto) in [("Score", score), ("Tag", tag), ("Timer", timer), ("Coins", coins), ("Damage", dmg), ("Combo", combo), ("Level", lvl), ("Dialogue subtitle", sub)] {
+            let mut all: Vec<(&str, Element)> = vec![("Score", score), ("Tag", tag), ("Timer", timer), ("Coins", coins), ("Damage", dmg), ("Combo", combo), ("Level", lvl), ("Dialogue subtitle", sub)];
+            all.extend(crate::presets::text_hud());
+            for (label, proto) in all {
                 if !self.matches(label) {
                     continue;
                 }
@@ -893,14 +896,139 @@ impl EditorApp {
         });
     }
 
+    /// Buttons, HUD and small components (see `presets.rs`): click or drag inserts the whole tree.
+    fn preset_sections(&mut self, ui: &mut egui::Ui) {
+        for sec in crate::presets::SECTIONS {
+            section(ui, sec);
+            ui.horizontal_wrapped(|ui| {
+                ui.spacing_mut().item_spacing = Vec2::new(8.0, 8.0);
+                for p in crate::presets::presets().iter().filter(|p| p.section == *sec) {
+                    if !self.matches(p.label) {
+                        continue;
+                    }
+                    let resp = tile(ui, Vec2::new(124.0, 64.0), p.label, |pt, r| render::paint_doc_thumb(pt, &p.thumb, r.expand(8.0)));
+                    if resp.drag_started() {
+                        self.dnd = Some(p.items.clone());
+                        self.dnd_ov.clear();
+                    } else if resp.clicked() {
+                        self.insert_items_with(&p.items, &[], None);
+                    }
+                }
+            });
+        }
+    }
+
+    /// Copies a built-in pack image into the library and builds its element (None + status message when it can't be copied).
+    fn pack_element(&mut self, it: &crate::pack::PackItem) -> Option<Element> {
+        match crate::pack::extract(it) {
+            Ok(file) => Some(crate::pack::element_for(it, &file, (self.doc.width, self.doc.height))),
+            Err(e) => {
+                self.status = crate::i18n::tf("Could not copy the pack image: {}", &[&e]);
+                None
+            }
+        }
+    }
+
+    /// One category of the built-in pack as tiles with lazily decoded thumbnails.
+    fn pack_tiles(&mut self, ui: &mut egui::Ui, cat: &str) {
+        let items: Vec<&'static crate::pack::PackItem> = crate::pack::items().iter().filter(|i| i.category == cat && self.matches_pack(i)).collect();
+        if items.is_empty() {
+            if !self.search.trim().is_empty() {
+                hint(ui, &crate::i18n::t("No images match the search"));
+            }
+            return;
+        }
+        // at most a few new thumbnails are decoded per frame; the rest appear on the next ones
+        let mut budget = 6u32;
+        let ctx = ui.ctx().clone();
+        ui.horizontal_wrapped(|ui| {
+            ui.spacing_mut().item_spacing = Vec2::new(8.0, 8.0);
+            for it in items {
+                let tex = crate::pack::thumbnail(&ctx, it, &mut budget);
+                let resp = tile(ui, Vec2::new(124.0, 84.0), &it.name, |p, r| {
+                    if let Some(t) = &tex {
+                        let sz = t.size_vec2();
+                        let s = (r.width() / sz.x).min(r.height() / sz.y);
+                        let dst = Rect::from_center_size(r.center(), sz * s);
+                        p.image(t.id(), dst, Rect::from_min_max(Pos2::ZERO, Pos2::new(1.0, 1.0)), Color32::WHITE);
+                    }
+                });
+                let resp = resp.on_hover_text(it.tags.join(", "));
+                if resp.drag_started() {
+                    if let Some(e) = self.pack_element(it) {
+                        self.dnd = Some(vec![e]);
+                        self.dnd_ov.clear();
+                    }
+                } else if resp.clicked() {
+                    if let Some(e) = self.pack_element(it) {
+                        let name = e.name.clone();
+                        self.insert(e, None);
+                        if it.category == "backgrounds" {
+                            self.reorder(Some(false), 0);
+                        }
+                        self.status = crate::i18n::tf("Pack image added: {}", &[&name]);
+                    }
+                }
+            }
+        });
+    }
+
+    fn matches_pack(&self, it: &crate::pack::PackItem) -> bool {
+        crate::pack::matches(it, &self.search)
+    }
+
     fn tab_images(&mut self, ui: &mut egui::Ui) {
         ui.add_space(6.0);
         let up = crate::icons::btn_tint("plus", RichText::new(crate::i18n::t("Upload images")).color(Color32::WHITE).strong(), Color32::WHITE).fill(ACCENT()).corner_radius(6.0).min_size(Vec2::new(ui.available_width(), 36.0));
         if ui.add(up).on_hover_text(crate::i18n::t("PNG, JPG, BMP, GIF or WEBP — exported as Sprites")).clicked() {
             self.upload_images();
         }
+        // category chips: «Your images» first, then the built-in pack, then the generated gradients
+        let chip_id = egui::Id::new("images_tab_category");
+        let mut cat: String = ui.ctx().data_mut(|d| d.get_temp::<String>(chip_id)).unwrap_or_else(|| "all".to_string());
+        ui.add_space(6.0);
+        ui.horizontal_wrapped(|ui| {
+            ui.spacing_mut().item_spacing = Vec2::new(4.0, 4.0);
+            let mut chips: Vec<(String, String)> = vec![("all".into(), crate::i18n::t("All")), ("mine".into(), crate::i18n::t("Your images"))];
+            chips.extend(crate::pack::CATEGORIES.iter().map(|(c, _)| (c.to_string(), crate::pack::category_label(c))));
+            chips.push(("gradients".into(), crate::i18n::t("Gradients")));
+            for (id, label) in chips {
+                if ui.selectable_label(cat == id, RichText::new(label).size(12.0)).clicked() {
+                    cat = id;
+                }
+            }
+        });
+        ui.ctx().data_mut(|d| d.insert_temp(chip_id, cat.clone()));
+        let all = cat == "all";
+        if all || cat == "mine" {
+            self.your_images(ui);
+        }
+        for (c, label) in crate::pack::CATEGORIES {
+            if all || cat == *c {
+                if all {
+                    section(ui, label);
+                } else {
+                    ui.add_space(6.0);
+                }
+                if *c == "pixel" && !self.doc.pixel_art {
+                    hint(ui, &crate::i18n::t("Tip: turn on Pixel art in the page settings so the sprites stay crisp."));
+                }
+                self.pack_tiles(ui, c);
+            }
+        }
+        if !all && cat != "mine" && cat != "gradients" {
+            ui.add_space(6.0);
+            hint(ui, &crate::i18n::t("Built-in images are copied to your library when you use them"));
+        }
+        if all || cat == "gradients" {
+            self.gradients(ui);
+        }
+    }
+
+    fn your_images(&mut self, ui: &mut egui::Ui) {
         section(ui, "Your images");
-        if self.library.images.is_empty() {
+        // the built-in pack copies its files here as `pack_<id>.<ext>`: they belong to the pack tiles, not to "Your images"
+        if self.library.images.iter().all(|i| i.file.starts_with("pack_")) {
             hint(ui, &crate::i18n::t("The images you upload will appear here and are saved for your next designs."));
         }
         // The list is borrowed (not cloned every frame) and returned at the end.
@@ -909,7 +1037,7 @@ impl EditorApp {
         ui.horizontal_wrapped(|ui| {
             ui.spacing_mut().item_spacing = Vec2::new(8.0, 8.0);
             for im in &images {
-                if !self.matches(&im.file) {
+                if im.file.starts_with("pack_") || !self.matches(&im.file) {
                     continue;
                 }
                 let resp = tile(ui, Vec2::new(124.0, 84.0), &im.file, |p, r| {
@@ -937,7 +1065,10 @@ impl EditorApp {
         if let Some(p) = remove {
             self.library.remove(&p);
         }
-        section(ui, "Gradients (placeholders)");
+    }
+
+    fn gradients(&mut self, ui: &mut egui::Ui) {
+        section(ui, "Gradients");
         hint(ui, &crate::i18n::t("In uGUI they are exported as a generated gradient Sprite."));
         ui.add_space(4.0);
         let pairs: [(Rgba, Rgba, &str); 16] = [

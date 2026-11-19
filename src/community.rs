@@ -10,8 +10,9 @@
 //!   * +18 content is hidden by default and only shown if you enable it with your account.
 
 use crate::app::EditorApp;
+use crate::community_net::{self as net, NetCfg, Outcome};
 use crate::community_validate::{self as val, Package};
-use crate::i18n::t;
+use crate::i18n::{t, tf};
 use crate::theme::{ACCENT, MUTED, WARN};
 use base64::Engine;
 use eframe::egui::{self, RichText};
@@ -47,7 +48,7 @@ pub struct Profile {
     pub show_18: bool,
 }
 
-#[derive(Clone, Debug, Default, Deserialize)]
+#[derive(Clone, Debug, Default, Deserialize, serde::Serialize)]
 #[serde(default)]
 pub struct Item {
     pub id: String,
@@ -66,6 +67,9 @@ pub struct Item {
     pub public_icon: Option<String>,
     pub public_preview: Option<String>,
     pub hearts: i64,
+    /// Licence code and source link (migration 0015; null on older rows and servers).
+    pub license: Option<String>,
+    pub source_url: Option<String>,
 }
 
 /// Public profile of a creator (what the person chooses to show; no email or preferences).
@@ -132,10 +136,14 @@ enum Message {
     Login(Result<Session, String>),
     SessionRenewed(Session),
     Profile(Option<Profile>),
-    Items(Result<Vec<Item>, String>),
+    Items(Result<ListOut, String>),
     Downloaded { item: Item, bytes: Result<Vec<u8>, String> },
     Uploaded(Result<String, String>),
     Reported(Result<(), String>),
+    Claimed(Result<(), String>),
+    /// Terms state of the account (None inside = the server could not tell).
+    Terms(TermsInfo),
+    TermsAccepted(Result<(), String>),
     AccountDeleted(Result<(), String>),
     State(String),
     Image { path: String, bytes: Option<Vec<u8>> },
@@ -145,7 +153,7 @@ enum Message {
     Mine { hearts: Vec<String>, following: Vec<String> },
 }
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct UploadForm {
     pub kind: usize,
     pub title: String,
@@ -154,6 +162,61 @@ pub struct UploadForm {
     pub is_18: bool,
     pub file: Option<PathBuf>,
     pub view: Option<PathBuf>,
+    /// Index into `net::LICENSES`; None = the default of the kind.
+    pub license: Option<usize>,
+    pub source: String,
+    /// "I own this or have the right to share it under this licence".
+    pub rights: bool,
+    /// Field the server refused ("license", "source", "rights"): shown highlighted.
+    pub field_error: Option<&'static str>,
+}
+
+/// Licence, source link and rights declaration that travel with an upload (migration 0015). Default = nothing is sent.
+#[derive(Clone, Debug, Default)]
+pub struct UploadMeta {
+    pub license: Option<String>,
+    pub source_url: String,
+    pub rights: bool,
+}
+
+/// What the server and the profile say about the terms and the own moderation state.
+#[derive(Clone, Debug, Default)]
+pub struct TermsInfo {
+    pub server_current: Option<String>,
+    pub own: Option<net::OwnState>,
+    /// The terms version could not be read (not the same as a server without terms): uploads wait until it is.
+    pub server_unavailable: bool,
+}
+
+impl TermsInfo {
+    pub fn decision(&self) -> net::TermsDecision {
+        if self.server_unavailable {
+            return net::TermsDecision::Unknown;
+        }
+        match &self.own {
+            None => net::TermsDecision::NotApplicable,
+            Some(o) => net::terms_decision(self.server_current.as_deref(), o.terms_version.as_deref(), &net::embedded_terms_version()),
+        }
+    }
+}
+
+/// Why the terms screen is open.
+#[derive(Clone, Copy, Debug, PartialEq)]
+enum TermsMode {
+    /// Creating the profile: accepting here ticks the box of the form.
+    Create,
+    /// The account must accept the current version.
+    Accept,
+    /// Only reading (guidelines button).
+    Read,
+}
+
+#[derive(Default)]
+struct ClaimForm {
+    item: String,
+    description: String,
+    claimant: String,
+    contact: String,
 }
 
 pub struct Community {
@@ -174,10 +237,21 @@ pub struct Community {
     upload: UploadForm,
     delete_confirmed: bool,
     report: Option<String>,
+    claim: Option<ClaimForm>,
+    terms: Option<TermsInfo>,
+    terms_open: Option<TermsMode>,
+    terms_tab: usize,
+    terms_check: bool,
+    /// The "accept the new version" screen was already shown to this session (it comes back on a `terms_required`).
+    terms_prompted: bool,
+    /// The form of the last upload, restored when the server refuses a field or asks for the terms.
+    upload_backup: Option<UploadForm>,
     /// A sign-in is waiting on the browser; the value is used to cancel it.
     login: Option<Arc<AtomicBool>>,
     /// Community images already loaded (None = loading or unavailable).
     textures: std::collections::HashMap<String, Option<egui::TextureHandle>>,
+    /// Which images are downloading and which failed recently (a failure is retried later, never remembered forever).
+    tex_gate: TexGate,
     /// Open creator profile and its content.
     viewing: Option<(ProfilePublic, Vec<Item>)>,
     my_profile: Option<ProfilePublic>,
@@ -192,6 +266,8 @@ pub struct Community {
     open_upload: bool,
     /// Newly chosen photo and banner (shown immediately, before the server publishes them).
     previous: std::collections::HashMap<&'static str, egui::TextureHandle>,
+    /// The list on screen comes from the local cache (age in seconds): the server could not be reached.
+    offline_age: Option<u64>,
 }
 
 impl Community {
@@ -229,8 +305,16 @@ impl Community {
             upload: UploadForm::default(),
             delete_confirmed: false,
             report: None,
+            claim: None,
+            terms: None,
+            terms_open: None,
+            terms_tab: 0,
+            terms_check: false,
+            terms_prompted: false,
+            upload_backup: None,
             login: None,
             textures: Default::default(),
+            tex_gate: TexGate::default(),
             viewing: None,
             my_profile: None,
             profile_form: FormProfile::default(),
@@ -241,6 +325,7 @@ impl Community {
             profile_open: false,
             open_upload: false,
             previous: Default::default(),
+            offline_age: None,
         }
     }
 }
@@ -301,13 +386,37 @@ fn is_uuid(s: &str) -> bool {
 
 // ───────────────────────────── network ─────────────────────────────
 
-fn agent() -> ureq::Agent {
-    ureq::Agent::config_builder().timeout_global(Some(Duration::from_secs(170))).http_status_as_error(false).user_agent("LienzoUI-Community/1.0").build().into()
+/// Base address of the server (a local fake one in the tests).
+fn base_url() -> String {
+    #[cfg(test)]
+    if let Some(b) = TEST_BASE.with(|b| b.borrow().clone()) {
+        return b;
+    }
+    URL.to_string()
+}
+
+#[cfg(test)]
+thread_local! {
+    static TEST_BASE: std::cell::RefCell<Option<String>> = const { std::cell::RefCell::new(None) };
+}
+
+/// One agent per request, with its own timeouts: connect, per-request limit (`global`) and a limit on every phase.
+fn agent(cfg: &NetCfg, global: Duration) -> ureq::Agent {
+    ureq::Agent::config_builder()
+        .timeout_connect(Some(cfg.connect))
+        .timeout_global(Some(global))
+        .timeout_recv_response(Some(global.min(Duration::from_secs(60))))
+        .http_status_as_error(false)
+        .user_agent("LienzoUI-Community/1.0")
+        .build()
+        .into()
 }
 
 struct Resp {
     state: u16,
     body: Vec<u8>,
+    /// Seconds from the `Retry-After` header, when it came.
+    retry_after: Option<u64>,
 }
 
 impl Resp {
@@ -318,7 +427,7 @@ impl Resp {
         if (200..300).contains(&self.state) {
             Ok(self)
         } else {
-            Err(error_message(self.state, &self.text()))
+            Err(error_message_with(self.state, &self.text(), self.retry_after))
         }
     }
     fn json<T: for<'de> Deserialize<'de>>(&self) -> Result<T, String> {
@@ -328,23 +437,74 @@ impl Resp {
 
 /// Understandable error messages; the raw server body is never returned.
 fn error_message(state: u16, body: &str) -> String {
+    error_message_with(state, body, None)
+}
+
+fn error_message_with(state: u16, body: &str, retry_after: Option<u64>) -> String {
     let v: serde_json::Value = serde_json::from_str(body).unwrap_or_default();
     let msg = ["message", "msg", "error_description", "error"].iter().find_map(|k| v.get(k).and_then(|m| m.as_str())).unwrap_or("");
+    // Machine codes of migration 0015 (CLIENT_CONTRACT.md): matched on `hint`, never on the HTTP status.
+    if let Some(code) = net::error_code(body) {
+        if let Some(m) = net::code_message(&code) {
+            return m;
+        }
+        if net::is_detail_code(&code) {
+            if let Some(d) = net::error_detail(body) {
+                return val::terminal_safe(&d);
+            }
+        }
+    }
     match state {
-        401 | 403 => "You do not have permission or your session expired. Sign in again.".into(),
-        404 => "No encontrado.".into(),
+        401 => net::expired_message(),
+        403 => t("You do not have permission to do this."),
+        404 => t("Not found."),
         409 => "It already exists or was already processed.".into(),
-        429 => "Demasiadas peticiones: espera un momento.".into(),
+        429 if msg.contains("Demasiadas subidas") || msg.contains("Daily limit") => val::terminal_safe(msg),
+        429 => net::rate_limited_message(retry_after),
         _ if msg.contains("Demasiadas subidas") || msg.contains("Daily limit") => val::terminal_safe(msg),
         _ if msg.contains("duplicate key") => "That name is already in use.".into(),
-        s if s >= 500 => "The server is not available right now.".into(),
+        s if s >= 500 => net::unavailable_message(),
         s => format!("Error {}", s),
     }
 }
 
 fn request(method: &str, path: &str, session: Option<&Session>, kind: Option<&str>, body: Option<&[u8]>, extra: &[(&str, &str)], limit: usize) -> Result<Resp, String> {
-    let url = format!("{}{}", URL, path);
-    let a = agent();
+    try_request(&NetCfg::default(), &base_url(), method, path, session, kind, body, extra, limit).map_err(|f| f.msg)
+}
+
+/// A request with retries: only GET (idempotent) is retried, with backoff, on a transient failure (offline, timeout, cut
+/// connection, 502/503/504) and on 429 when `Retry-After` is short. Writes (uploads, PATCH, POST, DELETE) are tried once.
+#[allow(clippy::too_many_arguments)]
+fn try_request(cfg: &NetCfg, base: &str, method: &str, path: &str, session: Option<&Session>, kind: Option<&str>, body: Option<&[u8]>, extra: &[(&str, &str)], limit: usize) -> Result<Resp, net::Failure> {
+    let mut attempt = 0;
+    loop {
+        let r = send_once(cfg, base, method, path, session, kind, body, extra, limit);
+        let outcome = match &r {
+            Ok(resp) => Some(Outcome::Status(resp.state, resp.retry_after)),
+            Err(f) if f.transient => Some(Outcome::Transport),
+            Err(_) => None,
+        };
+        match outcome.filter(|_| method == "GET").and_then(|o| net::retry_delay(cfg, attempt, o)) {
+            Some(wait) => {
+                std::thread::sleep(wait);
+                attempt += 1;
+            }
+            None => return r,
+        }
+    }
+}
+
+#[allow(clippy::too_many_arguments)]
+fn send_once(cfg: &NetCfg, base: &str, method: &str, path: &str, session: Option<&Session>, kind: Option<&str>, body: Option<&[u8]>, extra: &[(&str, &str)], limit: usize) -> Result<Resp, net::Failure> {
+    let url = format!("{}{}", base, path);
+    let global = if method != "GET" {
+        cfg.write
+    } else if path.starts_with("/storage/") {
+        cfg.download
+    } else {
+        cfg.read
+    };
+    let a = agent(cfg, global);
     macro_rules! headers {
         ($r:expr) => {{
             let mut r = $r.header("apikey", PUBLIC_KEY);
@@ -364,10 +524,18 @@ fn request(method: &str, path: &str, session: Option<&Session>, kind: Option<&st
         (_, Some(c)) => headers!(a.post(&url)).content_type(kind.unwrap_or("application/json")).send(c),
         (_, None) => headers!(a.post(&url)).send_empty(),
     };
-    let mut res = res.map_err(|_| "No connection to the server.".to_string())?;
+    let mut res = res.map_err(|e| net::classify(&e))?;
     let state = res.status().as_u16();
-    let body = res.body_mut().with_config().limit(limit as u64).read_to_vec().map_err(|_| "The server response is too large or was cut off.".to_string())?;
-    Ok(Resp { state, body })
+    let retry_after = res.headers().get("retry-after").and_then(|v| v.to_str().ok()).and_then(net::parse_retry_after);
+    let body = res.body_mut().with_config().limit(limit as u64).read_to_vec().map_err(|e| match e {
+        ureq::Error::BodyExceedsLimit(_) => net::Failure { msg: "The server response is too large or was cut off.".into(), transient: false },
+        other => {
+            let mut f = net::classify(&other);
+            f.transient = true;
+            f
+        }
+    })?;
+    Ok(Resp { state, body, retry_after })
 }
 
 fn json_post(path: &str, session: Option<&Session>, v: &serde_json::Value, extra: &[(&str, &str)]) -> Result<Resp, String> {
@@ -601,13 +769,37 @@ fn clear_search(q: &str) -> String {
     q.chars().filter(|c| c.is_alphanumeric() || *c == ' ' || *c == '-' || *c == '_').take(40).collect::<String>().trim().to_string()
 }
 
-fn list(session: Option<&Session>, filter: Option<&str>, search: &str, with_18: bool, only_from: Option<&[String]>) -> Result<Vec<Item>, String> {
+/// The catalog listing, and whether it came from the local cache because the server could not be reached.
+struct ListOut {
+    items: Vec<Item>,
+    /// Some(age in seconds) when the list is the cached one.
+    stale: Option<u64>,
+}
+
+fn list(session: Option<&Session>, filter: Option<&str>, search: &str, with_18: bool, only_from: Option<&[String]>) -> Result<ListOut, String> {
+    list_with(&NetCfg::default(), &base_url(), &net::cache_dir(), session, filter, search, with_18, only_from)
+}
+
+#[allow(clippy::too_many_arguments)]
+fn list_with(cfg: &NetCfg, base: &str, cache: &std::path::Path, session: Option<&Session>, filter: Option<&str>, search: &str, with_18: bool, only_from: Option<&[String]>) -> Result<ListOut, String> {
+    let extended = !NO_LICENSE_COLUMNS.load(Ordering::Relaxed);
+    match list_cols(cfg, base, cache, session, filter, search, with_18, only_from, extended) {
+        Err(e) if e == LEGACY_COLUMNS => {
+            NO_LICENSE_COLUMNS.store(true, Ordering::Relaxed);
+            list_cols(cfg, base, cache, session, filter, search, with_18, only_from, false)
+        }
+        other => other,
+    }
+}
+
+#[allow(clippy::too_many_arguments)]
+fn list_cols(cfg: &NetCfg, base: &str, cache: &std::path::Path, session: Option<&Session>, filter: Option<&str>, search: &str, with_18: bool, only_from: Option<&[String]>, extended: bool) -> Result<ListOut, String> {
     if let Some(ids) = only_from {
         if ids.is_empty() {
-            return Ok(Vec::new()); // you follow no one: nothing to request
+            return Ok(ListOut { items: Vec::new(), stale: None }); // you follow no one: nothing to request
         }
     }
-    let mut q = String::from("/rest/v1/community_items?select=id,kind,title,description,tags,is_18,public_path,sha256,bytes,downloads,version,author,author_name,public_icon,public_preview,hearts&status=eq.approved&order=created_at.desc&limit=60");
+    let mut q = format!("/rest/v1/community_items?select={}&status=eq.approved&order=created_at.desc&limit=60", if extended { ITEM_COLUMNS_V15 } else { ITEM_COLUMNS });
     if let Some(f) = filter.filter(|f| val::KINDS.contains(f)) {
         q.push_str(&format!("&kind=eq.{}", f));
     }
@@ -622,9 +814,109 @@ fn list(session: Option<&Session>, filter: Option<&str>, search: &str, with_18: 
     if !b.is_empty() {
         q.push_str(&format!("&or=({})", encode(&format!("title.ilike.*{0}*,description.ilike.*{0}*", b))));
     }
-    let mut items: Vec<Item> = request("GET", &q, session, None, None, &[], 2 << 20)?.ok()?.json()?;
-    items.retain(|i| is_uuid(&i.id) && is_uuid(&i.author) && val::KINDS.contains(&i.kind.as_str()));
-    Ok(items)
+    // only the plain browsing lists are cached (not searches or the "following" list)
+    // (the key includes the base URL: a list cached from one server is never shown for another)
+    let key = (b.is_empty() && only_from.is_none()).then(|| net::catalog_key(&format!("{}|{}", base, q)));
+    let from_cache = |msg: String| -> Result<ListOut, String> {
+        match key.as_ref().and_then(|k| net::catalog_load::<Item>(cache, k, now())) {
+            // the cache file is untrusted: same checks as a live answer, and an implausible size is dropped
+            Some((items, age)) if items.len() <= CATALOG_MAX_ITEMS => Ok(ListOut { items: sanitize_items(items, with_18), stale: Some(age) }),
+            _ => Err(msg),
+        }
+    };
+    match try_request(cfg, base, "GET", &q, session, None, None, &[], 2 << 20) {
+        Ok(r) if (200..300).contains(&r.state) => {
+            let mut items: Vec<Item> = r.json()?;
+            let items = sanitize_items(items, with_18);
+            if let Some(k) = &key {
+                net::catalog_store(cache, k, &items, now());
+            }
+            Ok(ListOut { items, stale: None })
+        }
+        Ok(r) if r.state == 400 && extended => Err(LEGACY_COLUMNS.to_string()),
+        Ok(r) => {
+            let transient = r.state >= 500 || r.state == 429;
+            let msg = r.ok().err().unwrap_or_default();
+            if transient { from_cache(msg) } else { Err(msg) }
+        }
+        Err(f) if f.transient => from_cache(f.msg),
+        Err(f) => Err(f.msg),
+    }
+}
+
+/// Tracks community image downloads: in flight, and failed (retried after [`TEXTURE_RETRY`]).
+#[derive(Default)]
+struct TexGate {
+    loading: std::collections::HashSet<String>,
+    failed: std::collections::HashMap<String, std::time::Instant>,
+}
+
+const TEXTURE_RETRY: Duration = Duration::from_secs(30);
+
+impl TexGate {
+    /// True when a download of `key` should start now (and marks it as in flight).
+    fn may_start(&mut self, key: &str, now: std::time::Instant) -> bool {
+        if self.loading.contains(key) || self.failed.get(key).is_some_and(|t| now.saturating_duration_since(*t) < TEXTURE_RETRY) {
+            return false;
+        }
+        self.loading.insert(key.to_string());
+        true
+    }
+
+    fn finish(&mut self, key: &str, ok: bool, now: std::time::Instant) {
+        self.loading.remove(key);
+        if ok {
+            self.failed.remove(key);
+        } else {
+            if self.failed.len() > 2000 {
+                self.failed.clear();
+            }
+            self.failed.insert(key.to_string(), now);
+        }
+    }
+
+    fn forget_prefix(&mut self, prefix: &str) {
+        self.loading.retain(|k| !k.starts_with(prefix));
+        self.failed.retain(|k, _| !k.starts_with(prefix));
+    }
+}
+
+/// Text that came from the server, made safe to paint: no control characters (except line breaks when `multiline`),
+/// no bidi / zero-width spoofing characters, no line / paragraph separators.
+fn display_clean(s: &str, multiline: bool) -> String {
+    s.chars().filter(|&c| (!c.is_control() || (multiline && c == '\n')) && !val::spoofing_char(c) && c != '\u{2028}' && c != '\u{2029}').collect()
+}
+
+impl Item {
+    fn clean_texts(&mut self) {
+        self.title = display_clean(&self.title, false);
+        self.description = display_clean(&self.description, true);
+        self.author_name = display_clean(&self.author_name, false);
+        self.version = display_clean(&self.version, false);
+        for t in self.tags.iter_mut() {
+            *t = display_clean(t, false);
+        }
+    }
+}
+
+impl ProfilePublic {
+    fn clean_texts(&mut self) {
+        self.public_name = display_clean(&self.public_name, false);
+        self.bio = display_clean(&self.bio, true);
+        self.github = self.github.take().map(|g| display_clean(&g, false));
+        self.links = std::mem::take(&mut self.links).into_iter().map(|(k, v)| (display_clean(&k, false), display_clean(&v, false))).collect();
+    }
+}
+
+/// A listing never has more rows than the request asks for (`limit=60`); a bigger cache file is not ours.
+const CATALOG_MAX_ITEMS: usize = 200;
+
+/// Keeps only well-formed rows: UUID id and author, a known kind and, when 18+ content is off, nothing marked 18+.
+/// Applied to live answers and to the offline cache alike.
+fn sanitize_items(mut items: Vec<Item>, with_18: bool) -> Vec<Item> {
+    items.retain(|i| is_uuid(&i.id) && is_uuid(&i.author) && val::KINDS.contains(&i.kind.as_str()) && (with_18 || !i.is_18));
+    items.iter_mut().for_each(Item::clean_texts);
+    items
 }
 
 /// Columns of `public_profiles` that anybody may read (never `select=*`: migration 0014 revokes the pending flags and `updated_at` from everyone).
@@ -633,6 +925,20 @@ const PROFILE_PUBLIC_COLUMNS: &str = "id,public_name,bio,github,links,public_ava
 const PROFILE_OWN_COLUMNS: &str = "id,public_name,bio,github,links,public_avatar,public_banner,avatar_pending,banner_pending,followers,hearts_received";
 
 const ITEM_COLUMNS: &str = "id,kind,title,description,tags,is_18,public_path,sha256,bytes,downloads,version,author,author_name,public_icon,public_preview,hearts";
+/// The same plus the licence columns of migration 0015.
+const ITEM_COLUMNS_V15: &str = "id,kind,title,description,tags,is_18,public_path,sha256,bytes,downloads,version,author,author_name,public_icon,public_preview,hearts,license,source_url";
+/// Set once a read with the licence columns was refused (400) and the plain one worked: the server has no migration 0015 yet.
+static NO_LICENSE_COLUMNS: AtomicBool = AtomicBool::new(false);
+/// Marker returned by a listing that the server refused only because of the new columns.
+const LEGACY_COLUMNS: &str = "legacy-columns-marker";
+
+fn item_columns() -> &'static str {
+    if NO_LICENSE_COLUMNS.load(Ordering::Relaxed) {
+        ITEM_COLUMNS
+    } else {
+        ITEM_COLUMNS_V15
+    }
+}
 
 fn load_public_profile(session: Option<&Session>, uid: &str) -> Result<(ProfilePublic, Vec<Item>), String> {
     if !is_uuid(uid) {
@@ -640,8 +946,21 @@ fn load_public_profile(session: Option<&Session>, uid: &str) -> Result<(ProfileP
     }
     let p: Vec<ProfilePublic> = request("GET", &format!("/rest/v1/public_profiles?select={}&id=eq.{}", PROFILE_PUBLIC_COLUMNS, uid), session, None, None, &[], 1 << 18)?.ok()?.json()?;
     let p = p.into_iter().next().ok_or("This creator does not have a public profile yet.")?;
-    let mut items: Vec<Item> = request("GET", &format!("/rest/v1/community_items?select={}&status=eq.approved&author=eq.{}&order=created_at.desc&limit=60", ITEM_COLUMNS, uid), session, None, None, &[], 2 << 20)?.ok()?.json()?;
+    let fetch = |cols: &str| -> Result<Vec<Item>, String> { request("GET", &format!("/rest/v1/community_items?select={}&status=eq.approved&author=eq.{}&order=created_at.desc&limit=60", cols, uid), session, None, None, &[], 2 << 20)?.ok()?.json() };
+    let mut items = fetch(item_columns()).or_else(|e| {
+        if item_columns() == ITEM_COLUMNS {
+            return Err(e);
+        }
+        let r = fetch(ITEM_COLUMNS); // a server without migration 0015 has no licence columns
+        if r.is_ok() {
+            NO_LICENSE_COLUMNS.store(true, Ordering::Relaxed);
+        }
+        r
+    })?;
     items.retain(|i| is_uuid(&i.id) && val::KINDS.contains(&i.kind.as_str()));
+    items.iter_mut().for_each(Item::clean_texts);
+    let mut p = p;
+    p.clean_texts();
     Ok((p, items))
 }
 
@@ -653,7 +972,9 @@ fn load_my_profile(s: &Session) -> Option<ProfilePublic> {
         Ok(r) => r,
         Err(_) => request("GET", &format!("/rest/v1/public_profiles?select={}&id=eq.{}", PROFILE_OWN_COLUMNS, s.uid), Some(s), None, None, &[], 1 << 18).ok()?.ok().ok()?,
     };
-    r.json::<Vec<ProfilePublic>>().ok()?.into_iter().next().filter(|p| p.id == s.uid)
+    let mut p = r.json::<Vec<ProfilePublic>>().ok()?.into_iter().next().filter(|p| p.id == s.uid)?;
+    p.clean_texts();
+    Some(p)
 }
 
 /// Crops a photo to the profile format (avatar 1:1, banner 3:1), shrinks it and converts it to PNG within the limits.
@@ -721,6 +1042,77 @@ fn load_profile(s: &Session) -> Option<Profile> {
     r.json::<Vec<Profile>>().ok()?.into_iter().next()
 }
 
+/// What `current_terms()` answered.
+#[derive(Debug, PartialEq)]
+enum TermsFetch {
+    /// The published version.
+    Version(String),
+    /// The server really has no terms: the function does not exist (404 / PGRST202 / 42883) or it published nothing (migration 0015 not applied).
+    Missing,
+    /// The answer could not be obtained (network, 5xx, 429, a refused session, garbage): NOT the same as "no terms".
+    Failed,
+}
+
+/// Asks for the current terms version, retrying (up to `attempts` times) on a network failure, 5xx or 429.
+fn fetch_current_terms_with(cfg: &NetCfg, base: &str, s: &Session, attempts: usize) -> TermsFetch {
+    for i in 0..attempts.max(1) {
+        let last = i + 1 >= attempts.max(1);
+        match try_request(cfg, base, "POST", "/rest/v1/rpc/current_terms", Some(s), None, Some(b"{}"), &[], 1 << 20) {
+            Ok(r) if (200..300).contains(&r.state) => {
+                return match r.json::<serde_json::Value>() {
+                    Ok(v) => match v["version"].as_str().map(|x| x.chars().take(40).collect::<String>()).filter(|x| !x.trim().is_empty()) {
+                        Some(x) => TermsFetch::Version(x),
+                        None => TermsFetch::Missing,
+                    },
+                    Err(_) => TermsFetch::Failed,
+                };
+            }
+            Ok(r) if r.state == 404 => return TermsFetch::Missing,
+            Ok(r) if r.state == 400 && { let b = r.text(); b.contains("PGRST202") || b.contains("42883") || b.contains("Could not find the function") } => return TermsFetch::Missing,
+            Ok(r) if r.state >= 500 || r.state == 429 => {}
+            Ok(_) => return TermsFetch::Failed,
+            Err(f) if f.transient => {}
+            Err(_) => return TermsFetch::Failed,
+        }
+        if !last {
+            std::thread::sleep(cfg.backoff * (i as u32 + 1));
+        }
+    }
+    TermsFetch::Failed
+}
+
+/// Version published by `current_terms()`; None when the server does not have migration 0015 (or could not be reached).
+fn fetch_current_terms(s: &Session) -> Option<String> {
+    match fetch_current_terms_with(&NetCfg::default(), &base_url(), s, 3) {
+        TermsFetch::Version(v) => Some(v),
+        _ => None,
+    }
+}
+
+/// Terms version of the server and own terms/moderation state (contract sections 1 and 7). Anything that fails reads as "unknown":
+/// a server without migration 0015 has neither the function nor the columns, and then nothing is asked of the user.
+fn load_terms(s: &Session) -> TermsInfo {
+    let own = request("GET", &format!("/rest/v1/profiles?select=terms_version,terms_accepted_at,strikes,upload_banned_until,suspended&id=eq.{}", s.uid), Some(s), None, None, &[], 1 << 16)
+        .ok()
+        .and_then(|r| r.ok().ok())
+        .and_then(|r| r.json::<Vec<net::OwnState>>().ok())
+        .and_then(|v| v.into_iter().next());
+    let (server_current, server_unavailable) = match fetch_current_terms_with(&NetCfg::default(), &base_url(), s, 3) {
+        TermsFetch::Version(v) => (Some(v), false),
+        TermsFetch::Missing => (None, false),
+        TermsFetch::Failed => (None, true),
+    };
+    TermsInfo { server_current, own, server_unavailable }
+}
+
+/// `export_my_data()` saved as pretty JSON at `path` (own rows only; items are capped at 2000 by the server).
+fn export_my_data(s: &Session, path: &std::path::Path) -> Result<(), String> {
+    let r = request("POST", "/rest/v1/rpc/export_my_data", Some(s), None, Some(b"{}"), &[], 32 << 20)?.ok()?;
+    let v: serde_json::Value = r.json()?;
+    let pretty = serde_json::to_vec_pretty(&v).map_err(|e| e.to_string())?;
+    std::fs::write(path, pretty).map_err(|e| e.to_string())
+}
+
 fn download(item: &Item, session: Option<&Session>) -> Result<Vec<u8>, String> {
     let path = item.public_path.as_deref().ok_or("This content has no file.")?;
     if !valid_public_path(path) {
@@ -744,7 +1136,8 @@ fn download(item: &Item, session: Option<&Session>) -> Result<Vec<u8>, String> {
     Ok(bytes)
 }
 
-fn upload_content(s: &Session, kind: &str, title: &str, description: &str, labels: Vec<String>, is_18: bool, name: &str, bytes: &[u8], extras: &[(&str, Vec<u8>)], tx: &Sender<Message>) -> Result<String, String> {
+#[allow(clippy::too_many_arguments)]
+fn upload_content(s: &Session, kind: &str, title: &str, description: &str, labels: Vec<String>, is_18: bool, meta: &UploadMeta, name: &str, bytes: &[u8], extras: &[(&str, Vec<u8>)], tx: &Sender<Message>) -> Result<String, String> {
     if !val::valid_display_text(title) {
         return Err("The title has control or invisible characters (for example direction marks or zero-width spaces).".into());
     }
@@ -756,13 +1149,23 @@ fn upload_content(s: &Session, kind: &str, title: &str, description: &str, label
     let id = uuid_v4();
     let file = safe_name(name);
     let path = format!("{}/{}/{}", s.uid, id, file);
-    let row = serde_json::json!({
+    let mut row = serde_json::json!({
         "id": id, "author": s.uid, "kind": kind, "title": title, "description": description,
         "tags": labels, "is_18": is_18, "version": "1.0.0", "quarantine_path": path,
         "quarantine_icon": extras.iter().any(|(c, _)| *c == "icon").then(|| format!("{}/{}/icon.png", s.uid, id)),
         "quarantine_preview": extras.iter().any(|(c, _)| *c == "preview").then(|| format!("{}/{}/preview.png", s.uid, id)),
     });
-    json_post("/rest/v1/community_items", Some(&s), &row, &[("Prefer", "return=minimal")])?.ok()?;
+    // Licence, source and rights declaration (migration 0015). A server that does not have the columns yet refuses them (400): the row is sent again without.
+    let fields = net::upload_extras(meta.license.as_deref(), &meta.source_url, meta.rights, &iso(now()));
+    let plain = row.clone();
+    if let Some(o) = row.as_object_mut() {
+        o.extend(fields.clone());
+    }
+    let mut resp = json_post("/rest/v1/community_items", Some(&s), &row, &[("Prefer", "return=minimal")])?;
+    if !fields.is_empty() && net::is_missing_column(resp.state, &resp.text()) {
+        resp = json_post("/rest/v1/community_items", Some(&s), &plain, &[("Prefer", "return=minimal")])?;
+    }
+    resp.ok()?;
     let mime = match file.rsplit('.').next().unwrap_or("").to_lowercase().as_str() {
         "png" => "image/png",
         "jpg" | "jpeg" => "image/jpeg",
@@ -897,7 +1300,6 @@ fn pack_plugin(folder: &std::path::Path) -> Result<Vec<u8>, String> {
 // ───────────────────────────── UI ─────────────────────────────
 
 const KIND_NAMES: &[(&str, &str)] = &[("plugin", "Plugins"), ("image", "Images"), ("font", "Fonts"), ("template", "Templates"), ("element", "Elements"), ("theme", "Themes")];
-const REASONS: &[(&str, &str)] = &[("malware", "Malware or viruses"), ("adult_content", "Unmarked 18+ content"), ("hate_or_harassment", "Hate or harassment"), ("copyright", "Copyright"), ("other", "Other")];
 
 fn kind_name(t: &str) -> &'static str {
     KIND_NAMES.iter().find(|(k, _)| *k == t).map(|(_, n)| *n).unwrap_or("")
@@ -921,6 +1323,18 @@ impl EditorApp {
         self.community_launch(ctx, move |tx| {
             let s = s.and_then(|s| current(&s, tx).ok());
             let _ = tx.send(Message::Items(list(s.as_ref(), f, &b, with_18, only_from.as_deref())));
+        });
+    }
+
+    /// Reads the terms version and the own moderation state again (no spinner: it only updates what the screen shows).
+    fn community_refresh_terms(&mut self, ctx: &egui::Context) {
+        let Some(s) = self.community.session.clone() else { return };
+        let (tx, ctx2) = (self.community.tx.clone(), ctx.clone());
+        std::thread::spawn(move || {
+            if let Ok(s) = current(&s, &tx) {
+                let _ = tx.send(Message::Terms(load_terms(&s)));
+                ctx2.request_repaint();
+            }
         });
     }
 
@@ -963,6 +1377,7 @@ impl EditorApp {
                             let (tx, c2) = (self.community.tx.clone(), ctx.clone());
                             std::thread::spawn(move || {
                                 let _ = tx.send(Message::MyProfile(load_my_profile(&s)));
+                                let _ = tx.send(Message::Terms(load_terms(&s)));
                                 if let Some((hearts, following)) = load_mine(&s) {
                                     let _ = tx.send(Message::Mine { hearts, following });
                                 }
@@ -976,7 +1391,10 @@ impl EditorApp {
                 Message::Items(r) => {
                     self.community.busy = self.community.busy.saturating_sub(1);
                     match r {
-                        Ok(v) => self.community.items = v,
+                        Ok(out) => {
+                            self.community.items = out.items;
+                            self.community.offline_age = out.stale;
+                        }
                         Err(e) => self.community.state = e,
                     }
                 }
@@ -989,8 +1407,61 @@ impl EditorApp {
                 }
                 Message::Uploaded(r) => {
                     self.community.busy = self.community.busy.saturating_sub(1);
-                    self.community.state = r.unwrap_or_else(|e| e);
+                    match r {
+                        Ok(m) => {
+                            self.community.state = m;
+                            self.community.upload_backup = None;
+                        }
+                        Err(e) => {
+                            // A refused field or the terms: give the form back so the user can fix it and send again.
+                            let field = net::field_of_message(&e);
+                            let terms = net::is_terms_required(&e);
+                            if field.is_some() || terms {
+                                if let Some(mut f) = self.community.upload_backup.take() {
+                                    f.field_error = field;
+                                    self.community.upload = f;
+                                    self.community.open_upload = true;
+                                }
+                            }
+                            if terms {
+                                self.community.terms_open = Some(TermsMode::Accept);
+                                self.community.terms_check = false;
+                                self.community_refresh_terms(ctx);
+                            }
+                            self.community.state = e;
+                        }
+                    }
                     self.community_load_list(ctx);
+                }
+                Message::Claimed(r) => {
+                    self.community.busy = self.community.busy.saturating_sub(1);
+                    match r {
+                        Ok(()) => {
+                            self.community.state = t("Thanks: the item is hidden while a moderator reviews it. Details: docs/COPYRIGHT.md");
+                            self.community_load_list(ctx); // the item is gone from the catalog
+                        }
+                        Err(e) => self.community.state = e,
+                    }
+                }
+                Message::Terms(info) => {
+                    let ask = matches!(info.decision(), net::TermsDecision::NeedAccept(_));
+                    self.community.terms = Some(info);
+                    if ask && !self.community.terms_prompted && self.community.profile.is_some() && self.community.terms_open.is_none() {
+                        self.community.terms_prompted = true;
+                        self.community.terms_check = false;
+                        self.community.terms_open = Some(TermsMode::Accept);
+                    }
+                }
+                Message::TermsAccepted(r) => {
+                    self.community.busy = self.community.busy.saturating_sub(1);
+                    match r {
+                        Ok(()) => {
+                            self.community.state = t("Terms accepted.");
+                            self.community.terms_open = None;
+                        }
+                        Err(e) => self.community.state = e,
+                    }
+                    self.community_refresh_terms(ctx);
                 }
                 Message::Reported(r) => {
                     self.community.busy = self.community.busy.saturating_sub(1);
@@ -1019,7 +1490,10 @@ impl EditorApp {
                         let options = if w <= 128 && h <= 128 { egui::TextureOptions::NEAREST } else { egui::TextureOptions::LINEAR };
                         Some(ctx.load_texture(format!("community/{}", path), ci, options))
                     });
-                    self.community.textures.insert(path, tex);
+                    self.community.tex_gate.finish(&path, tex.is_some(), std::time::Instant::now());
+                    if tex.is_some() {
+                        self.community.textures.insert(path, tex);
+                    }
                 }
                 Message::ProfileView(r) => {
                     self.community.busy = self.community.busy.saturating_sub(1);
@@ -1051,6 +1525,7 @@ impl EditorApp {
                     }
                     // the image under review may have changed: request it again
                     self.community.textures.retain(|k, _| !k.starts_with("quarantine:"));
+                    self.community.tex_gate.forget_prefix("quarantine:");
                     self.community.my_profile = p;
                 }
                 Message::State(e) => {
@@ -1058,6 +1533,10 @@ impl EditorApp {
                     self.community.state = e;
                 }
             }
+        }
+        // The server refused the session (expired / revoked): forget it so the sign-in buttons come back.
+        if self.community.session.is_some() && net::is_expired(&self.community.state) {
+            self.community_close_local();
         }
     }
 
@@ -1067,6 +1546,12 @@ impl EditorApp {
         self.community.profile_loaded = false;
         self.community.delete_confirmed = false;
         self.community.my_profile = None;
+        self.community.terms = None;
+        self.community.terms_open = None;
+        self.community.terms_prompted = false;
+        self.community.accepted = false;
+        self.community.claim = None;
+        self.community.upload_backup = None;
         self.community.profile_form = FormProfile::default();
         self.community.previous.clear();
         self.community.my_hearts.clear();
@@ -1131,6 +1616,7 @@ impl EditorApp {
         if !self.community.started {
             // First time the tab is opened: any connection starts here (and not before).
             self.community.started = true;
+            std::thread::spawn(|| net::prune_catalogs(&net::cache_dir(), now()));
             if let Some((r, u)) = read_credential() {
                 self.community_launch(&ctx, move |tx| {
                     let _ = tx.send(Message::Session(renew(&Session { renewal: r, uid: u, ..Default::default() })));
@@ -1147,19 +1633,55 @@ impl EditorApp {
                     ui.spinner();
                 } else if ui.small_button(t("Refresh")).clicked() {
                     self.community_load_list(&ctx);
+                    self.community_refresh_terms(&ctx);
                 }
             });
         });
         ui.label(RichText::new(t("Shared plugins, images, fonts, templates and elements. Everything is reviewed before it is published.")).small().color(MUTED()));
+        if ui.small_button(t("Community guidelines")).clicked() {
+            let ask = self.community.session.is_some() && self.community.terms.as_ref().is_some_and(|i| matches!(i.decision(), net::TermsDecision::NeedAccept(_)));
+            self.community.terms_tab = 1;
+            self.community.terms_check = false;
+            self.community.terms_open = Some(if ask { TermsMode::Accept } else { TermsMode::Read });
+        }
+        let block = match self.community.terms.as_ref().and_then(|i| i.own.as_ref()) {
+            Some(o) => net::upload_block(o, &iso(now())),
+            None => net::UploadBlock::None,
+        };
+        match &block {
+            net::UploadBlock::None => {}
+            net::UploadBlock::Suspended => {
+                ui.label(RichText::new(t("Your account is suspended.")).small().color(WARN()));
+            }
+            net::UploadBlock::Permanent => {
+                ui.label(RichText::new(t("Uploads are disabled for this account.")).small().color(WARN()));
+            }
+            net::UploadBlock::Until(d) => {
+                ui.label(RichText::new(tf("Uploads are disabled until {}.", &[d])).small().color(WARN()));
+            }
+        }
         if !self.community.state.is_empty() {
             ui.add_space(4.0);
-            ui.label(RichText::new(&self.community.state).small().color(ACCENT()));
+            ui.label(RichText::new(t(&self.community.state)).small().color(ACCENT()));
+        }
+        if self.community.offline_age.is_some() {
+            ui.add_space(2.0);
+            ui.label(RichText::new(t("Offline, showing the last known list.")).small().color(WARN()));
         }
         ui.add_space(6.0);
         self.community_account(ui, &ctx);
         ui.add_space(6.0);
         self.community_explore(ui, &ctx);
-        if self.community.session.is_some() && self.community.profile.is_some() {
+        let terms_unknown = self.community.terms.as_ref().is_some_and(|i| i.decision() == net::TermsDecision::Unknown);
+        if terms_unknown && self.community.session.is_some() {
+            ui.horizontal(|ui| {
+                ui.label(RichText::new(t("Could not check the Terms of Use right now.")).small().color(WARN()));
+                if ui.small_button(t("Retry")).clicked() {
+                    self.community_refresh_terms(&ctx);
+                }
+            });
+        }
+        if self.community.session.is_some() && self.community.profile.is_some() && block == net::UploadBlock::None && !terms_unknown {
             ui.add_space(8.0);
             self.community_upload(ui, &ctx);
         }
@@ -1205,7 +1727,16 @@ impl EditorApp {
                 ui.label(RichText::new(t("Choose your public name")).strong());
                 ui.label(RichText::new(t("It is all the community will see. 3-32 characters: letters, numbers, dot, hyphen and underscore.")).small().color(MUTED()));
                 ui.add(egui::TextEdit::singleline(&mut self.community.new_name).hint_text("public_name").desired_width(f32::INFINITY));
-                ui.checkbox(&mut self.community.accepted, t("I accept the rules: no malware, hate, plagiarism or unmarked 18+ content"));
+                ui.horizontal(|ui| {
+                    if self.community.accepted {
+                        crate::icons::with_text(ui, "check", RichText::new(t("Terms accepted.")).small().color(ACCENT()), ACCENT());
+                    }
+                    if ui.small_button(if self.community.accepted { t("Terms of Use") } else { t("Read and accept the Terms and guidelines…") }).clicked() {
+                        self.community.terms_tab = 0;
+                        self.community.terms_check = self.community.accepted;
+                        self.community.terms_open = Some(TermsMode::Create);
+                    }
+                });
                 let n = self.community.new_name.trim().to_string();
                 let valid = (3..=32).contains(&n.chars().count()) && n.chars().all(|c| c.is_ascii_alphanumeric() || "_.-".contains(c));
                 if ui.add_enabled(valid && self.community.accepted && self.community.busy == 0, egui::Button::new(t("Create profile"))).clicked() {
@@ -1217,6 +1748,10 @@ impl EditorApp {
                                 // The server reviews a new public name when the profile function runs (an empty save does that): until it is
                                 // reviewed the name is not shown publicly. Best effort: the first upload or any later save does it as well.
                                 let _ = json_post("/functions/v1/profile", Some(&s), &serde_json::json!({ "v": 2, "action": "save", "bio": "", "github": "", "links": {} }), &[]);
+                                // Record the version the user just read (the profile must exist). Best effort: if it fails, the account asks again on the next load.
+                                if let Some(v) = net::version_to_accept(fetch_current_terms(&s).as_deref(), &net::embedded_terms_version()) {
+                                    let _ = json_post("/rest/v1/rpc/accept_terms", Some(&s), &net::accept_terms_body(&v), &[]);
+                                }
                                 let _ = tx.send(Message::Profile(load_profile(&s)));
                             }
                             Err(e) => {
@@ -1272,6 +1807,18 @@ impl EditorApp {
                 self.community.profile_open = true;
             }
             ui.collapsing(t("My account and data"), |ui| {
+                if ui.add_enabled(self.community.busy == 0, egui::Button::new(t("Export my data"))).clicked() {
+                    if let Some(path) = rfd::FileDialog::new().set_file_name("lienzo-my-data.json").add_filter("JSON", &["json"]).save_file() {
+                        let s = self.community.session.clone().unwrap();
+                        self.community_launch(ctx, move |tx| {
+                            let r = current(&s, tx).and_then(|s| export_my_data(&s, &path));
+                            let _ = tx.send(Message::State(match r {
+                                Ok(()) => tf("Your data was saved to {}", &[&path.display().to_string()]),
+                                Err(e) => e,
+                            }));
+                        });
+                    }
+                }
                 ui.label(RichText::new(t("We only keep your public name, your 18+ preference and what you upload. Your email is handled by the sign-in provider and is never shown to anyone.")).small().color(MUTED()));
                 ui.checkbox(&mut self.community.delete_confirmed, t("I want to delete my account and everything I uploaded (cannot be undone)"));
                 if ui.add_enabled(self.community.delete_confirmed && self.community.busy == 0, egui::Button::new(RichText::new(t("Delete my account")).color(WARN()))).clicked() {
@@ -1341,6 +1888,31 @@ impl EditorApp {
             ui.add(egui::TextEdit::multiline(&mut self.community.upload.description).hint_text(t("Description (max. 1000)")).desired_rows(3).desired_width(f32::INFINITY));
             ui.add(egui::TextEdit::singleline(&mut self.community.upload.labels).hint_text(t("Tags separated by commas (max. 8)")).desired_width(f32::INFINITY));
             ui.checkbox(&mut self.community.upload.is_18, t("Contains 18+ content"));
+            // Licence, source link and rights declaration (migration 0015).
+            let eff = self.community.upload.license.unwrap_or_else(|| net::default_license(kind));
+            let bad = self.community.upload.field_error;
+            ui.horizontal(|ui| {
+                let l = RichText::new(t("License"));
+                ui.label(if bad == Some("license") { l.color(WARN()) } else { l });
+                egui::ComboBox::from_id_salt("community_license").selected_text(t(net::LICENSES[eff].1)).show_ui(ui, |ui| {
+                    for (i, (_, n)) in net::LICENSES.iter().enumerate() {
+                        if ui.selectable_label(eff == i, t(n)).clicked() {
+                            self.community.upload.license = Some(i);
+                        }
+                    }
+                });
+            });
+            let src_ok = self.community.upload.source.trim().is_empty() || net::valid_source_url(self.community.upload.source.trim());
+            let mut source = egui::TextEdit::singleline(&mut self.community.upload.source).hint_text(t("Source link (optional)")).desired_width(f32::INFINITY);
+            if !src_ok || bad == Some("source") {
+                source = source.text_color(WARN());
+            }
+            ui.add(source);
+            if !src_ok {
+                ui.label(RichText::new(t("Use an http or https link, up to 300 characters, no spaces.")).small().color(WARN()));
+            }
+            let rights = RichText::new(t("I own this or have the right to share it under this license"));
+            ui.checkbox(&mut self.community.upload.rights, if bad == Some("rights") { rights.color(WARN()) } else { rights });
             ui.horizontal(|ui| {
                 let button = if kind == "plugin" { t("Choose plugin folder…") } else { t("Choose file…") };
                 if ui.button(button).clicked() {
@@ -1387,10 +1959,11 @@ impl EditorApp {
             });
             let f = &self.community.upload;
             let labels: Vec<String> = f.labels.split(',').map(|e| e.trim().to_lowercase()).filter(|e| !e.is_empty()).take(8).collect();
-            let ready = (3..=80).contains(&f.title.trim().chars().count()) && val::valid_display_text(&f.title) && f.file.is_some() && self.community.busy == 0;
+            let ready = (3..=80).contains(&f.title.trim().chars().count()) && val::valid_display_text(&f.title) && f.file.is_some() && self.community.busy == 0 && f.rights && src_ok;
             if ui.add_enabled(ready, egui::Button::new(t("Send for review"))).clicked() {
                 let f = &self.community.upload;
                 let (title, desc, is_18, path) = (f.title.trim().to_string(), f.description.chars().take(1000).collect::<String>(), f.is_18, f.file.clone().unwrap());
+                let meta = UploadMeta { license: Some(net::LICENSES[f.license.unwrap_or_else(|| net::default_license(kind))].0.to_string()), source_url: f.source.trim().to_string(), rights: f.rights };
                 let read = if path.is_dir() { pack_plugin(&path).map(|b| ("plugin.json".to_string(), b)) } else { std::fs::read(&path).map(|b| (path.file_name().map(|n| n.to_string_lossy().to_string()).unwrap_or_default(), b)).map_err(|e| e.to_string()) };
                 let mut extras: Vec<(&'static str, Vec<u8>)> = Vec::new();
                 let mut extra_failure = None;
@@ -1413,9 +1986,10 @@ impl EditorApp {
                         self.community.state = t("Sending and analysing… (can take up to a minute)");
                         self.community_launch(ctx, move |tx| {
                             let extras: Vec<(&str, Vec<u8>)> = extras.into_iter().collect();
-                            let r = upload_content(&s, kind, &title, &desc, labels, is_18, &name, &bytes, &extras, tx);
+                            let r = upload_content(&s, kind, &title, &desc, labels, is_18, &meta, &name, &bytes, &extras, tx);
                             let _ = tx.send(Message::Uploaded(r));
                         });
+                        self.community.upload_backup = Some(self.community.upload.clone());
                         self.community.upload = UploadForm { kind: self.community.upload.kind, ..Default::default() };
                     }
                 }
@@ -1464,6 +2038,22 @@ mod tests {
         let e = error_message(500, r#"{"message":"key=SECRET"}"#);
         assert!(!e.contains("SECRET"));
         assert!(error_message(401, "").contains("session"));
+    }
+
+    #[test]
+    fn contract_error_codes_become_readable_messages() {
+        let body = r#"{"code":"P0001","details":null,"hint":"terms_required","message":"terms_required: Accept the current Terms of Use (version 1.0) to upload."}"#;
+        assert!(net::is_terms_required(&error_message(400, body)));
+        let banned = r#"{"code":"P0001","hint":"upload_banned","message":"upload_banned: Uploads are disabled until 2026-12-01 10:00 UTC."}"#;
+        assert!(error_message(400, banned).contains("2026-12-01"));
+        let lic = error_message(400, r#"{"hint":"license_invalid","message":"license_invalid: x"}"#);
+        assert_eq!(net::field_of_message(&lic), Some("license"));
+        assert!(!error_message(500, r#"{"hint":"x","message":"key=SECRET"}"#).contains("SECRET"));
+        // the new item columns are optional: an old row has none
+        let it: Item = serde_json::from_str(r#"{"id":"x"}"#).unwrap();
+        assert!(it.license.is_none() && it.source_url.is_none());
+        let it: Item = serde_json::from_str(r#"{"id":"x","license":"mit","source_url":"https://a.b/c"}"#).unwrap();
+        assert_eq!(it.license.as_deref(), Some("mit"));
     }
 
     #[test]
@@ -1562,7 +2152,7 @@ pub fn upload_cli(args: &[String]) -> i32 {
     let labels: Vec<String> = option("--labels").split(',').map(|e| e.trim().to_lowercase()).filter(|e| !e.is_empty()).take(8).collect();
     let is_18 = args.iter().any(|a| a == "--18");
     if !val::KINDS.contains(&kind) || !path.exists() || title.trim().chars().count() < 3 || !val::valid_display_text(&title) {
-        eprintln!("Usage: lienzo-ui --community-upload <plugin|image|font|template|element|theme> <file|folder> --title \"…\" [--description \"…\"] [--labels a,b] [--18] [--icon icon.png] [--preview preview.png]");
+        eprintln!("Usage: lienzo-ui --community-upload <plugin|image|font|template|element|theme> <file|folder> --title \"…\" [--description \"…\"] [--labels a,b] [--18] [--icon icon.png] [--preview preview.png] [--license cc-by --rights [--source https://…]]");
         return 2;
     }
     let Some((renewal, uid)) = read_credential() else {
@@ -1603,7 +2193,8 @@ pub fn upload_cli(args: &[String]) -> i32 {
         }
     }
     let (tx, _rx) = channel();
-    match upload_content(&s, kind, title.trim(), &option("--description"), labels, is_18, &name, &bytes, &extras, &tx) {
+    let meta = UploadMeta { license: Some(option("--license")).filter(|l| !l.is_empty()), source_url: option("--source"), rights: args.iter().any(|a| a == "--rights") };
+    match upload_content(&s, kind, title.trim(), &option("--description"), labels, is_18, &meta, &name, &bytes, &extras, &tx) {
         Ok(m) => {
             println!("{}: {}", kind, m);
             0
@@ -1817,6 +2408,13 @@ fn field_x(ui: &mut egui::Ui, label: &str, text: &mut String, rows: usize, track
     ui.add_space(6.0);
 }
 
+/// The source link of an item: plain text on screen, opened only on click and only when it is a clean http(s) address.
+fn open_source(url: &str) {
+    if net::valid_source_url(url) {
+        let _ = webbrowser::open(url);
+    }
+}
+
 fn open_link(url: &str) {
     // Last check before opening the browser: https only.
     if url.starts_with("https://") && url.chars().all(|c| c.is_ascii_graphic()) {
@@ -1827,20 +2425,30 @@ fn open_link(url: &str) {
 impl EditorApp {
     /// Public community image (icon, preview, avatar or banner). Downloaded in the background the first time.
     fn community_texture(&mut self, ctx: &egui::Context, path: &str) -> Option<egui::TextureHandle> {
-        if let Some(t) = self.community.textures.get(path) {
-            return t.clone();
+        if let Some(Some(t)) = self.community.textures.get(path) {
+            return Some(t.clone());
         }
-        self.community.textures.insert(path.to_string(), None);
+        // not marked as unavailable before the download: a failure only pauses new attempts for a while
+        if !self.community.tex_gate.may_start(path, std::time::Instant::now()) {
+            return None;
+        }
         if !valid_public_path(path) {
+            self.community.tex_gate.finish(path, false, std::time::Instant::now());
             return None;
         }
         let (tx, c2, r) = (self.community.tx.clone(), ctx.clone(), path.to_string());
         std::thread::spawn(move || {
-            let bytes = request("GET", &format!("/storage/v1/object/public/publico/{}", r), None, None, None, &[], (2 << 20) + 1)
-                .and_then(|x| x.ok())
-                .ok()
-                .map(|x| x.body)
-                .filter(|b| val::detect(b) == Some("png"));
+            let dir = net::cache_dir().join("thumbs");
+            let cached = net::thumb_get(&dir, &r).filter(|b| val::detect(b) == Some("png"));
+            let bytes = cached.or_else(|| {
+                let b = request("GET", &format!("/storage/v1/object/public/publico/{}", r), None, None, None, &[], (2 << 20) + 1)
+                    .and_then(|x| x.ok())
+                    .ok()
+                    .map(|x| x.body)
+                    .filter(|b| val::detect(b) == Some("png"))?;
+                let _ = net::thumb_put(&dir, &r, &b, net::THUMBS_MAX_BYTES);
+                Some(b)
+            });
             let _ = tx.send(Message::Image { path: r, bytes });
             c2.request_repaint();
         });
@@ -1967,6 +2575,65 @@ impl EditorApp {
             });
             if modal.should_close() {
                 self.community.enlarged = None;
+            }
+        }
+        // Terms of Use and community guidelines (embedded short texts; the full documents open in the browser).
+        if let Some(mode) = self.community.terms_open {
+            let decision = self.community.terms.as_ref().map(|i| i.decision()).unwrap_or(net::TermsDecision::NotApplicable);
+            let outdated = matches!(decision, net::TermsDecision::AppOutdated(_));
+            let version = match &decision {
+                net::TermsDecision::NeedAccept(v) => Some(v.clone()),
+                net::TermsDecision::AppOutdated(_) => None,
+                // the server asked for the terms (terms_required) and this build has the text: accept the one it shows
+                _ if mode == TermsMode::Accept => Some(net::embedded_terms_version()),
+                _ => None,
+            };
+            let mut close = false;
+            let mut accept = false;
+            let tabs = [("Terms of Use", net::LEGAL_TERMS, net::DOC_TERMS), ("Community guidelines", net::LEGAL_GUIDELINES, net::DOC_GUIDELINES), ("Privacy", net::LEGAL_PRIVACY, net::DOC_PRIVACY), ("Copyright", net::LEGAL_COPYRIGHT, net::DOC_COPYRIGHT)];
+            egui::Window::new("community_terms").title_bar(false).collapsible(false).resizable(false).anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO).show(ctx, |ui| {
+                ui.set_width(560.0);
+                ui.label(RichText::new(t("Terms and community guidelines")).strong());
+                ui.horizontal(|ui| {
+                    for (i, (n, _, _)) in tabs.iter().enumerate() {
+                        if ui.selectable_label(self.community.terms_tab == i, t(n)).clicked() {
+                            self.community.terms_tab = i;
+                        }
+                    }
+                });
+                let (_, text, doc) = tabs[self.community.terms_tab.min(tabs.len() - 1)];
+                egui::ScrollArea::vertical().max_height(280.0).auto_shrink([false, true]).show(ui, |ui| {
+                    ui.label(RichText::new(text).small());
+                });
+                if ui.link(t("Full text on GitHub")).clicked() {
+                    open_link(doc);
+                }
+                ui.separator();
+                if outdated {
+                    ui.label(RichText::new(t("This app has older legal texts than the server. Update the app to accept the new terms.")).small().color(WARN()));
+                } else if mode != TermsMode::Read {
+                    ui.checkbox(&mut self.community.terms_check, t("I have read and accept the Terms of Use and the Community guidelines"));
+                }
+                ui.horizontal(|ui| {
+                    if mode != TermsMode::Read && !outdated {
+                        let can = self.community.terms_check && (mode == TermsMode::Create || (self.community.busy == 0 && version.is_some()));
+                        accept = ui.add_enabled(can, egui::Button::new(t("Accept"))).clicked();
+                    }
+                    close = ui.button(t("Close")).clicked();
+                });
+            });
+            if accept {
+                if mode == TermsMode::Create {
+                    self.community.accepted = true;
+                    self.community.terms_open = None;
+                } else if let (Some(v), Some(s)) = (version, self.community.session.clone()) {
+                    self.community_launch(ctx, move |tx| {
+                        let r = current(&s, tx).and_then(|s| json_post("/rest/v1/rpc/accept_terms", Some(&s), &net::accept_terms_body(&v), &[])?.ok().map(|_| ()));
+                        let _ = tx.send(Message::TermsAccepted(r));
+                    });
+                }
+            } else if close {
+                self.community.terms_open = None;
             }
         }
         // My creator profile (editable).
@@ -2110,6 +2777,23 @@ impl EditorApp {
             if !it.description.is_empty() {
                 ui.label(RichText::new(&it.description).small());
             }
+            let license = it.license.as_deref().and_then(net::license_label);
+            let source = it.source_url.as_deref().filter(|u| net::valid_source_url(u));
+            if license.is_some() || source.is_some() {
+                ui.horizontal_wrapped(|ui| {
+                    if let Some(l) = license {
+                        ui.label(RichText::new(format!("{}: {}", t("License"), t(l))).small().color(MUTED()));
+                    }
+                    if let Some(u) = source {
+                        // plain text; it opens only on click, and only http/https
+                        let shown = net::source_display(u); // the complete host, only the path is shortened
+                        ui.label(RichText::new(format!("{}:", t("Source"))).small().color(MUTED()));
+                        if ui.link(RichText::new(shown).small()).on_hover_text(u).clicked() {
+                            open_source(u);
+                        }
+                    }
+                });
+            }
             if !it.tags.is_empty() {
                 ui.label(RichText::new(it.tags.iter().map(|e| format!("#{}", e)).collect::<Vec<_>>().join(" ")).small().color(MUTED()));
             }
@@ -2152,18 +2836,61 @@ impl EditorApp {
             });
             if self.community.report.as_deref() == Some(it.id.as_str()) {
                 ui.label(RichText::new(t("What is wrong with it?")).small());
-                for (k, n) in REASONS {
-                    if ui.small_button(t(n)).clicked() {
-                        let (s, id, reason) = (self.community.session.clone().unwrap(), it.id.clone(), k.to_string());
+                ui.horizontal_wrapped(|ui| {
+                    for (k, n) in net::REPORT_REASONS {
+                        if !ui.small_button(t(n)).clicked() {
+                            continue;
+                        }
                         self.community.report = None;
+                        if *k == "copyright" {
+                            // Report > Copyright: the claim form (it hides the item at once)
+                            self.community.claim = Some(ClaimForm { item: it.id.clone(), ..Default::default() });
+                            continue;
+                        }
+                        let (s, id, reason) = (self.community.session.clone().unwrap(), it.id.clone(), k.to_string());
                         self.community_launch(ctx, move |tx| {
-                            let r = current(&s, tx).and_then(|s| json_post("/rest/v1/reports", Some(&s), &serde_json::json!({ "item": id, "reporter": s.uid, "reason": reason }), &[("Prefer", "return=minimal")])?.ok().map(|_| ()));
+                            let r = current(&s, tx).and_then(|s| {
+                                let prefer = [("Prefer", "return=minimal")];
+                                let mut resp = json_post("/rest/v1/reports", Some(&s), &net::report_body(&id, &s.uid, &reason, false), &prefer)?;
+                                if net::is_reason_rejected(resp.state, &resp.text()) {
+                                    // a server without migration 0015 only knows the old spellings
+                                    resp = json_post("/rest/v1/reports", Some(&s), &net::report_body(&id, &s.uid, &reason, true), &prefer)?;
+                                }
+                                resp.ok().map(|_| ())
+                            });
                             let _ = tx.send(Message::Reported(r));
                         });
                     }
-                }
+                });
                 if ui.small_button(t("Cancel")).clicked() {
                     self.community.report = None;
+                }
+            }
+            if self.community.claim.as_ref().is_some_and(|c| c.item == it.id) {
+                let (busy, mut send, mut cancel) = (self.community.busy, false, false);
+                ui.label(RichText::new(t("Report copyright infringement")).small().strong());
+                if let Some(c) = self.community.claim.as_mut() {
+                    ui.add(egui::TextEdit::multiline(&mut c.description).hint_text(t("The work and why it is infringed (10-2000 characters)")).desired_rows(3).desired_width(f32::INFINITY));
+                    ui.add(egui::TextEdit::singleline(&mut c.claimant).hint_text(t("Rights holder (optional)")).desired_width(f32::INFINITY));
+                    ui.add(egui::TextEdit::singleline(&mut c.contact).hint_text(t("Contact (optional)")).desired_width(f32::INFINITY));
+                    let ok = net::claim_problem(&c.description, &c.claimant, &c.contact).is_none();
+                    ui.horizontal(|ui| {
+                        send = ui.add_enabled(ok && busy == 0, egui::Button::new(t("Send claim"))).clicked();
+                        cancel = ui.small_button(t("Cancel")).clicked();
+                        if ui.link(RichText::new(t("Full text on GitHub")).small()).clicked() {
+                            open_link(net::DOC_COPYRIGHT);
+                        }
+                    });
+                }
+                if cancel {
+                    self.community.claim = None;
+                } else if send {
+                    if let (Some(c), Some(s)) = (self.community.claim.take(), self.community.session.clone()) {
+                        self.community_launch(ctx, move |tx| {
+                            let r = current(&s, tx).and_then(|s| json_post("/rest/v1/rpc/file_copyright_claim", Some(&s), &net::claim_body(&c.item, &c.description, &c.claimant, &c.contact), &[])?.ok().map(|_| ()));
+                            let _ = tx.send(Message::Claimed(r));
+                        });
+                    }
                 }
             }
         });
@@ -2266,7 +2993,7 @@ impl EditorApp {
             });
         });
         if !self.community.state.is_empty() {
-            ui.label(RichText::new(&self.community.state).small().color(ACCENT()));
+            ui.label(RichText::new(t(&self.community.state)).small().color(ACCENT()));
         }
         ui.add_space(4.0);
 
@@ -2431,11 +3158,13 @@ impl EditorApp {
     /// My profile image under review: only its owner can read it (quarantine is private).
     fn community_quarantine_texture(&mut self, ctx: &egui::Context, class: &'static str) -> Option<egui::TextureHandle> {
         let key = format!("quarantine:{}", class);
-        if let Some(t) = self.community.textures.get(&key) {
-            return t.clone();
+        if let Some(Some(t)) = self.community.textures.get(&key) {
+            return Some(t.clone());
         }
         let s = self.community.session.clone()?;
-        self.community.textures.insert(key.clone(), None);
+        if !self.community.tex_gate.may_start(&key, std::time::Instant::now()) {
+            return None;
+        }
         let (tx, c2) = (self.community.tx.clone(), ctx.clone());
         std::thread::spawn(move || {
             let bytes = current(&s, &tx)
@@ -2638,5 +3367,334 @@ mod install_tests {
         let leftovers: Vec<_> = std::fs::read_dir(&base).unwrap().filter_map(|e| e.ok()).filter(|e| e.file_name().to_string_lossy().starts_with('.')).collect();
         assert!(leftovers.is_empty(), "{:?}", leftovers.iter().map(|e| e.file_name()).collect::<Vec<_>>());
         let _ = std::fs::remove_dir_all(&base);
+    }
+}
+
+/// Tests of the network layer against a fake local HTTP server (std `TcpListener`): timeouts, retries, 429 / Retry-After and
+/// the offline cache fallback. Nothing here touches the real server.
+#[cfg(test)]
+mod net_tests {
+    use super::*;
+    use std::net::TcpListener;
+    use std::sync::atomic::AtomicUsize;
+    use std::sync::Mutex;
+
+    enum Act {
+        Reply(u16, Vec<(&'static str, String)>, String),
+        /// Reads the request and then does not answer for this many milliseconds.
+        Hang(u64),
+    }
+
+    struct Fake {
+        base: String,
+        hits: Arc<AtomicUsize>,
+        methods: Arc<Mutex<Vec<String>>>,
+    }
+
+    impl Fake {
+        fn hits(&self) -> usize {
+            self.hits.load(Ordering::SeqCst)
+        }
+    }
+
+    fn read_request(c: &mut std::net::TcpStream) -> Option<String> {
+        let _ = c.set_read_timeout(Some(Duration::from_secs(3)));
+        let mut buf = Vec::new();
+        let mut chunk = [0u8; 4096];
+        loop {
+            let n = c.read(&mut chunk).ok()?;
+            if n == 0 {
+                return None;
+            }
+            buf.extend_from_slice(&chunk[..n]);
+            if let Some(end) = buf.windows(4).position(|w| w == b"\r\n\r\n") {
+                let head = String::from_utf8_lossy(&buf[..end]).to_string();
+                let len = head.lines().find_map(|l| l.to_ascii_lowercase().strip_prefix("content-length:").and_then(|v| v.trim().parse::<usize>().ok())).unwrap_or(0);
+                while buf.len() < end + 4 + len {
+                    let n = c.read(&mut chunk).ok()?;
+                    if n == 0 {
+                        break;
+                    }
+                    buf.extend_from_slice(&chunk[..n]);
+                }
+                return Some(head);
+            }
+        }
+    }
+
+    /// Answers one scripted action per connection; once the script is over every connection is closed without an answer.
+    fn fake(script: Vec<Act>) -> Fake {
+        let l = TcpListener::bind("127.0.0.1:0").unwrap();
+        let base = format!("http://127.0.0.1:{}", l.local_addr().unwrap().port());
+        let (hits, methods) = (Arc::new(AtomicUsize::new(0)), Arc::new(Mutex::new(Vec::new())));
+        let (h2, m2) = (hits.clone(), methods.clone());
+        std::thread::spawn(move || {
+            let mut script = script.into_iter();
+            for conn in l.incoming() {
+                let Ok(mut c) = conn else { break };
+                h2.fetch_add(1, Ordering::SeqCst);
+                let act = script.next();
+                let m3 = m2.clone();
+                std::thread::spawn(move || {
+                    let Some(head) = read_request(&mut c) else { return };
+                    m3.lock().unwrap().push(head.split(' ').next().unwrap_or("").to_string());
+                    match act {
+                        Some(Act::Reply(status, headers, body)) => {
+                            let extra: String = headers.iter().map(|(k, v)| format!("{}: {}\r\n", k, v)).collect();
+                            let _ = write!(c, "HTTP/1.1 {} X\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n{}\r\n{}", status, body.len(), extra, body);
+                        }
+                        Some(Act::Hang(ms)) => std::thread::sleep(Duration::from_millis(ms)),
+                        None => {}
+                    }
+                });
+            }
+        });
+        Fake { base, hits, methods }
+    }
+
+    fn reply(status: u16, body: &str) -> Act {
+        Act::Reply(status, vec![], body.to_string())
+    }
+
+    fn fast() -> NetCfg {
+        NetCfg { connect: Duration::from_millis(500), read: Duration::from_millis(500), write: Duration::from_millis(500), download: Duration::from_millis(500), retries: 2, backoff: Duration::from_millis(10), max_retry_wait: Duration::from_secs(2) }
+    }
+
+    fn get(cfg: &NetCfg, base: &str) -> Result<Resp, net::Failure> {
+        try_request(cfg, base, "GET", "/rest/v1/x", None, None, None, &[], 1 << 20)
+    }
+
+    const UID: &str = "0b9f3c3e-6f41-4f0e-9a52-1d8f6b2e7a10";
+
+    fn items_json() -> String {
+        format!(r#"[{{"id":"{0}","kind":"image","title":"Cat","author":"{0}"}}]"#, UID)
+    }
+
+    fn tmp(n: &str) -> PathBuf {
+        let d = std::env::temp_dir().join(format!("lienzo_cnet_{}_{}", n, std::process::id()));
+        let _ = std::fs::remove_dir_all(&d);
+        std::fs::create_dir_all(&d).unwrap();
+        d
+    }
+
+    /// An address nothing listens on (the port was just released).
+    fn closed_port() -> String {
+        let l = TcpListener::bind("127.0.0.1:0").unwrap();
+        let p = l.local_addr().unwrap().port();
+        drop(l);
+        format!("http://127.0.0.1:{}", p)
+    }
+
+    #[test]
+    fn a_silent_server_times_out_instead_of_hanging() {
+        let f = fake(vec![Act::Hang(4000)]);
+        let cfg = NetCfg { retries: 0, read: Duration::from_millis(400), ..fast() };
+        let t0 = std::time::Instant::now();
+        let e = get(&cfg, &f.base).err().expect("must fail");
+        assert!(t0.elapsed() < Duration::from_secs(3), "{:?}", t0.elapsed());
+        assert!(e.transient, "a timeout is transient");
+        assert_eq!(f.hits(), 1);
+    }
+
+    #[test]
+    fn get_is_retried_with_backoff_until_it_works() {
+        let f = fake(vec![reply(503, ""), reply(502, ""), reply(200, "[]")]);
+        let r = get(&fast(), &f.base).ok().expect("third attempt works");
+        assert_eq!(r.state, 200);
+        assert_eq!(f.hits(), 3);
+        // a closed connection (no answer) is retried too
+        let f = fake(vec![Act::Hang(0), reply(200, "[]")]);
+        assert_eq!(get(&fast(), &f.base).ok().map(|r| r.state), Some(200));
+        assert_eq!(f.hits(), 2);
+    }
+
+    #[test]
+    fn retries_are_bounded_and_plain_errors_are_not_retried() {
+        let f = fake(vec![reply(503, ""), reply(503, ""), reply(503, ""), reply(503, ""), reply(503, "")]);
+        let r = get(&fast(), &f.base).ok().unwrap();
+        assert_eq!(r.state, 503);
+        assert_eq!(f.hits(), 3, "1 try + 2 retries");
+        let f = fake(vec![reply(404, "{}"), reply(200, "[]")]);
+        assert_eq!(get(&fast(), &f.base).ok().unwrap().state, 404);
+        assert_eq!(f.hits(), 1);
+        let f = fake(vec![reply(500, "{}"), reply(200, "[]")]);
+        assert_eq!(get(&fast(), &f.base).ok().unwrap().state, 500);
+        assert_eq!(f.hits(), 1, "a plain 500 is not retried");
+    }
+
+    #[test]
+    fn writes_are_never_retried() {
+        for method in ["POST", "PATCH", "DELETE"] {
+            let f = fake(vec![reply(503, ""), reply(200, "{}")]);
+            let r = try_request(&fast(), &f.base, method, "/rest/v1/x", None, None, Some(b"{}"), &[], 1 << 16).ok().unwrap();
+            assert_eq!(r.state, 503, "{}", method);
+            assert_eq!(f.hits(), 1, "{}", method);
+            assert_eq!(f.methods.lock().unwrap().as_slice(), [method]);
+        }
+        // a timeout on an upload is not retried either (it could create the item twice)
+        let f = fake(vec![Act::Hang(3000), reply(200, "{}")]);
+        let cfg = NetCfg { write: Duration::from_millis(300), ..fast() };
+        assert!(try_request(&cfg, &f.base, "POST", "/rest/v1/x", None, None, Some(b"{}"), &[], 1 << 16).is_err());
+        assert_eq!(f.hits(), 1);
+    }
+
+    #[test]
+    fn rate_limit_honours_retry_after_and_says_how_long() {
+        // a short Retry-After is waited for, then the request works
+        let f = fake(vec![Act::Reply(429, vec![("Retry-After", "0".into())], String::new()), reply(200, "[]")]);
+        assert_eq!(get(&fast(), &f.base).ok().unwrap().state, 200);
+        assert_eq!(f.hits(), 2);
+        // a long one is not waited for: the message tells the number of seconds
+        let f = fake(vec![Act::Reply(429, vec![("Retry-After", "600".into())], String::new()), reply(200, "[]")]);
+        let r = get(&fast(), &f.base).ok().unwrap();
+        assert_eq!((r.state, r.retry_after), (429, Some(600)));
+        assert_eq!(f.hits(), 1);
+        let e = r.ok().err().unwrap();
+        assert!(e.contains("600"), "{}", e);
+        // without the header there is a generic message (and the retries are used)
+        let f = fake(vec![reply(429, ""), reply(429, ""), reply(429, "")]);
+        let r = get(&fast(), &f.base).ok().unwrap();
+        assert_eq!((r.state, f.hits()), (429, 3));
+        assert!(!r.ok().err().unwrap().contains("600"));
+    }
+
+    #[test]
+    fn offline_is_distinguished_and_session_expiry_is_a_clear_message() {
+        let e = get(&NetCfg { retries: 1, ..fast() }, &closed_port()).err().unwrap();
+        assert!(e.transient);
+        assert!(e.msg == net::offline_message() || e.msg == net::timeout_message() || e.msg == net::unavailable_message());
+        assert!(error_message(401, "").contains("session"));
+        assert!(net::is_expired(&error_message(401, "")));
+        assert!(!net::is_expired(&error_message(403, "")));
+        assert!(!net::is_expired(&error_message(503, "")));
+    }
+
+    fn sess() -> Session {
+        Session { access: "a".into(), renewal: "r".into(), uid: UID.into(), expires: now() + 3600 }
+    }
+
+    #[test]
+    fn current_terms_retries_failures_and_only_reads_a_missing_function_as_no_terms() {
+        let one = |script: Vec<Act>| {
+            let f = fake(script);
+            let r = fetch_current_terms_with(&fast(), &f.base, &sess(), 3);
+            (r, f.hits())
+        };
+        // a good answer
+        assert_eq!(one(vec![reply(200, r#"{"version":"1.1"}"#)]), (TermsFetch::Version("1.1".into()), 1));
+        // a 503 or a cut connection is retried and the later answer is used
+        assert_eq!(one(vec![reply(503, ""), reply(200, r#"{"version":"1.1"}"#)]).0, TermsFetch::Version("1.1".into()));
+        assert_eq!(one(vec![Act::Hang(1500), reply(200, r#"{"version":"2.0"}"#)]).0, TermsFetch::Version("2.0".into()));
+        assert_eq!(one(vec![reply(429, ""), reply(503, ""), reply(200, r#"{"version":"1.2"}"#)]).0, TermsFetch::Version("1.2".into()));
+        // failing every time: Failed (NOT "no terms")
+        assert_eq!(one(vec![reply(503, ""), reply(503, ""), reply(503, "")]).0, TermsFetch::Failed);
+        assert_eq!(fetch_current_terms_with(&fast(), &closed_port(), &sess(), 2), TermsFetch::Failed);
+        // a refused session or any other 4xx is not "no terms" either, and is not retried
+        assert_eq!(one(vec![reply(401, "{}")]), (TermsFetch::Failed, 1));
+        assert_eq!(one(vec![reply(403, "{}")]), (TermsFetch::Failed, 1));
+        // garbage in a 200
+        assert_eq!(one(vec![reply(200, "<html>")]).0, TermsFetch::Failed);
+        // really missing: 404, the PostgREST "function not found", or nothing published
+        assert_eq!(one(vec![reply(404, "{}")]), (TermsFetch::Missing, 1));
+        assert_eq!(one(vec![reply(400, r#"{"code":"PGRST202","message":"Could not find the function public.current_terms"}"#)]).0, TermsFetch::Missing);
+        assert_eq!(one(vec![reply(200, "null")]).0, TermsFetch::Missing);
+        assert_eq!(one(vec![reply(200, r#"{"version":null}"#)]).0, TermsFetch::Missing);
+        // the decision: an unreadable server is Unknown (uploads wait), a missing one is NotApplicable
+        let own = Some(net::OwnState::default());
+        let unknown = TermsInfo { server_current: None, own: own.clone(), server_unavailable: true };
+        assert_eq!(unknown.decision(), net::TermsDecision::Unknown);
+        let missing = TermsInfo { server_current: None, own, server_unavailable: false };
+        assert_eq!(missing.decision(), net::TermsDecision::NotApplicable);
+    }
+
+    #[test]
+    fn texture_downloads_are_retried_after_a_failure_and_never_stuck() {
+        let t0 = std::time::Instant::now();
+        let mut g = TexGate::default();
+        assert!(g.may_start("a", t0));
+        assert!(!g.may_start("a", t0), "already downloading");
+        g.finish("a", false, t0);
+        assert!(!g.may_start("a", t0 + Duration::from_secs(5)), "paused right after a failure");
+        assert!(g.may_start("a", t0 + TEXTURE_RETRY + Duration::from_secs(1)), "retried later");
+        g.finish("a", true, t0 + TEXTURE_RETRY);
+        assert!(g.failed.is_empty() && g.loading.is_empty());
+        assert!(g.may_start("quarantine:avatar", t0));
+        g.forget_prefix("quarantine:");
+        assert!(g.may_start("quarantine:avatar", t0), "forgotten");
+    }
+
+    #[test]
+    fn server_texts_are_cleaned_before_they_are_painted() {
+        let evil = "A\u{202E}b\u{200B}c\u{7}d\ne\u{2028}f";
+        assert_eq!(display_clean(evil, false), "Abcdef");
+        assert_eq!(display_clean(evil, true), "Abcd\nef");
+        let mut it = Item { title: evil.into(), description: evil.into(), author_name: evil.into(), tags: vec![evil.into()], ..Default::default() };
+        it.clean_texts();
+        assert_eq!((it.title.as_str(), it.description.as_str(), it.author_name.as_str(), it.tags[0].as_str()), ("Abcdef", "Abcd\nef", "Abcdef", "Abcdef"));
+        let mut p = ProfilePublic { public_name: evil.into(), bio: evil.into(), github: Some(evil.into()), ..Default::default() };
+        p.links.insert("x".into(), evil.into());
+        p.clean_texts();
+        assert_eq!((p.public_name.as_str(), p.bio.as_str(), p.github.as_deref(), p.links["x"].as_str()), ("Abcdef", "Abcd\nef", Some("Abcdef"), "Abcdef"));
+        // list rows go through the same cleaning
+        let mut row: Item = serde_json::from_str(&items_json().trim_start_matches('[').trim_end_matches(']')).unwrap();
+        row.title = evil.into();
+        assert_eq!(sanitize_items(vec![row], true)[0].title, "Abcdef");
+    }
+
+    #[test]
+    fn the_last_good_list_is_shown_when_the_server_cannot_be_reached() {
+        let cache = tmp("list");
+        let run = |base: &str, search: &str| list_with(&fast(), base, &cache, None, None, search, false, None);
+        let query = format!("/rest/v1/community_items?select={}&status=eq.approved&order=created_at.desc&limit=60&is_18=eq.false", ITEM_COLUMNS_V15);
+        let key_of = |base: &str| net::catalog_key(&format!("{}|{}", base, query));
+        let item = || serde_json::from_str::<Item>(&items_json().trim_start_matches('[').trim_end_matches(']')).unwrap();
+        // the cache belongs to one server: copy the fresh entry to the base under test
+        let seed = |base: &str| assert!(net::catalog_store(&cache, &key_of(base), &[item()], now()));
+        // nothing cached and the server is down: the error is reported
+        let down = closed_port();
+        assert!(run(&down, "").is_err());
+        // a good answer is returned fresh and cached
+        let f = fake(vec![reply(200, &items_json())]);
+        let out = run(&f.base, "").ok().unwrap();
+        assert_eq!((out.items.len(), out.stale), (1, None));
+        assert!(net::catalog_load::<Item>(&cache, &key_of(&f.base), now()).is_some(), "the key used by the tests is the real one");
+        assert!(net::catalog_load::<Item>(&cache, &key_of(&f.base), now() + net::CATALOG_TTL_SECS + 60).is_none(), "expired after 24 h");
+        // offline (same server): the cached list comes back, marked as stale
+        let out = run(&f.base, "").ok().unwrap();
+        assert_eq!(out.items.len(), 1);
+        assert!(out.stale.is_some());
+        assert_eq!(out.items[0].title, "Cat");
+        // another server never gets this server's list (M3)
+        assert!(run(&down, "").is_err(), "different base URL, different cache");
+        // the server answers 503 forever: also the cache
+        let f = fake(vec![reply(503, ""), reply(503, ""), reply(503, "")]);
+        seed(&f.base);
+        assert!(run(&f.base, "").ok().unwrap().stale.is_some());
+        // 429 too
+        let f = fake(vec![reply(429, ""), reply(429, ""), reply(429, "")]);
+        seed(&f.base);
+        assert!(run(&f.base, "").ok().unwrap().stale.is_some());
+        // but a refused session is NOT hidden behind the cache
+        let f = fake(vec![reply(401, "{}")]);
+        seed(&f.base);
+        let e = run(&f.base, "").err().unwrap();
+        assert!(net::is_expired(&e), "{}", e);
+        // searches are never cached nor served from the cache
+        let f = fake(vec![reply(200, &items_json())]);
+        seed(&f.base);
+        assert!(run(&f.base, "cat").ok().unwrap().stale.is_none());
+        assert!(run(&f.base, "cat").is_err(), "no cached search");
+        // a poisoned cache file: bad rows are dropped, 18+ rows too while 18+ is off, an invalid shape is ignored
+        let f = fake(vec![]);
+        let mut bad = item();
+        bad.id = "x".into();
+        bad.kind = "evil".into();
+        let mut adult = item();
+        adult.is_18 = true;
+        assert!(net::catalog_store(&cache, &key_of(&f.base), &[bad, adult, item()], now()));
+        assert_eq!(run(&f.base, "").ok().unwrap().items.len(), 1, "only the valid, non-18+ row survives");
+        std::fs::write(cache.join(format!("catalog-{}.json", key_of(&f.base))), r#"{"saved_at":1,"items":"nope"}"#).unwrap();
+        assert!(run(&f.base, "").is_err());
+        let _ = std::fs::remove_dir_all(&cache);
     }
 }

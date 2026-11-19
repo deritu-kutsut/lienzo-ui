@@ -944,3 +944,136 @@ cleanup: {} file(s) removed.	cleanup : {} fichier(s) supprimé(s).
 Errors: {} · Warnings: {}. Click one to select it.	Erreurs : {} · Avertissements : {}. Clique sur un pour le sélectionner.
 Elements selected: {}	Éléments sélectionnés : {}
 To add a language, copy assets/i18n/es.tsv and translate it (see docs/EXTENDING.md).	Pour ajouter une langue, copie assets/i18n/es.tsv et traduis-le (voir docs/EXTENDING.md).
+HUD	ATH
+More components	Plus de composants
+Backgrounds	Arrière-plans
+Frames	Cadres
+Icons	Icônes
+Gradients	Dégradés
+Built-in images are copied to your library when you use them	Les images intégrées sont copiées dans votre bibliothèque quand vous les utilisez
+Tip: turn on Pixel art in the page settings so the sprites stay crisp.	Astuce : activez Pixel art dans les réglages de la page pour que les sprites restent nets.
+Could not copy the pack image: {}	Impossible de copier l'image du pack : {}
+Pack image added: {}	Image du pack ajoutée : {}
+No images match the search	Aucune image ne correspond à la recherche
+Pixel RPG HUD	ATH de RPG pixel art
+Pixel main menu	Menu principal pixel art
+Primary button	Bouton principal
+Secondary button	Bouton secondaire
+Danger button	Bouton de danger
+Success button	Bouton de succès
+Ghost button	Bouton fantôme
+Icon button	Bouton icône
+Toggle button	Bouton à bascule
+Tabs	Onglets
+Small pill button	Petit bouton pilule
+Square icon button	Bouton icône carré
+Link button	Bouton lien
+Floating action button	Bouton d'action flottant
+Health bar (classic)	Barre de vie (classique)
+Health bar (segments)	Barre de vie (segments)
+Health orb	Orbe de vie
+Mana bar with label	Barre de mana avec libellé
+Stamina bar	Barre d'endurance
+XP bar with level	Barre d'XP avec niveau
+Boss bar	Barre de boss
+Minimap frame	Cadre de minicarte
+Quest tracker	Suivi de quête
+Skill slot (cooldown)	Emplacement de compétence (recharge)
+Hotbar (5 slots)	Barre rapide (5 emplacements)
+Currency counter	Compteur de monnaie
+Nameplate	Plaque de nom
+Toast notification	Notification toast
+Tooltip	Infobulle
+Dialog with portrait	Dialogue avec portrait
+Inventory grid 4x3	Grille d'inventaire 4x3
+Compass strip	Bandeau boussole
+Avatar with ring	Avatar avec anneau
+Pill badge	Badge pilule
+Ribbon banner	Bannière ruban
+Divider	Séparateur
+Divider with label	Séparateur avec libellé
+Progress ring	Anneau de progression
+Switch	Interrupteur
+Chips	Puces
+Media card	Carte média
+List item	Élément de liste
+Search field	Champ de recherche
+Stat row	Ligne de statistique
+Level up	Niveau supérieur
+Heal	Soin
+Critical hit	Coup critique
+Objective	Objectif
+Ammo counter	Compteur de munitions
+Wave counter	Compteur de vague
+FPS counter	Compteur de FPS
+Key prompt	Indication de touche
+History trimmed: the oldest undo steps were dropped	Historique réduit : les plus anciennes étapes ont été supprimées
+Unsaved work recovered. Save it to keep it.	Travail non enregistré récupéré. Enregistrez-le pour le conserver.
+Recover unsaved work	Récupérer le travail non enregistré
+Recover unsaved work from {}?	Récupérer le travail non enregistré du {} ?
+Restore	Restaurer
+Discard	Ignorer
+Open the folder	Ouvrir le dossier
+Autosave	Enregistrement automatique
+Save a recovery copy every minute	Enregistrer une copie de récupération chaque minute
+Fix all safe issues	Corriger tous les problèmes sûrs
+Applies every quick fix in one undo step	Applique toutes les corrections rapides en une seule étape d'annulation
+Fix	Corriger
+Fixes this problem (one undo step)	Corrige ce problème (une étape d'annulation)
+Nothing to fix here	Rien à corriger ici
+Fixed {} issue(s) (Ctrl+Z undoes)	{} problème(s) corrigé(s) (Ctrl+Z annule)
+Release notes	Notes de version
+Full release notes	Notes de version complètes
+The zip must contain a single executable.	Le zip doit contenir un seul exécutable.
+The version inside the executable does not match the release; not installing.	La version de l'exécutable ne correspond pas à la version publiée ; installation annulée.
+You appear to be offline. Check your internet connection.	Vous semblez être hors ligne. Vérifiez votre connexion internet.
+The server took too long to answer. Try again in a moment.	Le serveur a mis trop de temps à répondre. Réessayez dans un instant.
+Your session expired. Sign in again.	Votre session a expiré. Reconnectez-vous.
+Too many requests: wait {} s and try again.	Trop de requêtes : attendez {} s et réessayez.
+Too many requests: wait a moment.	Trop de requêtes : patientez un instant.
+You do not have permission to do this.	Vous n'avez pas la permission de faire cela.
+Not found.	Introuvable.
+Offline, showing the last known list.	Hors ligne : affichage de la dernière liste connue.
+Terms and community guidelines	Conditions et règles de la communauté
+Terms of Use	Conditions d'utilisation
+Community guidelines	Règles de la communauté
+Privacy	Confidentialité
+Full text on GitHub	Texte complet sur GitHub
+I have read and accept the Terms of Use and the Community guidelines	J'ai lu et j'accepte les Conditions d'utilisation et les Règles de la communauté
+Accept	Accepter
+Read and accept the Terms and guidelines…	Lire et accepter les Conditions et les règles…
+Terms accepted.	Conditions acceptées.
+This app has older legal texts than the server. Update the app to accept the new terms.	Cette appli a des textes juridiques plus anciens que le serveur. Mettez l'appli à jour pour accepter les nouvelles conditions.
+Export my data	Exporter mes données
+Your data was saved to {}	Vos données ont été enregistrées dans {}
+License	Licence
+Source	Source
+Source link (optional)	Lien vers la source (facultatif)
+I own this or have the right to share it under this license	Je suis l'auteur ou j'ai le droit de le partager sous cette licence
+Use an http or https link, up to 300 characters, no spaces.	Utilisez un lien http ou https, de 300 caractères maximum, sans espaces.
+Report copyright infringement	Signaler une atteinte au droit d'auteur
+The work and why it is infringed (10-2000 characters)	L'œuvre et pourquoi elle est contrefaite (10-2000 caractères)
+Rights holder (optional)	Titulaire des droits (facultatif)
+Contact (optional)	Contact (facultatif)
+Send claim	Envoyer la réclamation
+Thanks: the item is hidden while a moderator reviews it. Details: docs/COPYRIGHT.md	Merci : l'élément est masqué pendant qu'un modérateur l'examine. Détails : docs/COPYRIGHT.md
+Spam	Spam
+Impersonation	Usurpation d'identité
+Personal data	Données personnelles
+Accept the Terms of Use to share.	Acceptez les Conditions d'utilisation pour partager.
+Pick a license from the list.	Choisissez une licence dans la liste.
+Confirm that you own this or may share it.	Confirmez que vous en êtes l'auteur ou que vous pouvez le partager.
+The Terms of Use changed. Close this window and open it again to read the new version.	Les Conditions d'utilisation ont changé. Fermez cette fenêtre et rouvrez-la pour lire la nouvelle version.
+Create your profile first.	Créez d'abord votre profil.
+Too many claims today. Use the Copyright notice template on GitHub.	Trop de réclamations aujourd'hui. Utilisez le modèle d'avis de droit d'auteur sur GitHub.
+Claims are blocked for now. Use the Copyright notice template on GitHub.	Les réclamations sont bloquées pour le moment. Utilisez le modèle d'avis de droit d'auteur sur GitHub.
+That item is already under review.	Cet élément est déjà en cours d'examen.
+Your account is suspended.	Votre compte est suspendu.
+Uploads are disabled for this account.	Les envois sont désactivés pour ce compte.
+Uploads are disabled until {}.	Les envois sont désactivés jusqu'au {}.
+Public domain	Domaine public
+Free use (proprietary)	Usage libre (propriétaire)
+Unsaved changes	Modifications non enregistrées
+You have unsaved changes. What do you want to do?	Vous avez des modifications non enregistrées. Que voulez-vous faire ?
+Discard changes	Abandonner les modifications
+Could not check the Terms of Use right now.	Impossible de vérifier les Conditions d'utilisation pour le moment.
