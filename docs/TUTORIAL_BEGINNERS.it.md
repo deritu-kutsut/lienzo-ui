@@ -1,6 +1,6 @@
 # Tutorial per principianti
 
-🌐 [English](TUTORIAL_BEGINNERS.md) · [Español](TUTORIAL_NOVATOS.md) · [Português](TUTORIAL_BEGINNERS.pt.md) · [Français](TUTORIAL_BEGINNERS.fr.md) · [Deutsch](TUTORIAL_BEGINNERS.de.md) · [Italiano](TUTORIAL_BEGINNERS.it.md) · [Русский](TUTORIAL_BEGINNERS.ru.md) · [简体中文](TUTORIAL_BEGINNERS.zh.md) · [日本語](TUTORIAL_BEGINNERS.ja.md) · [한국어](TUTORIAL_BEGINNERS.ko.md)
+🌐 [English](TUTORIAL_BEGINNERS.md) · [Español](TUTORIAL_BEGINNERS.es.md) · [Português](TUTORIAL_BEGINNERS.pt.md) · [Français](TUTORIAL_BEGINNERS.fr.md) · [Deutsch](TUTORIAL_BEGINNERS.de.md) · [Italiano](TUTORIAL_BEGINNERS.it.md) · [Русский](TUTORIAL_BEGINNERS.ru.md) · [简体中文](TUTORIAL_BEGINNERS.zh.md) · [日本語](TUTORIAL_BEGINNERS.ja.md) · [한국어](TUTORIAL_BEGINNERS.ko.md)
 
 La tua prima interfaccia con Lienzo UI e la tua prima esportazione in Unity. Non serve saper programmare.
 
@@ -12,7 +12,7 @@ La tua prima interfaccia con Lienzo UI e la tua prima esportazione in Unity. Non
 
 Per usare l'app in italiano: pulsante **Accessibilità** › **Lingua** › Italiano.
 
-![Tutorial dentro l'app](imagenes/tutorial.png)
+![Tutorial dentro l'app](images/tutorial.png)
 
 ## 2. La schermata
 
@@ -23,7 +23,7 @@ Per usare l'app in italiano: pulsante **Accessibilità** › **Lingua** › Ital
 | Centro | L'area di disegno: lo schermo del tuo gioco (1920 × 1080 per impostazione predefinita) |
 | Destra | L'**Inspector**: proprietà della selezione |
 
-![Editor](imagenes/editor.png)
+![Editor](images/editor.png)
 
 ## 3. Inizia da un modello
 

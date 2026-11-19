@@ -106,7 +106,7 @@ Con --export, --save y --review no se abre ventana: sirve para scripts, CI y el 
         title: "Servidor MCP y contribuir",
         text: "La carpeta mcp/ trae un servidor MCP sin dependencias (Node 18+): cualquier IA compatible (Claude, Cursor, VS Code…) puede listar plantillas, crear y editar diseños, exportarlos a Unity y sacar capturas.\n\n\
 Lienzo UI es de código abierto (MIT). El código está en Rust con egui: src/model.rs (datos), src/canvas.rs (lienzo), src/panels.rs (paneles), src/export/ (Unity).\n\n\
-Lee docs/EXTENDER.md para añadir elementos, plantillas o exportadores, y CONTRIBUTING.md para enviar cambios.",
+Lee docs/EXTENDING.md para añadir elementos, plantillas o exportadores, y CONTRIBUTING.md para enviar cambios.",
     },
     Page {
         title: "Pixel art",
@@ -216,7 +216,7 @@ With --export, --save and --review no window opens: use them for scripts, CI and
         title: "MCP server and contributing",
         text: "The mcp/ folder ships a dependency-free MCP server (Node 18+): any compatible AI (Claude, Cursor, VS Code…) can list templates, create and edit designs, export them to Unity and take screenshots.\n\n\
 Lienzo UI is open source (MIT). The code is Rust with egui: src/model.rs (data), src/canvas.rs (canvas), src/panels.rs (panels), src/export/ (Unity).\n\n\
-Read docs/EXTENDER.md to add elements, templates or exporters, and CONTRIBUTING.md to send changes.",
+Read docs/EXTENDING.md to add elements, templates or exporters, and CONTRIBUTING.md to send changes.",
     },
     Page {
         title: "Pixel art",

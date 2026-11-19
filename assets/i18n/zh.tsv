@@ -123,7 +123,7 @@ Opacity	不透明度
 Automatically arranges direct children, as in Unity.	自动排列直接子级，与 Unity 相同。
 STEP	步骤
 PNG, JPG, BMP, GIF or WEBP — exported as Sprites	PNG、JPG、BMP、GIF 或 WEBP —— 导出为 Sprite
-To add a language, translate assets/i18n/en.tsv (see docs/EXTENDER.md).	要添加语言，请翻译 assets/i18n/en.tsv（见 docs/EXTENDER.md）。
+To add a language, translate assets/i18n/en.tsv (see docs/EXTENDING.md).	要添加语言，请翻译 assets/i18n/en.tsv（见 docs/EXTENDING.md）。
 Paste	粘贴
 Hint	轨道
 Pivot	Pivot
@@ -584,3 +584,269 @@ Move 1 px (Shift: 10)	移动 1 px（Shift：10）
 Ctrl+wheel	Ctrl+滚轮
 Test / simulate screens	测试 / 模拟屏幕
 No system font with these characters was found: text may show as boxes.	系统中未找到包含这些字符的字体：文字可能显示为方框。
+No system font was found for the language “{}”	未找到“{}”语言的系统字体
+The release has no version.	该发行版没有版本号。
+Unrecognized release version.	无法识别发行版的版本。
+GitHub responded {}.	GitHub 响应了 {}。
+The downloaded zip is not valid.	下载的 zip 无效。
+The zip does not contain lienzo-ui.exe.	zip 中不包含 lienzo-ui.exe。
+The zip could not be read.	无法读取 zip。
+The executable in the zip is too large.	zip 中的可执行文件过大。
+The executable in the zip does not look valid.	zip 中的可执行文件看起来无效。
+The download responded {}.	下载响应了 {}。
+The download is too large or was cut off.	下载内容过大或被中断。
+there should be a version newer than 0.0.1	应该有比 0.0.1 更新的版本
+ inside “{}”	 在“{}”内
+Group {}	分组 {}
+Upload elements (PNG images with transparency or .json elements)	上传元素（带透明度的 PNG 图片或 .json 元素）
+Upload templates (.json from this editor)	上传模板（来自此编辑器的 .json）
+Add fonts (.ttf / .otf)	添加字体（.ttf / .otf）
+Element	元素
+Open project	打开项目
+▶ Test mode: click the elements with ⚡ to run their code.	▶ 测试模式：点击带 ⚡ 的元素来运行它们的代码。
+Unity project folder (the one that contains Assets)	Unity 项目文件夹（包含 Assets 的那个）
+Play button	“开始”按钮
+Options button	“选项”按钮
+Credits button	“制作人员”按钮
+Exit button	“退出”按钮
+the background keeps its order	背景保持其顺序
+Menu	菜单
+Header	页眉
+Moon	月亮
+the locked background does not enter the group	已锁定的背景不会加入分组
+Drop inside “{}”	放入“{}”中
+TEST MODE · click the elements with code · Esc or F5 to go back to editing	测试模式 · 点击带代码的元素 · 按 Esc 或 F5 返回编辑
+Screen {} × {}  ·  virtual canvas {} × {}  ·  CanvasScaler scale {:.2}	屏幕 {} × {}  ·  虚拟画布 {} × {}  ·  CanvasScaler 缩放 {:.2}
+Placed by the parent's Layout Group (use the Hierarchy to reorder)	由父级的 Layout Group 放置（请使用层级面板重新排序）
+Unexpected response from the server.	服务器返回了意外的响应。
+You do not have permission or your session expired. Sign in again.	你没有权限，或登录已过期。请重新登录。
+It already exists or was already processed.	已存在或已处理。
+Daily limit	每日上限
+That name is already in use.	该名称已被使用。
+The server is not available right now.	服务器当前不可用。
+No connection to the server.	无法连接到服务器。
+The server response is too large or was cut off.	服务器响应过大或被中断。
+The server did not return a session.	服务器没有返回会话。
+Invalid account identifier.	账号标识符无效。
+You can go back to Lienzo UI now. You can close this tab.	现在可以返回 Lienzo UI 了。你可以关闭此标签页。
+Could not sign in	无法登录
+Go back to Lienzo UI and try again.	请返回 Lienzo UI 后重试。
+Local port {} is busy. Close another Lienzo UI session and try again.	本地端口 {} 被占用。请关闭另一个 Lienzo UI 会话后重试。
+Could not open the browser.	无法打开浏览器。
+Sign-in canceled.	登录已取消。
+Timed out waiting for sign-in.	等待登录超时。
+Sign-in was canceled.	登录已被取消。
+Invalid sign-in response.	登录响应无效。
+Invalid creator.	创作者无效。
+This creator does not have a public profile yet.	该创作者还没有公开资料。
+The image is too heavy (maximum 25 MB).	图片过大（最大 25 MB）。
+Could not read the image.	无法读取图片。
+Could not read the image (use PNG, JPEG, WebP, GIF or BMP).	无法读取图片（请使用 PNG、JPEG、WebP、GIF 或 BMP）。
+Could not reduce the image to the allowed size.	无法将图片缩小到允许的大小。
+Could not upload the image.	无法上传图片。
+Image published on your profile.	图片已发布到你的个人资料。
+Image sent for review.	图片已提交审核。
+This content has no file.	此内容没有文件。
+Invalid file path.	文件路径无效。
+The file exceeds the allowed size.	文件超过允许的大小。
+The content has no verification fingerprint.	该内容没有验证指纹。
+The SHA-256 fingerprint does not match: the file is not the one that was approved. It was not installed.	SHA-256 指纹不匹配：该文件不是已批准的文件。未安装。
+Did not pass local validation: {}	未通过本地验证：{}
+Sent for review: {}	已提交审核：{}
+plugin.json is not valid.	plugin.json 无效。
+{} “{}” (Plugins tab)	{}“{}”（插件标签页）
+{} “{}” (Images tab)	{}“{}”（图片标签页）
+{} “{}” (Text tab)	{}“{}”（文本标签页）
+The theme is not valid.	主题无效。
+{} “{}” (Themes button to change it)	{}“{}”（点击“主题”按钮可更改）
+{} “{}” (Templates › My templates)	{}“{}”（模板 › 我的模板）
+{} “{}” (Elements tab)	{}“{}”（元素标签页）
+Plugin folder (with plugin.json)	插件文件夹（含 plugin.json）
+No saved session: open the app, Community tab, and sign in.	没有已保存的会话：请打开应用，进入“社区”标签页并登录。
+Could not renew the session: {}	无法续期会话：{}
+This account does not have a profile yet: create it in the app (Community tab).	此账号还没有个人资料：请在应用中创建（“社区”标签页）。
+Server error.	服务器错误。
+{}  [{}] {}  (by {}, {} bytes{})	{}  [{}] {}  （作者 {}，{} 字节{}）
+{} content item(s) and {} profile image(s) pending. To see the files use the moderation website.	有 {} 个内容和 {} 张个人资料图片待处理。要查看文件，请使用审核网站。
+Token created (expires {}). Copy it now, it cannot be viewed again:	令牌已创建（{} 到期）。请立即复制，之后无法再次查看：
+I make game interfaces with Unity.	我用 Unity 制作游戏界面。
+My button menu	我的按钮菜单
+Four buttons ready for a main menu.	四个按钮，可用于主菜单。
+Provide a valid identifier.	请提供有效的标识符。
+Could not read your data (do you have a profile?).	无法读取你的数据（你有个人资料吗？）。
+removed	已移除
+added	已添加
+the banner ends up 3:1	横幅最终为 3:1
+The design's “elements” list is missing.	设计缺少“elements”列表。
+Too many elements.	元素过多。
+Designs cannot contain external links or paths.	设计不能包含外部链接或路径。
+Designs cannot contain absolute paths or paths with “..”.	设计不能包含绝对路径或带“..”的路径。
+A plugin needs “manifiesto” and “archivos”.	插件需要“manifiesto”和“archivos”。
+Manifest: invalid name.	清单：名称无效。
+The manifest uses {}, which is not in the package.	清单使用了 {}，但它不在包中。
+Empty file.	空文件。
+Exceeds the limit of {} KB for {}.	超过 {} KB 的上限（{}）。
+File type not allowed.	不允许的文件类型。
+Not a valid PNG, JPEG, GIF or WebP image.	不是有效的 PNG、JPEG、GIF 或 WebP 图片。
+Dimensions out of range (maximum 4096×4096).	尺寸超出范围（最大 4096×4096）。
+A text JSON was expected.	应为文本 JSON。
+The file is not valid UTF-8 JSON.	该文件不是有效的 UTF-8 JSON。
+The file is not valid JSON.	该文件不是有效的 JSON。
+The file is not a Lienzo UI theme.	该文件不是 Lienzo UI 主题。
+Unknown image type.	未知的图片类型。
+The image must weigh at most {} KB.	图片大小不得超过 {} KB。
+The image must be PNG.	图片必须是 PNG。
+The image must measure at most {}×{} px.	图片尺寸不得超过 {}×{} px。
+{}// (the {}° rotation is ignored inside an IMGUI mask or scroll)	{}// （在 IMGUI 遮罩或滚动内会忽略 {}° 的旋转）
+{}// editor gradient: IMGUI uses the first color	{}// 编辑器渐变：IMGUI 使用第一种颜色
+could not read the image {}: {}	无法读取图片 {}：{}
+Card/Options/Viewport/Content/Slider Brightness	卡片/选项/Viewport/Content/Slider 亮度
+Window	窗口
+Window title	窗口标题
+Dim	变暗
+unsupported image format	不支持的图片格式
+could not read the image	无法读取图片
+the file does not contain elements from this editor	文件中不包含此编辑器的元素
+nothing is selected	未选择任何内容
+the file is not a design from this editor	该文件不是此编辑器的设计
+use a .ttf or .otf font file	请使用 .ttf 或 .otf 字体文件
+invalid name	名称无效
+unnamed	未命名
+template {} does not exist (0-{})	模板 {} 不存在（0-{}）
+Specify the design with --open <file> or --template <n>	请用 --open <文件> 或 --template <n> 指定设计
+Could not load the design: {}	无法加载设计：{}
+Could not save {}: {}	无法保存 {}：{}
+Lienzo UI · design interfaces for Unity	Lienzo UI · 为 Unity 设计界面
+In-app updates: a button appears in the header when there is a new version.	应用内更新：有新版本时，页眉中会出现一个按钮。
+Type your text	输入你的文本
+Option	选项
+Type here...	在此输入...
+Option A	选项 A
+Option B	选项 B
+Option C	选项 C
+Untitled design	未命名设计
+Title	标题
+STAR ADVENTURE	星际冒险
+Subtitle	副标题
+An interface demo	界面演示
+Play	开始
+Options	选项
+Credits	制作人员
+Exit	退出
+{} button	{} 按钮
+Version	版本
+Scene (preview)	场景（预览）
+Top bar	顶栏
+Health frame	生命框
+Health label	生命标签
+HEALTH 72/100	生命 72/100
+Points	分数
+Action bar	操作栏
+Slot {}	栏位 {}
+Minimap	小地图
+Save the game?	保存游戏吗？
+Message	消息
+Your progress will be saved in slot 1. You can continue later.	你的进度将保存在存档位 1。你可以稍后继续。
+Buttons	按钮
+Cancel button	取消按钮
+Accept button	确认按钮
+Music volume	音乐音量
+Effects volume	音效音量
+Brightness	亮度
+Fullscreen	全屏
+Quality	画质
+Low	低
+Medium	中
+High	高
+Player name	玩家名称
+Back button	返回按钮
+Back	返回
+Game (preview)	游戏（预览）
+Pause	暂停
+PAUSED	已暂停
+Continue	继续
+Restart level	重新开始关卡
+Exit to menu	退出到菜单
+GAME OVER	游戏结束
+Results	结果
+Best score	最高分
+Time	时间
+Retry button	重试按钮
+Menu button	菜单按钮
+Choose a level	选择关卡
+Stars	星星
+Stars: 14 / 36	星星：14 / 36
+Levels	关卡
+Level {}	关卡 {}
+Level name	关卡名称
+The Crystal Caves	水晶洞穴
+Tip	提示
+Tip: hold the jump button to reach higher.	提示：按住跳跃键可以跳得更高。
+Loading bar	加载进度条
+Percentage	百分比
+Loading... 64 %	加载中... 64 %
+Indicator	指示器
+Dialogue box	对话框
+Portrait	头像
+Old woman of the forest	森林老妇人
+Traveler, the north bridge fell last night. If you are looking for the temple, you will have to cross through the caves.	旅行者，北边的桥昨晚塌了。如果你要找神殿，就得穿过洞穴。
+Continue button	继续按钮
+List	列表
+Nebula	星云
+You	你
+Row {}	行 {}
+Choose your character	选择你的角色
+Warrior	女战士
+High strength	高力量
+Mage	法师
+High magic	高魔法
+Archer	弓箭手
+High precision	高精准
+Rogue	女盗贼
+High stealth	高隐匿
+Card {}	卡片 {}
+Portrait {}	头像 {}
+Name {}	名称 {}
+Attribute {}	属性 {}
+Confirm button	确认按钮
+{} empty	{} 为空
+the title matches the name	标题与名称一致
+{}: {} has no size	{}：{} 没有尺寸
+{} @{}x{}: “{}” outside the page {:?}	{} @{}x{}：“{}”超出页面 {:?}
+Choose your Unity project folder (Ctrl+E)	选择你的 Unity 项目文件夹 (Ctrl+E)
+They will be added inside “{}”	它们将被添加到“{}”内
+NEW	新
+Watch out, it's coming from the left!	小心，它从左边来了！
+Choose image	选择图片
+(not chosen)	（未选择）
+Writes to Assets/EditorGUI: Editor/EditorGuiImporter.cs, Designs/{c}.json, Sprites, Fonts, UI Toolkit/{c}.uxml+.uss and Scripts/{c}OnGUI.cs, {c}ViewBase.cs, {c}View.cs. When you return to Unity, Prefabs/{c}.prefab (uGUI + TextMeshPro) is generated automatically.	写入 Assets/EditorGUI：Editor/EditorGuiImporter.cs、Designs/{c}.json、Sprites、Fonts、UI Toolkit/{c}.uxml+.uss，以及 Scripts/{c}OnGUI.cs、{c}ViewBase.cs、{c}View.cs。返回 Unity 时会自动生成 Prefabs/{c}.prefab（uGUI + TextMeshPro）。
+Design for the importer. Unity turns it into a prefab (Tools › Lienzo UI).	供导入器使用的设计。Unity 会将其转换为预制体 (Tools › Lienzo UI)。
+Uses a UIDocument with PanelSettings set to “Scale With Screen Size” and this reference resolution.	使用 UIDocument，PanelSettings 设为“Scale With Screen Size”，并采用此参考分辨率。
+Standalone component: draws the interface with UnityEngine.GUI inside OnGUI (no Canvas).	独立组件：在 OnGUI 中使用 UnityEngine.GUI 绘制界面（无 Canvas）。
+Typed references and onClick/onValueChanged events. Inherit in <Class>View for your logic.	带类型的引用以及 onClick/onValueChanged 事件。请在 <类名>View 中继承以编写你的逻辑。
+Goes in Assets/EditorGUI/Editor/. Builds the prefab with uGUI + TextMeshPro.	放在 Assets/EditorGUI/Editor/ 中。使用 uGUI + TextMeshPro 构建预制体。
+{} lines	{} 行
+path not allowed in the plugin: {}	插件中不允许的路径：{}
+{}: the returned design is not valid ({})	{}：返回的设计无效（{}）
+{}: exportar() must return text, it returned {}	{}：exportar() 必须返回文本，但返回了 {}
+{} “{}”{}	{}“{}”{}
+the command must work	命令必须能正常工作
+the exporter must work	导出器必须能正常工作
+should reject {:?}	应拒绝 {:?}
+should accept {:?}	应接受 {:?}
+⚠ There is no element named “{}”	⚠ 不存在名为“{}”的元素
+⚠ Invalid color: {}	⚠ 颜色无效：{}
+⚠ Error in the code of “{}”: {}	⚠ “{}”的代码出错：{}
+the child follows the parent	子级跟随父级
+does not go past the last option	不会超过最后一个选项
+this is not code (	这不是代码 (
+{} “{}”. {}	{}“{}”。{}
+{} “{}”	{}“{}”
+My theme ✨	我的主题 ✨
+The theme needs a name of 1 to 60 characters.	主题需要 1 到 60 个字符的名称。
+The theme author is too long.	主题作者名称过长。
+Invalid color in “{}”: use #RRGGBB.	“{}”中的颜色无效：请使用 #RRGGBB。
+Corners must be between 0 and 16.	圆角必须在 0 到 16 之间。
+Invalid font name.	字体名称无效。
+Align and order	对齐与排序
+Align to parent and order	对齐到父级并排序

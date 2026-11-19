@@ -72,7 +72,7 @@ impl EditorApp {
             });
             ui.add_space(8.0);
             ui.label(RichText::new(t("Shortcuts: Ctrl+Alt+= and Ctrl+Alt+- change the interface size; F1 opens the tutorial.")).small().color(MUTED()));
-            ui.label(RichText::new(t("To add a language, translate assets/i18n/en.tsv (see docs/EXTENDER.md).")).small().color(ACCENT()));
+            ui.label(RichText::new(t("To add a language, translate assets/i18n/en.tsv (see docs/EXTENDING.md).")).small().color(ACCENT()));
         });
         if change {
             self.settings.save();

@@ -44,7 +44,7 @@
     },
     {
       "title": "MCP サーバーとプロジェクトへの貢献",
-      "text": "mcp/ フォルダーには依存関係のない MCP サーバー (Node 18+) が含まれています。対応する AI（Claude、Cursor、VS Code など）からテンプレートの一覧取得、デザインの作成・編集、Unity へのエクスポート、スクリーンショット撮影を行えます。\n\nLienzo UI はオープンソース (MIT) です。コードは Rust と egui で書かれています：src/model.rs（データ）、src/canvas.rs（キャンバス）、src/panels.rs（パネル）、src/export/（Unity 出力）。\n\n要素・テンプレート・エクスポーターの追加方法は docs/EXTENDER.md を、変更の送信については CONTRIBUTING.md をご覧ください。"
+      "text": "mcp/ フォルダーには依存関係のない MCP サーバー (Node 18+) が含まれています。対応する AI（Claude、Cursor、VS Code など）からテンプレートの一覧取得、デザインの作成・編集、Unity へのエクスポート、スクリーンショット撮影を行えます。\n\nLienzo UI はオープンソース (MIT) です。コードは Rust と egui で書かれています：src/model.rs（データ）、src/canvas.rs（キャンバス）、src/panels.rs（パネル）、src/export/（Unity 出力）。\n\n要素・テンプレート・エクスポーターの追加方法は docs/EXTENDING.md を、変更の送信については CONTRIBUTING.md をご覧ください。"
     },
     {
       "title": "ピクセルアート",

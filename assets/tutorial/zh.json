@@ -44,7 +44,7 @@
     },
     {
       "title": "MCP 服务器与参与贡献",
-      "text": "mcp/ 文件夹里有一个无依赖的 MCP 服务器（Node 18+）：任何兼容的 AI（Claude、Cursor、VS Code…）都可以列出模板、创建和编辑设计、导出到 Unity 并截图。\n\nLienzo UI 是开源软件（MIT）。代码使用 Rust 和 egui：src/model.rs（数据）、src/canvas.rs（画布）、src/panels.rs（面板）、src/export/（Unity）。\n\n阅读 docs/EXTENDER.md 了解如何添加元素、模板或导出器，阅读 CONTRIBUTING.md 了解如何提交修改。"
+      "text": "mcp/ 文件夹里有一个无依赖的 MCP 服务器（Node 18+）：任何兼容的 AI（Claude、Cursor、VS Code…）都可以列出模板、创建和编辑设计、导出到 Unity 并截图。\n\nLienzo UI 是开源软件（MIT）。代码使用 Rust 和 egui：src/model.rs（数据）、src/canvas.rs（画布）、src/panels.rs（面板）、src/export/（Unity）。\n\n阅读 docs/EXTENDING.md 了解如何添加元素、模板或导出器，阅读 CONTRIBUTING.md 了解如何提交修改。"
     },
     {
       "title": "像素艺术",

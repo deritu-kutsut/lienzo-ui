@@ -1,7 +1,7 @@
 //! Interface languages. English is the code's source language (the text passed to `t()`);
 //! every other language is a file `assets/i18n/<code>.tsv` with lines «English text<TAB>translation».
 //! Untranslated texts are shown in English. To add a language: copy es.tsv,
-//! translate it and add its entry to `LANGUAGES` (see docs/EXTENDER.md).
+//! translate it and add its entry to `LANGUAGES` (see docs/EXTENDING.md).
 
 use std::collections::HashMap;
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -100,9 +100,19 @@ mod tests {
                 assert_eq!(es.matches("{}").count(), tr.matches("{}").count(), "{}: different {{}} placeholders in «{}»", code, es);
                 assert_eq!(es.matches("\\n").count(), tr.matches("\\n").count(), "{}: different \\n line breaks in «{}»", code, es);
             }
-            // Each language translates at least 60 % of what Spanish translates (strings added later fall back to English until translated).
-            assert!(views.len() * 100 >= base.len() * 60, "{}: only {} of {} texts", code, views.len(), base.len());
+            // Each language translates at least 95 % of what Spanish translates (strings added later fall back to English until translated).
+            assert!(views.len() * 100 >= base.len() * 95, "{}: only {} of {} texts", code, views.len(), base.len());
         }
+    }
+
+    #[test]
+    fn keys_with_quotes_match_the_tsv_text() {
+        // A Rust literal with escaped quotes is the plain text in the TSV (no unescaping is done by the loader).
+        set("es");
+        assert_eq!(t("Check the details and press \"Send for review\"."), "Revisa los datos y pulsa «Enviar a revisión».");
+        set("fr");
+        assert_ne!(t("Check the details and press \"Send for review\"."), "Check the details and press \"Send for review\".");
+        set("en");
     }
 
     #[test]

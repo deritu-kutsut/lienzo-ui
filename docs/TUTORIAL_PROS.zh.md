@@ -1,6 +1,6 @@
 # 进阶教程
 
-🌐 [English](TUTORIAL_PROS.md) · [Español](TUTORIAL_PROFESIONALES.md) · [Português](TUTORIAL_PROS.pt.md) · [Français](TUTORIAL_PROS.fr.md) · [Deutsch](TUTORIAL_PROS.de.md) · [Italiano](TUTORIAL_PROS.it.md) · [Русский](TUTORIAL_PROS.ru.md) · [简体中文](TUTORIAL_PROS.zh.md) · [日本語](TUTORIAL_PROS.ja.md) · [한국어](TUTORIAL_PROS.ko.md)
+🌐 [English](TUTORIAL_PROS.md) · [Español](TUTORIAL_PROS.es.md) · [Português](TUTORIAL_PROS.pt.md) · [Français](TUTORIAL_PROS.fr.md) · [Deutsch](TUTORIAL_PROS.de.md) · [Italiano](TUTORIAL_PROS.it.md) · [Русский](TUTORIAL_PROS.ru.md) · [简体中文](TUTORIAL_PROS.zh.md) · [日本語](TUTORIAL_PROS.ja.md) · [한국어](TUTORIAL_PROS.ko.md)
 
 ## 导出会生成什么
 
@@ -92,4 +92,4 @@ Rust + [egui](https://github.com/emilk/egui)：
 | `src/tutorial.rs` | 内置教程（西班牙语和英语页面） |
 | `src/script.rs` | 测试模式使用的 Rhai 脚本 |
 
-想扩展它：[EXTENDER.md](EXTENDER.md)。
+想扩展它：[EXTENDING.md](EXTENDING.md)。

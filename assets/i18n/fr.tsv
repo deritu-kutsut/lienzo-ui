@@ -123,7 +123,7 @@ Opacity	Opacité
 Automatically arranges direct children, as in Unity.	Dispose automatiquement les enfants directs, comme dans Unity.
 STEP	ÉTAPE
 PNG, JPG, BMP, GIF or WEBP — exported as Sprites	PNG, JPG, BMP, GIF ou WEBP — exportés comme Sprites
-To add a language, translate assets/i18n/en.tsv (see docs/EXTENDER.md).	Pour ajouter une langue, traduis assets/i18n/en.tsv (voir docs/EXTENDER.md).
+To add a language, translate assets/i18n/en.tsv (see docs/EXTENDING.md).	Pour ajouter une langue, traduis assets/i18n/en.tsv (voir docs/EXTENDING.md).
 Paste	Coller
 Hint	Indice
 Pivot	Pivot
@@ -584,3 +584,269 @@ Move 1 px (Shift: 10)	Déplacer de 1 px (Maj : 10)
 Ctrl+wheel	Ctrl+molette
 Test / simulate screens	Tester / simuler des écrans
 No system font with these characters was found: text may show as boxes.	Aucune police système avec ces caractères n'a été trouvée : le texte peut s'afficher sous forme de carrés.
+No system font was found for the language “{}”	Aucune police système trouvée pour la langue « {} »
+The release has no version.	La release n'a pas de version.
+Unrecognized release version.	Version de la release non reconnue.
+GitHub responded {}.	GitHub a répondu {}.
+The downloaded zip is not valid.	Le zip téléchargé n'est pas valide.
+The zip does not contain lienzo-ui.exe.	Le zip ne contient pas lienzo-ui.exe.
+The zip could not be read.	Impossible de lire le zip.
+The executable in the zip is too large.	L'exécutable du zip est trop volumineux.
+The executable in the zip does not look valid.	L'exécutable du zip ne semble pas valide.
+The download responded {}.	Le téléchargement a répondu {}.
+The download is too large or was cut off.	Le téléchargement est trop volumineux ou a été interrompu.
+there should be a version newer than 0.0.1	il devrait y avoir une version plus récente que 0.0.1
+ inside “{}”	 dans « {} »
+Group {}	Groupe {}
+Upload elements (PNG images with transparency or .json elements)	Importer des éléments (images PNG avec transparence ou éléments .json)
+Upload templates (.json from this editor)	Importer des modèles (.json de cet éditeur)
+Add fonts (.ttf / .otf)	Ajouter des polices (.ttf / .otf)
+Element	Élément
+Open project	Ouvrir le projet
+▶ Test mode: click the elements with ⚡ to run their code.	▶ Mode test : clique sur les éléments avec ⚡ pour exécuter leur code.
+Unity project folder (the one that contains Assets)	Dossier du projet Unity (celui qui contient Assets)
+Play button	Bouton Jouer
+Options button	Bouton Options
+Credits button	Bouton Crédits
+Exit button	Bouton Quitter
+the background keeps its order	l'arrière-plan garde son ordre
+Menu	Menu
+Header	En-tête
+Moon	Lune
+the locked background does not enter the group	l'arrière-plan verrouillé n'entre pas dans le groupe
+Drop inside “{}”	Déposer dans « {} »
+TEST MODE · click the elements with code · Esc or F5 to go back to editing	MODE TEST · clique sur les éléments avec du code · Échap ou F5 pour revenir à l'édition
+Screen {} × {}  ·  virtual canvas {} × {}  ·  CanvasScaler scale {:.2}	Écran {} × {}  ·  canevas virtuel {} × {}  ·  échelle du CanvasScaler {:.2}
+Placed by the parent's Layout Group (use the Hierarchy to reorder)	Placé par le Layout Group du parent (utilise la Hiérarchie pour réordonner)
+Unexpected response from the server.	Réponse inattendue du serveur.
+You do not have permission or your session expired. Sign in again.	Tu n'as pas l'autorisation ou ta session a expiré. Reconnecte-toi.
+It already exists or was already processed.	Existe déjà ou a déjà été traité.
+Daily limit	Limite quotidienne
+That name is already in use.	Ce nom est déjà utilisé.
+The server is not available right now.	Le serveur n'est pas disponible pour le moment.
+No connection to the server.	Pas de connexion au serveur.
+The server response is too large or was cut off.	La réponse du serveur est trop volumineuse ou a été interrompue.
+The server did not return a session.	Le serveur n'a pas renvoyé de session.
+Invalid account identifier.	Identifiant de compte non valide.
+You can go back to Lienzo UI now. You can close this tab.	Tu peux retourner dans Lienzo UI. Tu peux fermer cet onglet.
+Could not sign in	Connexion impossible
+Go back to Lienzo UI and try again.	Retourne dans Lienzo UI et réessaie.
+Local port {} is busy. Close another Lienzo UI session and try again.	Le port local {} est occupé. Ferme une autre session de Lienzo UI et réessaie.
+Could not open the browser.	Impossible d'ouvrir le navigateur.
+Sign-in canceled.	Connexion annulée.
+Timed out waiting for sign-in.	Délai d'attente de la connexion dépassé.
+Sign-in was canceled.	La connexion a été annulée.
+Invalid sign-in response.	Réponse de connexion non valide.
+Invalid creator.	Créateur non valide.
+This creator does not have a public profile yet.	Ce créateur n'a pas encore de profil public.
+The image is too heavy (maximum 25 MB).	L'image est trop lourde (25 Mo maximum).
+Could not read the image.	Impossible de lire l'image.
+Could not read the image (use PNG, JPEG, WebP, GIF or BMP).	Impossible de lire l'image (utilise PNG, JPEG, WebP, GIF ou BMP).
+Could not reduce the image to the allowed size.	Impossible de réduire l'image à la taille autorisée.
+Could not upload the image.	Impossible d'envoyer l'image.
+Image published on your profile.	Image publiée sur ton profil.
+Image sent for review.	Image envoyée pour révision.
+This content has no file.	Ce contenu n'a pas de fichier.
+Invalid file path.	Chemin de fichier non valide.
+The file exceeds the allowed size.	Le fichier dépasse la taille autorisée.
+The content has no verification fingerprint.	Le contenu n'a pas d'empreinte de vérification.
+The SHA-256 fingerprint does not match: the file is not the one that was approved. It was not installed.	L'empreinte SHA-256 ne correspond pas : le fichier n'est pas celui qui a été approuvé. Il n'a pas été installé.
+Did not pass local validation: {}	N'a pas passé la validation locale : {}
+Sent for review: {}	Envoyé pour révision : {}
+plugin.json is not valid.	plugin.json n'est pas valide.
+{} “{}” (Plugins tab)	{} « {} » (onglet Plugins)
+{} “{}” (Images tab)	{} « {} » (onglet Images)
+{} “{}” (Text tab)	{} « {} » (onglet Texte)
+The theme is not valid.	Le thème n'est pas valide.
+{} “{}” (Themes button to change it)	{} « {} » (bouton Thèmes pour le changer)
+{} “{}” (Templates › My templates)	{} « {} » (Modèles › Mes modèles)
+{} “{}” (Elements tab)	{} « {} » (onglet Éléments)
+Plugin folder (with plugin.json)	Dossier du plugin (avec plugin.json)
+No saved session: open the app, Community tab, and sign in.	Aucune session enregistrée : ouvre l'application, l'onglet Communauté, et connecte-toi.
+Could not renew the session: {}	Impossible de renouveler la session : {}
+This account does not have a profile yet: create it in the app (Community tab).	Ce compte n'a pas encore de profil : crée-le dans l'application (onglet Communauté).
+Server error.	Erreur du serveur.
+{}  [{}] {}  (by {}, {} bytes{})	{}  [{}] {}  (par {}, {} octets{})
+{} content item(s) and {} profile image(s) pending. To see the files use the moderation website.	{} contenu(s) et {} image(s) de profil en attente. Pour voir les fichiers, utilise le site de modération.
+Token created (expires {}). Copy it now, it cannot be viewed again:	Jeton créé (expire le {}). Copie-le maintenant, il ne pourra plus être affiché :
+I make game interfaces with Unity.	Je crée des interfaces de jeux avec Unity.
+My button menu	Mon menu de boutons
+Four buttons ready for a main menu.	Quatre boutons prêts pour un menu principal.
+Provide a valid identifier.	Indique un identifiant valide.
+Could not read your data (do you have a profile?).	Impossible de lire tes données (as-tu un profil ?).
+removed	retiré
+added	ajouté
+the banner ends up 3:1	la bannière finit en 3:1
+The design's “elements” list is missing.	La liste « elements » du design est manquante.
+Too many elements.	Trop d'éléments.
+Designs cannot contain external links or paths.	Les designs ne peuvent pas contenir de liens ou de chemins externes.
+Designs cannot contain absolute paths or paths with “..”.	Les designs ne peuvent pas contenir de chemins absolus ni de chemins avec « .. ».
+A plugin needs “manifiesto” and “archivos”.	Un plugin a besoin de « manifiesto » et « archivos ».
+Manifest: invalid name.	Manifeste : nom non valide.
+The manifest uses {}, which is not in the package.	Le manifeste utilise {}, qui n'est pas dans le paquet.
+Empty file.	Fichier vide.
+Exceeds the limit of {} KB for {}.	Dépasse la limite de {} Ko pour {}.
+File type not allowed.	Type de fichier non autorisé.
+Not a valid PNG, JPEG, GIF or WebP image.	Ce n'est pas une image PNG, JPEG, GIF ou WebP valide.
+Dimensions out of range (maximum 4096×4096).	Dimensions hors limites (maximum 4096×4096).
+A text JSON was expected.	Un JSON texte était attendu.
+The file is not valid UTF-8 JSON.	Le fichier n'est pas un JSON UTF-8 valide.
+The file is not valid JSON.	Le fichier n'est pas un JSON valide.
+The file is not a Lienzo UI theme.	Le fichier n'est pas un thème de Lienzo UI.
+Unknown image type.	Type d'image inconnu.
+The image must weigh at most {} KB.	L'image doit peser {} Ko au maximum.
+The image must be PNG.	L'image doit être au format PNG.
+The image must measure at most {}×{} px.	L'image doit mesurer {}×{} px au maximum.
+{}// (the {}° rotation is ignored inside an IMGUI mask or scroll)	{}// (la rotation de {}° est ignorée dans un masque ou un scroll IMGUI)
+{}// editor gradient: IMGUI uses the first color	{}// dégradé de l'éditeur : IMGUI utilise la première couleur
+could not read the image {}: {}	impossible de lire l'image {} : {}
+Card/Options/Viewport/Content/Slider Brightness	Carte/Options/Viewport/Content/Slider Luminosité
+Window	Fenêtre
+Window title	Titre de la fenêtre
+Dim	Assombrir
+unsupported image format	format d'image non pris en charge
+could not read the image	impossible de lire l'image
+the file does not contain elements from this editor	le fichier ne contient pas d'éléments de cet éditeur
+nothing is selected	rien n'est sélectionné
+the file is not a design from this editor	le fichier n'est pas un design de cet éditeur
+use a .ttf or .otf font file	utilise un fichier de police .ttf ou .otf
+invalid name	nom non valide
+unnamed	sans nom
+template {} does not exist (0-{})	le modèle {} n'existe pas (0-{})
+Specify the design with --open <file> or --template <n>	Indique le design avec --open <fichier> ou --template <n>
+Could not load the design: {}	Impossible de charger le design : {}
+Could not save {}: {}	Impossible d'enregistrer {} : {}
+Lienzo UI · design interfaces for Unity	Lienzo UI · conçois des interfaces pour Unity
+In-app updates: a button appears in the header when there is a new version.	Mises à jour depuis l'application : un bouton apparaît dans l'en-tête quand une nouvelle version est disponible.
+Type your text	Saisis ton texte
+Option	Option
+Type here...	Saisis ici...
+Option A	Option A
+Option B	Option B
+Option C	Option C
+Untitled design	Design sans titre
+Title	Titre
+STAR ADVENTURE	AVENTURE STELLAIRE
+Subtitle	Sous-titre
+An interface demo	Une démo d'interface
+Play	Jouer
+Options	Options
+Credits	Crédits
+Exit	Quitter
+{} button	Bouton {}
+Version	Version
+Scene (preview)	Scène (aperçu)
+Top bar	Barre supérieure
+Health frame	Cadre de vie
+Health label	Étiquette de vie
+HEALTH 72/100	VIE 72/100
+Points	Points
+Action bar	Barre d'actions
+Slot {}	Emplacement {}
+Minimap	Mini-carte
+Save the game?	Sauvegarder la partie ?
+Message	Message
+Your progress will be saved in slot 1. You can continue later.	Ta progression sera sauvegardée dans l'emplacement 1. Tu pourras continuer plus tard.
+Buttons	Boutons
+Cancel button	Bouton Annuler
+Accept button	Bouton Accepter
+Music volume	Volume de la musique
+Effects volume	Volume des effets
+Brightness	Luminosité
+Fullscreen	Plein écran
+Quality	Qualité
+Low	Basse
+Medium	Moyenne
+High	Haute
+Player name	Nom du joueur
+Back button	Bouton Retour
+Back	Retour
+Game (preview)	Jeu (aperçu)
+Pause	Pause
+PAUSED	EN PAUSE
+Continue	Continuer
+Restart level	Recommencer le niveau
+Exit to menu	Quitter vers le menu
+GAME OVER	GAME OVER
+Results	Résultats
+Best score	Meilleur score
+Time	Temps
+Retry button	Bouton Réessayer
+Menu button	Bouton Menu
+Choose a level	Choisis un niveau
+Stars	Étoiles
+Stars: 14 / 36	Étoiles : 14 / 36
+Levels	Niveaux
+Level {}	Niveau {}
+Level name	Nom du niveau
+The Crystal Caves	Les Grottes de Cristal
+Tip	Astuce
+Tip: hold the jump button to reach higher.	Astuce : maintiens le bouton de saut pour aller plus haut.
+Loading bar	Barre de chargement
+Percentage	Pourcentage
+Loading... 64 %	Chargement... 64 %
+Indicator	Indicateur
+Dialogue box	Boîte de dialogue
+Portrait	Portrait
+Old woman of the forest	Vieille femme de la forêt
+Traveler, the north bridge fell last night. If you are looking for the temple, you will have to cross through the caves.	Voyageur, le pont du nord s'est effondré cette nuit. Si tu cherches le temple, tu devras passer par les grottes.
+Continue button	Bouton Continuer
+List	Liste
+Nebula	Nébuleuse
+You	Toi
+Row {}	Ligne {}
+Choose your character	Choisis ton personnage
+Warrior	Guerrière
+High strength	Force élevée
+Mage	Mage
+High magic	Magie élevée
+Archer	Archer
+High precision	Précision élevée
+Rogue	Voleuse
+High stealth	Discrétion élevée
+Card {}	Carte {}
+Portrait {}	Portrait {}
+Name {}	Nom {}
+Attribute {}	Attribut {}
+Confirm button	Bouton Confirmer
+{} empty	{} vide
+the title matches the name	le titre correspond au nom
+{}: {} has no size	{} : {} n'a pas de taille
+{} @{}x{}: “{}” outside the page {:?}	{} @{}x{} : « {} » en dehors de la page {:?}
+Choose your Unity project folder (Ctrl+E)	Choisis le dossier de ton projet Unity (Ctrl+E)
+They will be added inside “{}”	Ils seront ajoutés dans « {} »
+NEW	NOUVEAU
+Watch out, it's coming from the left!	Attention, ça arrive par la gauche !
+Choose image	Choisir une image
+(not chosen)	(non choisie)
+Writes to Assets/EditorGUI: Editor/EditorGuiImporter.cs, Designs/{c}.json, Sprites, Fonts, UI Toolkit/{c}.uxml+.uss and Scripts/{c}OnGUI.cs, {c}ViewBase.cs, {c}View.cs. When you return to Unity, Prefabs/{c}.prefab (uGUI + TextMeshPro) is generated automatically.	Écrit dans Assets/EditorGUI : Editor/EditorGuiImporter.cs, Designs/{c}.json, Sprites, Fonts, UI Toolkit/{c}.uxml+.uss et Scripts/{c}OnGUI.cs, {c}ViewBase.cs, {c}View.cs. Au retour dans Unity, Prefabs/{c}.prefab (uGUI + TextMeshPro) est généré automatiquement.
+Design for the importer. Unity turns it into a prefab (Tools › Lienzo UI).	Design pour l'importeur. Unity le transforme en prefab (Tools › Lienzo UI).
+Uses a UIDocument with PanelSettings set to “Scale With Screen Size” and this reference resolution.	Utilise un UIDocument avec PanelSettings sur « Scale With Screen Size » et cette résolution de référence.
+Standalone component: draws the interface with UnityEngine.GUI inside OnGUI (no Canvas).	Composant autonome : dessine l'interface avec UnityEngine.GUI dans OnGUI (sans Canvas).
+Typed references and onClick/onValueChanged events. Inherit in <Class>View for your logic.	Références typées et événements onClick/onValueChanged. Hérite dans <Classe>View pour ta logique.
+Goes in Assets/EditorGUI/Editor/. Builds the prefab with uGUI + TextMeshPro.	Va dans Assets/EditorGUI/Editor/. Construit le prefab avec uGUI + TextMeshPro.
+{} lines	{} lignes
+path not allowed in the plugin: {}	chemin non autorisé dans le plugin : {}
+{}: the returned design is not valid ({})	{} : le design renvoyé n'est pas valide ({})
+{}: exportar() must return text, it returned {}	{} : exportar() doit renvoyer du texte, il a renvoyé {}
+{} “{}”{}	{} « {} »{}
+the command must work	la commande doit fonctionner
+the exporter must work	l'exportateur doit fonctionner
+should reject {:?}	devrait rejeter {:?}
+should accept {:?}	devrait accepter {:?}
+⚠ There is no element named “{}”	⚠ Il n'existe aucun élément nommé « {} »
+⚠ Invalid color: {}	⚠ Couleur non valide : {}
+⚠ Error in the code of “{}”: {}	⚠ Erreur dans le code de « {} » : {}
+the child follows the parent	l'enfant suit le parent
+does not go past the last option	ne dépasse pas la dernière option
+this is not code (	ce n'est pas du code (
+{} “{}”. {}	{} « {} ». {}
+{} “{}”	{} « {} »
+My theme ✨	Mon thème ✨
+The theme needs a name of 1 to 60 characters.	Le thème a besoin d'un nom de 1 à 60 caractères.
+The theme author is too long.	L'auteur du thème est trop long.
+Invalid color in “{}”: use #RRGGBB.	Couleur non valide dans « {} » : utilise #RRGGBB.
+Corners must be between 0 and 16.	Les coins doivent être compris entre 0 et 16.
+Invalid font name.	Nom de police non valide.
+Align and order	Aligner et ordonner
+Align to parent and order	Aligner sur le parent et ordonner

@@ -123,7 +123,7 @@ Opacity	Opacidad
 Automatically arranges direct children, as in Unity.	Organiza automáticamente a los hijos directos, como en Unity.
 STEP	PASO
 PNG, JPG, BMP, GIF or WEBP — exported as Sprites	PNG, JPG, BMP, GIF o WEBP — se exportan como Sprites
-To add a language, translate assets/i18n/en.tsv (see docs/EXTENDER.md).	Para añadir un idioma, traduce assets/i18n/en.tsv (ver docs/EXTENDER.md).
+To add a language, translate assets/i18n/en.tsv (see docs/EXTENDING.md).	Para añadir un idioma, traduce assets/i18n/en.tsv (ver docs/EXTENDING.md).
 Paste	Pegar
 Hint	Pista
 Pivot	Pivot

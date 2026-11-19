@@ -1,6 +1,6 @@
 # 新手教程
 
-🌐 [English](TUTORIAL_BEGINNERS.md) · [Español](TUTORIAL_NOVATOS.md) · [Português](TUTORIAL_BEGINNERS.pt.md) · [Français](TUTORIAL_BEGINNERS.fr.md) · [Deutsch](TUTORIAL_BEGINNERS.de.md) · [Italiano](TUTORIAL_BEGINNERS.it.md) · [Русский](TUTORIAL_BEGINNERS.ru.md) · [简体中文](TUTORIAL_BEGINNERS.zh.md) · [日本語](TUTORIAL_BEGINNERS.ja.md) · [한국어](TUTORIAL_BEGINNERS.ko.md)
+🌐 [English](TUTORIAL_BEGINNERS.md) · [Español](TUTORIAL_BEGINNERS.es.md) · [Português](TUTORIAL_BEGINNERS.pt.md) · [Français](TUTORIAL_BEGINNERS.fr.md) · [Deutsch](TUTORIAL_BEGINNERS.de.md) · [Italiano](TUTORIAL_BEGINNERS.it.md) · [Русский](TUTORIAL_BEGINNERS.ru.md) · [简体中文](TUTORIAL_BEGINNERS.zh.md) · [日本語](TUTORIAL_BEGINNERS.ja.md) · [한국어](TUTORIAL_BEGINNERS.ko.md)
 
 用 Lienzo UI 制作你的第一个界面，并第一次导出到 Unity。无需编程。
 
@@ -12,7 +12,7 @@
 
 想把应用切换成中文：点击**无障碍**按钮 › **语言** › 中文。
 
-![应用内的教程](imagenes/tutorial.png)
+![应用内的教程](images/tutorial.png)
 
 ## 2. 界面
 
@@ -23,7 +23,7 @@
 | 中间 | 画布：你的游戏界面（默认为 1920 × 1080） |
 | 右侧 | **Inspector**：所选元素的属性 |
 
-![编辑器](imagenes/editor.png)
+![编辑器](images/editor.png)
 
 ## 3. 从模板开始
 

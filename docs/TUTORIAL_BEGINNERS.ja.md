@@ -1,6 +1,6 @@
 # 初心者向けチュートリアル
 
-🌐 [English](TUTORIAL_BEGINNERS.md) · [Español](TUTORIAL_NOVATOS.md) · [Português](TUTORIAL_BEGINNERS.pt.md) · [Français](TUTORIAL_BEGINNERS.fr.md) · [Deutsch](TUTORIAL_BEGINNERS.de.md) · [Italiano](TUTORIAL_BEGINNERS.it.md) · [Русский](TUTORIAL_BEGINNERS.ru.md) · [简体中文](TUTORIAL_BEGINNERS.zh.md) · [日本語](TUTORIAL_BEGINNERS.ja.md) · [한국어](TUTORIAL_BEGINNERS.ko.md)
+🌐 [English](TUTORIAL_BEGINNERS.md) · [Español](TUTORIAL_BEGINNERS.es.md) · [Português](TUTORIAL_BEGINNERS.pt.md) · [Français](TUTORIAL_BEGINNERS.fr.md) · [Deutsch](TUTORIAL_BEGINNERS.de.md) · [Italiano](TUTORIAL_BEGINNERS.it.md) · [Русский](TUTORIAL_BEGINNERS.ru.md) · [简体中文](TUTORIAL_BEGINNERS.zh.md) · [日本語](TUTORIAL_BEGINNERS.ja.md) · [한국어](TUTORIAL_BEGINNERS.ko.md)
 
 Lienzo UI で初めてのインターフェースを作り、Unity へ初めてエクスポートするまでの手順です。プログラミングは不要です。
 
@@ -12,7 +12,7 @@ Lienzo UI で初めてのインターフェースを作り、Unity へ初めて�
 
 アプリを日本語で使うには：**アクセシビリティ** ボタン › **言語** › 日本語。
 
-![アプリ内のチュートリアル](imagenes/tutorial.png)
+![アプリ内のチュートリアル](images/tutorial.png)
 
 ## 2. 画面構成
 
@@ -23,7 +23,7 @@ Lienzo UI で初めてのインターフェースを作り、Unity へ初めて�
 | 中央 | キャンバス：ゲームの画面（デフォルトは 1920 × 1080） |
 | 右側 | **インスペクター**：選択中の要素のプロパティ |
 
-![エディター](imagenes/editor.png)
+![エディター](images/editor.png)
 
 ## 3. テンプレートから始める
 

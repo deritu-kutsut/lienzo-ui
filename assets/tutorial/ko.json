@@ -44,7 +44,7 @@
     },
     {
       "title": "MCP 서버와 기여하기",
-      "text": "mcp/ 폴더에는 의존성 없는 MCP 서버가 들어 있습니다(Node 18+). Claude, Cursor, VS Code… 등 호환되는 AI는 템플릿 목록을 보고, 디자인을 만들고 편집하고, Unity로 내보내고, 캡처 이미지를 얻을 수 있습니다.\n\nLienzo UI는 오픈 소스(MIT)입니다. 코드는 egui를 사용하는 Rust로 작성되어 있습니다: src/model.rs(데이터), src/canvas.rs(캔버스), src/panels.rs(패널), src/export/(Unity).\n\n요소, 템플릿, 내보내기 도구를 추가하려면 docs/EXTENDER.md를, 변경 사항을 보내려면 CONTRIBUTING.md를 읽으세요."
+      "text": "mcp/ 폴더에는 의존성 없는 MCP 서버가 들어 있습니다(Node 18+). Claude, Cursor, VS Code… 등 호환되는 AI는 템플릿 목록을 보고, 디자인을 만들고 편집하고, Unity로 내보내고, 캡처 이미지를 얻을 수 있습니다.\n\nLienzo UI는 오픈 소스(MIT)입니다. 코드는 egui를 사용하는 Rust로 작성되어 있습니다: src/model.rs(데이터), src/canvas.rs(캔버스), src/panels.rs(패널), src/export/(Unity).\n\n요소, 템플릿, 내보내기 도구를 추가하려면 docs/EXTENDING.md를, 변경 사항을 보내려면 CONTRIBUTING.md를 읽으세요."
     },
     {
       "title": "픽셀 아트",

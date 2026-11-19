@@ -12,6 +12,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versio
   - Plugins: `plugin.json` keys `name`, `author`, `description`, `commands`, `exporters`, `templates`; functions `run(design)` and `export_text(design)`; example plugins `snap-to-grid`, `text-to-csv`, `extra-templates`. Test-mode scripts: `show`, `hide`, `toggle`, `set_text`, `read_text`, `set_color`, `set_text_color`, `move_by`, `set_position`, `rotate`, `set_value`, `read_value`, `set_opacity`, `message` and `me`.
   - Unity package: `unity-package/build.py`, `store_images.py` and `source/`; window `Tools › Lienzo UI › Open Lienzo UI (app)`; samples and exported designs with English names, in sync with `designs/`.
   - Translation template: copy `assets/i18n/es.tsv` (the keys are the English texts).
+  - Docs renamed (English names): `docs/MODERATION.md`, `docs/COMMUNITY.md`, `docs/EXTENDING.md`, `docs/TUTORIAL_BEGINNERS.es.md`, `docs/TUTORIAL_PROS.es.md`, `docs/RELEASE_NOTES_*.md` and `docs/images/` (screenshots renamed too). The old Spanish-named pages stay as one-line stubs that link to the new ones.
 
 ### Compatibility
 Nothing you already have stops working. The old Spanish command-line flags (`--abrir`, `--exportar`, `--guardar`, `--plantilla`, `--revisar`, `--comunidad-*`…), the old MCP tool names (`crear_diseno`, `captura`…, as hidden aliases) and parameter names (`archivo`, `elemento`, `cambios`…), the `LIENZO_DISENOS` variable and an existing `disenos/` folder, plugin manifests with Spanish keys and scripts with `ejecutar`/`exportar` or the Spanish test-mode functions (`mostrar`, `yo`…), and tutorial JSON files with Spanish keys are all still accepted. In the Unity package, renamed files keep the GUIDs of their old paths and the old `LienzoUIVentana` type remains as an `[Obsolete]` shim. See "Legacy names" in [docs/MCP.md](docs/MCP.md) and [docs/PLUGINS.md](docs/PLUGINS.md).
@@ -147,7 +148,7 @@ Community, creator profiles and themes.
 - **Themes**: **Themes** button to change colors, corners and font of the whole app. Five built-in themes (Dark canvas, Light canvas, Midnight, Sunset, Forest), custom themes that can be shared in the community.
 - **Moderation web** (`web/moderacion`): panel to review pending items by category, with access for people (account) and for scripts (revocable tokens with scopes and expiry). The `--comunidad-revisar` command also approves profile photos and manages tokens.
 - Own SVG icons instead of emojis; `Lienzo UI.exe` executable.
-- Server in `supabase/` (schema with RLS, moderation functions) and the guides `docs/COMUNIDAD.md` and `docs/MODERACION.md`.
+- Server in `supabase/` (schema with RLS, moderation functions) and the guides `docs/COMMUNITY.md` and `docs/MODERATION.md`.
 
 ### Changed
 - Interface colors are read from the theme in use (before, they were constants).

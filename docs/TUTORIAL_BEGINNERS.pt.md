@@ -1,6 +1,6 @@
 # Tutorial para iniciantes
 
-🌐 [English](TUTORIAL_BEGINNERS.md) · [Español](TUTORIAL_NOVATOS.md) · [Português](TUTORIAL_BEGINNERS.pt.md) · [Français](TUTORIAL_BEGINNERS.fr.md) · [Deutsch](TUTORIAL_BEGINNERS.de.md) · [Italiano](TUTORIAL_BEGINNERS.it.md) · [Русский](TUTORIAL_BEGINNERS.ru.md) · [简体中文](TUTORIAL_BEGINNERS.zh.md) · [日本語](TUTORIAL_BEGINNERS.ja.md) · [한국어](TUTORIAL_BEGINNERS.ko.md)
+🌐 [English](TUTORIAL_BEGINNERS.md) · [Español](TUTORIAL_BEGINNERS.es.md) · [Português](TUTORIAL_BEGINNERS.pt.md) · [Français](TUTORIAL_BEGINNERS.fr.md) · [Deutsch](TUTORIAL_BEGINNERS.de.md) · [Italiano](TUTORIAL_BEGINNERS.it.md) · [Русский](TUTORIAL_BEGINNERS.ru.md) · [简体中文](TUTORIAL_BEGINNERS.zh.md) · [日本語](TUTORIAL_BEGINNERS.ja.md) · [한국어](TUTORIAL_BEGINNERS.ko.md)
 
 Sua primeira interface com o Lienzo UI e sua primeira exportação para o Unity. Não precisa saber programar.
 
@@ -12,7 +12,7 @@ Sua primeira interface com o Lienzo UI e sua primeira exportação para o Unity.
 
 Para usar o app em português: botão **Acessibilidade** › **Idioma** › Português.
 
-![Tutorial dentro do app](imagenes/tutorial.png)
+![Tutorial dentro do app](images/tutorial.png)
 
 ## 2. A tela
 
@@ -23,7 +23,7 @@ Para usar o app em português: botão **Acessibilidade** › **Idioma** › Port
 | Centro | A tela: a tela do seu jogo (1920 × 1080 por padrão) |
 | Direita | O **Inspetor**: propriedades da seleção |
 
-![Editor](imagenes/editor.png)
+![Editor](images/editor.png)
 
 ## 3. Comece com um modelo
 

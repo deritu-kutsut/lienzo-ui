@@ -44,7 +44,7 @@
     },
     {
       "title": "Serveur MCP et contribution",
-      "text": "Le dossier mcp/ contient un serveur MCP sans dépendances (Node 18+) : toute IA compatible (Claude, Cursor, VS Code…) peut lister les modèles, créer et modifier des designs, les exporter vers Unity et faire des captures.\n\nLienzo UI est open source (MIT). Le code est en Rust avec egui : src/model.rs (données), src/canvas.rs (toile), src/panels.rs (panneaux), src/export/ (Unity).\n\nLis docs/EXTENDER.md pour ajouter des éléments, des modèles ou des exportateurs, et CONTRIBUTING.md pour envoyer des changements."
+      "text": "Le dossier mcp/ contient un serveur MCP sans dépendances (Node 18+) : toute IA compatible (Claude, Cursor, VS Code…) peut lister les modèles, créer et modifier des designs, les exporter vers Unity et faire des captures.\n\nLienzo UI est open source (MIT). Le code est en Rust avec egui : src/model.rs (données), src/canvas.rs (toile), src/panels.rs (panneaux), src/export/ (Unity).\n\nLis docs/EXTENDING.md pour ajouter des éléments, des modèles ou des exportateurs, et CONTRIBUTING.md pour envoyer des changements."
     },
     {
       "title": "Pixel art",

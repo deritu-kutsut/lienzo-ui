@@ -123,7 +123,7 @@ Opacity	Непрозрачность
 Automatically arranges direct children, as in Unity.	Автоматически упорядочивает прямых дочерних элементов, как в Unity.
 STEP	ШАГ
 PNG, JPG, BMP, GIF or WEBP — exported as Sprites	PNG, JPG, BMP, GIF или WEBP — экспортируются как Sprites
-To add a language, translate assets/i18n/en.tsv (see docs/EXTENDER.md).	Чтобы добавить язык, переведите assets/i18n/en.tsv (см. docs/EXTENDER.md).
+To add a language, translate assets/i18n/en.tsv (see docs/EXTENDING.md).	Чтобы добавить язык, переведите assets/i18n/en.tsv (см. docs/EXTENDING.md).
 Paste	Вставить
 Hint	Подсказка
 Pivot	Pivot
@@ -584,3 +584,269 @@ Move 1 px (Shift: 10)	Сдвиг на 1 px (Shift: 10)
 Ctrl+wheel	Ctrl+колесо
 Test / simulate screens	Тест / имитация экранов
 No system font with these characters was found: text may show as boxes.	В системе не найден шрифт с этими символами: текст может отображаться квадратами.
+No system font was found for the language “{}”	Не найден системный шрифт для языка «{}»
+The release has no version.	У релиза нет версии.
+Unrecognized release version.	Версия релиза не распознана.
+GitHub responded {}.	GitHub ответил {}.
+The downloaded zip is not valid.	Скачанный zip недействителен.
+The zip does not contain lienzo-ui.exe.	В zip нет lienzo-ui.exe.
+The zip could not be read.	Не удалось прочитать zip.
+The executable in the zip is too large.	Исполняемый файл в zip слишком большой.
+The executable in the zip does not look valid.	Исполняемый файл в zip выглядит недействительным.
+The download responded {}.	Загрузка ответила {}.
+The download is too large or was cut off.	Загрузка слишком большая или была прервана.
+there should be a version newer than 0.0.1	должна быть версия новее 0.0.1
+ inside “{}”	 внутри «{}»
+Group {}	Группа {}
+Upload elements (PNG images with transparency or .json elements)	Загрузить элементы (PNG-изображения с прозрачностью или элементы .json)
+Upload templates (.json from this editor)	Загрузить шаблоны (.json из этого редактора)
+Add fonts (.ttf / .otf)	Добавить шрифты (.ttf / .otf)
+Element	Элемент
+Open project	Открыть проект
+▶ Test mode: click the elements with ⚡ to run their code.	▶ Тестовый режим: нажимай на элементы с ⚡, чтобы выполнить их код.
+Unity project folder (the one that contains Assets)	Папка проекта Unity (та, где находится Assets)
+Play button	Кнопка «Играть»
+Options button	Кнопка «Настройки»
+Credits button	Кнопка «Титры»
+Exit button	Кнопка «Выход»
+the background keeps its order	фон сохраняет свой порядок
+Menu	Меню
+Header	Заголовок
+Moon	Луна
+the locked background does not enter the group	заблокированный фон не входит в группу
+Drop inside “{}”	Поместить внутрь «{}»
+TEST MODE · click the elements with code · Esc or F5 to go back to editing	ТЕСТОВЫЙ РЕЖИМ · нажимай на элементы с кодом · Esc или F5 — вернуться к редактированию
+Screen {} × {}  ·  virtual canvas {} × {}  ·  CanvasScaler scale {:.2}	Экран {} × {}  ·  виртуальный холст {} × {}  ·  масштаб CanvasScaler {:.2}
+Placed by the parent's Layout Group (use the Hierarchy to reorder)	Размещается Layout Group родителя (для изменения порядка используй Иерархию)
+Unexpected response from the server.	Неожиданный ответ сервера.
+You do not have permission or your session expired. Sign in again.	У тебя нет прав или сессия истекла. Войди снова.
+It already exists or was already processed.	Уже существует или уже обработано.
+Daily limit	Дневной лимит
+That name is already in use.	Это имя уже занято.
+The server is not available right now.	Сервер сейчас недоступен.
+No connection to the server.	Нет соединения с сервером.
+The server response is too large or was cut off.	Ответ сервера слишком большой или был прерван.
+The server did not return a session.	Сервер не вернул сессию.
+Invalid account identifier.	Недопустимый идентификатор аккаунта.
+You can go back to Lienzo UI now. You can close this tab.	Теперь можно вернуться в Lienzo UI. Эту вкладку можно закрыть.
+Could not sign in	Не удалось войти
+Go back to Lienzo UI and try again.	Вернись в Lienzo UI и попробуй снова.
+Local port {} is busy. Close another Lienzo UI session and try again.	Локальный порт {} занят. Закрой другую сессию Lienzo UI и попробуй снова.
+Could not open the browser.	Не удалось открыть браузер.
+Sign-in canceled.	Вход отменён.
+Timed out waiting for sign-in.	Время ожидания входа истекло.
+Sign-in was canceled.	Вход был отменён.
+Invalid sign-in response.	Недопустимый ответ при входе.
+Invalid creator.	Недопустимый автор.
+This creator does not have a public profile yet.	У этого автора пока нет публичного профиля.
+The image is too heavy (maximum 25 MB).	Изображение слишком тяжёлое (максимум 25 МБ).
+Could not read the image.	Не удалось прочитать изображение.
+Could not read the image (use PNG, JPEG, WebP, GIF or BMP).	Не удалось прочитать изображение (используй PNG, JPEG, WebP, GIF или BMP).
+Could not reduce the image to the allowed size.	Не удалось уменьшить изображение до допустимого размера.
+Could not upload the image.	Не удалось загрузить изображение.
+Image published on your profile.	Изображение опубликовано в твоём профиле.
+Image sent for review.	Изображение отправлено на проверку.
+This content has no file.	У этого контента нет файла.
+Invalid file path.	Недопустимый путь к файлу.
+The file exceeds the allowed size.	Файл превышает допустимый размер.
+The content has no verification fingerprint.	У контента нет контрольного отпечатка.
+The SHA-256 fingerprint does not match: the file is not the one that was approved. It was not installed.	Отпечаток SHA-256 не совпадает: файл не тот, который был одобрен. Он не установлен.
+Did not pass local validation: {}	Не прошло локальную проверку: {}
+Sent for review: {}	Отправлено на проверку: {}
+plugin.json is not valid.	plugin.json недействителен.
+{} “{}” (Plugins tab)	{} «{}» (вкладка «Плагины»)
+{} “{}” (Images tab)	{} «{}» (вкладка «Изображения»)
+{} “{}” (Text tab)	{} «{}» (вкладка «Текст»)
+The theme is not valid.	Тема недействительна.
+{} “{}” (Themes button to change it)	{} «{}» (кнопка «Темы», чтобы изменить)
+{} “{}” (Templates › My templates)	{} «{}» (Шаблоны › Мои шаблоны)
+{} “{}” (Elements tab)	{} «{}» (вкладка «Элементы»)
+Plugin folder (with plugin.json)	Папка плагина (с plugin.json)
+No saved session: open the app, Community tab, and sign in.	Нет сохранённой сессии: открой приложение, вкладку «Сообщество», и войди.
+Could not renew the session: {}	Не удалось обновить сессию: {}
+This account does not have a profile yet: create it in the app (Community tab).	У этого аккаунта ещё нет профиля: создай его в приложении (вкладка «Сообщество»).
+Server error.	Ошибка сервера.
+{}  [{}] {}  (by {}, {} bytes{})	{}  [{}] {}  (автор {}, {} байт{})
+{} content item(s) and {} profile image(s) pending. To see the files use the moderation website.	Ожидают проверки: контента — {}, изображений профиля — {}. Чтобы увидеть файлы, используй сайт модерации.
+Token created (expires {}). Copy it now, it cannot be viewed again:	Токен создан (истекает {}). Скопируй его сейчас, повторно посмотреть его нельзя:
+I make game interfaces with Unity.	Я делаю интерфейсы для игр на Unity.
+My button menu	Моё меню кнопок
+Four buttons ready for a main menu.	Четыре кнопки, готовые для главного меню.
+Provide a valid identifier.	Укажи допустимый идентификатор.
+Could not read your data (do you have a profile?).	Не удалось прочитать твои данные (есть ли у тебя профиль?).
+removed	удалено
+added	добавлено
+the banner ends up 3:1	баннер получается 3:1
+The design's “elements” list is missing.	В дизайне отсутствует список «elements».
+Too many elements.	Слишком много элементов.
+Designs cannot contain external links or paths.	Дизайны не могут содержать внешние ссылки или пути.
+Designs cannot contain absolute paths or paths with “..”.	Дизайны не могут содержать абсолютные пути или пути с «..».
+A plugin needs “manifiesto” and “archivos”.	Плагину нужны «manifiesto» и «archivos».
+Manifest: invalid name.	Манифест: недопустимое имя.
+The manifest uses {}, which is not in the package.	Манифест использует {}, которого нет в пакете.
+Empty file.	Пустой файл.
+Exceeds the limit of {} KB for {}.	Превышает лимит {} КБ для {}.
+File type not allowed.	Недопустимый тип файла.
+Not a valid PNG, JPEG, GIF or WebP image.	Это не допустимое изображение PNG, JPEG, GIF или WebP.
+Dimensions out of range (maximum 4096×4096).	Размеры вне допустимого диапазона (максимум 4096×4096).
+A text JSON was expected.	Ожидался текстовый JSON.
+The file is not valid UTF-8 JSON.	Файл не является допустимым JSON в UTF-8.
+The file is not valid JSON.	Файл не является допустимым JSON.
+The file is not a Lienzo UI theme.	Файл не является темой Lienzo UI.
+Unknown image type.	Неизвестный тип изображения.
+The image must weigh at most {} KB.	Изображение должно весить не более {} КБ.
+The image must be PNG.	Изображение должно быть в формате PNG.
+The image must measure at most {}×{} px.	Размер изображения должен быть не более {}×{} px.
+{}// (the {}° rotation is ignored inside an IMGUI mask or scroll)	{}// (поворот на {}° игнорируется внутри маски или скролла IMGUI)
+{}// editor gradient: IMGUI uses the first color	{}// градиент редактора: IMGUI использует первый цвет
+could not read the image {}: {}	не удалось прочитать изображение {}: {}
+Card/Options/Viewport/Content/Slider Brightness	Карточка/Настройки/Viewport/Content/Slider Яркость
+Window	Окно
+Window title	Заголовок окна
+Dim	Затемнить
+unsupported image format	неподдерживаемый формат изображения
+could not read the image	не удалось прочитать изображение
+the file does not contain elements from this editor	файл не содержит элементов из этого редактора
+nothing is selected	ничего не выбрано
+the file is not a design from this editor	файл не является дизайном из этого редактора
+use a .ttf or .otf font file	используй файл шрифта .ttf или .otf
+invalid name	недопустимое имя
+unnamed	без названия
+template {} does not exist (0-{})	шаблона {} не существует (0-{})
+Specify the design with --open <file> or --template <n>	Укажи дизайн с помощью --open <файл> или --template <n>
+Could not load the design: {}	Не удалось загрузить дизайн: {}
+Could not save {}: {}	Не удалось сохранить {}: {}
+Lienzo UI · design interfaces for Unity	Lienzo UI · проектируй интерфейсы для Unity
+In-app updates: a button appears in the header when there is a new version.	Обновления из приложения: при выходе новой версии в заголовке появляется кнопка.
+Type your text	Введи свой текст
+Option	Вариант
+Type here...	Введи здесь...
+Option A	Вариант A
+Option B	Вариант B
+Option C	Вариант C
+Untitled design	Дизайн без названия
+Title	Название
+STAR ADVENTURE	ЗВЁЗДНОЕ ПРИКЛЮЧЕНИЕ
+Subtitle	Подзаголовок
+An interface demo	Демо интерфейса
+Play	Играть
+Options	Настройки
+Credits	Титры
+Exit	Выход
+{} button	Кнопка «{}»
+Version	Версия
+Scene (preview)	Сцена (предпросмотр)
+Top bar	Верхняя панель
+Health frame	Рамка здоровья
+Health label	Метка здоровья
+HEALTH 72/100	ЗДОРОВЬЕ 72/100
+Points	Очки
+Action bar	Панель действий
+Slot {}	Слот {}
+Minimap	Миникарта
+Save the game?	Сохранить игру?
+Message	Сообщение
+Your progress will be saved in slot 1. You can continue later.	Твой прогресс будет сохранён в слоте 1. Ты сможешь продолжить позже.
+Buttons	Кнопки
+Cancel button	Кнопка «Отмена»
+Accept button	Кнопка «Принять»
+Music volume	Громкость музыки
+Effects volume	Громкость эффектов
+Brightness	Яркость
+Fullscreen	Полноэкранный режим
+Quality	Качество
+Low	Низкое
+Medium	Среднее
+High	Высокое
+Player name	Имя игрока
+Back button	Кнопка «Назад»
+Back	Назад
+Game (preview)	Игра (предпросмотр)
+Pause	Пауза
+PAUSED	ПАУЗА
+Continue	Продолжить
+Restart level	Начать уровень заново
+Exit to menu	Выйти в меню
+GAME OVER	ИГРА ОКОНЧЕНА
+Results	Результаты
+Best score	Лучший результат
+Time	Время
+Retry button	Кнопка «Повторить»
+Menu button	Кнопка «Меню»
+Choose a level	Выбери уровень
+Stars	Звёзды
+Stars: 14 / 36	Звёзды: 14 / 36
+Levels	Уровни
+Level {}	Уровень {}
+Level name	Название уровня
+The Crystal Caves	Хрустальные пещеры
+Tip	Совет
+Tip: hold the jump button to reach higher.	Совет: удерживай кнопку прыжка, чтобы прыгнуть выше.
+Loading bar	Полоса загрузки
+Percentage	Процент
+Loading... 64 %	Загрузка... 64 %
+Indicator	Индикатор
+Dialogue box	Диалоговое окно
+Portrait	Портрет
+Old woman of the forest	Старуха из леса
+Traveler, the north bridge fell last night. If you are looking for the temple, you will have to cross through the caves.	Путник, северный мост рухнул прошлой ночью. Если ищешь храм, тебе придётся пройти через пещеры.
+Continue button	Кнопка «Продолжить»
+List	Список
+Nebula	Туманность
+You	Ты
+Row {}	Строка {}
+Choose your character	Выбери своего персонажа
+Warrior	Воительница
+High strength	Высокая сила
+Mage	Маг
+High magic	Высокая магия
+Archer	Лучник
+High precision	Высокая меткость
+Rogue	Разбойница
+High stealth	Высокая скрытность
+Card {}	Карточка {}
+Portrait {}	Портрет {}
+Name {}	Имя {}
+Attribute {}	Характеристика {}
+Confirm button	Кнопка «Подтвердить»
+{} empty	{}: пусто
+the title matches the name	заголовок совпадает с именем
+{}: {} has no size	{}: у {} нет размера
+{} @{}x{}: “{}” outside the page {:?}	{} @{}x{}: «{}» за пределами страницы {:?}
+Choose your Unity project folder (Ctrl+E)	Выбери папку своего проекта Unity (Ctrl+E)
+They will be added inside “{}”	Они будут добавлены внутрь «{}»
+NEW	НОВОЕ
+Watch out, it's coming from the left!	Осторожно, он идёт слева!
+Choose image	Выбрать изображение
+(not chosen)	(не выбрано)
+Writes to Assets/EditorGUI: Editor/EditorGuiImporter.cs, Designs/{c}.json, Sprites, Fonts, UI Toolkit/{c}.uxml+.uss and Scripts/{c}OnGUI.cs, {c}ViewBase.cs, {c}View.cs. When you return to Unity, Prefabs/{c}.prefab (uGUI + TextMeshPro) is generated automatically.	Записывает в Assets/EditorGUI: Editor/EditorGuiImporter.cs, Designs/{c}.json, Sprites, Fonts, UI Toolkit/{c}.uxml+.uss и Scripts/{c}OnGUI.cs, {c}ViewBase.cs, {c}View.cs. При возвращении в Unity Prefabs/{c}.prefab (uGUI + TextMeshPro) создаётся автоматически.
+Design for the importer. Unity turns it into a prefab (Tools › Lienzo UI).	Дизайн для импортёра. Unity превращает его в префаб (Tools › Lienzo UI).
+Uses a UIDocument with PanelSettings set to “Scale With Screen Size” and this reference resolution.	Использует UIDocument с PanelSettings в режиме «Scale With Screen Size» и этим опорным разрешением.
+Standalone component: draws the interface with UnityEngine.GUI inside OnGUI (no Canvas).	Автономный компонент: рисует интерфейс через UnityEngine.GUI внутри OnGUI (без Canvas).
+Typed references and onClick/onValueChanged events. Inherit in <Class>View for your logic.	Типизированные ссылки и события onClick/onValueChanged. Наследуй в <Класс>View для своей логики.
+Goes in Assets/EditorGUI/Editor/. Builds the prefab with uGUI + TextMeshPro.	Помещается в Assets/EditorGUI/Editor/. Создаёт префаб с uGUI + TextMeshPro.
+{} lines	Строк: {}
+path not allowed in the plugin: {}	путь не разрешён в плагине: {}
+{}: the returned design is not valid ({})	{}: возвращённый дизайн недействителен ({})
+{}: exportar() must return text, it returned {}	{}: exportar() должна вернуть текст, а вернула {}
+{} “{}”{}	{} «{}»{}
+the command must work	команда должна работать
+the exporter must work	экспортёр должен работать
+should reject {:?}	должно отклонить {:?}
+should accept {:?}	должно принять {:?}
+⚠ There is no element named “{}”	⚠ Нет элемента с именем «{}»
+⚠ Invalid color: {}	⚠ Недопустимый цвет: {}
+⚠ Error in the code of “{}”: {}	⚠ Ошибка в коде «{}»: {}
+the child follows the parent	потомок следует за родителем
+does not go past the last option	не выходит за последний вариант
+this is not code (	это не код (
+{} “{}”. {}	{} «{}». {}
+{} “{}”	{} «{}»
+My theme ✨	Моя тема ✨
+The theme needs a name of 1 to 60 characters.	Теме нужно имя длиной от 1 до 60 символов.
+The theme author is too long.	Имя автора темы слишком длинное.
+Invalid color in “{}”: use #RRGGBB.	Недопустимый цвет в «{}»: используй #RRGGBB.
+Corners must be between 0 and 16.	Углы должны быть от 0 до 16.
+Invalid font name.	Недопустимое название шрифта.
+Align and order	Выровнять и упорядочить
+Align to parent and order	Выровнять по родителю и упорядочить

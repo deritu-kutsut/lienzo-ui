@@ -9,8 +9,8 @@
 🎬 [Trailer in English](https://youtu.be/7G-g5H3nHtg) · [Trailer in Spanish](https://youtu.be/xb7x16KGKBY)
 
 <p align="center">
-<img src="docs/imagenes/editor.png" width="49%"> <img src="docs/imagenes/tutorial.png" width="49%"><br>
-<img src="docs/imagenes/unity.png" width="98%">
+<img src="docs/images/editor.png" width="49%"> <img src="docs/images/tutorial.png" width="49%"><br>
+<img src="docs/images/unity.png" width="98%">
 </p>
 
 ## Features
@@ -34,7 +34,7 @@
 
 ## New in 1.3
 
-<p align="center"><img src="docs/imagenes/plantillas-1.3.png" width="49%"> <img src="docs/imagenes/revisar-1.3.png" width="49%"></p>
+<p align="center"><img src="docs/images/templates-1.3.png" width="49%"> <img src="docs/images/review-1.3.png" width="49%"></p>
 
 - **7 new templates** (Pause menu, Game over, Level select, Loading screen, Character dialogue, Leaderboard, Character select). Open the **Templates** tab and click one; Ctrl+Z undoes it. They scale to fit any reference resolution, including portrait.
 - **Review design:** click **Review** in the header. Each warning names the element; click it to select it and fix it. From the command line: `lienzo-ui --open my.editorgui.json --review` (exit code 1 if there are errors, handy in CI). From an AI: MCP tool `review_design`.
@@ -66,7 +66,7 @@ cargo test
 
 Share and find **plugins, images, fonts, templates, elements and themes** without leaving the app. Browsing needs no account.
 
-<p align="center"><img src="docs/imagenes/comunidad.png" width="40%"> <img src="docs/imagenes/comunidad_subir.png" width="40%"></p>
+<p align="center"><img src="docs/images/community.png" width="40%"> <img src="docs/images/community_upload.png" width="40%"></p>
 
 ### Browse and install
 
@@ -81,7 +81,7 @@ Share and find **plugins, images, fonts, templates, elements and themes** withou
 2. Choose your **public name** (3-32 characters), accept the rules and press **Create profile**.
 3. Press the **round photo button** at the top right, or **Edit my creator profile**, to open the profile editor:
 
-<p align="center"><img src="docs/imagenes/perfil.png" width="70%"></p>
+<p align="center"><img src="docs/images/profile.png" width="70%"></p>
 
 4. Use the camera buttons to set your **profile picture** and **banner** (any PNG, JPEG, WebP, GIF or BMP: the app crops and resizes it), then fill in your **bio**, **GitHub** and social links (X, YouTube, itch.io, Twitch, Bluesky, Instagram) and press **Save**.
 
@@ -93,25 +93,25 @@ Your profile is public once you have at least one approved item. Pictures and te
 2. Choose the type, write a title and description, add tags and pick the file (for a plugin, pick its folder; for a template, press **Use the open design**; for a theme, press **Use the current theme**). Add an optional **preview** image (PNG up to 1920×1080). Mark it **18+** if it is.
 3. Press **Send for review**. It is checked automatically (file format, antivirus, text moderation) and either published, sent to a person for review, or rejected with the reason.
 
-Only data formats are accepted (PNG, JPEG, GIF, WebP, TTF, OTF, JSON): never executables, installers, scripts or archives. 18+ content is hidden unless your account confirms it is 18 or older. Details: [Community guide](docs/COMUNIDAD.md).
+Only data formats are accepted (PNG, JPEG, GIF, WebP, TTF, OTF, JSON): never executables, installers, scripts or archives. 18+ content is hidden unless your account confirms it is 18 or older. Details: [Community guide](docs/COMMUNITY.md).
 
 ### Themes
 
 The **Themes** button changes the colours, corners and font of the whole app, saves your own themes and shares them in the community.
 
-<p align="center"><img src="docs/imagenes/temas.png" width="60%"></p>
+<p align="center"><img src="docs/images/themes.png" width="60%"></p>
 
 ### Moderators
 
-Moderation lives in a web panel (also usable by AIs with revocable tokens): [docs/MODERACION.md](docs/MODERACION.md).
+Moderation lives in a web panel (also usable by AIs with revocable tokens): [docs/MODERATION.md](docs/MODERATION.md).
 
 ## Documentation
 
 | Guide | For |
 |---|---|
-| [Beginner tutorial](docs/TUTORIAL_BEGINNERS.md) ([es](docs/TUTORIAL_NOVATOS.md) · [pt](docs/TUTORIAL_BEGINNERS.pt.md) · [fr](docs/TUTORIAL_BEGINNERS.fr.md) · [de](docs/TUTORIAL_BEGINNERS.de.md) · [it](docs/TUTORIAL_BEGINNERS.it.md) · [ru](docs/TUTORIAL_BEGINNERS.ru.md) · [zh](docs/TUTORIAL_BEGINNERS.zh.md) · [ja](docs/TUTORIAL_BEGINNERS.ja.md) · [ko](docs/TUTORIAL_BEGINNERS.ko.md)) | First design and first export |
-| [Pro tutorial](docs/TUTORIAL_PROS.md) ([es](docs/TUTORIAL_PROFESIONALES.md) · [pt](docs/TUTORIAL_PROS.pt.md) · [fr](docs/TUTORIAL_PROS.fr.md) · [de](docs/TUTORIAL_PROS.de.md) · [it](docs/TUTORIAL_PROS.it.md) · [ru](docs/TUTORIAL_PROS.ru.md) · [zh](docs/TUTORIAL_PROS.zh.md) · [ja](docs/TUTORIAL_PROS.ja.md) · [ko](docs/TUTORIAL_PROS.ko.md)) | Export format, anchors, layouts, scripting, Review design, command line |
-| [Extending Lienzo UI](docs/EXTENDER.md) | Adding elements, templates, exporters, tutorial pages |
+| [Beginner tutorial](docs/TUTORIAL_BEGINNERS.md) ([es](docs/TUTORIAL_BEGINNERS.es.md) · [pt](docs/TUTORIAL_BEGINNERS.pt.md) · [fr](docs/TUTORIAL_BEGINNERS.fr.md) · [de](docs/TUTORIAL_BEGINNERS.de.md) · [it](docs/TUTORIAL_BEGINNERS.it.md) · [ru](docs/TUTORIAL_BEGINNERS.ru.md) · [zh](docs/TUTORIAL_BEGINNERS.zh.md) · [ja](docs/TUTORIAL_BEGINNERS.ja.md) · [ko](docs/TUTORIAL_BEGINNERS.ko.md)) | First design and first export |
+| [Pro tutorial](docs/TUTORIAL_PROS.md) ([es](docs/TUTORIAL_PROS.es.md) · [pt](docs/TUTORIAL_PROS.pt.md) · [fr](docs/TUTORIAL_PROS.fr.md) · [de](docs/TUTORIAL_PROS.de.md) · [it](docs/TUTORIAL_PROS.it.md) · [ru](docs/TUTORIAL_PROS.ru.md) · [zh](docs/TUTORIAL_PROS.zh.md) · [ja](docs/TUTORIAL_PROS.ja.md) · [ko](docs/TUTORIAL_PROS.ko.md)) | Export format, anchors, layouts, scripting, Review design, command line |
+| [Extending Lienzo UI](docs/EXTENDING.md) | Adding elements, templates, exporters, tutorial pages |
 | [Plugins](docs/PLUGINS.md) | Writing commands, exporters and templates |
 | [MCP server](docs/MCP.md) | Connect any AI (your own key or a local model) to Lienzo UI, or script it with an AI API |
 | [Contributing](CONTRIBUTING.md) · [Changelog](CHANGELOG.md) | Pull requests and releases |

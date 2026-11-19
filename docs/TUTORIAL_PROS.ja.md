@@ -1,6 +1,6 @@
 # プロ向けチュートリアル
 
-🌐 [English](TUTORIAL_PROS.md) · [Español](TUTORIAL_PROFESIONALES.md) · [Português](TUTORIAL_PROS.pt.md) · [Français](TUTORIAL_PROS.fr.md) · [Deutsch](TUTORIAL_PROS.de.md) · [Italiano](TUTORIAL_PROS.it.md) · [Русский](TUTORIAL_PROS.ru.md) · [简体中文](TUTORIAL_PROS.zh.md) · [日本語](TUTORIAL_PROS.ja.md) · [한국어](TUTORIAL_PROS.ko.md)
+🌐 [English](TUTORIAL_PROS.md) · [Español](TUTORIAL_PROS.es.md) · [Português](TUTORIAL_PROS.pt.md) · [Français](TUTORIAL_PROS.fr.md) · [Deutsch](TUTORIAL_PROS.de.md) · [Italiano](TUTORIAL_PROS.it.md) · [Русский](TUTORIAL_PROS.ru.md) · [简体中文](TUTORIAL_PROS.zh.md) · [日本語](TUTORIAL_PROS.ja.md) · [한국어](TUTORIAL_PROS.ko.md)
 
 ## エクスポートで生成されるもの
 
@@ -92,4 +92,4 @@ Rust + [egui](https://github.com/emilk/egui)：
 | `src/tutorial.rs` | 内蔵チュートリアル（スペイン語・英語ページ） |
 | `src/script.rs` | テストモード用の Rhai スクリプト |
 
-拡張方法については [EXTENDER.md](EXTENDER.md) を参照してください。
+拡張方法については [EXTENDING.md](EXTENDING.md) を参照してください。

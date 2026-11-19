@@ -1,6 +1,6 @@
 # Tutorial für Einsteiger
 
-🌐 [English](TUTORIAL_BEGINNERS.md) · [Español](TUTORIAL_NOVATOS.md) · [Português](TUTORIAL_BEGINNERS.pt.md) · [Français](TUTORIAL_BEGINNERS.fr.md) · [Deutsch](TUTORIAL_BEGINNERS.de.md) · [Italiano](TUTORIAL_BEGINNERS.it.md) · [Русский](TUTORIAL_BEGINNERS.ru.md) · [简体中文](TUTORIAL_BEGINNERS.zh.md) · [日本語](TUTORIAL_BEGINNERS.ja.md) · [한국어](TUTORIAL_BEGINNERS.ko.md)
+🌐 [English](TUTORIAL_BEGINNERS.md) · [Español](TUTORIAL_BEGINNERS.es.md) · [Português](TUTORIAL_BEGINNERS.pt.md) · [Français](TUTORIAL_BEGINNERS.fr.md) · [Deutsch](TUTORIAL_BEGINNERS.de.md) · [Italiano](TUTORIAL_BEGINNERS.it.md) · [Русский](TUTORIAL_BEGINNERS.ru.md) · [简体中文](TUTORIAL_BEGINNERS.zh.md) · [日本語](TUTORIAL_BEGINNERS.ja.md) · [한국어](TUTORIAL_BEGINNERS.ko.md)
 
 Deine erste Oberfläche mit Lienzo UI und dein erster Export nach Unity. Du brauchst keine Programmierkenntnisse.
 
@@ -12,7 +12,7 @@ Deine erste Oberfläche mit Lienzo UI und dein erster Export nach Unity. Du brau
 
 Um die App auf Englisch zu verwenden: Schaltfläche **Barrierefreiheit** › **Sprache** › English.
 
-![Tutorial in der App](imagenes/tutorial.png)
+![Tutorial in der App](images/tutorial.png)
 
 ## 2. Der Bildschirm
 
@@ -23,7 +23,7 @@ Um die App auf Englisch zu verwenden: Schaltfläche **Barrierefreiheit** › **S
 | Mitte | Die Arbeitsfläche: der Bildschirm deines Spiels (standardmäßig 1920 × 1080) |
 | Rechts | Der **Inspektor**: Eigenschaften der Auswahl |
 
-![Editor](imagenes/editor.png)
+![Editor](images/editor.png)
 
 ## 3. Mit einer Vorlage beginnen
 

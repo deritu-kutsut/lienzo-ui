@@ -1,6 +1,6 @@
 # Tutorial für Profis
 
-🌐 [English](TUTORIAL_PROS.md) · [Español](TUTORIAL_PROFESIONALES.md) · [Português](TUTORIAL_PROS.pt.md) · [Français](TUTORIAL_PROS.fr.md) · [Deutsch](TUTORIAL_PROS.de.md) · [Italiano](TUTORIAL_PROS.it.md) · [Русский](TUTORIAL_PROS.ru.md) · [简体中文](TUTORIAL_PROS.zh.md) · [日本語](TUTORIAL_PROS.ja.md) · [한국어](TUTORIAL_PROS.ko.md)
+🌐 [English](TUTORIAL_PROS.md) · [Español](TUTORIAL_PROS.es.md) · [Português](TUTORIAL_PROS.pt.md) · [Français](TUTORIAL_PROS.fr.md) · [Deutsch](TUTORIAL_PROS.de.md) · [Italiano](TUTORIAL_PROS.it.md) · [Русский](TUTORIAL_PROS.ru.md) · [简体中文](TUTORIAL_PROS.zh.md) · [日本語](TUTORIAL_PROS.ja.md) · [한국어](TUTORIAL_PROS.ko.md)
 
 ## Was der Export erzeugt
 
@@ -92,4 +92,4 @@ Rust + [egui](https://github.com/emilk/egui):
 | `src/tutorial.rs` | Eingebautes Tutorial (Seiten auf Spanisch und Englisch) |
 | `src/script.rs` | Rhai-Skripte für den Testmodus |
 
-Um es zu erweitern: [EXTENDER.md](EXTENDER.md).
+Um es zu erweitern: [EXTENDING.md](EXTENDING.md).

@@ -123,7 +123,7 @@ Opacity	불투명도
 Automatically arranges direct children, as in Unity.	Unity처럼 직계 하위 요소를 자동으로 정렬합니다.
 STEP	단계
 PNG, JPG, BMP, GIF or WEBP — exported as Sprites	PNG, JPG, BMP, GIF 또는 WEBP — Sprite로 내보내짐
-To add a language, translate assets/i18n/en.tsv (see docs/EXTENDER.md).	언어를 추가하려면 assets/i18n/en.tsv를 번역하세요 (docs/EXTENDER.md 참고).
+To add a language, translate assets/i18n/en.tsv (see docs/EXTENDING.md).	언어를 추가하려면 assets/i18n/en.tsv를 번역하세요 (docs/EXTENDING.md 참고).
 Paste	붙여넣기
 Hint	힌트
 Pivot	Pivot
@@ -584,3 +584,269 @@ Move 1 px (Shift: 10)	1px 이동 (Shift: 10)
 Ctrl+wheel	Ctrl+휠
 Test / simulate screens	테스트 / 화면 시뮬레이션
 No system font with these characters was found: text may show as boxes.	이 문자를 포함한 시스템 글꼴을 찾지 못했습니다. 텍스트가 네모로 보일 수 있습니다.
+No system font was found for the language “{}”	“{}” 언어의 시스템 글꼴을 찾지 못했습니다
+The release has no version.	릴리스에 버전이 없습니다.
+Unrecognized release version.	릴리스 버전을 인식할 수 없습니다.
+GitHub responded {}.	GitHub가 {}을(를) 응답했습니다.
+The downloaded zip is not valid.	다운로드한 zip이 올바르지 않습니다.
+The zip does not contain lienzo-ui.exe.	zip에 lienzo-ui.exe가 없습니다.
+The zip could not be read.	zip을 읽을 수 없습니다.
+The executable in the zip is too large.	zip 안의 실행 파일이 너무 큽니다.
+The executable in the zip does not look valid.	zip 안의 실행 파일이 올바르지 않은 것 같습니다.
+The download responded {}.	다운로드가 {}을(를) 응답했습니다.
+The download is too large or was cut off.	다운로드가 너무 크거나 중간에 끊겼습니다.
+there should be a version newer than 0.0.1	0.0.1보다 새로운 버전이 있어야 합니다
+ inside “{}”	 “{}” 안
+Group {}	그룹 {}
+Upload elements (PNG images with transparency or .json elements)	요소 업로드 (투명도가 있는 PNG 이미지 또는 .json 요소)
+Upload templates (.json from this editor)	템플릿 업로드 (이 편집기의 .json)
+Add fonts (.ttf / .otf)	글꼴 추가 (.ttf / .otf)
+Element	요소
+Open project	프로젝트 열기
+▶ Test mode: click the elements with ⚡ to run their code.	▶ 테스트 모드: ⚡가 있는 요소를 클릭하면 해당 코드가 실행됩니다.
+Unity project folder (the one that contains Assets)	Unity 프로젝트 폴더 (Assets가 들어 있는 폴더)
+Play button	플레이 버튼
+Options button	옵션 버튼
+Credits button	크레딧 버튼
+Exit button	종료 버튼
+the background keeps its order	배경은 순서를 유지합니다
+Menu	메뉴
+Header	헤더
+Moon	달
+the locked background does not enter the group	잠긴 배경은 그룹에 들어가지 않습니다
+Drop inside “{}”	“{}” 안에 놓기
+TEST MODE · click the elements with code · Esc or F5 to go back to editing	테스트 모드 · 코드가 있는 요소를 클릭 · Esc 또는 F5로 편집으로 돌아가기
+Screen {} × {}  ·  virtual canvas {} × {}  ·  CanvasScaler scale {:.2}	화면 {} × {}  ·  가상 캔버스 {} × {}  ·  CanvasScaler 배율 {:.2}
+Placed by the parent's Layout Group (use the Hierarchy to reorder)	부모의 Layout Group이 배치합니다 (순서를 바꾸려면 계층 구조를 사용하세요)
+Unexpected response from the server.	서버에서 예상치 못한 응답이 왔습니다.
+You do not have permission or your session expired. Sign in again.	권한이 없거나 세션이 만료되었습니다. 다시 로그인하세요.
+It already exists or was already processed.	이미 존재하거나 이미 처리되었습니다.
+Daily limit	일일 한도
+That name is already in use.	이미 사용 중인 이름입니다.
+The server is not available right now.	지금은 서버를 사용할 수 없습니다.
+No connection to the server.	서버에 연결할 수 없습니다.
+The server response is too large or was cut off.	서버 응답이 너무 크거나 중간에 끊겼습니다.
+The server did not return a session.	서버가 세션을 반환하지 않았습니다.
+Invalid account identifier.	계정 식별자가 올바르지 않습니다.
+You can go back to Lienzo UI now. You can close this tab.	이제 Lienzo UI로 돌아가셔도 됩니다. 이 탭은 닫아도 됩니다.
+Could not sign in	로그인할 수 없습니다
+Go back to Lienzo UI and try again.	Lienzo UI로 돌아가 다시 시도하세요.
+Local port {} is busy. Close another Lienzo UI session and try again.	로컬 포트 {}이(가) 사용 중입니다. 다른 Lienzo UI 세션을 닫고 다시 시도하세요.
+Could not open the browser.	브라우저를 열 수 없습니다.
+Sign-in canceled.	로그인이 취소되었습니다.
+Timed out waiting for sign-in.	로그인 대기 시간이 초과되었습니다.
+Sign-in was canceled.	로그인이 취소되었습니다.
+Invalid sign-in response.	로그인 응답이 올바르지 않습니다.
+Invalid creator.	크리에이터가 올바르지 않습니다.
+This creator does not have a public profile yet.	이 크리에이터에게는 아직 공개 프로필이 없습니다.
+The image is too heavy (maximum 25 MB).	이미지가 너무 큽니다 (최대 25MB).
+Could not read the image.	이미지를 읽을 수 없습니다.
+Could not read the image (use PNG, JPEG, WebP, GIF or BMP).	이미지를 읽을 수 없습니다 (PNG, JPEG, WebP, GIF 또는 BMP를 사용하세요).
+Could not reduce the image to the allowed size.	이미지를 허용된 크기로 줄일 수 없습니다.
+Could not upload the image.	이미지를 업로드할 수 없습니다.
+Image published on your profile.	이미지가 프로필에 게시되었습니다.
+Image sent for review.	이미지를 검토 요청했습니다.
+This content has no file.	이 콘텐츠에는 파일이 없습니다.
+Invalid file path.	파일 경로가 올바르지 않습니다.
+The file exceeds the allowed size.	파일이 허용된 크기를 초과합니다.
+The content has no verification fingerprint.	콘텐츠에 검증용 지문이 없습니다.
+The SHA-256 fingerprint does not match: the file is not the one that was approved. It was not installed.	SHA-256 지문이 일치하지 않습니다: 승인된 파일이 아닙니다. 설치되지 않았습니다.
+Did not pass local validation: {}	로컬 검증을 통과하지 못했습니다: {}
+Sent for review: {}	검토 요청됨: {}
+plugin.json is not valid.	plugin.json이 올바르지 않습니다.
+{} “{}” (Plugins tab)	{} “{}” (플러그인 탭)
+{} “{}” (Images tab)	{} “{}” (이미지 탭)
+{} “{}” (Text tab)	{} “{}” (텍스트 탭)
+The theme is not valid.	테마가 올바르지 않습니다.
+{} “{}” (Themes button to change it)	{} “{}” (변경하려면 테마 버튼)
+{} “{}” (Templates › My templates)	{} “{}” (템플릿 › 내 템플릿)
+{} “{}” (Elements tab)	{} “{}” (요소 탭)
+Plugin folder (with plugin.json)	플러그인 폴더 (plugin.json 포함)
+No saved session: open the app, Community tab, and sign in.	저장된 세션이 없습니다: 앱의 커뮤니티 탭을 열고 로그인하세요.
+Could not renew the session: {}	세션을 갱신할 수 없습니다: {}
+This account does not have a profile yet: create it in the app (Community tab).	이 계정에는 아직 프로필이 없습니다: 앱(커뮤니티 탭)에서 만드세요.
+Server error.	서버 오류.
+{}  [{}] {}  (by {}, {} bytes{})	{}  [{}] {}  (작성자 {}, {}바이트{})
+{} content item(s) and {} profile image(s) pending. To see the files use the moderation website.	콘텐츠 {}개와 프로필 이미지 {}개가 대기 중입니다. 파일을 보려면 검토 웹사이트를 사용하세요.
+Token created (expires {}). Copy it now, it cannot be viewed again:	토큰이 생성되었습니다 ({} 만료). 지금 복사하세요. 다시 볼 수 없습니다:
+I make game interfaces with Unity.	저는 Unity로 게임 인터페이스를 만듭니다.
+My button menu	내 버튼 메뉴
+Four buttons ready for a main menu.	메인 메뉴용으로 준비된 버튼 네 개.
+Provide a valid identifier.	올바른 식별자를 입력하세요.
+Could not read your data (do you have a profile?).	데이터를 읽을 수 없습니다 (프로필이 있나요?).
+removed	제거됨
+added	추가됨
+the banner ends up 3:1	배너가 3:1이 됩니다
+The design's “elements” list is missing.	디자인의 “elements” 목록이 없습니다.
+Too many elements.	요소가 너무 많습니다.
+Designs cannot contain external links or paths.	디자인에는 외부 링크나 경로를 넣을 수 없습니다.
+Designs cannot contain absolute paths or paths with “..”.	디자인에는 절대 경로나 “..”가 포함된 경로를 넣을 수 없습니다.
+A plugin needs “manifiesto” and “archivos”.	플러그인에는 “manifiesto”와 “archivos”가 필요합니다.
+Manifest: invalid name.	매니페스트: 이름이 올바르지 않습니다.
+The manifest uses {}, which is not in the package.	매니페스트가 패키지에 없는 {}을(를) 사용합니다.
+Empty file.	빈 파일입니다.
+Exceeds the limit of {} KB for {}.	한도 {}KB({})를 초과합니다.
+File type not allowed.	허용되지 않는 파일 형식입니다.
+Not a valid PNG, JPEG, GIF or WebP image.	올바른 PNG, JPEG, GIF 또는 WebP 이미지가 아닙니다.
+Dimensions out of range (maximum 4096×4096).	크기가 범위를 벗어났습니다 (최대 4096×4096).
+A text JSON was expected.	텍스트 JSON이 필요합니다.
+The file is not valid UTF-8 JSON.	파일이 올바른 UTF-8 JSON이 아닙니다.
+The file is not valid JSON.	파일이 올바른 JSON이 아닙니다.
+The file is not a Lienzo UI theme.	파일이 Lienzo UI 테마가 아닙니다.
+Unknown image type.	알 수 없는 이미지 유형입니다.
+The image must weigh at most {} KB.	이미지는 최대 {}KB여야 합니다.
+The image must be PNG.	이미지는 PNG여야 합니다.
+The image must measure at most {}×{} px.	이미지는 최대 {}×{} px여야 합니다.
+{}// (the {}° rotation is ignored inside an IMGUI mask or scroll)	{}// ({}° 회전은 IMGUI 마스크나 스크롤 안에서는 무시됩니다)
+{}// editor gradient: IMGUI uses the first color	{}// 편집기 그라디언트: IMGUI는 첫 번째 색상을 사용합니다
+could not read the image {}: {}	이미지 {}을(를) 읽을 수 없습니다: {}
+Card/Options/Viewport/Content/Slider Brightness	카드/옵션/Viewport/Content/Slider 밝기
+Window	창
+Window title	창 제목
+Dim	어둡게
+unsupported image format	지원되지 않는 이미지 형식
+could not read the image	이미지를 읽을 수 없습니다
+the file does not contain elements from this editor	파일에 이 편집기의 요소가 없습니다
+nothing is selected	선택된 항목이 없습니다
+the file is not a design from this editor	파일이 이 편집기의 디자인이 아닙니다
+use a .ttf or .otf font file	.ttf 또는 .otf 글꼴 파일을 사용하세요
+invalid name	올바르지 않은 이름
+unnamed	이름 없음
+template {} does not exist (0-{})	템플릿 {}이(가) 없습니다 (0-{})
+Specify the design with --open <file> or --template <n>	--open <파일> 또는 --template <n>으로 디자인을 지정하세요
+Could not load the design: {}	디자인을 불러올 수 없습니다: {}
+Could not save {}: {}	{}을(를) 저장할 수 없습니다: {}
+Lienzo UI · design interfaces for Unity	Lienzo UI · Unity용 인터페이스 디자인
+In-app updates: a button appears in the header when there is a new version.	앱 내 업데이트: 새 버전이 있으면 헤더에 버튼이 나타납니다.
+Type your text	텍스트를 입력하세요
+Option	옵션
+Type here...	여기에 입력...
+Option A	옵션 A
+Option B	옵션 B
+Option C	옵션 C
+Untitled design	제목 없는 디자인
+Title	제목
+STAR ADVENTURE	스타 어드벤처
+Subtitle	부제목
+An interface demo	인터페이스 데모
+Play	플레이
+Options	옵션
+Credits	크레딧
+Exit	종료
+{} button	{} 버튼
+Version	버전
+Scene (preview)	장면 (미리보기)
+Top bar	상단 바
+Health frame	체력 프레임
+Health label	체력 라벨
+HEALTH 72/100	체력 72/100
+Points	점수
+Action bar	액션 바
+Slot {}	슬롯 {}
+Minimap	미니맵
+Save the game?	게임을 저장할까요?
+Message	메시지
+Your progress will be saved in slot 1. You can continue later.	진행 상황이 슬롯 1에 저장됩니다. 나중에 이어서 할 수 있습니다.
+Buttons	버튼
+Cancel button	취소 버튼
+Accept button	수락 버튼
+Music volume	음악 볼륨
+Effects volume	효과음 볼륨
+Brightness	밝기
+Fullscreen	전체 화면
+Quality	품질
+Low	낮음
+Medium	보통
+High	높음
+Player name	플레이어 이름
+Back button	뒤로 버튼
+Back	뒤로
+Game (preview)	게임 (미리보기)
+Pause	일시정지
+PAUSED	일시정지됨
+Continue	계속
+Restart level	레벨 다시 시작
+Exit to menu	메뉴로 나가기
+GAME OVER	게임 오버
+Results	결과
+Best score	최고 기록
+Time	시간
+Retry button	재시도 버튼
+Menu button	메뉴 버튼
+Choose a level	레벨 선택
+Stars	별
+Stars: 14 / 36	별: 14 / 36
+Levels	레벨
+Level {}	레벨 {}
+Level name	레벨 이름
+The Crystal Caves	수정 동굴
+Tip	팁
+Tip: hold the jump button to reach higher.	팁: 점프 버튼을 길게 누르면 더 높이 뛸 수 있습니다.
+Loading bar	로딩 바
+Percentage	퍼센트
+Loading... 64 %	로딩 중... 64 %
+Indicator	표시기
+Dialogue box	대화 상자
+Portrait	초상화
+Old woman of the forest	숲의 노파
+Traveler, the north bridge fell last night. If you are looking for the temple, you will have to cross through the caves.	나그네여, 북쪽 다리가 어젯밤에 무너졌네. 신전을 찾는다면 동굴을 지나가야 할 걸세.
+Continue button	계속 버튼
+List	목록
+Nebula	성운
+You	나
+Row {}	행 {}
+Choose your character	캐릭터를 선택하세요
+Warrior	전사 (여)
+High strength	높은 힘
+Mage	마법사
+High magic	높은 마력
+Archer	궁수
+High precision	높은 정밀도
+Rogue	도적 (여)
+High stealth	높은 은신
+Card {}	카드 {}
+Portrait {}	초상화 {}
+Name {}	이름 {}
+Attribute {}	속성 {}
+Confirm button	확인 버튼
+{} empty	{} 비어 있음
+the title matches the name	제목이 이름과 일치합니다
+{}: {} has no size	{}: {}에 크기가 없습니다
+{} @{}x{}: “{}” outside the page {:?}	{} @{}x{}: “{}”이(가) 페이지 {:?} 밖에 있습니다
+Choose your Unity project folder (Ctrl+E)	Unity 프로젝트 폴더를 선택하세요 (Ctrl+E)
+They will be added inside “{}”	“{}” 안에 추가됩니다
+NEW	신규
+Watch out, it's coming from the left!	조심해, 왼쪽에서 오고 있어!
+Choose image	이미지 선택
+(not chosen)	(선택 안 됨)
+Writes to Assets/EditorGUI: Editor/EditorGuiImporter.cs, Designs/{c}.json, Sprites, Fonts, UI Toolkit/{c}.uxml+.uss and Scripts/{c}OnGUI.cs, {c}ViewBase.cs, {c}View.cs. When you return to Unity, Prefabs/{c}.prefab (uGUI + TextMeshPro) is generated automatically.	Assets/EditorGUI에 씁니다: Editor/EditorGuiImporter.cs, Designs/{c}.json, Sprites, Fonts, UI Toolkit/{c}.uxml+.uss 및 Scripts/{c}OnGUI.cs, {c}ViewBase.cs, {c}View.cs. Unity로 돌아가면 Prefabs/{c}.prefab(uGUI + TextMeshPro)이 자동으로 생성됩니다.
+Design for the importer. Unity turns it into a prefab (Tools › Lienzo UI).	임포터용 디자인. Unity가 프리팹으로 변환합니다 (Tools › Lienzo UI).
+Uses a UIDocument with PanelSettings set to “Scale With Screen Size” and this reference resolution.	PanelSettings를 “Scale With Screen Size”로 설정한 UIDocument와 이 기준 해상도를 사용합니다.
+Standalone component: draws the interface with UnityEngine.GUI inside OnGUI (no Canvas).	독립형 컴포넌트: OnGUI 안에서 UnityEngine.GUI로 인터페이스를 그립니다 (Canvas 없음).
+Typed references and onClick/onValueChanged events. Inherit in <Class>View for your logic.	타입이 지정된 참조와 onClick/onValueChanged 이벤트. 로직은 <클래스>View에서 상속해 작성하세요.
+Goes in Assets/EditorGUI/Editor/. Builds the prefab with uGUI + TextMeshPro.	Assets/EditorGUI/Editor/에 들어갑니다. uGUI + TextMeshPro로 프리팹을 만듭니다.
+{} lines	{}줄
+path not allowed in the plugin: {}	플러그인에서 허용되지 않는 경로: {}
+{}: the returned design is not valid ({})	{}: 반환된 디자인이 올바르지 않습니다 ({})
+{}: exportar() must return text, it returned {}	{}: exportar()는 텍스트를 반환해야 하는데 {}을(를) 반환했습니다
+{} “{}”{}	{} “{}”{}
+the command must work	명령이 작동해야 합니다
+the exporter must work	내보내기가 작동해야 합니다
+should reject {:?}	{:?}을(를) 거부해야 합니다
+should accept {:?}	{:?}을(를) 수락해야 합니다
+⚠ There is no element named “{}”	⚠ “{}”라는 이름의 요소가 없습니다
+⚠ Invalid color: {}	⚠ 올바르지 않은 색상: {}
+⚠ Error in the code of “{}”: {}	⚠ “{}”의 코드에 오류가 있습니다: {}
+the child follows the parent	자식이 부모를 따릅니다
+does not go past the last option	마지막 옵션을 넘지 않습니다
+this is not code (	이것은 코드가 아닙니다 (
+{} “{}”. {}	{} “{}”. {}
+{} “{}”	{} “{}”
+My theme ✨	내 테마 ✨
+The theme needs a name of 1 to 60 characters.	테마에는 1~60자의 이름이 필요합니다.
+The theme author is too long.	테마 작성자 이름이 너무 깁니다.
+Invalid color in “{}”: use #RRGGBB.	“{}”의 색상이 올바르지 않습니다: #RRGGBB를 사용하세요.
+Corners must be between 0 and 16.	모서리는 0에서 16 사이여야 합니다.
+Invalid font name.	글꼴 이름이 올바르지 않습니다.
+Align and order	정렬 및 순서
+Align to parent and order	부모에 맞춰 정렬 및 순서

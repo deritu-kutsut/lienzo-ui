@@ -1,6 +1,6 @@
 # 초보자 튜토리얼
 
-🌐 [English](TUTORIAL_BEGINNERS.md) · [Español](TUTORIAL_NOVATOS.md) · [Português](TUTORIAL_BEGINNERS.pt.md) · [Français](TUTORIAL_BEGINNERS.fr.md) · [Deutsch](TUTORIAL_BEGINNERS.de.md) · [Italiano](TUTORIAL_BEGINNERS.it.md) · [Русский](TUTORIAL_BEGINNERS.ru.md) · [简体中文](TUTORIAL_BEGINNERS.zh.md) · [日本語](TUTORIAL_BEGINNERS.ja.md) · [한국어](TUTORIAL_BEGINNERS.ko.md)
+🌐 [English](TUTORIAL_BEGINNERS.md) · [Español](TUTORIAL_BEGINNERS.es.md) · [Português](TUTORIAL_BEGINNERS.pt.md) · [Français](TUTORIAL_BEGINNERS.fr.md) · [Deutsch](TUTORIAL_BEGINNERS.de.md) · [Italiano](TUTORIAL_BEGINNERS.it.md) · [Русский](TUTORIAL_BEGINNERS.ru.md) · [简体中文](TUTORIAL_BEGINNERS.zh.md) · [日本語](TUTORIAL_BEGINNERS.ja.md) · [한국어](TUTORIAL_BEGINNERS.ko.md)
 
 Lienzo UI로 첫 인터페이스를 만들고 Unity로 처음 내보내 봅시다. 프로그래밍은 필요 없습니다.
 
@@ -12,7 +12,7 @@ Lienzo UI로 첫 인터페이스를 만들고 Unity로 처음 내보내 봅시�
 
 앱을 영어로 사용하려면: **접근성** 버튼 › **언어** › English.
 
-![앱 안의 튜토리얼](imagenes/tutorial.png)
+![앱 안의 튜토리얼](images/tutorial.png)
 
 ## 2. 화면
 
@@ -23,7 +23,7 @@ Lienzo UI로 첫 인터페이스를 만들고 Unity로 처음 내보내 봅시�
 | 가운데 | 캔버스: 게임 화면 (기본 1920 × 1080) |
 | 오른쪽 | **인스펙터**: 선택한 항목의 속성 |
 
-![편집기](imagenes/editor.png)
+![편집기](images/editor.png)
 
 ## 3. 템플릿에서 시작하기
 

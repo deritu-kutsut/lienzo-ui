@@ -1,5 +1,5 @@
 //! Lienzo UI community: browse, install, upload and report plugins, images, fonts, templates and elements
-//! without leaving the app. The server is Supabase (see supabase/ and docs/COMUNIDAD.md).
+//! without leaving the app. The server is Supabase (see supabase/ and docs/COMMUNITY.md).
 //!
 //! Privacy and security on the app side:
 //!   * No connection is made until you open the Community tab.

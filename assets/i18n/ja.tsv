@@ -123,7 +123,7 @@ Opacity	不透明度
 Automatically arranges direct children, as in Unity.	Unity と同様に、直下の子要素を自動整列します。
 STEP	ステップ
 PNG, JPG, BMP, GIF or WEBP — exported as Sprites	PNG, JPG, BMP, GIF, WEBP — Sprite としてエクスポートされます
-To add a language, translate assets/i18n/en.tsv (see docs/EXTENDER.md).	言語を追加するには、assets/i18n/en.tsv を翻訳してください（docs/EXTENDER.md を参照）。
+To add a language, translate assets/i18n/en.tsv (see docs/EXTENDING.md).	言語を追加するには、assets/i18n/en.tsv を翻訳してください（docs/EXTENDING.md を参照）。
 Paste	貼り付け
 Hint	ヒント
 Pivot	Pivot
@@ -584,3 +584,269 @@ Move 1 px (Shift: 10)	1 px 移動（Shift: 10）
 Ctrl+wheel	Ctrl+ホイール
 Test / simulate screens	画面のテスト / シミュレート
 No system font with these characters was found: text may show as boxes.	これらの文字を含むシステムフォントが見つかりません。文字が四角で表示される場合があります。
+No system font was found for the language “{}”	言語「{}」のシステムフォントが見つかりませんでした
+The release has no version.	このリリースにはバージョンがありません。
+Unrecognized release version.	リリースのバージョンを認識できません。
+GitHub responded {}.	GitHub が {} を返しました。
+The downloaded zip is not valid.	ダウンロードした zip は無効です。
+The zip does not contain lienzo-ui.exe.	zip に lienzo-ui.exe が含まれていません。
+The zip could not be read.	zip を読み込めませんでした。
+The executable in the zip is too large.	zip 内の実行ファイルが大きすぎます。
+The executable in the zip does not look valid.	zip 内の実行ファイルが有効なものではないようです。
+The download responded {}.	ダウンロードが {} を返しました。
+The download is too large or was cut off.	ダウンロードが大きすぎるか、途中で切断されました。
+there should be a version newer than 0.0.1	0.0.1 より新しいバージョンがあるはずです
+ inside “{}”	 「{}」の中
+Group {}	グループ {}
+Upload elements (PNG images with transparency or .json elements)	要素をアップロード（透過 PNG 画像または .json 要素）
+Upload templates (.json from this editor)	テンプレートをアップロード（このエディターの .json）
+Add fonts (.ttf / .otf)	フォントを追加（.ttf / .otf）
+Element	要素
+Open project	プロジェクトを開く
+▶ Test mode: click the elements with ⚡ to run their code.	▶ テストモード：⚡ のある要素をクリックしてコードを実行します。
+Unity project folder (the one that contains Assets)	Unity プロジェクトフォルダー（Assets を含むフォルダー）
+Play button	プレイボタン
+Options button	オプションボタン
+Credits button	クレジットボタン
+Exit button	終了ボタン
+the background keeps its order	背景は順序を保持します
+Menu	メニュー
+Header	ヘッダー
+Moon	月
+the locked background does not enter the group	ロックされた背景はグループに入りません
+Drop inside “{}”	「{}」の中にドロップ
+TEST MODE · click the elements with code · Esc or F5 to go back to editing	テストモード · コード付きの要素をクリック · Esc または F5 で編集に戻る
+Screen {} × {}  ·  virtual canvas {} × {}  ·  CanvasScaler scale {:.2}	画面 {} × {}  ·  仮想キャンバス {} × {}  ·  CanvasScaler スケール {:.2}
+Placed by the parent's Layout Group (use the Hierarchy to reorder)	親の Layout Group によって配置されます（並べ替えにはヒエラルキーを使用）
+Unexpected response from the server.	サーバーから予期しない応答がありました。
+You do not have permission or your session expired. Sign in again.	権限がないか、セッションの有効期限が切れました。もう一度サインインしてください。
+It already exists or was already processed.	すでに存在するか、処理済みです。
+Daily limit	1 日の上限
+That name is already in use.	その名前はすでに使用されています。
+The server is not available right now.	現在サーバーを利用できません。
+No connection to the server.	サーバーに接続できません。
+The server response is too large or was cut off.	サーバーの応答が大きすぎるか、途中で切断されました。
+The server did not return a session.	サーバーがセッションを返しませんでした。
+Invalid account identifier.	アカウント識別子が無効です。
+You can go back to Lienzo UI now. You can close this tab.	Lienzo UI に戻ってかまいません。このタブは閉じて大丈夫です。
+Could not sign in	サインインできませんでした
+Go back to Lienzo UI and try again.	Lienzo UI に戻ってもう一度お試しください。
+Local port {} is busy. Close another Lienzo UI session and try again.	ローカルポート {} は使用中です。別の Lienzo UI セッションを閉じてもう一度お試しください。
+Could not open the browser.	ブラウザーを開けませんでした。
+Sign-in canceled.	サインインがキャンセルされました。
+Timed out waiting for sign-in.	サインインの待機がタイムアウトしました。
+Sign-in was canceled.	サインインはキャンセルされました。
+Invalid sign-in response.	サインインの応答が無効です。
+Invalid creator.	クリエイターが無効です。
+This creator does not have a public profile yet.	このクリエイターにはまだ公開プロフィールがありません。
+The image is too heavy (maximum 25 MB).	画像が重すぎます（最大 25 MB）。
+Could not read the image.	画像を読み込めませんでした。
+Could not read the image (use PNG, JPEG, WebP, GIF or BMP).	画像を読み込めませんでした（PNG、JPEG、WebP、GIF、BMP を使用してください）。
+Could not reduce the image to the allowed size.	画像を許可されたサイズまで縮小できませんでした。
+Could not upload the image.	画像をアップロードできませんでした。
+Image published on your profile.	画像をプロフィールに公開しました。
+Image sent for review.	画像を審査に送信しました。
+This content has no file.	このコンテンツにはファイルがありません。
+Invalid file path.	ファイルパスが無効です。
+The file exceeds the allowed size.	ファイルが許可されたサイズを超えています。
+The content has no verification fingerprint.	このコンテンツには検証用フィンガープリントがありません。
+The SHA-256 fingerprint does not match: the file is not the one that was approved. It was not installed.	SHA-256 フィンガープリントが一致しません：承認されたファイルではありません。インストールされませんでした。
+Did not pass local validation: {}	ローカル検証に合格しませんでした：{}
+Sent for review: {}	審査に送信しました：{}
+plugin.json is not valid.	plugin.json が無効です。
+{} “{}” (Plugins tab)	{}「{}」（プラグインタブ）
+{} “{}” (Images tab)	{}「{}」（画像タブ）
+{} “{}” (Text tab)	{}「{}」（テキストタブ）
+The theme is not valid.	テーマが無効です。
+{} “{}” (Themes button to change it)	{}「{}」（変更するにはテーマボタン）
+{} “{}” (Templates › My templates)	{}「{}」（テンプレート › マイテンプレート）
+{} “{}” (Elements tab)	{}「{}」（要素タブ）
+Plugin folder (with plugin.json)	プラグインフォルダー（plugin.json を含む）
+No saved session: open the app, Community tab, and sign in.	保存されたセッションがありません：アプリのコミュニティタブを開いてサインインしてください。
+Could not renew the session: {}	セッションを更新できませんでした：{}
+This account does not have a profile yet: create it in the app (Community tab).	このアカウントにはまだプロフィールがありません：アプリ（コミュニティタブ）で作成してください。
+Server error.	サーバーエラー。
+{}  [{}] {}  (by {}, {} bytes{})	{}  [{}] {}  （作成者 {}、{} バイト{}）
+{} content item(s) and {} profile image(s) pending. To see the files use the moderation website.	コンテンツ {} 件とプロフィール画像 {} 件が保留中です。ファイルを確認するにはモデレーションサイトを使用してください。
+Token created (expires {}). Copy it now, it cannot be viewed again:	トークンを作成しました（有効期限 {}）。今すぐコピーしてください。再表示はできません：
+I make game interfaces with Unity.	Unity でゲームのインターフェースを作っています。
+My button menu	私のボタンメニュー
+Four buttons ready for a main menu.	メインメニュー用に用意した 4 つのボタン。
+Provide a valid identifier.	有効な識別子を指定してください。
+Could not read your data (do you have a profile?).	データを読み込めませんでした（プロフィールはありますか？）。
+removed	削除しました
+added	追加しました
+the banner ends up 3:1	バナーは 3:1 になります
+The design's “elements” list is missing.	デザインの「elements」リストがありません。
+Too many elements.	要素が多すぎます。
+Designs cannot contain external links or paths.	デザインに外部リンクやパスを含めることはできません。
+Designs cannot contain absolute paths or paths with “..”.	デザインに絶対パスや「..」を含むパスを含めることはできません。
+A plugin needs “manifiesto” and “archivos”.	プラグインには「manifiesto」と「archivos」が必要です。
+Manifest: invalid name.	マニフェスト：名前が無効です。
+The manifest uses {}, which is not in the package.	マニフェストは {} を使用していますが、パッケージに含まれていません。
+Empty file.	空のファイルです。
+Exceeds the limit of {} KB for {}.	{} KB の上限（{}）を超えています。
+File type not allowed.	許可されていないファイル形式です。
+Not a valid PNG, JPEG, GIF or WebP image.	有効な PNG、JPEG、GIF、WebP 画像ではありません。
+Dimensions out of range (maximum 4096×4096).	サイズが範囲外です（最大 4096×4096）。
+A text JSON was expected.	テキストの JSON が必要です。
+The file is not valid UTF-8 JSON.	ファイルは有効な UTF-8 の JSON ではありません。
+The file is not valid JSON.	ファイルは有効な JSON ではありません。
+The file is not a Lienzo UI theme.	ファイルは Lienzo UI のテーマではありません。
+Unknown image type.	不明な画像タイプです。
+The image must weigh at most {} KB.	画像は {} KB 以下にしてください。
+The image must be PNG.	画像は PNG にしてください。
+The image must measure at most {}×{} px.	画像は {}×{} px 以下にしてください。
+{}// (the {}° rotation is ignored inside an IMGUI mask or scroll)	{}// （{}° の回転は IMGUI のマスクまたはスクロール内では無視されます）
+{}// editor gradient: IMGUI uses the first color	{}// エディターのグラデーション：IMGUI は最初の色を使用します
+could not read the image {}: {}	画像 {} を読み込めませんでした：{}
+Card/Options/Viewport/Content/Slider Brightness	カード/オプション/Viewport/Content/Slider 明るさ
+Window	ウィンドウ
+Window title	ウィンドウタイトル
+Dim	暗くする
+unsupported image format	サポートされていない画像形式
+could not read the image	画像を読み込めませんでした
+the file does not contain elements from this editor	ファイルにこのエディターの要素が含まれていません
+nothing is selected	何も選択されていません
+the file is not a design from this editor	ファイルはこのエディターのデザインではありません
+use a .ttf or .otf font file	.ttf または .otf のフォントファイルを使用してください
+invalid name	無効な名前
+unnamed	名前なし
+template {} does not exist (0-{})	テンプレート {} は存在しません（0-{}）
+Specify the design with --open <file> or --template <n>	--open <ファイル> または --template <n> でデザインを指定してください
+Could not load the design: {}	デザインを読み込めませんでした：{}
+Could not save {}: {}	{} を保存できませんでした：{}
+Lienzo UI · design interfaces for Unity	Lienzo UI · Unity 用インターフェースをデザイン
+In-app updates: a button appears in the header when there is a new version.	アプリ内アップデート：新しいバージョンがあるとヘッダーにボタンが表示されます。
+Type your text	テキストを入力
+Option	オプション
+Type here...	ここに入力...
+Option A	オプション A
+Option B	オプション B
+Option C	オプション C
+Untitled design	無題のデザイン
+Title	タイトル
+STAR ADVENTURE	スターアドベンチャー
+Subtitle	サブタイトル
+An interface demo	インターフェースのデモ
+Play	プレイ
+Options	オプション
+Credits	クレジット
+Exit	終了
+{} button	{} ボタン
+Version	バージョン
+Scene (preview)	シーン（プレビュー）
+Top bar	トップバー
+Health frame	体力フレーム
+Health label	体力ラベル
+HEALTH 72/100	体力 72/100
+Points	ポイント
+Action bar	アクションバー
+Slot {}	スロット {}
+Minimap	ミニマップ
+Save the game?	ゲームをセーブしますか？
+Message	メッセージ
+Your progress will be saved in slot 1. You can continue later.	進行状況はスロット 1 に保存されます。後で続きから再開できます。
+Buttons	ボタン
+Cancel button	キャンセルボタン
+Accept button	OK ボタン
+Music volume	音楽の音量
+Effects volume	効果音の音量
+Brightness	明るさ
+Fullscreen	フルスクリーン
+Quality	画質
+Low	低
+Medium	中
+High	高
+Player name	プレイヤー名
+Back button	戻るボタン
+Back	戻る
+Game (preview)	ゲーム（プレビュー）
+Pause	ポーズ
+PAUSED	ポーズ中
+Continue	続ける
+Restart level	レベルをやり直す
+Exit to menu	メニューに戻る
+GAME OVER	ゲームオーバー
+Results	結果
+Best score	ベストスコア
+Time	タイム
+Retry button	リトライボタン
+Menu button	メニューボタン
+Choose a level	レベルを選択
+Stars	スター
+Stars: 14 / 36	スター：14 / 36
+Levels	レベル
+Level {}	レベル {}
+Level name	レベル名
+The Crystal Caves	クリスタルの洞窟
+Tip	ヒント
+Tip: hold the jump button to reach higher.	ヒント：ジャンプボタンを長押しすると、より高く跳べます。
+Loading bar	ロードバー
+Percentage	パーセント
+Loading... 64 %	読み込み中... 64 %
+Indicator	インジケーター
+Dialogue box	ダイアログボックス
+Portrait	肖像
+Old woman of the forest	森の老婆
+Traveler, the north bridge fell last night. If you are looking for the temple, you will have to cross through the caves.	旅人よ、北の橋は昨夜落ちた。神殿を探しているなら、洞窟を抜けるしかないよ。
+Continue button	続けるボタン
+List	リスト
+Nebula	星雲
+You	あなた
+Row {}	行 {}
+Choose your character	キャラクターを選択
+Warrior	戦士（女）
+High strength	高い筋力
+Mage	魔法使い
+High magic	高い魔力
+Archer	弓使い
+High precision	高い精度
+Rogue	盗賊（女）
+High stealth	高い隠密性
+Card {}	カード {}
+Portrait {}	肖像 {}
+Name {}	名前 {}
+Attribute {}	属性 {}
+Confirm button	確定ボタン
+{} empty	{} は空
+the title matches the name	タイトルは名前と一致します
+{}: {} has no size	{}：{} にサイズがありません
+{} @{}x{}: “{}” outside the page {:?}	{} @{}x{}：「{}」がページ {:?} の外にあります
+Choose your Unity project folder (Ctrl+E)	Unity プロジェクトのフォルダーを選択 (Ctrl+E)
+They will be added inside “{}”	「{}」の中に追加されます
+NEW	新着
+Watch out, it's coming from the left!	気をつけて、左から来るぞ！
+Choose image	画像を選択
+(not chosen)	（未選択）
+Writes to Assets/EditorGUI: Editor/EditorGuiImporter.cs, Designs/{c}.json, Sprites, Fonts, UI Toolkit/{c}.uxml+.uss and Scripts/{c}OnGUI.cs, {c}ViewBase.cs, {c}View.cs. When you return to Unity, Prefabs/{c}.prefab (uGUI + TextMeshPro) is generated automatically.	Assets/EditorGUI に書き込みます：Editor/EditorGuiImporter.cs、Designs/{c}.json、Sprites、Fonts、UI Toolkit/{c}.uxml+.uss、Scripts/{c}OnGUI.cs、{c}ViewBase.cs、{c}View.cs。Unity に戻ると Prefabs/{c}.prefab（uGUI + TextMeshPro）が自動生成されます。
+Design for the importer. Unity turns it into a prefab (Tools › Lienzo UI).	インポーター用のデザイン。Unity がプレハブに変換します (Tools › Lienzo UI)。
+Uses a UIDocument with PanelSettings set to “Scale With Screen Size” and this reference resolution.	PanelSettings を「Scale With Screen Size」に設定した UIDocument と、この基準解像度を使用します。
+Standalone component: draws the interface with UnityEngine.GUI inside OnGUI (no Canvas).	スタンドアロンのコンポーネント：OnGUI 内で UnityEngine.GUI を使ってインターフェースを描画します（Canvas なし）。
+Typed references and onClick/onValueChanged events. Inherit in <Class>View for your logic.	型付きの参照と onClick/onValueChanged イベント。独自のロジックは <クラス>View で継承してください。
+Goes in Assets/EditorGUI/Editor/. Builds the prefab with uGUI + TextMeshPro.	Assets/EditorGUI/Editor/ に配置します。uGUI + TextMeshPro でプレハブを構築します。
+{} lines	{} 行
+path not allowed in the plugin: {}	プラグインで許可されていないパス：{}
+{}: the returned design is not valid ({})	{}：返されたデザインが無効です（{}）
+{}: exportar() must return text, it returned {}	{}：exportar() はテキストを返す必要がありますが、{} を返しました
+{} “{}”{}	{}「{}」{}
+the command must work	コマンドが動作する必要があります
+the exporter must work	エクスポーターが動作する必要があります
+should reject {:?}	{:?} を拒否するはずです
+should accept {:?}	{:?} を受け入れるはずです
+⚠ There is no element named “{}”	⚠ 「{}」という名前の要素はありません
+⚠ Invalid color: {}	⚠ 無効な色：{}
+⚠ Error in the code of “{}”: {}	⚠ 「{}」のコードにエラーがあります：{}
+the child follows the parent	子は親に追従します
+does not go past the last option	最後のオプションを超えません
+this is not code (	これはコードではありません (
+{} “{}”. {}	{}「{}」。{}
+{} “{}”	{}「{}」
+My theme ✨	私のテーマ ✨
+The theme needs a name of 1 to 60 characters.	テーマには 1〜60 文字の名前が必要です。
+The theme author is too long.	テーマの作者名が長すぎます。
+Invalid color in “{}”: use #RRGGBB.	「{}」の色が無効です：#RRGGBB を使用してください。
+Corners must be between 0 and 16.	角は 0 から 16 の間にしてください。
+Invalid font name.	フォント名が無効です。
+Align and order	整列と並べ替え
+Align to parent and order	親に合わせて整列し、並べ替え

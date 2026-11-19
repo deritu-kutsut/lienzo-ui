@@ -28,9 +28,9 @@ cover(cover_image, 420, 280).save(O + "card_420x280.png", optimize=True)
 white = Image.new("RGBA", icon.size, (255, 255, 255, 255))
 white.alpha_composite(icon)
 white.convert("RGB").resize((160, 160), Image.LANCZOS).save(O + "icon_160x160.png", optimize=True)
-# (file in docs/imagenes, name used in the screenshot file name)
-for i, (source, label) in enumerate([("editor", "editor"), ("unity", "unity"), ("comunidad", "community"), ("perfil", "profile"), ("temas", "themes"), ("tutorial", "tutorial")], 1):
-    p = R + f"docs/imagenes/{source}.png"
+# (file in docs/images, name used in the screenshot file name)
+for i, (source, label) in enumerate([("editor", "editor"), ("unity", "unity"), ("community", "community"), ("profile", "profile"), ("themes", "themes"), ("tutorial", "tutorial")], 1):
+    p = R + f"docs/images/{source}.png"
     if os.path.exists(p):
         fit(Image.open(p), 1920, 1080).save(O + f"screenshot_{i}_{label}_1920x1080.png", optimize=True)
 print(sorted(os.listdir(O)))

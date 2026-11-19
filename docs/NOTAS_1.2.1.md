@@ -1,5 +1,3 @@
-# Lienzo UI 1.2.1
+# Release notes 1.2.1 (moved)
 
-- **Updater fixed**: after updating, "Restart now" relaunched the old version; it now opens the new one.
-- Release notes show as plain text in the update window.
-- If you're on 1.2.0, update from inside the app (**Update to 1.2.1** button); when it finishes, close and reopen Lienzo UI by hand once.
+This page moved to [RELEASE_NOTES_1.2.1.md](RELEASE_NOTES_1.2.1.md).

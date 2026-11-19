@@ -44,7 +44,7 @@
     },
     {
       "title": "MCP-Server und Mitwirken",
-      "text": "Der Ordner mcp/ enthält einen MCP-Server ohne Abhängigkeiten (Node 18+): Jede kompatible KI (Claude, Cursor, VS Code…) kann Vorlagen auflisten, Entwürfe erstellen und bearbeiten, sie nach Unity exportieren und Screenshots machen.\n\nLienzo UI ist Open Source (MIT). Der Code ist in Rust mit egui geschrieben: src/model.rs (Daten), src/canvas.rs (Arbeitsfläche), src/panels.rs (Panels), src/export/ (Unity).\n\nLies docs/EXTENDER.md, um Elemente, Vorlagen oder Exporter hinzuzufügen, und CONTRIBUTING.md, um Änderungen einzureichen."
+      "text": "Der Ordner mcp/ enthält einen MCP-Server ohne Abhängigkeiten (Node 18+): Jede kompatible KI (Claude, Cursor, VS Code…) kann Vorlagen auflisten, Entwürfe erstellen und bearbeiten, sie nach Unity exportieren und Screenshots machen.\n\nLienzo UI ist Open Source (MIT). Der Code ist in Rust mit egui geschrieben: src/model.rs (Daten), src/canvas.rs (Arbeitsfläche), src/panels.rs (Panels), src/export/ (Unity).\n\nLies docs/EXTENDING.md, um Elemente, Vorlagen oder Exporter hinzuzufügen, und CONTRIBUTING.md, um Änderungen einzureichen."
     },
     {
       "title": "Pixel-Art",

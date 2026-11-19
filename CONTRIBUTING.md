@@ -3,7 +3,7 @@
 Thank you for wanting to improve Lienzo UI! Anyone can propose changes.
 
 1. Make a **fork** and create a branch: `git checkout -b feat/my-improvement`.
-2. Follow [docs/EXTENDER.md](docs/EXTENDER.md).
+2. Follow [docs/EXTENDING.md](docs/EXTENDING.md).
 3. Check: `cargo test`, `node mcp/probar-mcp.mjs` and, if you touched the export, a real export to Unity.
 4. Add a line to `CHANGELOG.md` under **Unreleased**.
 5. Open a **pull request** explaining what changes and why, with a screenshot if it is visual.
@@ -12,7 +12,7 @@ A bug or an idea? Open an **issue**.
 
 ## Conventions
 
-- Rust 2024, `cargo fmt` before submitting. Everything is English-first: code, identifiers, file and folder names, tool and flag names, and the texts passed to `crate::i18n::t("…")` are English; other languages are `assets/i18n/<code>.tsv` files (see [docs/EXTENDER.md](docs/EXTENDER.md)).
+- Rust 2024, `cargo fmt` before submitting. Everything is English-first: code, identifiers, file and folder names, tool and flag names, and the texts passed to `crate::i18n::t("…")` are English; other languages are `assets/i18n/<code>.tsv` files (see [docs/EXTENDING.md](docs/EXTENDING.md)).
 - Changes to the design format must keep reading old projects (`#[serde(default)]`).
 - What is exported to Unity must not overwrite the user's code (`<Design>View.cs`).
 

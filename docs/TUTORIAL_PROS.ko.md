@@ -1,6 +1,6 @@
 # 전문가 튜토리얼
 
-🌐 [English](TUTORIAL_PROS.md) · [Español](TUTORIAL_PROFESIONALES.md) · [Português](TUTORIAL_PROS.pt.md) · [Français](TUTORIAL_PROS.fr.md) · [Deutsch](TUTORIAL_PROS.de.md) · [Italiano](TUTORIAL_PROS.it.md) · [Русский](TUTORIAL_PROS.ru.md) · [简体中文](TUTORIAL_PROS.zh.md) · [日本語](TUTORIAL_PROS.ja.md) · [한국어](TUTORIAL_PROS.ko.md)
+🌐 [English](TUTORIAL_PROS.md) · [Español](TUTORIAL_PROS.es.md) · [Português](TUTORIAL_PROS.pt.md) · [Français](TUTORIAL_PROS.fr.md) · [Deutsch](TUTORIAL_PROS.de.md) · [Italiano](TUTORIAL_PROS.it.md) · [Русский](TUTORIAL_PROS.ru.md) · [简体中文](TUTORIAL_PROS.zh.md) · [日本語](TUTORIAL_PROS.ja.md) · [한국어](TUTORIAL_PROS.ko.md)
 
 ## 내보내기가 생성하는 파일
 
@@ -92,4 +92,4 @@ Rust + [egui](https://github.com/emilk/egui):
 | `src/tutorial.rs` | 내장 튜토리얼 (스페인어 및 영어 페이지) |
 | `src/script.rs` | 테스트 모드용 Rhai 스크립트 |
 
-확장하려면: [EXTENDER.md](EXTENDER.md).
+확장하려면: [EXTENDING.md](EXTENDING.md).
