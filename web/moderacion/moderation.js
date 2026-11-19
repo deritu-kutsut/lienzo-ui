@@ -109,10 +109,12 @@ function render() {
   $("nav").hidden = !signedIn;
   $("tab-tokens").hidden = !(signedIn && session.type === "person");
   $("pending").hidden = !(signedIn && tab === "pending");
+  $("claims").hidden = !(signedIn && tab === "claims");
   $("tokens").hidden = !(signedIn && tab === "tokens");
   $("tab-pending").className = tab === "pending" ? "active" : "";
+  $("tab-claims").className = tab === "claims" ? "active" : "";
   $("tab-tokens").className = tab === "tokens" ? "active" : "";
-  if (signedIn) (tab === "pending" ? loadPending() : loadTokens());
+  if (signedIn) (tab === "pending" ? loadPending() : tab === "claims" ? loadClaims() : loadTokens());
 }
 
 async function act(action, body, okMessage) {
@@ -236,6 +238,76 @@ async function loadPending(announce = true) {
   }
 }
 
+// ───────── copyright claims ─────────
+// Everything in a claim (claimant, contact, description, counter-notice, titles, names) is user content: textContent only.
+const when = (t) => (t ? String(t).slice(0, 16).replace("T", " ") : "—");
+const BAN_FOREVER = "9999-";
+
+async function claimAct(action, body, okMessage) {
+  setStatus("Working…");
+  try {
+    const j = await api(action, body);
+    setStatus(j.restored === false && j.restore_error ? `${okMessage} The item could not be restored automatically (${j.restore_error}): open the Pending tab.` : okMessage);
+    await loadClaims(false);
+  } catch (e) {
+    setStatus(e.message, true);
+    if (e.status === 409) await loadClaims(false);
+  }
+}
+
+function accountLine(a) {
+  if (!a) return "author unknown (account deleted)";
+  const ban = a.upload_banned_until ? (String(a.upload_banned_until).startsWith(BAN_FOREVER) ? "upload ban: permanent" : `upload ban until ${when(a.upload_banned_until)}`) : "no upload ban";
+  return `${a.public_name || "—"} · strikes: ${a.strikes ?? 0} of 3 · ${ban}${a.suspended ? " · SUSPENDED" : ""}`;
+}
+
+function claimCard(c) {
+  const note = el("textarea", { rows: "3", maxlength: "2000", placeholder: "Counter-notice text received from the uploader (copy it here)" });
+  const force = c.status === "counter" ? el("input", { type: "checkbox", id: `force-${c.id}` }) : null;
+  return el("div", { class: "card" },
+    el("h2", { text: c.item ? c.item.title : "(item deleted)" }, el("span", { class: "badge18", text: c.status === "counter" ? "counter-notice" : "open" })),
+    el("div", { class: "meta", text: `${c.item ? `${c.item.kind} · by ${c.item.author_name || "—"} · ${c.item.status}` : "—"} · filed ${when(c.created_at)}` }),
+    el("div", { class: "reason", text: accountLine(c.author) }),
+    el("p", { text: `Claimant: ${c.claimant}${c.claimant_contact ? ` · contact: ${c.claimant_contact}` : c.claimant_contact_masked ? " · contact: hidden (your credential cannot decide claims)" : ""}` }),
+    el("div", { class: "meta", text: `Filed by: ${c.reporter ? `${c.reporter.public_name || "(name unavailable)"} (${c.reporter.id})` : "a moderator, or the account was deleted"}` }),
+    c.flag === "author_flood" ? el("div", { class: "reason", text: "FLAGGED: more than 3 claims against this author in 24 h. The item was NOT hidden: check for a harassment campaign before deciding." }) : null,
+    c.item && c.item.edited_while_hidden ? el("div", { class: "reason", text: "The title, description or tags were EDITED after this claim was filed. Rejecting the claim will NOT republish it: it stays in the Pending tab for a normal review." }) : null,
+    el("p", { text: c.description }),
+    c.counter_notice ? el("div", { class: "reason", text: `Counter-notice (${when(c.counter_at)}): ${c.counter_notice}` }) : null,
+    c.restore_after ? el("div", { class: "meta", text: `Earliest restore without override: ${when(c.restore_after)}` }) : null,
+    el("div", { class: "actions" },
+      el("button", { class: "bad", text: "Uphold: take down + strike", onclick: () => {
+        if (confirm("Take the item down for good and give the author a strike? At 3 strikes uploads are disabled.")) claimAct("claim_uphold", { claim: c.id }, "Claim upheld: item removed and strike recorded.");
+      } }),
+      el("button", { class: "ok", text: "Reject claim: restore item", onclick: () => claimAct("claim_reject", { claim: c.id, force: force && force.checked ? true : undefined }, "Claim rejected.") }),
+      force ? el("label", { for: `force-${c.id}`, text: "Override the waiting period" }) : null,
+      force ? force : null),
+    c.status === "open" ? el("div", {}, note, el("div", { class: "actions" },
+      el("button", { text: "Record counter-notice", onclick: () => claimAct("claim_counter", { claim: c.id, note: note.value.trim() }, "Counter-notice recorded: the item stays hidden.") }))) : null);
+}
+
+async function loadClaims(announce = true) {
+  const box = $("claims");
+  try {
+    const j = await api("claim_list");
+    const accounts = j.accounts || [];
+    box.replaceChildren(
+      el("p", { class: "notice", text: `${j.claims.length} open or counter-noticed claim(s). ${j.note || ""}` }),
+      el("div", { class: "row" }, el("button", { text: "Refresh", onclick: () => loadClaims() })),
+      ...(j.claims.length ? j.claims.map(claimCard) : [el("p", { class: "meta", text: "No open claims." })]),
+      el("h3", { class: "section", text: `Accounts with strikes, bans or suspension (${accounts.length})` }),
+      accounts.length ? el("table", {},
+        el("thead", {}, el("tr", {}, ...["Name", "Strikes", "Upload ban", "Suspended"].map((t) => el("th", { text: t })))),
+        el("tbody", {}, ...accounts.map((a) => el("tr", {},
+          el("td", { text: a.public_name || a.id }), el("td", { text: String(a.strikes ?? 0) }),
+          el("td", { text: a.upload_banned_until ? (String(a.upload_banned_until).startsWith(BAN_FOREVER) ? "permanent" : `until ${when(a.upload_banned_until)}`) : "—" }),
+          el("td", { text: a.suspended ? "yes" : "no" }))))) : el("p", { class: "meta", text: "None." }));
+    if (announce) setStatus("");
+  } catch (e) {
+    setStatus(e.message, true);
+  }
+}
+
 // ───────── tokens (people only) ─────────
 async function loadTokens() {
   const box = $("tokens");
@@ -284,6 +356,7 @@ $("github").addEventListener("click", () => signInOAuth("github"));
 $("google").addEventListener("click", () => signInOAuth("google"));
 $("sign-out").addEventListener("click", signOut);
 $("tab-pending").addEventListener("click", () => { tab = "pending"; render(); });
+$("tab-claims").addEventListener("click", () => { tab = "claims"; render(); });
 $("tab-tokens").addEventListener("click", () => { tab = "tokens"; render(); });
 $("token-sign-in").addEventListener("click", () => {
   const t = $("token").value.trim();
