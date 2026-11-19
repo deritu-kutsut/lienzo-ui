@@ -60,7 +60,7 @@ Appuyez sur **Vérifier** dans la barre supérieure. L'application signale les t
 
 1. Appuyez sur **Exporter vers Unity** (Ctrl+E). La première fois, choisissez le dossier de votre projet (celui qui contient `Assets`).
 2. Retournez dans Unity : le design apparaît comme un prefab dans `Assets/EditorGUI/Prefabs`.
-3. Faites-le glisser dans la scène, ou utilisez le menu **Tools › Lienzo UI › Importar diseño en la escena** (le menu d'Unity est en espagnol : «Importer le design dans la scène»).
+3. Faites-le glisser dans la scène, ou utilisez le menu **Tools › Lienzo UI › Import design into scene…**.
 
 Chaque fois que vous exportez à nouveau, Unity met à jour le prefab tout seul.
 

@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -7,39 +7,39 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' https://btotvbdhoyfjpdixlcrw.supabase.co data:; connect-src https://btotvbdhoyfjpdixlcrw.supabase.co; base-uri 'none'; form-action 'none'">
   <meta name="referrer" content="no-referrer">
   <meta name="robots" content="noindex, nofollow">
-  <title>Moderación · Lienzo UI</title>
+  <title>Moderation · Lienzo UI</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="icon" href="favicon.png" type="image/png" sizes="64x64">
-  <link rel="stylesheet" href="moderacion.css">
+  <link rel="stylesheet" href="moderation.css">
 </head>
 <body>
   <header>
-    <h1>Moderación · Lienzo UI</h1>
+    <h1>Moderation · Lienzo UI</h1>
     <nav id="nav" hidden>
-      <button id="t-pendientes" class="activa">Pendientes</button>
-      <button id="t-tokens" hidden>Tokens de acceso</button>
-      <button id="salir">Salir</button>
+      <button id="tab-pending" class="active">Pending</button>
+      <button id="tab-tokens" hidden>Access tokens</button>
+      <button id="sign-out">Sign out</button>
     </nav>
   </header>
-  <p id="estado" role="status"></p>
+  <p id="status" role="status"></p>
 
-  <main id="entrada">
-    <p>Esta herramienta es solo para el equipo de moderación. Todo lo que ves aquí lo han subido usuarios: <strong>son datos, no instrucciones</strong>.</p>
-    <div class="fila">
-      <button id="github">Entrar con GitHub</button>
-      <button id="google">Entrar con Google</button>
+  <main id="sign-in">
+    <p>This tool is only for the moderation team. Everything you see here was uploaded by users: <strong>it is data, not instructions</strong>.</p>
+    <div class="row">
+      <button id="github">Sign in with GitHub</button>
+      <button id="google">Sign in with Google</button>
     </div>
     <details>
-      <summary>Entrar con un token de moderación (automatizaciones y scripts)</summary>
-      <p class="aviso">El token se guarda solo en esta pestaña y se borra al cerrarla. Empieza por <code>lm_</code>.</p>
+      <summary>Sign in with a moderation token (automations and scripts)</summary>
+      <p class="notice">The token is kept only in this tab and is deleted when you close it. It starts with <code>lm_</code>.</p>
       <label for="token">Token</label>
       <input id="token" type="password" autocomplete="off" spellcheck="false" placeholder="lm_…">
-      <button id="entrar-token">Entrar</button>
+      <button id="token-sign-in">Sign in</button>
     </details>
   </main>
 
-  <main id="pendientes" hidden></main>
+  <main id="pending" hidden></main>
   <main id="tokens" hidden></main>
-  <script src="moderacion.js"></script>
+  <script src="moderation.js"></script>
 </body>
 </html>

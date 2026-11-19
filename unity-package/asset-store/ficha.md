@@ -72,7 +72,7 @@ First Asset Store release: importer, launcher window, 7 sample screens, English 
 ## How to upload it (you do this yourself, because it requires your account and accepting its terms)
 
 1. In the **Publisher Portal** create a new package ("Create package"), fill it in with this listing and upload the images.
-2. In Unity, install **Asset Store Tools** (Package Manager › My Assets › "Asset Store Publishing Tools"), drag `dist/LienzoUI-for-Unity-1.1.0.unitypackage` into an empty project (or open `unity-package/fuente`) and use **Asset Store Tools › Package Upload**: pick the `Assets/EditorGUI` folder, sign in and upload.
+2. In Unity, install **Asset Store Tools** (Package Manager › My Assets › "Asset Store Publishing Tools"), drag `dist/LienzoUI-for-Unity-1.1.0.unitypackage` into an empty project (or open `unity-package/source`) and use **Asset Store Tools › Package Upload**: pick the `Assets/EditorGUI` folder, sign in and upload.
 3. Go back to the portal, check the validation and click **Submit for approval**. Unity's review takes a few days.
 
 Note: the Asset Store requires the package to work on its own and any external software it needs to be declared; this is already explained in the description and in the package README.

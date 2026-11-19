@@ -1,9 +1,9 @@
 {
   "canvas": {
-    "background": "#1C1E28FF",
-    "className": "Inventario",
+    "background": "#ECEEF5FF",
+    "className": "Settings",
     "match": 0.5,
-    "name": "Inventario",
+    "name": "Settings",
     "pixelArt": false,
     "referenceResolution": [
       1920.0,
@@ -15,106 +15,6 @@
       "active": true,
       "contentHeight": 0.0,
       "id": 1,
-      "image": {
-        "alpha": 1.0,
-        "color": "#2C2F3EFF",
-        "gradientTo": "#00C4CCFF",
-        "preserveAspect": false,
-        "radius": 28.0,
-        "source": "",
-        "useGradient": false
-      },
-      "interactable": true,
-      "layout": {
-        "cellSize": [
-          100.0,
-          100.0
-        ],
-        "childAlignment": 0,
-        "expandHeight": false,
-        "expandWidth": false,
-        "mode": 0,
-        "padding": [
-          16.0,
-          16.0,
-          16.0,
-          16.0
-        ],
-        "spacing": [
-          12.0,
-          12.0
-        ]
-      },
-      "mask": false,
-      "name": "Inventario",
-      "onClick": "",
-      "options": [],
-      "outline": {
-        "color": "#5A6082FF",
-        "width": 3.0
-      },
-      "parent": -1,
-      "raycastTarget": true,
-      "rect": {
-        "anchorMax": [
-          0.5,
-          0.5
-        ],
-        "anchorMin": [
-          0.5,
-          0.5
-        ],
-        "anchoredPosition": [
-          0.0,
-          0.0
-        ],
-        "pivot": [
-          0.5,
-          0.5
-        ],
-        "rotationZ": 0.0,
-        "sizeDelta": [
-          840.0,
-          760.0
-        ]
-      },
-      "shadow": {
-        "color": "#0000006E",
-        "enabled": true,
-        "offset": [
-          6.0,
-          -6.0
-        ]
-      },
-      "shape": "rect",
-      "size": [
-        840.0,
-        760.0
-      ],
-      "text": {
-        "alignH": 1,
-        "alignV": 1,
-        "bold": false,
-        "color": "#14141EFF",
-        "font": "",
-        "fontSize": 32.0,
-        "hasText": false,
-        "italic": false,
-        "padding": [
-          16.0,
-          16.0,
-          12.0
-        ],
-        "underline": false,
-        "value": ""
-      },
-      "type": "Panel",
-      "value": 0.5
-    },
-    {
-      "active": true,
-      "contentHeight": 0.0,
-      "id": 2,
       "image": {
         "alpha": 1.0,
         "color": "#00000000",
@@ -146,14 +46,14 @@
         ]
       },
       "mask": false,
-      "name": "Título",
+      "name": "Title",
       "onClick": "",
       "options": [],
       "outline": {
         "color": "#1E1E28FF",
         "width": 0.0
       },
-      "parent": 0,
+      "parent": -1,
       "raycastTarget": false,
       "rect": {
         "anchorMax": [
@@ -165,8 +65,8 @@
           1.0
         ],
         "anchoredPosition": [
-          40.0,
-          -30.0
+          120.0,
+          -70.0
         ],
         "pivot": [
           0.0,
@@ -174,8 +74,408 @@
         ],
         "rotationZ": 0.0,
         "sizeDelta": [
-          600.0,
-          70.0
+          800.0,
+          90.0
+        ]
+      },
+      "shadow": {
+        "color": "#0000006E",
+        "enabled": false,
+        "offset": [
+          6.0,
+          -6.0
+        ]
+      },
+      "shape": "rect",
+      "size": [
+        800.0,
+        90.0
+      ],
+      "text": {
+        "alignH": 0,
+        "alignV": 0,
+        "bold": true,
+        "color": "#14141EFF",
+        "font": "",
+        "fontSize": 72.0,
+        "hasText": true,
+        "italic": false,
+        "padding": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "underline": false,
+        "value": "Settings"
+      },
+      "type": "Text",
+      "value": 0.5
+    },
+    {
+      "active": true,
+      "contentHeight": 0.0,
+      "id": 2,
+      "image": {
+        "alpha": 1.0,
+        "color": "#FFFFFFFF",
+        "gradientTo": "#00C4CCFF",
+        "preserveAspect": false,
+        "radius": 24.0,
+        "source": "",
+        "useGradient": false
+      },
+      "interactable": true,
+      "layout": {
+        "cellSize": [
+          100.0,
+          100.0
+        ],
+        "childAlignment": 0,
+        "expandHeight": false,
+        "expandWidth": false,
+        "mode": 0,
+        "padding": [
+          16.0,
+          16.0,
+          16.0,
+          16.0
+        ],
+        "spacing": [
+          12.0,
+          12.0
+        ]
+      },
+      "mask": false,
+      "name": "Card",
+      "onClick": "",
+      "options": [],
+      "outline": {
+        "color": "#1E1E28FF",
+        "width": 0.0
+      },
+      "parent": -1,
+      "raycastTarget": true,
+      "rect": {
+        "anchorMax": [
+          1.0,
+          1.0
+        ],
+        "anchorMin": [
+          0.0,
+          0.0
+        ],
+        "anchoredPosition": [
+          0.0,
+          10.0
+        ],
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "rotationZ": 0.0,
+        "sizeDelta": [
+          -240.0,
+          -400.0
+        ]
+      },
+      "shadow": {
+        "color": "#00000028",
+        "enabled": true,
+        "offset": [
+          6.0,
+          -6.0
+        ]
+      },
+      "shape": "rect",
+      "size": [
+        1680.0,
+        680.0
+      ],
+      "text": {
+        "alignH": 1,
+        "alignV": 1,
+        "bold": false,
+        "color": "#14141EFF",
+        "font": "",
+        "fontSize": 32.0,
+        "hasText": false,
+        "italic": false,
+        "padding": [
+          16.0,
+          16.0,
+          12.0
+        ],
+        "underline": false,
+        "value": ""
+      },
+      "type": "Panel",
+      "value": 0.5
+    },
+    {
+      "active": true,
+      "contentHeight": 620.0,
+      "id": 3,
+      "image": {
+        "alpha": 1.0,
+        "color": "#FFFFFF00",
+        "gradientTo": "#00C4CCFF",
+        "preserveAspect": false,
+        "radius": 14.0,
+        "source": "",
+        "useGradient": false
+      },
+      "interactable": true,
+      "layout": {
+        "cellSize": [
+          100.0,
+          100.0
+        ],
+        "childAlignment": 0,
+        "expandHeight": false,
+        "expandWidth": false,
+        "mode": 0,
+        "padding": [
+          16.0,
+          16.0,
+          16.0,
+          16.0
+        ],
+        "spacing": [
+          12.0,
+          12.0
+        ]
+      },
+      "mask": true,
+      "name": "Options",
+      "onClick": "",
+      "options": [],
+      "outline": {
+        "color": "#D2D4DEFF",
+        "width": 0.0
+      },
+      "parent": 1,
+      "raycastTarget": true,
+      "rect": {
+        "anchorMax": [
+          1.0,
+          1.0
+        ],
+        "anchorMin": [
+          0.0,
+          0.0
+        ],
+        "anchoredPosition": [
+          0.0,
+          0.0
+        ],
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "rotationZ": 0.0,
+        "sizeDelta": [
+          -60.0,
+          -60.0
+        ]
+      },
+      "shadow": {
+        "color": "#0000006E",
+        "enabled": false,
+        "offset": [
+          6.0,
+          -6.0
+        ]
+      },
+      "shape": "rect",
+      "size": [
+        1620.0,
+        620.0
+      ],
+      "text": {
+        "alignH": 1,
+        "alignV": 1,
+        "bold": false,
+        "color": "#14141EFF",
+        "font": "",
+        "fontSize": 32.0,
+        "hasText": false,
+        "italic": false,
+        "padding": [
+          16.0,
+          16.0,
+          12.0
+        ],
+        "underline": false,
+        "value": ""
+      },
+      "type": "ScrollView",
+      "value": 0.5
+    },
+    {
+      "active": true,
+      "contentHeight": 0.0,
+      "id": 4,
+      "image": {
+        "alpha": 1.0,
+        "color": "#00000000",
+        "gradientTo": "#00C4CCFF",
+        "preserveAspect": false,
+        "radius": 0.0,
+        "source": "",
+        "useGradient": false
+      },
+      "interactable": true,
+      "layout": {
+        "cellSize": [
+          100.0,
+          100.0
+        ],
+        "childAlignment": 0,
+        "expandHeight": false,
+        "expandWidth": false,
+        "mode": 0,
+        "padding": [
+          16.0,
+          16.0,
+          16.0,
+          16.0
+        ],
+        "spacing": [
+          12.0,
+          12.0
+        ]
+      },
+      "mask": false,
+      "name": "Music volume",
+      "onClick": "",
+      "options": [],
+      "outline": {
+        "color": "#1E1E28FF",
+        "width": 0.0
+      },
+      "parent": 2,
+      "raycastTarget": false,
+      "rect": {
+        "anchorMax": [
+          0.0,
+          1.0
+        ],
+        "anchorMin": [
+          0.0,
+          1.0
+        ],
+        "anchoredPosition": [
+          280.0,
+          -55.0
+        ],
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "rotationZ": 0.0,
+        "sizeDelta": [
+          500.0,
+          50.0
+        ]
+      },
+      "shadow": {
+        "color": "#0000006E",
+        "enabled": false,
+        "offset": [
+          6.0,
+          -6.0
+        ]
+      },
+      "shape": "rect",
+      "size": [
+        500.0,
+        50.0
+      ],
+      "text": {
+        "alignH": 0,
+        "alignV": 0,
+        "bold": false,
+        "color": "#14141EFF",
+        "font": "",
+        "fontSize": 34.0,
+        "hasText": true,
+        "italic": false,
+        "padding": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "underline": false,
+        "value": "Music volume"
+      },
+      "type": "Text",
+      "value": 0.5
+    },
+    {
+      "active": true,
+      "contentHeight": 0.0,
+      "id": 5,
+      "image": {
+        "alpha": 1.0,
+        "color": "#7C5CFFFF",
+        "gradientTo": "#DEDEE8FF",
+        "preserveAspect": false,
+        "radius": 0.0,
+        "source": "",
+        "useGradient": false
+      },
+      "interactable": true,
+      "layout": {
+        "cellSize": [
+          100.0,
+          100.0
+        ],
+        "childAlignment": 0,
+        "expandHeight": false,
+        "expandWidth": false,
+        "mode": 0,
+        "padding": [
+          16.0,
+          16.0,
+          16.0,
+          16.0
+        ],
+        "spacing": [
+          12.0,
+          12.0
+        ]
+      },
+      "mask": false,
+      "name": "Slider Music volume",
+      "onClick": "",
+      "options": [],
+      "outline": {
+        "color": "#1E1E28FF",
+        "width": 0.0
+      },
+      "parent": 2,
+      "raycastTarget": true,
+      "rect": {
+        "anchorMax": [
+          1.0,
+          1.0
+        ],
+        "anchorMin": [
+          0.0,
+          1.0
+        ],
+        "anchoredPosition": [
+          60.0,
+          -55.0
+        ],
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "rotationZ": 0.0,
+        "sizeDelta": [
+          -1020.0,
+          40.0
         ]
       },
       "shadow": {
@@ -189,38 +489,38 @@
       "shape": "rect",
       "size": [
         600.0,
-        70.0
+        40.0
       ],
       "text": {
-        "alignH": 0,
-        "alignV": 0,
-        "bold": true,
-        "color": "#FFFFFFFF",
+        "alignH": 1,
+        "alignV": 1,
+        "bold": false,
+        "color": "#14141EFF",
         "font": "",
-        "fontSize": 52.0,
-        "hasText": true,
+        "fontSize": 32.0,
+        "hasText": false,
         "italic": false,
         "padding": [
-          0.0,
-          0.0,
-          0.0
+          16.0,
+          16.0,
+          12.0
         ],
         "underline": false,
-        "value": "Inventario"
+        "value": ""
       },
-      "type": "Text",
-      "value": 0.5
+      "type": "Slider",
+      "value": 0.3
     },
     {
       "active": true,
       "contentHeight": 0.0,
-      "id": 3,
+      "id": 6,
       "image": {
         "alpha": 1.0,
-        "color": "#EB465AFF",
+        "color": "#00000000",
         "gradientTo": "#00C4CCFF",
         "preserveAspect": false,
-        "radius": 35.0,
+        "radius": 0.0,
         "source": "",
         "useGradient": false
       },
@@ -246,14 +546,114 @@
         ]
       },
       "mask": false,
-      "name": "Cerrar",
-      "onClick": "ocultar(\"Inventario\");",
+      "name": "Effects volume",
+      "onClick": "",
       "options": [],
       "outline": {
         "color": "#1E1E28FF",
         "width": 0.0
       },
-      "parent": 0,
+      "parent": 2,
+      "raycastTarget": false,
+      "rect": {
+        "anchorMax": [
+          0.0,
+          1.0
+        ],
+        "anchorMin": [
+          0.0,
+          1.0
+        ],
+        "anchoredPosition": [
+          280.0,
+          -165.0
+        ],
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "rotationZ": 0.0,
+        "sizeDelta": [
+          500.0,
+          50.0
+        ]
+      },
+      "shadow": {
+        "color": "#0000006E",
+        "enabled": false,
+        "offset": [
+          6.0,
+          -6.0
+        ]
+      },
+      "shape": "rect",
+      "size": [
+        500.0,
+        50.0
+      ],
+      "text": {
+        "alignH": 0,
+        "alignV": 0,
+        "bold": false,
+        "color": "#14141EFF",
+        "font": "",
+        "fontSize": 34.0,
+        "hasText": true,
+        "italic": false,
+        "padding": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "underline": false,
+        "value": "Effects volume"
+      },
+      "type": "Text",
+      "value": 0.5
+    },
+    {
+      "active": true,
+      "contentHeight": 0.0,
+      "id": 7,
+      "image": {
+        "alpha": 1.0,
+        "color": "#7C5CFFFF",
+        "gradientTo": "#DEDEE8FF",
+        "preserveAspect": false,
+        "radius": 0.0,
+        "source": "",
+        "useGradient": false
+      },
+      "interactable": true,
+      "layout": {
+        "cellSize": [
+          100.0,
+          100.0
+        ],
+        "childAlignment": 0,
+        "expandHeight": false,
+        "expandWidth": false,
+        "mode": 0,
+        "padding": [
+          16.0,
+          16.0,
+          16.0,
+          16.0
+        ],
+        "spacing": [
+          12.0,
+          12.0
+        ]
+      },
+      "mask": false,
+      "name": "Slider Effects volume",
+      "onClick": "",
+      "options": [],
+      "outline": {
+        "color": "#1E1E28FF",
+        "width": 0.0
+      },
+      "parent": 2,
       "raycastTarget": true,
       "rect": {
         "anchorMax": [
@@ -261,20 +661,425 @@
           1.0
         ],
         "anchorMin": [
-          1.0,
+          0.0,
           1.0
         ],
         "anchoredPosition": [
-          -30.0,
-          -30.0
+          60.0,
+          -165.0
         ],
         "pivot": [
-          1.0,
-          1.0
+          0.5,
+          0.5
         ],
         "rotationZ": 0.0,
         "sizeDelta": [
-          70.0,
+          -1020.0,
+          40.0
+        ]
+      },
+      "shadow": {
+        "color": "#0000006E",
+        "enabled": false,
+        "offset": [
+          6.0,
+          -6.0
+        ]
+      },
+      "shape": "rect",
+      "size": [
+        600.0,
+        40.0
+      ],
+      "text": {
+        "alignH": 1,
+        "alignV": 1,
+        "bold": false,
+        "color": "#14141EFF",
+        "font": "",
+        "fontSize": 32.0,
+        "hasText": false,
+        "italic": false,
+        "padding": [
+          16.0,
+          16.0,
+          12.0
+        ],
+        "underline": false,
+        "value": ""
+      },
+      "type": "Slider",
+      "value": 0.5
+    },
+    {
+      "active": true,
+      "contentHeight": 0.0,
+      "id": 8,
+      "image": {
+        "alpha": 1.0,
+        "color": "#00000000",
+        "gradientTo": "#00C4CCFF",
+        "preserveAspect": false,
+        "radius": 0.0,
+        "source": "",
+        "useGradient": false
+      },
+      "interactable": true,
+      "layout": {
+        "cellSize": [
+          100.0,
+          100.0
+        ],
+        "childAlignment": 0,
+        "expandHeight": false,
+        "expandWidth": false,
+        "mode": 0,
+        "padding": [
+          16.0,
+          16.0,
+          16.0,
+          16.0
+        ],
+        "spacing": [
+          12.0,
+          12.0
+        ]
+      },
+      "mask": false,
+      "name": "Brightness",
+      "onClick": "",
+      "options": [],
+      "outline": {
+        "color": "#1E1E28FF",
+        "width": 0.0
+      },
+      "parent": 2,
+      "raycastTarget": false,
+      "rect": {
+        "anchorMax": [
+          0.0,
+          1.0
+        ],
+        "anchorMin": [
+          0.0,
+          1.0
+        ],
+        "anchoredPosition": [
+          280.0,
+          -275.0
+        ],
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "rotationZ": 0.0,
+        "sizeDelta": [
+          500.0,
+          50.0
+        ]
+      },
+      "shadow": {
+        "color": "#0000006E",
+        "enabled": false,
+        "offset": [
+          6.0,
+          -6.0
+        ]
+      },
+      "shape": "rect",
+      "size": [
+        500.0,
+        50.0
+      ],
+      "text": {
+        "alignH": 0,
+        "alignV": 0,
+        "bold": false,
+        "color": "#14141EFF",
+        "font": "",
+        "fontSize": 34.0,
+        "hasText": true,
+        "italic": false,
+        "padding": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "underline": false,
+        "value": "Brightness"
+      },
+      "type": "Text",
+      "value": 0.5
+    },
+    {
+      "active": true,
+      "contentHeight": 0.0,
+      "id": 9,
+      "image": {
+        "alpha": 1.0,
+        "color": "#7C5CFFFF",
+        "gradientTo": "#DEDEE8FF",
+        "preserveAspect": false,
+        "radius": 0.0,
+        "source": "",
+        "useGradient": false
+      },
+      "interactable": true,
+      "layout": {
+        "cellSize": [
+          100.0,
+          100.0
+        ],
+        "childAlignment": 0,
+        "expandHeight": false,
+        "expandWidth": false,
+        "mode": 0,
+        "padding": [
+          16.0,
+          16.0,
+          16.0,
+          16.0
+        ],
+        "spacing": [
+          12.0,
+          12.0
+        ]
+      },
+      "mask": false,
+      "name": "Slider Brightness",
+      "onClick": "",
+      "options": [],
+      "outline": {
+        "color": "#1E1E28FF",
+        "width": 0.0
+      },
+      "parent": 2,
+      "raycastTarget": true,
+      "rect": {
+        "anchorMax": [
+          1.0,
+          1.0
+        ],
+        "anchorMin": [
+          0.0,
+          1.0
+        ],
+        "anchoredPosition": [
+          60.0,
+          -275.0
+        ],
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "rotationZ": 0.0,
+        "sizeDelta": [
+          -1020.0,
+          40.0
+        ]
+      },
+      "shadow": {
+        "color": "#0000006E",
+        "enabled": false,
+        "offset": [
+          6.0,
+          -6.0
+        ]
+      },
+      "shape": "rect",
+      "size": [
+        600.0,
+        40.0
+      ],
+      "text": {
+        "alignH": 1,
+        "alignV": 1,
+        "bold": false,
+        "color": "#14141EFF",
+        "font": "",
+        "fontSize": 32.0,
+        "hasText": false,
+        "italic": false,
+        "padding": [
+          16.0,
+          16.0,
+          12.0
+        ],
+        "underline": false,
+        "value": ""
+      },
+      "type": "Slider",
+      "value": 0.7
+    },
+    {
+      "active": true,
+      "contentHeight": 0.0,
+      "id": 10,
+      "image": {
+        "alpha": 1.0,
+        "color": "#7C5CFFFF",
+        "gradientTo": "#00C4CCFF",
+        "preserveAspect": false,
+        "radius": 0.0,
+        "source": "",
+        "useGradient": false
+      },
+      "interactable": true,
+      "layout": {
+        "cellSize": [
+          100.0,
+          100.0
+        ],
+        "childAlignment": 0,
+        "expandHeight": false,
+        "expandWidth": false,
+        "mode": 0,
+        "padding": [
+          16.0,
+          16.0,
+          16.0,
+          16.0
+        ],
+        "spacing": [
+          12.0,
+          12.0
+        ]
+      },
+      "mask": false,
+      "name": "Fullscreen",
+      "onClick": "",
+      "options": [],
+      "outline": {
+        "color": "#1E1E28FF",
+        "width": 0.0
+      },
+      "parent": 2,
+      "raycastTarget": true,
+      "rect": {
+        "anchorMax": [
+          0.0,
+          1.0
+        ],
+        "anchorMin": [
+          0.0,
+          1.0
+        ],
+        "anchoredPosition": [
+          280.0,
+          -395.0
+        ],
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "rotationZ": 0.0,
+        "sizeDelta": [
+          500.0,
+          50.0
+        ]
+      },
+      "shadow": {
+        "color": "#0000006E",
+        "enabled": false,
+        "offset": [
+          6.0,
+          -6.0
+        ]
+      },
+      "shape": "rect",
+      "size": [
+        500.0,
+        50.0
+      ],
+      "text": {
+        "alignH": 0,
+        "alignV": 1,
+        "bold": false,
+        "color": "#14141EFF",
+        "font": "",
+        "fontSize": 34.0,
+        "hasText": true,
+        "italic": false,
+        "padding": [
+          59.0,
+          12.0,
+          0.0
+        ],
+        "underline": false,
+        "value": "Fullscreen"
+      },
+      "type": "Toggle",
+      "value": 1.0
+    },
+    {
+      "active": true,
+      "contentHeight": 0.0,
+      "id": 11,
+      "image": {
+        "alpha": 1.0,
+        "color": "#FFFFFFFF",
+        "gradientTo": "#00C4CCFF",
+        "preserveAspect": false,
+        "radius": 10.0,
+        "source": "",
+        "useGradient": false
+      },
+      "interactable": true,
+      "layout": {
+        "cellSize": [
+          100.0,
+          100.0
+        ],
+        "childAlignment": 0,
+        "expandHeight": false,
+        "expandWidth": false,
+        "mode": 0,
+        "padding": [
+          16.0,
+          16.0,
+          16.0,
+          16.0
+        ],
+        "spacing": [
+          12.0,
+          12.0
+        ]
+      },
+      "mask": false,
+      "name": "Quality",
+      "onClick": "",
+      "options": [
+        "Low",
+        "Medium",
+        "High",
+        "Ultra"
+      ],
+      "outline": {
+        "color": "#C8C8D2FF",
+        "width": 2.0
+      },
+      "parent": 2,
+      "raycastTarget": true,
+      "rect": {
+        "anchorMax": [
+          0.0,
+          1.0
+        ],
+        "anchorMin": [
+          0.0,
+          1.0
+        ],
+        "anchoredPosition": [
+          780.0,
+          -395.0
+        ],
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "rotationZ": 0.0,
+        "sizeDelta": [
+          420.0,
           70.0
         ]
       },
@@ -288,36 +1093,136 @@
       },
       "shape": "rect",
       "size": [
-        70.0,
+        420.0,
         70.0
       ],
       "text": {
-        "alignH": 1,
+        "alignH": 0,
         "alignV": 1,
-        "bold": true,
-        "color": "#FFFFFFFF",
+        "bold": false,
+        "color": "#14141EFF",
         "font": "",
-        "fontSize": 32.0,
+        "fontSize": 26.0,
         "hasText": true,
         "italic": false,
         "padding": [
-          16.0,
-          16.0,
-          12.0
+          18.0,
+          60.0,
+          8.0
         ],
         "underline": false,
-        "value": "X"
+        "value": "Option A"
       },
-      "type": "Button",
+      "type": "Dropdown",
+      "value": 2.0
+    },
+    {
+      "active": true,
+      "contentHeight": 0.0,
+      "id": 12,
+      "image": {
+        "alpha": 1.0,
+        "color": "#FFFFFFFF",
+        "gradientTo": "#00C4CCFF",
+        "preserveAspect": false,
+        "radius": 10.0,
+        "source": "",
+        "useGradient": false
+      },
+      "interactable": true,
+      "layout": {
+        "cellSize": [
+          100.0,
+          100.0
+        ],
+        "childAlignment": 0,
+        "expandHeight": false,
+        "expandWidth": false,
+        "mode": 0,
+        "padding": [
+          16.0,
+          16.0,
+          16.0,
+          16.0
+        ],
+        "spacing": [
+          12.0,
+          12.0
+        ]
+      },
+      "mask": false,
+      "name": "Player name",
+      "onClick": "",
+      "options": [],
+      "outline": {
+        "color": "#C8C8D2FF",
+        "width": 2.0
+      },
+      "parent": 2,
+      "raycastTarget": true,
+      "rect": {
+        "anchorMax": [
+          0.0,
+          1.0
+        ],
+        "anchorMin": [
+          0.0,
+          1.0
+        ],
+        "anchoredPosition": [
+          330.0,
+          -508.0
+        ],
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "rotationZ": 0.0,
+        "sizeDelta": [
+          600.0,
+          76.0
+        ]
+      },
+      "shadow": {
+        "color": "#0000006E",
+        "enabled": false,
+        "offset": [
+          6.0,
+          -6.0
+        ]
+      },
+      "shape": "rect",
+      "size": [
+        600.0,
+        76.0
+      ],
+      "text": {
+        "alignH": 0,
+        "alignV": 1,
+        "bold": false,
+        "color": "#8C8C96FF",
+        "font": "",
+        "fontSize": 26.0,
+        "hasText": true,
+        "italic": false,
+        "padding": [
+          18.0,
+          18.0,
+          8.0
+        ],
+        "underline": false,
+        "value": "Player name"
+      },
+      "type": "InputField",
       "value": 0.5
     },
     {
       "active": true,
       "contentHeight": 0.0,
-      "id": 4,
+      "id": 13,
       "image": {
         "alpha": 1.0,
-        "color": "#1E202CFF",
+        "color": "#7C5CFFFF",
         "gradientTo": "#00C4CCFF",
         "preserveAspect": false,
         "radius": 18.0,
@@ -327,46 +1232,46 @@
       "interactable": true,
       "layout": {
         "cellSize": [
-          160.0,
-          160.0
+          100.0,
+          100.0
         ],
-        "childAlignment": 1,
+        "childAlignment": 0,
         "expandHeight": false,
         "expandWidth": false,
-        "mode": 3,
+        "mode": 0,
         "padding": [
-          24.0,
-          24.0,
-          24.0,
-          24.0
+          16.0,
+          16.0,
+          16.0,
+          16.0
         ],
         "spacing": [
-          24.0,
-          24.0
+          12.0,
+          12.0
         ]
       },
       "mask": false,
-      "name": "Rejilla",
-      "onClick": "",
+      "name": "Back button",
+      "onClick": "message(\"Back to the menu\");",
       "options": [],
       "outline": {
         "color": "#1E1E28FF",
         "width": 0.0
       },
-      "parent": 0,
+      "parent": -1,
       "raycastTarget": true,
       "rect": {
         "anchorMax": [
-          1.0,
-          1.0
+          0.0,
+          0.0
         ],
         "anchorMin": [
           0.0,
           0.0
         ],
         "anchoredPosition": [
-          0.0,
-          -50.0
+          270.0,
+          128.0
         ],
         "pivot": [
           0.5,
@@ -374,8 +1279,8 @@
         ],
         "rotationZ": 0.0,
         "sizeDelta": [
-          -80.0,
-          -160.0
+          300.0,
+          84.0
         ]
       },
       "shadow": {
@@ -388,17 +1293,17 @@
       },
       "shape": "rect",
       "size": [
-        760.0,
-        600.0
+        300.0,
+        84.0
       ],
       "text": {
         "alignH": 1,
         "alignV": 1,
-        "bold": false,
-        "color": "#14141EFF",
+        "bold": true,
+        "color": "#FFFFFFFF",
         "font": "",
-        "fontSize": 32.0,
-        "hasText": false,
+        "fontSize": 30.0,
+        "hasText": true,
         "italic": false,
         "padding": [
           16.0,
@@ -406,1209 +1311,9 @@
           12.0
         ],
         "underline": false,
-        "value": ""
+        "value": "Back"
       },
-      "type": "Panel",
-      "value": 0.5
-    },
-    {
-      "active": true,
-      "contentHeight": 0.0,
-      "id": 5,
-      "image": {
-        "alpha": 1.0,
-        "color": "#3C4054FF",
-        "gradientTo": "#00C4CCFF",
-        "preserveAspect": false,
-        "radius": 14.0,
-        "source": "",
-        "useGradient": false
-      },
-      "interactable": true,
-      "layout": {
-        "cellSize": [
-          100.0,
-          100.0
-        ],
-        "childAlignment": 0,
-        "expandHeight": false,
-        "expandWidth": false,
-        "mode": 0,
-        "padding": [
-          16.0,
-          16.0,
-          16.0,
-          16.0
-        ],
-        "spacing": [
-          12.0,
-          12.0
-        ]
-      },
-      "mask": false,
-      "name": "Casilla 1",
-      "onClick": "",
-      "options": [],
-      "outline": {
-        "color": "#6E7496FF",
-        "width": 2.0
-      },
-      "parent": 3,
-      "raycastTarget": true,
-      "rect": {
-        "anchorMax": [
-          0.5,
-          0.5
-        ],
-        "anchorMin": [
-          0.5,
-          0.5
-        ],
-        "anchoredPosition": [
-          -276.0,
-          196.0
-        ],
-        "pivot": [
-          0.5,
-          0.5
-        ],
-        "rotationZ": 0.0,
-        "sizeDelta": [
-          160.0,
-          160.0
-        ]
-      },
-      "shadow": {
-        "color": "#0000006E",
-        "enabled": false,
-        "offset": [
-          6.0,
-          -6.0
-        ]
-      },
-      "shape": "rect",
-      "size": [
-        160.0,
-        160.0
-      ],
-      "text": {
-        "alignH": 1,
-        "alignV": 1,
-        "bold": false,
-        "color": "#14141EFF",
-        "font": "",
-        "fontSize": 32.0,
-        "hasText": false,
-        "italic": false,
-        "padding": [
-          16.0,
-          16.0,
-          12.0
-        ],
-        "underline": false,
-        "value": ""
-      },
-      "type": "Panel",
-      "value": 0.5
-    },
-    {
-      "active": true,
-      "contentHeight": 0.0,
-      "id": 6,
-      "image": {
-        "alpha": 1.0,
-        "color": "#3C4054FF",
-        "gradientTo": "#00C4CCFF",
-        "preserveAspect": false,
-        "radius": 14.0,
-        "source": "",
-        "useGradient": false
-      },
-      "interactable": true,
-      "layout": {
-        "cellSize": [
-          100.0,
-          100.0
-        ],
-        "childAlignment": 0,
-        "expandHeight": false,
-        "expandWidth": false,
-        "mode": 0,
-        "padding": [
-          16.0,
-          16.0,
-          16.0,
-          16.0
-        ],
-        "spacing": [
-          12.0,
-          12.0
-        ]
-      },
-      "mask": false,
-      "name": "Casilla 2",
-      "onClick": "",
-      "options": [],
-      "outline": {
-        "color": "#6E7496FF",
-        "width": 2.0
-      },
-      "parent": 3,
-      "raycastTarget": true,
-      "rect": {
-        "anchorMax": [
-          0.5,
-          0.5
-        ],
-        "anchorMin": [
-          0.5,
-          0.5
-        ],
-        "anchoredPosition": [
-          -92.0,
-          196.0
-        ],
-        "pivot": [
-          0.5,
-          0.5
-        ],
-        "rotationZ": 0.0,
-        "sizeDelta": [
-          160.0,
-          160.0
-        ]
-      },
-      "shadow": {
-        "color": "#0000006E",
-        "enabled": false,
-        "offset": [
-          6.0,
-          -6.0
-        ]
-      },
-      "shape": "rect",
-      "size": [
-        160.0,
-        160.0
-      ],
-      "text": {
-        "alignH": 1,
-        "alignV": 1,
-        "bold": false,
-        "color": "#14141EFF",
-        "font": "",
-        "fontSize": 32.0,
-        "hasText": false,
-        "italic": false,
-        "padding": [
-          16.0,
-          16.0,
-          12.0
-        ],
-        "underline": false,
-        "value": ""
-      },
-      "type": "Panel",
-      "value": 0.5
-    },
-    {
-      "active": true,
-      "contentHeight": 0.0,
-      "id": 7,
-      "image": {
-        "alpha": 1.0,
-        "color": "#3C4054FF",
-        "gradientTo": "#00C4CCFF",
-        "preserveAspect": false,
-        "radius": 14.0,
-        "source": "",
-        "useGradient": false
-      },
-      "interactable": true,
-      "layout": {
-        "cellSize": [
-          100.0,
-          100.0
-        ],
-        "childAlignment": 0,
-        "expandHeight": false,
-        "expandWidth": false,
-        "mode": 0,
-        "padding": [
-          16.0,
-          16.0,
-          16.0,
-          16.0
-        ],
-        "spacing": [
-          12.0,
-          12.0
-        ]
-      },
-      "mask": false,
-      "name": "Casilla 3",
-      "onClick": "",
-      "options": [],
-      "outline": {
-        "color": "#6E7496FF",
-        "width": 2.0
-      },
-      "parent": 3,
-      "raycastTarget": true,
-      "rect": {
-        "anchorMax": [
-          0.5,
-          0.5
-        ],
-        "anchorMin": [
-          0.5,
-          0.5
-        ],
-        "anchoredPosition": [
-          92.0,
-          196.0
-        ],
-        "pivot": [
-          0.5,
-          0.5
-        ],
-        "rotationZ": 0.0,
-        "sizeDelta": [
-          160.0,
-          160.0
-        ]
-      },
-      "shadow": {
-        "color": "#0000006E",
-        "enabled": false,
-        "offset": [
-          6.0,
-          -6.0
-        ]
-      },
-      "shape": "rect",
-      "size": [
-        160.0,
-        160.0
-      ],
-      "text": {
-        "alignH": 1,
-        "alignV": 1,
-        "bold": false,
-        "color": "#14141EFF",
-        "font": "",
-        "fontSize": 32.0,
-        "hasText": false,
-        "italic": false,
-        "padding": [
-          16.0,
-          16.0,
-          12.0
-        ],
-        "underline": false,
-        "value": ""
-      },
-      "type": "Panel",
-      "value": 0.5
-    },
-    {
-      "active": true,
-      "contentHeight": 0.0,
-      "id": 8,
-      "image": {
-        "alpha": 1.0,
-        "color": "#3C4054FF",
-        "gradientTo": "#00C4CCFF",
-        "preserveAspect": false,
-        "radius": 14.0,
-        "source": "",
-        "useGradient": false
-      },
-      "interactable": true,
-      "layout": {
-        "cellSize": [
-          100.0,
-          100.0
-        ],
-        "childAlignment": 0,
-        "expandHeight": false,
-        "expandWidth": false,
-        "mode": 0,
-        "padding": [
-          16.0,
-          16.0,
-          16.0,
-          16.0
-        ],
-        "spacing": [
-          12.0,
-          12.0
-        ]
-      },
-      "mask": false,
-      "name": "Casilla 4",
-      "onClick": "",
-      "options": [],
-      "outline": {
-        "color": "#6E7496FF",
-        "width": 2.0
-      },
-      "parent": 3,
-      "raycastTarget": true,
-      "rect": {
-        "anchorMax": [
-          0.5,
-          0.5
-        ],
-        "anchorMin": [
-          0.5,
-          0.5
-        ],
-        "anchoredPosition": [
-          276.0,
-          196.0
-        ],
-        "pivot": [
-          0.5,
-          0.5
-        ],
-        "rotationZ": 0.0,
-        "sizeDelta": [
-          160.0,
-          160.0
-        ]
-      },
-      "shadow": {
-        "color": "#0000006E",
-        "enabled": false,
-        "offset": [
-          6.0,
-          -6.0
-        ]
-      },
-      "shape": "rect",
-      "size": [
-        160.0,
-        160.0
-      ],
-      "text": {
-        "alignH": 1,
-        "alignV": 1,
-        "bold": false,
-        "color": "#14141EFF",
-        "font": "",
-        "fontSize": 32.0,
-        "hasText": false,
-        "italic": false,
-        "padding": [
-          16.0,
-          16.0,
-          12.0
-        ],
-        "underline": false,
-        "value": ""
-      },
-      "type": "Panel",
-      "value": 0.5
-    },
-    {
-      "active": true,
-      "contentHeight": 0.0,
-      "id": 9,
-      "image": {
-        "alpha": 1.0,
-        "color": "#3C4054FF",
-        "gradientTo": "#00C4CCFF",
-        "preserveAspect": false,
-        "radius": 14.0,
-        "source": "",
-        "useGradient": false
-      },
-      "interactable": true,
-      "layout": {
-        "cellSize": [
-          100.0,
-          100.0
-        ],
-        "childAlignment": 0,
-        "expandHeight": false,
-        "expandWidth": false,
-        "mode": 0,
-        "padding": [
-          16.0,
-          16.0,
-          16.0,
-          16.0
-        ],
-        "spacing": [
-          12.0,
-          12.0
-        ]
-      },
-      "mask": false,
-      "name": "Casilla 5",
-      "onClick": "",
-      "options": [],
-      "outline": {
-        "color": "#6E7496FF",
-        "width": 2.0
-      },
-      "parent": 3,
-      "raycastTarget": true,
-      "rect": {
-        "anchorMax": [
-          0.5,
-          0.5
-        ],
-        "anchorMin": [
-          0.5,
-          0.5
-        ],
-        "anchoredPosition": [
-          -276.0,
-          12.0
-        ],
-        "pivot": [
-          0.5,
-          0.5
-        ],
-        "rotationZ": 0.0,
-        "sizeDelta": [
-          160.0,
-          160.0
-        ]
-      },
-      "shadow": {
-        "color": "#0000006E",
-        "enabled": false,
-        "offset": [
-          6.0,
-          -6.0
-        ]
-      },
-      "shape": "rect",
-      "size": [
-        160.0,
-        160.0
-      ],
-      "text": {
-        "alignH": 1,
-        "alignV": 1,
-        "bold": false,
-        "color": "#14141EFF",
-        "font": "",
-        "fontSize": 32.0,
-        "hasText": false,
-        "italic": false,
-        "padding": [
-          16.0,
-          16.0,
-          12.0
-        ],
-        "underline": false,
-        "value": ""
-      },
-      "type": "Panel",
-      "value": 0.5
-    },
-    {
-      "active": true,
-      "contentHeight": 0.0,
-      "id": 10,
-      "image": {
-        "alpha": 1.0,
-        "color": "#3C4054FF",
-        "gradientTo": "#00C4CCFF",
-        "preserveAspect": false,
-        "radius": 14.0,
-        "source": "",
-        "useGradient": false
-      },
-      "interactable": true,
-      "layout": {
-        "cellSize": [
-          100.0,
-          100.0
-        ],
-        "childAlignment": 0,
-        "expandHeight": false,
-        "expandWidth": false,
-        "mode": 0,
-        "padding": [
-          16.0,
-          16.0,
-          16.0,
-          16.0
-        ],
-        "spacing": [
-          12.0,
-          12.0
-        ]
-      },
-      "mask": false,
-      "name": "Casilla 6",
-      "onClick": "",
-      "options": [],
-      "outline": {
-        "color": "#6E7496FF",
-        "width": 2.0
-      },
-      "parent": 3,
-      "raycastTarget": true,
-      "rect": {
-        "anchorMax": [
-          0.5,
-          0.5
-        ],
-        "anchorMin": [
-          0.5,
-          0.5
-        ],
-        "anchoredPosition": [
-          -92.0,
-          12.0
-        ],
-        "pivot": [
-          0.5,
-          0.5
-        ],
-        "rotationZ": 0.0,
-        "sizeDelta": [
-          160.0,
-          160.0
-        ]
-      },
-      "shadow": {
-        "color": "#0000006E",
-        "enabled": false,
-        "offset": [
-          6.0,
-          -6.0
-        ]
-      },
-      "shape": "rect",
-      "size": [
-        160.0,
-        160.0
-      ],
-      "text": {
-        "alignH": 1,
-        "alignV": 1,
-        "bold": false,
-        "color": "#14141EFF",
-        "font": "",
-        "fontSize": 32.0,
-        "hasText": false,
-        "italic": false,
-        "padding": [
-          16.0,
-          16.0,
-          12.0
-        ],
-        "underline": false,
-        "value": ""
-      },
-      "type": "Panel",
-      "value": 0.5
-    },
-    {
-      "active": true,
-      "contentHeight": 0.0,
-      "id": 11,
-      "image": {
-        "alpha": 1.0,
-        "color": "#3C4054FF",
-        "gradientTo": "#00C4CCFF",
-        "preserveAspect": false,
-        "radius": 14.0,
-        "source": "",
-        "useGradient": false
-      },
-      "interactable": true,
-      "layout": {
-        "cellSize": [
-          100.0,
-          100.0
-        ],
-        "childAlignment": 0,
-        "expandHeight": false,
-        "expandWidth": false,
-        "mode": 0,
-        "padding": [
-          16.0,
-          16.0,
-          16.0,
-          16.0
-        ],
-        "spacing": [
-          12.0,
-          12.0
-        ]
-      },
-      "mask": false,
-      "name": "Casilla 7",
-      "onClick": "",
-      "options": [],
-      "outline": {
-        "color": "#6E7496FF",
-        "width": 2.0
-      },
-      "parent": 3,
-      "raycastTarget": true,
-      "rect": {
-        "anchorMax": [
-          0.5,
-          0.5
-        ],
-        "anchorMin": [
-          0.5,
-          0.5
-        ],
-        "anchoredPosition": [
-          92.0,
-          12.0
-        ],
-        "pivot": [
-          0.5,
-          0.5
-        ],
-        "rotationZ": 0.0,
-        "sizeDelta": [
-          160.0,
-          160.0
-        ]
-      },
-      "shadow": {
-        "color": "#0000006E",
-        "enabled": false,
-        "offset": [
-          6.0,
-          -6.0
-        ]
-      },
-      "shape": "rect",
-      "size": [
-        160.0,
-        160.0
-      ],
-      "text": {
-        "alignH": 1,
-        "alignV": 1,
-        "bold": false,
-        "color": "#14141EFF",
-        "font": "",
-        "fontSize": 32.0,
-        "hasText": false,
-        "italic": false,
-        "padding": [
-          16.0,
-          16.0,
-          12.0
-        ],
-        "underline": false,
-        "value": ""
-      },
-      "type": "Panel",
-      "value": 0.5
-    },
-    {
-      "active": true,
-      "contentHeight": 0.0,
-      "id": 12,
-      "image": {
-        "alpha": 1.0,
-        "color": "#3C4054FF",
-        "gradientTo": "#00C4CCFF",
-        "preserveAspect": false,
-        "radius": 14.0,
-        "source": "",
-        "useGradient": false
-      },
-      "interactable": true,
-      "layout": {
-        "cellSize": [
-          100.0,
-          100.0
-        ],
-        "childAlignment": 0,
-        "expandHeight": false,
-        "expandWidth": false,
-        "mode": 0,
-        "padding": [
-          16.0,
-          16.0,
-          16.0,
-          16.0
-        ],
-        "spacing": [
-          12.0,
-          12.0
-        ]
-      },
-      "mask": false,
-      "name": "Casilla 8",
-      "onClick": "",
-      "options": [],
-      "outline": {
-        "color": "#6E7496FF",
-        "width": 2.0
-      },
-      "parent": 3,
-      "raycastTarget": true,
-      "rect": {
-        "anchorMax": [
-          0.5,
-          0.5
-        ],
-        "anchorMin": [
-          0.5,
-          0.5
-        ],
-        "anchoredPosition": [
-          276.0,
-          12.0
-        ],
-        "pivot": [
-          0.5,
-          0.5
-        ],
-        "rotationZ": 0.0,
-        "sizeDelta": [
-          160.0,
-          160.0
-        ]
-      },
-      "shadow": {
-        "color": "#0000006E",
-        "enabled": false,
-        "offset": [
-          6.0,
-          -6.0
-        ]
-      },
-      "shape": "rect",
-      "size": [
-        160.0,
-        160.0
-      ],
-      "text": {
-        "alignH": 1,
-        "alignV": 1,
-        "bold": false,
-        "color": "#14141EFF",
-        "font": "",
-        "fontSize": 32.0,
-        "hasText": false,
-        "italic": false,
-        "padding": [
-          16.0,
-          16.0,
-          12.0
-        ],
-        "underline": false,
-        "value": ""
-      },
-      "type": "Panel",
-      "value": 0.5
-    },
-    {
-      "active": true,
-      "contentHeight": 0.0,
-      "id": 13,
-      "image": {
-        "alpha": 1.0,
-        "color": "#3C4054FF",
-        "gradientTo": "#00C4CCFF",
-        "preserveAspect": false,
-        "radius": 14.0,
-        "source": "",
-        "useGradient": false
-      },
-      "interactable": true,
-      "layout": {
-        "cellSize": [
-          100.0,
-          100.0
-        ],
-        "childAlignment": 0,
-        "expandHeight": false,
-        "expandWidth": false,
-        "mode": 0,
-        "padding": [
-          16.0,
-          16.0,
-          16.0,
-          16.0
-        ],
-        "spacing": [
-          12.0,
-          12.0
-        ]
-      },
-      "mask": false,
-      "name": "Casilla 9",
-      "onClick": "",
-      "options": [],
-      "outline": {
-        "color": "#6E7496FF",
-        "width": 2.0
-      },
-      "parent": 3,
-      "raycastTarget": true,
-      "rect": {
-        "anchorMax": [
-          0.5,
-          0.5
-        ],
-        "anchorMin": [
-          0.5,
-          0.5
-        ],
-        "anchoredPosition": [
-          -276.0,
-          -172.0
-        ],
-        "pivot": [
-          0.5,
-          0.5
-        ],
-        "rotationZ": 0.0,
-        "sizeDelta": [
-          160.0,
-          160.0
-        ]
-      },
-      "shadow": {
-        "color": "#0000006E",
-        "enabled": false,
-        "offset": [
-          6.0,
-          -6.0
-        ]
-      },
-      "shape": "rect",
-      "size": [
-        160.0,
-        160.0
-      ],
-      "text": {
-        "alignH": 1,
-        "alignV": 1,
-        "bold": false,
-        "color": "#14141EFF",
-        "font": "",
-        "fontSize": 32.0,
-        "hasText": false,
-        "italic": false,
-        "padding": [
-          16.0,
-          16.0,
-          12.0
-        ],
-        "underline": false,
-        "value": ""
-      },
-      "type": "Panel",
-      "value": 0.5
-    },
-    {
-      "active": true,
-      "contentHeight": 0.0,
-      "id": 14,
-      "image": {
-        "alpha": 1.0,
-        "color": "#3C4054FF",
-        "gradientTo": "#00C4CCFF",
-        "preserveAspect": false,
-        "radius": 14.0,
-        "source": "",
-        "useGradient": false
-      },
-      "interactable": true,
-      "layout": {
-        "cellSize": [
-          100.0,
-          100.0
-        ],
-        "childAlignment": 0,
-        "expandHeight": false,
-        "expandWidth": false,
-        "mode": 0,
-        "padding": [
-          16.0,
-          16.0,
-          16.0,
-          16.0
-        ],
-        "spacing": [
-          12.0,
-          12.0
-        ]
-      },
-      "mask": false,
-      "name": "Casilla 10",
-      "onClick": "",
-      "options": [],
-      "outline": {
-        "color": "#6E7496FF",
-        "width": 2.0
-      },
-      "parent": 3,
-      "raycastTarget": true,
-      "rect": {
-        "anchorMax": [
-          0.5,
-          0.5
-        ],
-        "anchorMin": [
-          0.5,
-          0.5
-        ],
-        "anchoredPosition": [
-          -92.0,
-          -172.0
-        ],
-        "pivot": [
-          0.5,
-          0.5
-        ],
-        "rotationZ": 0.0,
-        "sizeDelta": [
-          160.0,
-          160.0
-        ]
-      },
-      "shadow": {
-        "color": "#0000006E",
-        "enabled": false,
-        "offset": [
-          6.0,
-          -6.0
-        ]
-      },
-      "shape": "rect",
-      "size": [
-        160.0,
-        160.0
-      ],
-      "text": {
-        "alignH": 1,
-        "alignV": 1,
-        "bold": false,
-        "color": "#14141EFF",
-        "font": "",
-        "fontSize": 32.0,
-        "hasText": false,
-        "italic": false,
-        "padding": [
-          16.0,
-          16.0,
-          12.0
-        ],
-        "underline": false,
-        "value": ""
-      },
-      "type": "Panel",
-      "value": 0.5
-    },
-    {
-      "active": true,
-      "contentHeight": 0.0,
-      "id": 15,
-      "image": {
-        "alpha": 1.0,
-        "color": "#3C4054FF",
-        "gradientTo": "#00C4CCFF",
-        "preserveAspect": false,
-        "radius": 14.0,
-        "source": "",
-        "useGradient": false
-      },
-      "interactable": true,
-      "layout": {
-        "cellSize": [
-          100.0,
-          100.0
-        ],
-        "childAlignment": 0,
-        "expandHeight": false,
-        "expandWidth": false,
-        "mode": 0,
-        "padding": [
-          16.0,
-          16.0,
-          16.0,
-          16.0
-        ],
-        "spacing": [
-          12.0,
-          12.0
-        ]
-      },
-      "mask": false,
-      "name": "Casilla 11",
-      "onClick": "",
-      "options": [],
-      "outline": {
-        "color": "#6E7496FF",
-        "width": 2.0
-      },
-      "parent": 3,
-      "raycastTarget": true,
-      "rect": {
-        "anchorMax": [
-          0.5,
-          0.5
-        ],
-        "anchorMin": [
-          0.5,
-          0.5
-        ],
-        "anchoredPosition": [
-          92.0,
-          -172.0
-        ],
-        "pivot": [
-          0.5,
-          0.5
-        ],
-        "rotationZ": 0.0,
-        "sizeDelta": [
-          160.0,
-          160.0
-        ]
-      },
-      "shadow": {
-        "color": "#0000006E",
-        "enabled": false,
-        "offset": [
-          6.0,
-          -6.0
-        ]
-      },
-      "shape": "rect",
-      "size": [
-        160.0,
-        160.0
-      ],
-      "text": {
-        "alignH": 1,
-        "alignV": 1,
-        "bold": false,
-        "color": "#14141EFF",
-        "font": "",
-        "fontSize": 32.0,
-        "hasText": false,
-        "italic": false,
-        "padding": [
-          16.0,
-          16.0,
-          12.0
-        ],
-        "underline": false,
-        "value": ""
-      },
-      "type": "Panel",
-      "value": 0.5
-    },
-    {
-      "active": true,
-      "contentHeight": 0.0,
-      "id": 16,
-      "image": {
-        "alpha": 1.0,
-        "color": "#3C4054FF",
-        "gradientTo": "#00C4CCFF",
-        "preserveAspect": false,
-        "radius": 14.0,
-        "source": "",
-        "useGradient": false
-      },
-      "interactable": true,
-      "layout": {
-        "cellSize": [
-          100.0,
-          100.0
-        ],
-        "childAlignment": 0,
-        "expandHeight": false,
-        "expandWidth": false,
-        "mode": 0,
-        "padding": [
-          16.0,
-          16.0,
-          16.0,
-          16.0
-        ],
-        "spacing": [
-          12.0,
-          12.0
-        ]
-      },
-      "mask": false,
-      "name": "Casilla 12",
-      "onClick": "",
-      "options": [],
-      "outline": {
-        "color": "#6E7496FF",
-        "width": 2.0
-      },
-      "parent": 3,
-      "raycastTarget": true,
-      "rect": {
-        "anchorMax": [
-          0.5,
-          0.5
-        ],
-        "anchorMin": [
-          0.5,
-          0.5
-        ],
-        "anchoredPosition": [
-          276.0,
-          -172.0
-        ],
-        "pivot": [
-          0.5,
-          0.5
-        ],
-        "rotationZ": 0.0,
-        "sizeDelta": [
-          160.0,
-          160.0
-        ]
-      },
-      "shadow": {
-        "color": "#0000006E",
-        "enabled": false,
-        "offset": [
-          6.0,
-          -6.0
-        ]
-      },
-      "shape": "rect",
-      "size": [
-        160.0,
-        160.0
-      ],
-      "text": {
-        "alignH": 1,
-        "alignV": 1,
-        "bold": false,
-        "color": "#14141EFF",
-        "font": "",
-        "fontSize": 32.0,
-        "hasText": false,
-        "italic": false,
-        "padding": [
-          16.0,
-          16.0,
-          12.0
-        ],
-        "underline": false,
-        "value": ""
-      },
-      "type": "Panel",
+      "type": "Button",
       "value": 0.5
     }
   ],

@@ -1,4 +1,4 @@
-<p align="center"><img src="assets/marca/portada.png" alt="Lienzo UI" width="100%"></p>
+<p align="center"><img src="assets/brand/cover.png" alt="Lienzo UI" width="100%"></p>
 
 # Lienzo UI
 
@@ -29,7 +29,7 @@
 - **In-app tutorial** for beginners and professionals: it opens on first launch, then the editor opens; reopen it with the **Tutorial** button or F1.
 - **Community:** browse, install and share plugins, images, fonts, templates, elements and themes, with creator profiles, follow and hearts, moderation and 18+ filter ([how it works](#community)).
 - **Themes:** change the colours, corners and font of the whole app.
-- **Command line** for automation: `--plantillas`, `--plantilla N`, `--abrir`, `--guardar`, `--exportar`, `--revisar`, `--screenshot`, `--probar`.
+- **Command line** for automation: `--templates`, `--template N`, `--open`, `--save`, `--export`, `--review`, `--screenshot`, `--test`. The old Spanish flags (`--abrir`, `--exportar`…) still work.
 - **MCP server for any AI** (`mcp/`): Claude, Cursor, VS Code or any MCP client can create and edit designs, export them to Unity and take screenshots.
 
 ## New in 1.3
@@ -37,7 +37,7 @@
 <p align="center"><img src="docs/imagenes/plantillas-1.3.png" width="49%"> <img src="docs/imagenes/revisar-1.3.png" width="49%"></p>
 
 - **7 new templates** (Pause menu, Game over, Level select, Loading screen, Character dialogue, Leaderboard, Character select). Open the **Templates** tab and click one; Ctrl+Z undoes it. They scale to fit any reference resolution, including portrait.
-- **Review design:** click **Review** in the header. Each warning names the element; click it to select it and fix it. From the command line: `lienzo-ui --abrir my.editorgui.json --revisar` (exit code 1 if there are errors, handy in CI). From an AI: MCP tool `revisar_diseno`.
+- **Review design:** click **Review** in the header. Each warning names the element; click it to select it and fix it. From the command line: `lienzo-ui --open my.editorgui.json --review` (exit code 1 if there are errors, handy in CI). From an AI: MCP tool `review_design`.
 - **Elements › Ready-made components** and **Text › For buttons and HUD:** click to add at the centre, or drag onto a panel to make it a child.
 - **Images:** 8 more gradient placeholders (exported to uGUI as generated sprites).
 

@@ -60,7 +60,7 @@ Lienzo UI로 첫 인터페이스를 만들고 Unity로 처음 내보내 봅시�
 
 1. **Unity로 내보내기**(Ctrl+E)를 누르세요. 처음이라면 `Assets`가 들어 있는 프로젝트 폴더를 고르세요.
 2. Unity로 돌아가면 디자인이 `Assets/EditorGUI/Prefabs`에 프리팹으로 나타납니다.
-3. 프리팹을 장면으로 드래그하거나 메뉴 **Tools › Lienzo UI › Importar diseño en la escena** (Unity 메뉴는 스페인어로 표시됩니다: 「장면에 디자인 가져오기」)를 사용하세요.
+3. 프리팹을 장면으로 드래그하거나 메뉴 **Tools › Lienzo UI › Import design into scene…**를 사용하세요.
 
 내보낼 때마다 Unity가 프리팹을 자동으로 업데이트합니다.
 

@@ -34,7 +34,7 @@ Um contêiner pode organizar seus filhos na horizontal, na vertical ou em grade 
 
 ## Lógica
 
-- **No editor**: no modo Testar, cada elemento pode executar um script Rhai ao clicar (`mostrar("Name")`, `ocultar`, `alternar`, `texto`, `color`, `mover`…). Útil para prototipar fluxos. As alterações feitas durante o teste são descartadas ao sair do modo de teste e nunca são salvas nem exportadas.
+- **No editor**: no modo Testar, cada elemento pode executar um script Rhai ao clicar (`show("Name")`, `hide`, `toggle`, `set_text`, `set_color`, `move_by`…). Útil para prototipar fluxos. As alterações feitas durante o teste são descartadas ao sair do modo de teste e nunca são salvas nem exportadas.
 - **No Unity**: `<Design>View` herda de `<Design>ViewBase`, com um campo por botão, slider, toggle ou campo de texto, e métodos `On<Element>Click` / `On<Element>Changed` para sobrescrever.
 
 ```csharp
@@ -48,7 +48,7 @@ Dê nomes únicos aos elementos interativos: os scripts e `GameObject.Find` enco
 
 ## Revisar design
 
-O botão **Revisar** (e `--revisar` na linha de comando) verifica, na resolução de referência:
+O botão **Revisar** (e `--review` na linha de comando) verifica, na resolução de referência:
 
 | Verificação | Regra |
 |---|---|
@@ -64,17 +64,17 @@ Contraste abaixo de 2:1, elementos totalmente fora da página e imagens ausentes
 ## Linha de comando
 
 ```bash
-lienzo-ui --plantillas                                   # lista os modelos (0-12)
-lienzo-ui --plantilla 4 --guardar inventario.editorgui.json
-lienzo-ui --abrir inventario.editorgui.json --revisar    # código de saída 1 se houver erros
-lienzo-ui --abrir inventario.editorgui.json --exportar "C:/MyGame"   # sem janela
-lienzo-ui --abrir inventario.editorgui.json --screenshot capture.png
-lienzo-ui --probar 1080x2400                             # abre no modo Testar com essa tela
-lienzo-ui --tutorial [--profesional]                     # força o tutorial
-lienzo-ui --sin-tutorial                                 # não o abre
+lienzo-ui --templates                                   # lista os modelos (0-12)
+lienzo-ui --template 4 --save inventory.editorgui.json
+lienzo-ui --open inventory.editorgui.json --review    # código de saída 1 se houver erros
+lienzo-ui --open inventory.editorgui.json --export "C:/MyGame"   # sem janela
+lienzo-ui --open inventory.editorgui.json --screenshot capture.png
+lienzo-ui --test 1080x2400                             # abre no modo Testar com essa tela
+lienzo-ui --tutorial [--pro]                     # força o tutorial
+lienzo-ui --no-tutorial                                 # não o abre
 ```
 
-`--guardar`, `--exportar` e `--revisar` não abrem janela: use-os para scripts, CI e para o [servidor MCP](MCP.md) (ferramenta `revisar_diseno`).
+`--save`, `--export` e `--review` não abrem janela: use-os para scripts, CI e para o [servidor MCP](MCP.md) (ferramenta `review_design`).
 
 ## Código-fonte
 

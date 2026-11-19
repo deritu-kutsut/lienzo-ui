@@ -1,28 +1,129 @@
 {
-  "title": "Inventario",
-  "width": 1920.0,
-  "height": 1080.0,
+  "title": "Pixel art HUD",
+  "width": 1920,
+  "height": 1080,
   "background": [
-    28,
-    30,
-    40,
+    70,
+    120,
+    90,
     255
   ],
   "elements": [
     {
       "id": 1,
-      "name": "Inventario",
-      "kind": "Panel",
-      "x": 540.0,
-      "y": 160.0,
-      "w": 840.0,
-      "h": 760.0,
-      "rot": 0.0,
+      "name": "Scene (preview)",
+      "kind": "Image",
+      "x": 0,
+      "y": 0,
+      "w": 1920,
+      "h": 1080,
+      "rot": 0,
       "fill": [
-        44,
-        47,
-        62,
+        120,
+        190,
+        240,
         255
+      ],
+      "fill2": [
+        70,
+        140,
+        80,
+        255
+      ],
+      "stroke": [
+        30,
+        30,
+        40,
+        255
+      ],
+      "stroke_w": 0,
+      "radius": 0,
+      "opacity": 1,
+      "text": "",
+      "font_size": 32,
+      "text_color": [
+        20,
+        20,
+        30,
+        255
+      ],
+      "bold": false,
+      "italic": false,
+      "underline": false,
+      "align": 1,
+      "valign": 1,
+      "font": "",
+      "on_click": "",
+      "image": "",
+      "value": 0.5,
+      "visible": true,
+      "locked": false,
+      "parent": null,
+      "anchor_min": [
+        0,
+        0
+      ],
+      "anchor_max": [
+        1,
+        1
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "options": [],
+      "interactable": true,
+      "raycast": false,
+      "mask": false,
+      "shadow": {
+        "on": false,
+        "color": [
+          0,
+          0,
+          0,
+          110
+        ],
+        "offset": [
+          6,
+          -6
+        ]
+      },
+      "layout": {
+        "mode": "None",
+        "padding": [
+          16,
+          16,
+          16,
+          16
+        ],
+        "spacing": [
+          12,
+          12
+        ],
+        "align": 0,
+        "cell": [
+          100,
+          100
+        ],
+        "expand_w": false,
+        "expand_h": false
+      },
+      "collapsed": false
+    },
+    {
+      "id": 2,
+      "name": "Top bar",
+      "kind": "Empty",
+      "x": 0,
+      "y": 0,
+      "w": 1920,
+      "h": 170,
+      "rot": 0,
+      "fill": [
+        0,
+        0,
+        0,
+        0
       ],
       "fill2": [
         0,
@@ -31,16 +132,521 @@
         255
       ],
       "stroke": [
-        90,
-        96,
-        130,
+        30,
+        30,
+        40,
         255
       ],
-      "stroke_w": 3.0,
-      "radius": 28.0,
-      "opacity": 1.0,
+      "stroke_w": 0,
+      "radius": 0,
+      "opacity": 1,
       "text": "",
-      "font_size": 32.0,
+      "font_size": 32,
+      "text_color": [
+        20,
+        20,
+        30,
+        255
+      ],
+      "bold": false,
+      "italic": false,
+      "underline": false,
+      "align": 1,
+      "valign": 1,
+      "font": "",
+      "on_click": "",
+      "image": "",
+      "value": 0.5,
+      "visible": true,
+      "locked": false,
+      "parent": null,
+      "anchor_min": [
+        0,
+        1
+      ],
+      "anchor_max": [
+        1,
+        1
+      ],
+      "pivot": [
+        0.5,
+        1
+      ],
+      "options": [],
+      "interactable": true,
+      "raycast": false,
+      "mask": false,
+      "shadow": {
+        "on": false,
+        "color": [
+          0,
+          0,
+          0,
+          110
+        ],
+        "offset": [
+          6,
+          -6
+        ]
+      },
+      "layout": {
+        "mode": "None",
+        "padding": [
+          16,
+          16,
+          16,
+          16
+        ],
+        "spacing": [
+          12,
+          12
+        ],
+        "align": 0,
+        "cell": [
+          100,
+          100
+        ],
+        "expand_w": false,
+        "expand_h": false
+      },
+      "collapsed": false
+    },
+    {
+      "id": 3,
+      "name": "Health frame",
+      "kind": "Panel",
+      "x": 40,
+      "y": 40,
+      "w": 520,
+      "h": 110,
+      "rot": 0,
+      "fill": [
+        10,
+        10,
+        20,
+        160
+      ],
+      "fill2": [
+        0,
+        196,
+        204,
+        255
+      ],
+      "stroke": [
+        30,
+        30,
+        40,
+        255
+      ],
+      "stroke_w": 0,
+      "radius": 24,
+      "opacity": 1,
+      "text": "",
+      "font_size": 32,
+      "text_color": [
+        20,
+        20,
+        30,
+        255
+      ],
+      "bold": false,
+      "italic": false,
+      "underline": false,
+      "align": 1,
+      "valign": 1,
+      "font": "",
+      "on_click": "",
+      "image": "",
+      "value": 0.5,
+      "visible": true,
+      "locked": false,
+      "parent": 2,
+      "anchor_min": [
+        0,
+        1
+      ],
+      "anchor_max": [
+        0,
+        1
+      ],
+      "pivot": [
+        0,
+        1
+      ],
+      "options": [],
+      "interactable": true,
+      "raycast": true,
+      "mask": false,
+      "shadow": {
+        "on": false,
+        "color": [
+          0,
+          0,
+          0,
+          110
+        ],
+        "offset": [
+          6,
+          -6
+        ]
+      },
+      "layout": {
+        "mode": "None",
+        "padding": [
+          16,
+          16,
+          16,
+          16
+        ],
+        "spacing": [
+          12,
+          12
+        ],
+        "align": 0,
+        "cell": [
+          100,
+          100
+        ],
+        "expand_w": false,
+        "expand_h": false
+      },
+      "collapsed": false
+    },
+    {
+      "id": 4,
+      "name": "Health label",
+      "kind": "Text",
+      "x": 70,
+      "y": 50,
+      "w": 300,
+      "h": 40,
+      "rot": 0,
+      "fill": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "fill2": [
+        0,
+        196,
+        204,
+        255
+      ],
+      "stroke": [
+        30,
+        30,
+        40,
+        255
+      ],
+      "stroke_w": 0,
+      "radius": 0,
+      "opacity": 1,
+      "text": "HEALTH 72/100",
+      "font_size": 28,
+      "text_color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "bold": true,
+      "italic": false,
+      "underline": false,
+      "align": 0,
+      "valign": 1,
+      "font": "",
+      "on_click": "",
+      "image": "",
+      "value": 0.5,
+      "visible": true,
+      "locked": false,
+      "parent": 3,
+      "anchor_min": [
+        0,
+        1
+      ],
+      "anchor_max": [
+        0,
+        1
+      ],
+      "pivot": [
+        0,
+        1
+      ],
+      "options": [],
+      "interactable": true,
+      "raycast": false,
+      "mask": false,
+      "shadow": {
+        "on": false,
+        "color": [
+          0,
+          0,
+          0,
+          110
+        ],
+        "offset": [
+          6,
+          -6
+        ]
+      },
+      "layout": {
+        "mode": "None",
+        "padding": [
+          16,
+          16,
+          16,
+          16
+        ],
+        "spacing": [
+          12,
+          12
+        ],
+        "align": 0,
+        "cell": [
+          100,
+          100
+        ],
+        "expand_w": false,
+        "expand_h": false
+      },
+      "collapsed": false
+    },
+    {
+      "id": 5,
+      "name": "Health bar",
+      "kind": "Slider",
+      "x": 70,
+      "y": 95,
+      "w": 460,
+      "h": 34,
+      "rot": 0,
+      "fill": [
+        235,
+        70,
+        90,
+        255
+      ],
+      "fill2": [
+        60,
+        60,
+        70,
+        255
+      ],
+      "stroke": [
+        30,
+        30,
+        40,
+        255
+      ],
+      "stroke_w": 0,
+      "radius": 0,
+      "opacity": 1,
+      "text": "",
+      "font_size": 32,
+      "text_color": [
+        20,
+        20,
+        30,
+        255
+      ],
+      "bold": false,
+      "italic": false,
+      "underline": false,
+      "align": 1,
+      "valign": 1,
+      "font": "",
+      "on_click": "",
+      "image": "",
+      "value": 0.72,
+      "visible": true,
+      "locked": false,
+      "parent": 3,
+      "anchor_min": [
+        0,
+        0
+      ],
+      "anchor_max": [
+        1,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0
+      ],
+      "options": [],
+      "interactable": false,
+      "raycast": true,
+      "mask": false,
+      "shadow": {
+        "on": false,
+        "color": [
+          0,
+          0,
+          0,
+          110
+        ],
+        "offset": [
+          6,
+          -6
+        ]
+      },
+      "layout": {
+        "mode": "None",
+        "padding": [
+          16,
+          16,
+          16,
+          16
+        ],
+        "spacing": [
+          12,
+          12
+        ],
+        "align": 0,
+        "cell": [
+          100,
+          100
+        ],
+        "expand_w": false,
+        "expand_h": false
+      },
+      "collapsed": false
+    },
+    {
+      "id": 6,
+      "name": "Score",
+      "kind": "Text",
+      "x": 1480,
+      "y": 50,
+      "w": 400,
+      "h": 60,
+      "rot": 0,
+      "fill": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "fill2": [
+        0,
+        196,
+        204,
+        255
+      ],
+      "stroke": [
+        30,
+        30,
+        40,
+        255
+      ],
+      "stroke_w": 0,
+      "radius": 0,
+      "opacity": 1,
+      "text": "12 450",
+      "font_size": 52,
+      "text_color": [
+        255,
+        240,
+        150,
+        255
+      ],
+      "bold": true,
+      "italic": false,
+      "underline": false,
+      "align": 2,
+      "valign": 1,
+      "font": "",
+      "on_click": "",
+      "image": "",
+      "value": 0.5,
+      "visible": true,
+      "locked": false,
+      "parent": 2,
+      "anchor_min": [
+        1,
+        1
+      ],
+      "anchor_max": [
+        1,
+        1
+      ],
+      "pivot": [
+        1,
+        1
+      ],
+      "options": [],
+      "interactable": true,
+      "raycast": false,
+      "mask": false,
+      "shadow": {
+        "on": false,
+        "color": [
+          0,
+          0,
+          0,
+          110
+        ],
+        "offset": [
+          6,
+          -6
+        ]
+      },
+      "layout": {
+        "mode": "None",
+        "padding": [
+          16,
+          16,
+          16,
+          16
+        ],
+        "spacing": [
+          12,
+          12
+        ],
+        "align": 0,
+        "cell": [
+          100,
+          100
+        ],
+        "expand_w": false,
+        "expand_h": false
+      },
+      "collapsed": false
+    },
+    {
+      "id": 7,
+      "name": "Action bar",
+      "kind": "Panel",
+      "x": 670,
+      "y": 910,
+      "w": 580,
+      "h": 140,
+      "rot": 0,
+      "fill": [
+        10,
+        10,
+        20,
+        120
+      ],
+      "fill2": [
+        0,
+        196,
+        204,
+        255
+      ],
+      "stroke": [
+        30,
+        30,
+        40,
+        255
+      ],
+      "stroke_w": 0,
+      "radius": 20,
+      "opacity": 1,
+      "text": "",
+      "font_size": 32,
       "text_color": [
         20,
         20,
@@ -61,6 +667,107 @@
       "parent": null,
       "anchor_min": [
         0.5,
+        0
+      ],
+      "anchor_max": [
+        0.5,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0
+      ],
+      "options": [],
+      "interactable": true,
+      "raycast": true,
+      "mask": false,
+      "shadow": {
+        "on": false,
+        "color": [
+          0,
+          0,
+          0,
+          110
+        ],
+        "offset": [
+          6,
+          -6
+        ]
+      },
+      "layout": {
+        "mode": "Horizontal",
+        "padding": [
+          16,
+          16,
+          16,
+          16
+        ],
+        "spacing": [
+          16,
+          0
+        ],
+        "align": 4,
+        "cell": [
+          100,
+          100
+        ],
+        "expand_w": false,
+        "expand_h": false
+      },
+      "collapsed": false
+    },
+    {
+      "id": 8,
+      "name": "Slot 1",
+      "kind": "Panel",
+      "x": 712,
+      "y": 924,
+      "w": 112,
+      "h": 112,
+      "rot": 0,
+      "fill": [
+        10,
+        10,
+        20,
+        150
+      ],
+      "fill2": [
+        0,
+        196,
+        204,
+        255
+      ],
+      "stroke": [
+        255,
+        255,
+        255,
+        200
+      ],
+      "stroke_w": 3,
+      "radius": 16,
+      "opacity": 1,
+      "text": "1",
+      "font_size": 22,
+      "text_color": [
+        255,
+        255,
+        255,
+        180
+      ],
+      "bold": false,
+      "italic": false,
+      "underline": false,
+      "align": 2,
+      "valign": 2,
+      "font": "",
+      "on_click": "",
+      "image": "",
+      "value": 0.5,
+      "visible": true,
+      "locked": false,
+      "parent": 7,
+      "anchor_min": [
+        0.5,
         0.5
       ],
       "anchor_max": [
@@ -76,7 +783,7 @@
       "raycast": true,
       "mask": false,
       "shadow": {
-        "on": true,
+        "on": false,
         "color": [
           0,
           0,
@@ -84,26 +791,26 @@
           110
         ],
         "offset": [
-          6.0,
-          -6.0
+          6,
+          -6
         ]
       },
       "layout": {
         "mode": "None",
         "padding": [
-          16.0,
-          16.0,
-          16.0,
-          16.0
+          16,
+          16,
+          16,
+          16
         ],
         "spacing": [
-          12.0,
-          12.0
+          12,
+          12
         ],
         "align": 0,
         "cell": [
-          100.0,
-          100.0
+          100,
+          100
         ],
         "expand_w": false,
         "expand_h": false
@@ -111,24 +818,24 @@
       "collapsed": false
     },
     {
-      "id": 2,
-      "name": "Título",
-      "kind": "Text",
-      "x": 580.0,
-      "y": 190.0,
-      "w": 600.0,
-      "h": 70.0,
-      "rot": 0.0,
+      "id": 13,
+      "name": "Sword icon",
+      "kind": "Image",
+      "x": 736,
+      "y": 948,
+      "w": 64,
+      "h": 64,
+      "rot": 0,
       "fill": [
-        0,
-        0,
-        0,
-        0
+        255,
+        255,
+        255,
+        255
       ],
       "fill2": [
-        0,
-        196,
-        204,
+        255,
+        255,
+        255,
         255
       ],
       "stroke": [
@@ -137,40 +844,40 @@
         40,
         255
       ],
-      "stroke_w": 0.0,
-      "radius": 0.0,
-      "opacity": 1.0,
-      "text": "Inventario",
-      "font_size": 52.0,
+      "stroke_w": 0,
+      "radius": 0,
+      "opacity": 1,
+      "text": "",
+      "font_size": 32,
       "text_color": [
-        255,
-        255,
-        255,
+        20,
+        20,
+        30,
         255
       ],
-      "bold": true,
+      "bold": false,
       "italic": false,
       "underline": false,
-      "align": 0,
+      "align": 1,
       "valign": 1,
       "font": "",
       "on_click": "",
-      "image": "",
+      "image": "pixel/sword.png",
       "value": 0.5,
       "visible": true,
       "locked": false,
-      "parent": 1,
+      "parent": 8,
       "anchor_min": [
-        0.0,
-        1.0
+        0.5,
+        0.5
       ],
       "anchor_max": [
-        0.0,
-        1.0
+        0.5,
+        0.5
       ],
       "pivot": [
-        0.0,
-        1.0
+        0.5,
+        0.5
       ],
       "options": [],
       "interactable": true,
@@ -185,652 +892,47 @@
           110
         ],
         "offset": [
-          6.0,
-          -6.0
+          6,
+          -6
         ]
       },
       "layout": {
         "mode": "None",
         "padding": [
-          16.0,
-          16.0,
-          16.0,
-          16.0
+          16,
+          16,
+          16,
+          16
         ],
         "spacing": [
-          12.0,
-          12.0
+          12,
+          12
         ],
         "align": 0,
         "cell": [
-          100.0,
-          100.0
+          100,
+          100
         ],
         "expand_w": false,
         "expand_h": false
       },
-      "collapsed": false
-    },
-    {
-      "id": 3,
-      "name": "Cerrar",
-      "kind": "Button",
-      "x": 1280.0,
-      "y": 190.0,
-      "w": 70.0,
-      "h": 70.0,
-      "rot": 0.0,
-      "fill": [
-        235,
-        70,
-        90,
-        255
-      ],
-      "fill2": [
-        0,
-        196,
-        204,
-        255
-      ],
-      "stroke": [
-        30,
-        30,
-        40,
-        255
-      ],
-      "stroke_w": 0.0,
-      "radius": 35.0,
-      "opacity": 1.0,
-      "text": "X",
-      "font_size": 32.0,
-      "text_color": [
-        255,
-        255,
-        255,
-        255
-      ],
-      "bold": true,
-      "italic": false,
-      "underline": false,
-      "align": 1,
-      "valign": 1,
-      "font": "",
-      "on_click": "ocultar(\"Inventario\");",
-      "image": "",
-      "value": 0.5,
-      "visible": true,
-      "locked": false,
-      "parent": 1,
-      "anchor_min": [
-        1.0,
-        1.0
-      ],
-      "anchor_max": [
-        1.0,
-        1.0
-      ],
-      "pivot": [
-        1.0,
-        1.0
-      ],
-      "options": [],
-      "interactable": true,
-      "raycast": true,
-      "mask": false,
-      "shadow": {
-        "on": false,
-        "color": [
-          0,
-          0,
-          0,
-          110
-        ],
-        "offset": [
-          6.0,
-          -6.0
-        ]
-      },
-      "layout": {
-        "mode": "None",
-        "padding": [
-          16.0,
-          16.0,
-          16.0,
-          16.0
-        ],
-        "spacing": [
-          12.0,
-          12.0
-        ],
-        "align": 0,
-        "cell": [
-          100.0,
-          100.0
-        ],
-        "expand_w": false,
-        "expand_h": false
-      },
-      "collapsed": false
-    },
-    {
-      "id": 4,
-      "name": "Rejilla",
-      "kind": "Panel",
-      "x": 580.0,
-      "y": 290.0,
-      "w": 760.0,
-      "h": 600.0,
-      "rot": 0.0,
-      "fill": [
-        30,
-        32,
-        44,
-        255
-      ],
-      "fill2": [
-        0,
-        196,
-        204,
-        255
-      ],
-      "stroke": [
-        30,
-        30,
-        40,
-        255
-      ],
-      "stroke_w": 0.0,
-      "radius": 18.0,
-      "opacity": 1.0,
-      "text": "",
-      "font_size": 32.0,
-      "text_color": [
-        20,
-        20,
-        30,
-        255
-      ],
-      "bold": false,
-      "italic": false,
-      "underline": false,
-      "align": 1,
-      "valign": 1,
-      "font": "",
-      "on_click": "",
-      "image": "",
-      "value": 0.5,
-      "visible": true,
-      "locked": false,
-      "parent": 1,
-      "anchor_min": [
-        0.0,
-        0.0
-      ],
-      "anchor_max": [
-        1.0,
-        1.0
-      ],
-      "pivot": [
-        0.5,
-        0.5
-      ],
-      "options": [],
-      "interactable": true,
-      "raycast": true,
-      "mask": false,
-      "shadow": {
-        "on": false,
-        "color": [
-          0,
-          0,
-          0,
-          110
-        ],
-        "offset": [
-          6.0,
-          -6.0
-        ]
-      },
-      "layout": {
-        "mode": "Grid",
-        "padding": [
-          24.0,
-          24.0,
-          24.0,
-          24.0
-        ],
-        "spacing": [
-          24.0,
-          24.0
-        ],
-        "align": 1,
-        "cell": [
-          160.0,
-          160.0
-        ],
-        "expand_w": false,
-        "expand_h": false
-      },
-      "collapsed": false
-    },
-    {
-      "id": 5,
-      "name": "Casilla 1",
-      "kind": "Panel",
-      "x": 604.0,
-      "y": 314.0,
-      "w": 160.0,
-      "h": 160.0,
-      "rot": 0.0,
-      "fill": [
-        60,
-        64,
-        84,
-        255
-      ],
-      "fill2": [
-        0,
-        196,
-        204,
-        255
-      ],
-      "stroke": [
-        110,
-        116,
-        150,
-        255
-      ],
-      "stroke_w": 2.0,
-      "radius": 14.0,
-      "opacity": 1.0,
-      "text": "",
-      "font_size": 32.0,
-      "text_color": [
-        20,
-        20,
-        30,
-        255
-      ],
-      "bold": false,
-      "italic": false,
-      "underline": false,
-      "align": 1,
-      "valign": 1,
-      "font": "",
-      "on_click": "",
-      "image": "",
-      "value": 0.5,
-      "visible": true,
-      "locked": false,
-      "parent": 4,
-      "anchor_min": [
-        0.5,
-        0.5
-      ],
-      "anchor_max": [
-        0.5,
-        0.5
-      ],
-      "pivot": [
-        0.5,
-        0.5
-      ],
-      "options": [],
-      "interactable": true,
-      "raycast": true,
-      "mask": false,
-      "shadow": {
-        "on": false,
-        "color": [
-          0,
-          0,
-          0,
-          110
-        ],
-        "offset": [
-          6.0,
-          -6.0
-        ]
-      },
-      "layout": {
-        "mode": "None",
-        "padding": [
-          16.0,
-          16.0,
-          16.0,
-          16.0
-        ],
-        "spacing": [
-          12.0,
-          12.0
-        ],
-        "align": 0,
-        "cell": [
-          100.0,
-          100.0
-        ],
-        "expand_w": false,
-        "expand_h": false
-      },
-      "collapsed": false
-    },
-    {
-      "id": 6,
-      "name": "Casilla 2",
-      "kind": "Panel",
-      "x": 788.0,
-      "y": 314.0,
-      "w": 160.0,
-      "h": 160.0,
-      "rot": 0.0,
-      "fill": [
-        60,
-        64,
-        84,
-        255
-      ],
-      "fill2": [
-        0,
-        196,
-        204,
-        255
-      ],
-      "stroke": [
-        110,
-        116,
-        150,
-        255
-      ],
-      "stroke_w": 2.0,
-      "radius": 14.0,
-      "opacity": 1.0,
-      "text": "",
-      "font_size": 32.0,
-      "text_color": [
-        20,
-        20,
-        30,
-        255
-      ],
-      "bold": false,
-      "italic": false,
-      "underline": false,
-      "align": 1,
-      "valign": 1,
-      "font": "",
-      "on_click": "",
-      "image": "",
-      "value": 0.5,
-      "visible": true,
-      "locked": false,
-      "parent": 4,
-      "anchor_min": [
-        0.5,
-        0.5
-      ],
-      "anchor_max": [
-        0.5,
-        0.5
-      ],
-      "pivot": [
-        0.5,
-        0.5
-      ],
-      "options": [],
-      "interactable": true,
-      "raycast": true,
-      "mask": false,
-      "shadow": {
-        "on": false,
-        "color": [
-          0,
-          0,
-          0,
-          110
-        ],
-        "offset": [
-          6.0,
-          -6.0
-        ]
-      },
-      "layout": {
-        "mode": "None",
-        "padding": [
-          16.0,
-          16.0,
-          16.0,
-          16.0
-        ],
-        "spacing": [
-          12.0,
-          12.0
-        ],
-        "align": 0,
-        "cell": [
-          100.0,
-          100.0
-        ],
-        "expand_w": false,
-        "expand_h": false
-      },
-      "collapsed": false
-    },
-    {
-      "id": 7,
-      "name": "Casilla 3",
-      "kind": "Panel",
-      "x": 972.0,
-      "y": 314.0,
-      "w": 160.0,
-      "h": 160.0,
-      "rot": 0.0,
-      "fill": [
-        60,
-        64,
-        84,
-        255
-      ],
-      "fill2": [
-        0,
-        196,
-        204,
-        255
-      ],
-      "stroke": [
-        110,
-        116,
-        150,
-        255
-      ],
-      "stroke_w": 2.0,
-      "radius": 14.0,
-      "opacity": 1.0,
-      "text": "",
-      "font_size": 32.0,
-      "text_color": [
-        20,
-        20,
-        30,
-        255
-      ],
-      "bold": false,
-      "italic": false,
-      "underline": false,
-      "align": 1,
-      "valign": 1,
-      "font": "",
-      "on_click": "",
-      "image": "",
-      "value": 0.5,
-      "visible": true,
-      "locked": false,
-      "parent": 4,
-      "anchor_min": [
-        0.5,
-        0.5
-      ],
-      "anchor_max": [
-        0.5,
-        0.5
-      ],
-      "pivot": [
-        0.5,
-        0.5
-      ],
-      "options": [],
-      "interactable": true,
-      "raycast": true,
-      "mask": false,
-      "shadow": {
-        "on": false,
-        "color": [
-          0,
-          0,
-          0,
-          110
-        ],
-        "offset": [
-          6.0,
-          -6.0
-        ]
-      },
-      "layout": {
-        "mode": "None",
-        "padding": [
-          16.0,
-          16.0,
-          16.0,
-          16.0
-        ],
-        "spacing": [
-          12.0,
-          12.0
-        ],
-        "align": 0,
-        "cell": [
-          100.0,
-          100.0
-        ],
-        "expand_w": false,
-        "expand_h": false
-      },
-      "collapsed": false
-    },
-    {
-      "id": 8,
-      "name": "Casilla 4",
-      "kind": "Panel",
-      "x": 1156.0,
-      "y": 314.0,
-      "w": 160.0,
-      "h": 160.0,
-      "rot": 0.0,
-      "fill": [
-        60,
-        64,
-        84,
-        255
-      ],
-      "fill2": [
-        0,
-        196,
-        204,
-        255
-      ],
-      "stroke": [
-        110,
-        116,
-        150,
-        255
-      ],
-      "stroke_w": 2.0,
-      "radius": 14.0,
-      "opacity": 1.0,
-      "text": "",
-      "font_size": 32.0,
-      "text_color": [
-        20,
-        20,
-        30,
-        255
-      ],
-      "bold": false,
-      "italic": false,
-      "underline": false,
-      "align": 1,
-      "valign": 1,
-      "font": "",
-      "on_click": "",
-      "image": "",
-      "value": 0.5,
-      "visible": true,
-      "locked": false,
-      "parent": 4,
-      "anchor_min": [
-        0.5,
-        0.5
-      ],
-      "anchor_max": [
-        0.5,
-        0.5
-      ],
-      "pivot": [
-        0.5,
-        0.5
-      ],
-      "options": [],
-      "interactable": true,
-      "raycast": true,
-      "mask": false,
-      "shadow": {
-        "on": false,
-        "color": [
-          0,
-          0,
-          0,
-          110
-        ],
-        "offset": [
-          6.0,
-          -6.0
-        ]
-      },
-      "layout": {
-        "mode": "None",
-        "padding": [
-          16.0,
-          16.0,
-          16.0,
-          16.0
-        ],
-        "spacing": [
-          12.0,
-          12.0
-        ],
-        "align": 0,
-        "cell": [
-          100.0,
-          100.0
-        ],
-        "expand_w": false,
-        "expand_h": false
-      },
-      "collapsed": false
+      "collapsed": false,
+      "group": null
     },
     {
       "id": 9,
-      "name": "Casilla 5",
+      "name": "Slot 2",
       "kind": "Panel",
-      "x": 604.0,
-      "y": 498.0,
-      "w": 160.0,
-      "h": 160.0,
-      "rot": 0.0,
+      "x": 840,
+      "y": 924,
+      "w": 112,
+      "h": 112,
+      "rot": 0,
       "fill": [
-        60,
-        64,
-        84,
-        255
+        10,
+        10,
+        20,
+        150
       ],
       "fill2": [
         0,
@@ -839,34 +941,34 @@
         255
       ],
       "stroke": [
-        110,
-        116,
-        150,
-        255
+        255,
+        255,
+        255,
+        200
       ],
-      "stroke_w": 2.0,
-      "radius": 14.0,
-      "opacity": 1.0,
-      "text": "",
-      "font_size": 32.0,
+      "stroke_w": 3,
+      "radius": 16,
+      "opacity": 1,
+      "text": "2",
+      "font_size": 22,
       "text_color": [
-        20,
-        20,
-        30,
-        255
+        255,
+        255,
+        255,
+        180
       ],
       "bold": false,
       "italic": false,
       "underline": false,
-      "align": 1,
-      "valign": 1,
+      "align": 2,
+      "valign": 2,
       "font": "",
       "on_click": "",
       "image": "",
       "value": 0.5,
       "visible": true,
       "locked": false,
-      "parent": 4,
+      "parent": 7,
       "anchor_min": [
         0.5,
         0.5
@@ -892,430 +994,26 @@
           110
         ],
         "offset": [
-          6.0,
-          -6.0
+          6,
+          -6
         ]
       },
       "layout": {
         "mode": "None",
         "padding": [
-          16.0,
-          16.0,
-          16.0,
-          16.0
+          16,
+          16,
+          16,
+          16
         ],
         "spacing": [
-          12.0,
-          12.0
+          12,
+          12
         ],
         "align": 0,
         "cell": [
-          100.0,
-          100.0
-        ],
-        "expand_w": false,
-        "expand_h": false
-      },
-      "collapsed": false
-    },
-    {
-      "id": 10,
-      "name": "Casilla 6",
-      "kind": "Panel",
-      "x": 788.0,
-      "y": 498.0,
-      "w": 160.0,
-      "h": 160.0,
-      "rot": 0.0,
-      "fill": [
-        60,
-        64,
-        84,
-        255
-      ],
-      "fill2": [
-        0,
-        196,
-        204,
-        255
-      ],
-      "stroke": [
-        110,
-        116,
-        150,
-        255
-      ],
-      "stroke_w": 2.0,
-      "radius": 14.0,
-      "opacity": 1.0,
-      "text": "",
-      "font_size": 32.0,
-      "text_color": [
-        20,
-        20,
-        30,
-        255
-      ],
-      "bold": false,
-      "italic": false,
-      "underline": false,
-      "align": 1,
-      "valign": 1,
-      "font": "",
-      "on_click": "",
-      "image": "",
-      "value": 0.5,
-      "visible": true,
-      "locked": false,
-      "parent": 4,
-      "anchor_min": [
-        0.5,
-        0.5
-      ],
-      "anchor_max": [
-        0.5,
-        0.5
-      ],
-      "pivot": [
-        0.5,
-        0.5
-      ],
-      "options": [],
-      "interactable": true,
-      "raycast": true,
-      "mask": false,
-      "shadow": {
-        "on": false,
-        "color": [
-          0,
-          0,
-          0,
-          110
-        ],
-        "offset": [
-          6.0,
-          -6.0
-        ]
-      },
-      "layout": {
-        "mode": "None",
-        "padding": [
-          16.0,
-          16.0,
-          16.0,
-          16.0
-        ],
-        "spacing": [
-          12.0,
-          12.0
-        ],
-        "align": 0,
-        "cell": [
-          100.0,
-          100.0
-        ],
-        "expand_w": false,
-        "expand_h": false
-      },
-      "collapsed": false
-    },
-    {
-      "id": 11,
-      "name": "Casilla 7",
-      "kind": "Panel",
-      "x": 972.0,
-      "y": 498.0,
-      "w": 160.0,
-      "h": 160.0,
-      "rot": 0.0,
-      "fill": [
-        60,
-        64,
-        84,
-        255
-      ],
-      "fill2": [
-        0,
-        196,
-        204,
-        255
-      ],
-      "stroke": [
-        110,
-        116,
-        150,
-        255
-      ],
-      "stroke_w": 2.0,
-      "radius": 14.0,
-      "opacity": 1.0,
-      "text": "",
-      "font_size": 32.0,
-      "text_color": [
-        20,
-        20,
-        30,
-        255
-      ],
-      "bold": false,
-      "italic": false,
-      "underline": false,
-      "align": 1,
-      "valign": 1,
-      "font": "",
-      "on_click": "",
-      "image": "",
-      "value": 0.5,
-      "visible": true,
-      "locked": false,
-      "parent": 4,
-      "anchor_min": [
-        0.5,
-        0.5
-      ],
-      "anchor_max": [
-        0.5,
-        0.5
-      ],
-      "pivot": [
-        0.5,
-        0.5
-      ],
-      "options": [],
-      "interactable": true,
-      "raycast": true,
-      "mask": false,
-      "shadow": {
-        "on": false,
-        "color": [
-          0,
-          0,
-          0,
-          110
-        ],
-        "offset": [
-          6.0,
-          -6.0
-        ]
-      },
-      "layout": {
-        "mode": "None",
-        "padding": [
-          16.0,
-          16.0,
-          16.0,
-          16.0
-        ],
-        "spacing": [
-          12.0,
-          12.0
-        ],
-        "align": 0,
-        "cell": [
-          100.0,
-          100.0
-        ],
-        "expand_w": false,
-        "expand_h": false
-      },
-      "collapsed": false
-    },
-    {
-      "id": 12,
-      "name": "Casilla 8",
-      "kind": "Panel",
-      "x": 1156.0,
-      "y": 498.0,
-      "w": 160.0,
-      "h": 160.0,
-      "rot": 0.0,
-      "fill": [
-        60,
-        64,
-        84,
-        255
-      ],
-      "fill2": [
-        0,
-        196,
-        204,
-        255
-      ],
-      "stroke": [
-        110,
-        116,
-        150,
-        255
-      ],
-      "stroke_w": 2.0,
-      "radius": 14.0,
-      "opacity": 1.0,
-      "text": "",
-      "font_size": 32.0,
-      "text_color": [
-        20,
-        20,
-        30,
-        255
-      ],
-      "bold": false,
-      "italic": false,
-      "underline": false,
-      "align": 1,
-      "valign": 1,
-      "font": "",
-      "on_click": "",
-      "image": "",
-      "value": 0.5,
-      "visible": true,
-      "locked": false,
-      "parent": 4,
-      "anchor_min": [
-        0.5,
-        0.5
-      ],
-      "anchor_max": [
-        0.5,
-        0.5
-      ],
-      "pivot": [
-        0.5,
-        0.5
-      ],
-      "options": [],
-      "interactable": true,
-      "raycast": true,
-      "mask": false,
-      "shadow": {
-        "on": false,
-        "color": [
-          0,
-          0,
-          0,
-          110
-        ],
-        "offset": [
-          6.0,
-          -6.0
-        ]
-      },
-      "layout": {
-        "mode": "None",
-        "padding": [
-          16.0,
-          16.0,
-          16.0,
-          16.0
-        ],
-        "spacing": [
-          12.0,
-          12.0
-        ],
-        "align": 0,
-        "cell": [
-          100.0,
-          100.0
-        ],
-        "expand_w": false,
-        "expand_h": false
-      },
-      "collapsed": false
-    },
-    {
-      "id": 13,
-      "name": "Casilla 9",
-      "kind": "Panel",
-      "x": 604.0,
-      "y": 682.0,
-      "w": 160.0,
-      "h": 160.0,
-      "rot": 0.0,
-      "fill": [
-        60,
-        64,
-        84,
-        255
-      ],
-      "fill2": [
-        0,
-        196,
-        204,
-        255
-      ],
-      "stroke": [
-        110,
-        116,
-        150,
-        255
-      ],
-      "stroke_w": 2.0,
-      "radius": 14.0,
-      "opacity": 1.0,
-      "text": "",
-      "font_size": 32.0,
-      "text_color": [
-        20,
-        20,
-        30,
-        255
-      ],
-      "bold": false,
-      "italic": false,
-      "underline": false,
-      "align": 1,
-      "valign": 1,
-      "font": "",
-      "on_click": "",
-      "image": "",
-      "value": 0.5,
-      "visible": true,
-      "locked": false,
-      "parent": 4,
-      "anchor_min": [
-        0.5,
-        0.5
-      ],
-      "anchor_max": [
-        0.5,
-        0.5
-      ],
-      "pivot": [
-        0.5,
-        0.5
-      ],
-      "options": [],
-      "interactable": true,
-      "raycast": true,
-      "mask": false,
-      "shadow": {
-        "on": false,
-        "color": [
-          0,
-          0,
-          0,
-          110
-        ],
-        "offset": [
-          6.0,
-          -6.0
-        ]
-      },
-      "layout": {
-        "mode": "None",
-        "padding": [
-          16.0,
-          16.0,
-          16.0,
-          16.0
-        ],
-        "spacing": [
-          12.0,
-          12.0
-        ],
-        "align": 0,
-        "cell": [
-          100.0,
-          100.0
+          100,
+          100
         ],
         "expand_w": false,
         "expand_h": false
@@ -1324,36 +1022,36 @@
     },
     {
       "id": 14,
-      "name": "Casilla 10",
-      "kind": "Panel",
-      "x": 788.0,
-      "y": 682.0,
-      "w": 160.0,
-      "h": 160.0,
-      "rot": 0.0,
+      "name": "Potion icon",
+      "kind": "Image",
+      "x": 864,
+      "y": 948,
+      "w": 64,
+      "h": 64,
+      "rot": 0,
       "fill": [
-        60,
-        64,
-        84,
+        255,
+        255,
+        255,
         255
       ],
       "fill2": [
-        0,
-        196,
-        204,
+        255,
+        255,
+        255,
         255
       ],
       "stroke": [
-        110,
-        116,
-        150,
+        30,
+        30,
+        40,
         255
       ],
-      "stroke_w": 2.0,
-      "radius": 14.0,
-      "opacity": 1.0,
+      "stroke_w": 0,
+      "radius": 0,
+      "opacity": 1,
       "text": "",
-      "font_size": 32.0,
+      "font_size": 32,
       "text_color": [
         20,
         20,
@@ -1367,11 +1065,113 @@
       "valign": 1,
       "font": "",
       "on_click": "",
+      "image": "pixel/potion.png",
+      "value": 0.5,
+      "visible": true,
+      "locked": false,
+      "parent": 9,
+      "anchor_min": [
+        0.5,
+        0.5
+      ],
+      "anchor_max": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "options": [],
+      "interactable": true,
+      "raycast": false,
+      "mask": false,
+      "shadow": {
+        "on": false,
+        "color": [
+          0,
+          0,
+          0,
+          110
+        ],
+        "offset": [
+          6,
+          -6
+        ]
+      },
+      "layout": {
+        "mode": "None",
+        "padding": [
+          16,
+          16,
+          16,
+          16
+        ],
+        "spacing": [
+          12,
+          12
+        ],
+        "align": 0,
+        "cell": [
+          100,
+          100
+        ],
+        "expand_w": false,
+        "expand_h": false
+      },
+      "collapsed": false,
+      "group": null
+    },
+    {
+      "id": 10,
+      "name": "Slot 3",
+      "kind": "Panel",
+      "x": 968,
+      "y": 924,
+      "w": 112,
+      "h": 112,
+      "rot": 0,
+      "fill": [
+        10,
+        10,
+        20,
+        150
+      ],
+      "fill2": [
+        0,
+        196,
+        204,
+        255
+      ],
+      "stroke": [
+        255,
+        255,
+        255,
+        200
+      ],
+      "stroke_w": 3,
+      "radius": 16,
+      "opacity": 1,
+      "text": "3",
+      "font_size": 22,
+      "text_color": [
+        255,
+        255,
+        255,
+        180
+      ],
+      "bold": false,
+      "italic": false,
+      "underline": false,
+      "align": 2,
+      "valign": 2,
+      "font": "",
+      "on_click": "",
       "image": "",
       "value": 0.5,
       "visible": true,
       "locked": false,
-      "parent": 4,
+      "parent": 7,
       "anchor_min": [
         0.5,
         0.5
@@ -1397,26 +1197,26 @@
           110
         ],
         "offset": [
-          6.0,
-          -6.0
+          6,
+          -6
         ]
       },
       "layout": {
         "mode": "None",
         "padding": [
-          16.0,
-          16.0,
-          16.0,
-          16.0
+          16,
+          16,
+          16,
+          16
         ],
         "spacing": [
-          12.0,
-          12.0
+          12,
+          12
         ],
         "align": 0,
         "cell": [
-          100.0,
-          100.0
+          100,
+          100
         ],
         "expand_w": false,
         "expand_h": false
@@ -1425,36 +1225,36 @@
     },
     {
       "id": 15,
-      "name": "Casilla 11",
-      "kind": "Panel",
-      "x": 972.0,
-      "y": 682.0,
-      "w": 160.0,
-      "h": 160.0,
-      "rot": 0.0,
+      "name": "Shield icon",
+      "kind": "Image",
+      "x": 992,
+      "y": 948,
+      "w": 64,
+      "h": 64,
+      "rot": 0,
       "fill": [
-        60,
-        64,
-        84,
+        255,
+        255,
+        255,
         255
       ],
       "fill2": [
-        0,
-        196,
-        204,
+        255,
+        255,
+        255,
         255
       ],
       "stroke": [
-        110,
-        116,
-        150,
+        30,
+        30,
+        40,
         255
       ],
-      "stroke_w": 2.0,
-      "radius": 14.0,
-      "opacity": 1.0,
+      "stroke_w": 0,
+      "radius": 0,
+      "opacity": 1,
       "text": "",
-      "font_size": 32.0,
+      "font_size": 32,
       "text_color": [
         20,
         20,
@@ -1468,11 +1268,113 @@
       "valign": 1,
       "font": "",
       "on_click": "",
+      "image": "pixel/shield.png",
+      "value": 0.5,
+      "visible": true,
+      "locked": false,
+      "parent": 10,
+      "anchor_min": [
+        0.5,
+        0.5
+      ],
+      "anchor_max": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "options": [],
+      "interactable": true,
+      "raycast": false,
+      "mask": false,
+      "shadow": {
+        "on": false,
+        "color": [
+          0,
+          0,
+          0,
+          110
+        ],
+        "offset": [
+          6,
+          -6
+        ]
+      },
+      "layout": {
+        "mode": "None",
+        "padding": [
+          16,
+          16,
+          16,
+          16
+        ],
+        "spacing": [
+          12,
+          12
+        ],
+        "align": 0,
+        "cell": [
+          100,
+          100
+        ],
+        "expand_w": false,
+        "expand_h": false
+      },
+      "collapsed": false,
+      "group": null
+    },
+    {
+      "id": 11,
+      "name": "Slot 4",
+      "kind": "Panel",
+      "x": 1096,
+      "y": 924,
+      "w": 112,
+      "h": 112,
+      "rot": 0,
+      "fill": [
+        10,
+        10,
+        20,
+        150
+      ],
+      "fill2": [
+        0,
+        196,
+        204,
+        255
+      ],
+      "stroke": [
+        255,
+        255,
+        255,
+        200
+      ],
+      "stroke_w": 3,
+      "radius": 16,
+      "opacity": 1,
+      "text": "4",
+      "font_size": 22,
+      "text_color": [
+        255,
+        255,
+        255,
+        180
+      ],
+      "bold": false,
+      "italic": false,
+      "underline": false,
+      "align": 2,
+      "valign": 2,
+      "font": "",
+      "on_click": "",
       "image": "",
       "value": 0.5,
       "visible": true,
       "locked": false,
-      "parent": 4,
+      "parent": 7,
       "anchor_min": [
         0.5,
         0.5
@@ -1498,26 +1400,26 @@
           110
         ],
         "offset": [
-          6.0,
-          -6.0
+          6,
+          -6
         ]
       },
       "layout": {
         "mode": "None",
         "padding": [
-          16.0,
-          16.0,
-          16.0,
-          16.0
+          16,
+          16,
+          16,
+          16
         ],
         "spacing": [
-          12.0,
-          12.0
+          12,
+          12
         ],
         "align": 0,
         "cell": [
-          100.0,
-          100.0
+          100,
+          100
         ],
         "expand_w": false,
         "expand_h": false
@@ -1526,18 +1428,120 @@
     },
     {
       "id": 16,
-      "name": "Casilla 12",
-      "kind": "Panel",
-      "x": 1156.0,
-      "y": 682.0,
-      "w": 160.0,
-      "h": 160.0,
-      "rot": 0.0,
+      "name": "Coin icon",
+      "kind": "Image",
+      "x": 1120,
+      "y": 948,
+      "w": 64,
+      "h": 64,
+      "rot": 0,
       "fill": [
-        60,
-        64,
-        84,
+        255,
+        255,
+        255,
         255
+      ],
+      "fill2": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "stroke": [
+        30,
+        30,
+        40,
+        255
+      ],
+      "stroke_w": 0,
+      "radius": 0,
+      "opacity": 1,
+      "text": "",
+      "font_size": 32,
+      "text_color": [
+        20,
+        20,
+        30,
+        255
+      ],
+      "bold": false,
+      "italic": false,
+      "underline": false,
+      "align": 1,
+      "valign": 1,
+      "font": "",
+      "on_click": "",
+      "image": "pixel/coin.png",
+      "value": 0.5,
+      "visible": true,
+      "locked": false,
+      "parent": 11,
+      "anchor_min": [
+        0.5,
+        0.5
+      ],
+      "anchor_max": [
+        0.5,
+        0.5
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "options": [],
+      "interactable": true,
+      "raycast": false,
+      "mask": false,
+      "shadow": {
+        "on": false,
+        "color": [
+          0,
+          0,
+          0,
+          110
+        ],
+        "offset": [
+          6,
+          -6
+        ]
+      },
+      "layout": {
+        "mode": "None",
+        "padding": [
+          16,
+          16,
+          16,
+          16
+        ],
+        "spacing": [
+          12,
+          12
+        ],
+        "align": 0,
+        "cell": [
+          100,
+          100
+        ],
+        "expand_w": false,
+        "expand_h": false
+      },
+      "collapsed": false,
+      "group": null
+    },
+    {
+      "id": 12,
+      "name": "Minimap",
+      "kind": "Ellipse",
+      "x": 1620,
+      "y": 780,
+      "w": 260,
+      "h": 260,
+      "rot": 0,
+      "fill": [
+        20,
+        40,
+        30,
+        200
       ],
       "fill2": [
         0,
@@ -1546,16 +1550,16 @@
         255
       ],
       "stroke": [
-        110,
-        116,
-        150,
-        255
+        255,
+        255,
+        255,
+        220
       ],
-      "stroke_w": 2.0,
-      "radius": 14.0,
-      "opacity": 1.0,
+      "stroke_w": 4,
+      "radius": 0,
+      "opacity": 1,
       "text": "",
-      "font_size": 32.0,
+      "font_size": 32,
       "text_color": [
         20,
         20,
@@ -1573,7 +1577,108 @@
       "value": 0.5,
       "visible": true,
       "locked": false,
-      "parent": 4,
+      "parent": null,
+      "anchor_min": [
+        1,
+        0
+      ],
+      "anchor_max": [
+        1,
+        0
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "options": [],
+      "interactable": true,
+      "raycast": true,
+      "mask": true,
+      "shadow": {
+        "on": false,
+        "color": [
+          0,
+          0,
+          0,
+          110
+        ],
+        "offset": [
+          6,
+          -6
+        ]
+      },
+      "layout": {
+        "mode": "None",
+        "padding": [
+          16,
+          16,
+          16,
+          16
+        ],
+        "spacing": [
+          12,
+          12
+        ],
+        "align": 0,
+        "cell": [
+          100,
+          100
+        ],
+        "expand_w": false,
+        "expand_h": false
+      },
+      "collapsed": false
+    },
+    {
+      "id": 17,
+      "name": "Score coin",
+      "kind": "Image",
+      "x": 1560,
+      "y": 40,
+      "w": 48,
+      "h": 48,
+      "rot": 0,
+      "fill": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "fill2": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "stroke": [
+        30,
+        30,
+        40,
+        255
+      ],
+      "stroke_w": 0,
+      "radius": 0,
+      "opacity": 1,
+      "text": "",
+      "font_size": 32,
+      "text_color": [
+        20,
+        20,
+        30,
+        255
+      ],
+      "bold": false,
+      "italic": false,
+      "underline": false,
+      "align": 1,
+      "valign": 1,
+      "font": "",
+      "on_click": "",
+      "image": "pixel/coin.png",
+      "value": 0.5,
+      "visible": true,
+      "locked": false,
+      "parent": null,
       "anchor_min": [
         0.5,
         0.5
@@ -1588,7 +1693,7 @@
       ],
       "options": [],
       "interactable": true,
-      "raycast": true,
+      "raycast": false,
       "mask": false,
       "shadow": {
         "on": false,
@@ -1599,33 +1704,35 @@
           110
         ],
         "offset": [
-          6.0,
-          -6.0
+          6,
+          -6
         ]
       },
       "layout": {
         "mode": "None",
         "padding": [
-          16.0,
-          16.0,
-          16.0,
-          16.0
+          16,
+          16,
+          16,
+          16
         ],
         "spacing": [
-          12.0,
-          12.0
+          12,
+          12
         ],
         "align": 0,
         "cell": [
-          100.0,
-          100.0
+          100,
+          100
         ],
         "expand_w": false,
         "expand_h": false
       },
-      "collapsed": false
+      "collapsed": false,
+      "group": null
     }
   ],
-  "next_id": 17,
-  "canvas_match": 0.5
+  "next_id": 18,
+  "canvas_match": 0.5,
+  "pixel_art": true
 }

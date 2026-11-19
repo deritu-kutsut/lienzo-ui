@@ -60,7 +60,7 @@ Clique em **Revisar** na barra superior. Ele avisa sobre fonte pequena demais pa
 
 1. Clique em **Exportar para Unity** (Ctrl+E). Na primeira vez, escolha a pasta do seu projeto (a que contém `Assets`).
 2. Volte ao Unity: o design aparece como um prefab em `Assets/EditorGUI/Prefabs`.
-3. Arraste-o para a cena ou use o menu **Tools › Lienzo UI › Importar diseño en la escena** (o menu no Unity está em espanhol: «Importar design na cena»).
+3. Arraste-o para a cena ou use o menu **Tools › Lienzo UI › Import design into scene…**.
 
 Sempre que você exportar novamente, o Unity atualiza o prefab sozinho.
 

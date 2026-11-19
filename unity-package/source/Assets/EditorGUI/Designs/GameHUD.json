@@ -1,9 +1,9 @@
 {
   "canvas": {
-    "background": "#1C1E28FF",
-    "className": "TiendaDelHerrero",
+    "background": "#46785AFF",
+    "className": "GameHUD",
     "match": 0.5,
-    "name": "Tienda del herrero",
+    "name": "Game HUD",
     "pixelArt": false,
     "referenceResolution": [
       1920.0,
@@ -17,12 +17,12 @@
       "id": 1,
       "image": {
         "alpha": 1.0,
-        "color": "#2C2F3EFF",
-        "gradientTo": "#00C4CCFF",
+        "color": "#78BEF0FF",
+        "gradientTo": "#468C50FF",
         "preserveAspect": false,
-        "radius": 28.0,
+        "radius": 0.0,
         "source": "",
-        "useGradient": false
+        "useGradient": true
       },
       "interactable": true,
       "layout": {
@@ -46,27 +46,27 @@
         ]
       },
       "mask": false,
-      "name": "Inventario",
+      "name": "Scene (preview)",
       "onClick": "",
       "options": [],
       "outline": {
-        "color": "#5A6082FF",
-        "width": 3.0
+        "color": "#1E1E28FF",
+        "width": 0.0
       },
       "parent": -1,
-      "raycastTarget": true,
+      "raycastTarget": false,
       "rect": {
         "anchorMax": [
-          0.5,
-          0.5
+          1.0,
+          1.0
         ],
         "anchorMin": [
-          0.5,
-          0.5
+          0.0,
+          0.0
         ],
         "anchoredPosition": [
           0.0,
-          -40.0
+          0.0
         ],
         "pivot": [
           0.5,
@@ -74,13 +74,13 @@
         ],
         "rotationZ": 0.0,
         "sizeDelta": [
-          840.0,
-          900.0
+          0.0,
+          0.0
         ]
       },
       "shadow": {
         "color": "#0000006E",
-        "enabled": true,
+        "enabled": false,
         "offset": [
           6.0,
           -6.0
@@ -88,8 +88,8 @@
       },
       "shape": "rect",
       "size": [
-        840.0,
-        900.0
+        1920.0,
+        1080.0
       ],
       "text": {
         "alignH": 1,
@@ -108,7 +108,7 @@
         "underline": false,
         "value": ""
       },
-      "type": "Panel",
+      "type": "Image",
       "value": 0.5
     },
     {
@@ -146,15 +146,115 @@
         ]
       },
       "mask": false,
-      "name": "Título",
+      "name": "Top bar",
       "onClick": "",
       "options": [],
       "outline": {
         "color": "#1E1E28FF",
         "width": 0.0
       },
-      "parent": 0,
+      "parent": -1,
       "raycastTarget": false,
+      "rect": {
+        "anchorMax": [
+          1.0,
+          1.0
+        ],
+        "anchorMin": [
+          0.0,
+          1.0
+        ],
+        "anchoredPosition": [
+          0.0,
+          0.0
+        ],
+        "pivot": [
+          0.5,
+          1.0
+        ],
+        "rotationZ": 0.0,
+        "sizeDelta": [
+          0.0,
+          170.0
+        ]
+      },
+      "shadow": {
+        "color": "#0000006E",
+        "enabled": false,
+        "offset": [
+          6.0,
+          -6.0
+        ]
+      },
+      "shape": "rect",
+      "size": [
+        1920.0,
+        170.0
+      ],
+      "text": {
+        "alignH": 1,
+        "alignV": 1,
+        "bold": false,
+        "color": "#14141EFF",
+        "font": "",
+        "fontSize": 32.0,
+        "hasText": false,
+        "italic": false,
+        "padding": [
+          16.0,
+          16.0,
+          12.0
+        ],
+        "underline": false,
+        "value": ""
+      },
+      "type": "Empty",
+      "value": 0.5
+    },
+    {
+      "active": true,
+      "contentHeight": 0.0,
+      "id": 3,
+      "image": {
+        "alpha": 1.0,
+        "color": "#0A0A14A0",
+        "gradientTo": "#00C4CCFF",
+        "preserveAspect": false,
+        "radius": 24.0,
+        "source": "",
+        "useGradient": false
+      },
+      "interactable": true,
+      "layout": {
+        "cellSize": [
+          100.0,
+          100.0
+        ],
+        "childAlignment": 0,
+        "expandHeight": false,
+        "expandWidth": false,
+        "mode": 0,
+        "padding": [
+          16.0,
+          16.0,
+          16.0,
+          16.0
+        ],
+        "spacing": [
+          12.0,
+          12.0
+        ]
+      },
+      "mask": false,
+      "name": "Health frame",
+      "onClick": "",
+      "options": [],
+      "outline": {
+        "color": "#1E1E28FF",
+        "width": 0.0
+      },
+      "parent": 1,
+      "raycastTarget": true,
       "rect": {
         "anchorMax": [
           0.0,
@@ -166,7 +266,7 @@
         ],
         "anchoredPosition": [
           40.0,
-          -30.0
+          -40.0
         ],
         "pivot": [
           0.0,
@@ -174,8 +274,8 @@
         ],
         "rotationZ": 0.0,
         "sizeDelta": [
-          600.0,
-          70.0
+          520.0,
+          110.0
         ]
       },
       "shadow": {
@@ -188,117 +288,17 @@
       },
       "shape": "rect",
       "size": [
-        600.0,
-        70.0
-      ],
-      "text": {
-        "alignH": 0,
-        "alignV": 0,
-        "bold": true,
-        "color": "#FFD27AFF",
-        "font": "",
-        "fontSize": 52.0,
-        "hasText": true,
-        "italic": false,
-        "padding": [
-          0.0,
-          0.0,
-          0.0
-        ],
-        "underline": false,
-        "value": "Herrería"
-      },
-      "type": "Text",
-      "value": 0.5
-    },
-    {
-      "active": true,
-      "contentHeight": 0.0,
-      "id": 3,
-      "image": {
-        "alpha": 1.0,
-        "color": "#EB465AFF",
-        "gradientTo": "#00C4CCFF",
-        "preserveAspect": false,
-        "radius": 35.0,
-        "source": "",
-        "useGradient": false
-      },
-      "interactable": true,
-      "layout": {
-        "cellSize": [
-          100.0,
-          100.0
-        ],
-        "childAlignment": 0,
-        "expandHeight": false,
-        "expandWidth": false,
-        "mode": 0,
-        "padding": [
-          16.0,
-          16.0,
-          16.0,
-          16.0
-        ],
-        "spacing": [
-          12.0,
-          12.0
-        ]
-      },
-      "mask": false,
-      "name": "Cerrar",
-      "onClick": "ocultar(\"Inventario\");",
-      "options": [],
-      "outline": {
-        "color": "#1E1E28FF",
-        "width": 0.0
-      },
-      "parent": 0,
-      "raycastTarget": true,
-      "rect": {
-        "anchorMax": [
-          1.0,
-          1.0
-        ],
-        "anchorMin": [
-          1.0,
-          1.0
-        ],
-        "anchoredPosition": [
-          -30.0,
-          -30.0
-        ],
-        "pivot": [
-          1.0,
-          1.0
-        ],
-        "rotationZ": 0.0,
-        "sizeDelta": [
-          70.0,
-          70.0
-        ]
-      },
-      "shadow": {
-        "color": "#0000006E",
-        "enabled": false,
-        "offset": [
-          6.0,
-          -6.0
-        ]
-      },
-      "shape": "rect",
-      "size": [
-        70.0,
-        70.0
+        520.0,
+        110.0
       ],
       "text": {
         "alignH": 1,
         "alignV": 1,
-        "bold": true,
-        "color": "#FFFFFFFF",
+        "bold": false,
+        "color": "#14141EFF",
         "font": "",
         "fontSize": 32.0,
-        "hasText": true,
+        "hasText": false,
         "italic": false,
         "padding": [
           16.0,
@@ -306,21 +306,21 @@
           12.0
         ],
         "underline": false,
-        "value": "X"
+        "value": ""
       },
-      "type": "Button",
+      "type": "Panel",
       "value": 0.5
     },
     {
       "active": true,
       "contentHeight": 0.0,
-      "id": 17,
+      "id": 4,
       "image": {
         "alpha": 1.0,
-        "color": "#3FB46AFF",
+        "color": "#00000000",
         "gradientTo": "#00C4CCFF",
         "preserveAspect": false,
-        "radius": 14.0,
+        "radius": 0.0,
         "source": "",
         "useGradient": false
       },
@@ -346,36 +346,36 @@
         ]
       },
       "mask": false,
-      "name": "Comprar",
-      "onClick": "ocultar(\"Inventario\");",
+      "name": "Health label",
+      "onClick": "",
       "options": [],
       "outline": {
         "color": "#1E1E28FF",
         "width": 0.0
       },
-      "parent": 0,
-      "raycastTarget": true,
+      "parent": 2,
+      "raycastTarget": false,
       "rect": {
         "anchorMax": [
-          1.0,
+          0.0,
           1.0
         ],
         "anchorMin": [
-          1.0,
+          0.0,
           1.0
         ],
         "anchoredPosition": [
-          -40.0,
-          -790.0
+          30.0,
+          -10.0
         ],
         "pivot": [
-          1.0,
+          0.0,
           1.0
         ],
         "rotationZ": 0.0,
         "sizeDelta": [
           300.0,
-          76.0
+          40.0
         ]
       },
       "shadow": {
@@ -389,126 +389,26 @@
       "shape": "rect",
       "size": [
         300.0,
-        76.0
+        40.0
       ],
       "text": {
-        "alignH": 1,
-        "alignV": 1,
+        "alignH": 0,
+        "alignV": 0,
         "bold": true,
         "color": "#FFFFFFFF",
         "font": "",
-        "fontSize": 30.0,
+        "fontSize": 28.0,
         "hasText": true,
         "italic": false,
         "padding": [
-          16.0,
-          16.0,
-          12.0
-        ],
-        "underline": false,
-        "value": "Comprar · 120 oro"
-      },
-      "type": "Button",
-      "value": 0.5
-    },
-    {
-      "active": true,
-      "contentHeight": 0.0,
-      "id": 4,
-      "image": {
-        "alpha": 1.0,
-        "color": "#1E202CFF",
-        "gradientTo": "#00C4CCFF",
-        "preserveAspect": false,
-        "radius": 18.0,
-        "source": "",
-        "useGradient": false
-      },
-      "interactable": true,
-      "layout": {
-        "cellSize": [
-          160.0,
-          160.0
-        ],
-        "childAlignment": 1,
-        "expandHeight": false,
-        "expandWidth": false,
-        "mode": 3,
-        "padding": [
-          24.0,
-          24.0,
-          24.0,
-          24.0
-        ],
-        "spacing": [
-          24.0,
-          24.0
-        ]
-      },
-      "mask": false,
-      "name": "Rejilla",
-      "onClick": "",
-      "options": [],
-      "outline": {
-        "color": "#1E1E28FF",
-        "width": 0.0
-      },
-      "parent": 0,
-      "raycastTarget": true,
-      "rect": {
-        "anchorMax": [
-          1.0,
-          1.0
-        ],
-        "anchorMin": [
+          0.0,
           0.0,
           0.0
         ],
-        "anchoredPosition": [
-          0.0,
-          20.0
-        ],
-        "pivot": [
-          0.5,
-          0.5
-        ],
-        "rotationZ": 0.0,
-        "sizeDelta": [
-          -80.0,
-          -300.0
-        ]
-      },
-      "shadow": {
-        "color": "#0000006E",
-        "enabled": false,
-        "offset": [
-          6.0,
-          -6.0
-        ]
-      },
-      "shape": "rect",
-      "size": [
-        760.0,
-        600.0
-      ],
-      "text": {
-        "alignH": 1,
-        "alignV": 1,
-        "bold": false,
-        "color": "#14141EFF",
-        "font": "",
-        "fontSize": 32.0,
-        "hasText": false,
-        "italic": false,
-        "padding": [
-          16.0,
-          16.0,
-          12.0
-        ],
         "underline": false,
-        "value": ""
+        "value": "HEALTH 72/100"
       },
-      "type": "Panel",
+      "type": "Text",
       "value": 0.5
     },
     {
@@ -517,14 +417,14 @@
       "id": 5,
       "image": {
         "alpha": 1.0,
-        "color": "#3C4054FF",
-        "gradientTo": "#00C4CCFF",
+        "color": "#EB465AFF",
+        "gradientTo": "#3C3C46FF",
         "preserveAspect": false,
-        "radius": 14.0,
+        "radius": 0.0,
         "source": "",
         "useGradient": false
       },
-      "interactable": true,
+      "interactable": false,
       "layout": {
         "cellSize": [
           100.0,
@@ -546,36 +446,36 @@
         ]
       },
       "mask": false,
-      "name": "Casilla 1",
+      "name": "Health bar",
       "onClick": "",
       "options": [],
       "outline": {
-        "color": "#6E7496FF",
-        "width": 2.0
+        "color": "#1E1E28FF",
+        "width": 0.0
       },
-      "parent": 4,
+      "parent": 2,
       "raycastTarget": true,
       "rect": {
         "anchorMax": [
-          0.5,
-          0.5
+          1.0,
+          0.0
         ],
         "anchorMin": [
-          0.5,
-          0.5
+          0.0,
+          0.0
         ],
         "anchoredPosition": [
-          -276.0,
-          166.0
+          0.0,
+          21.0
         ],
         "pivot": [
           0.5,
-          0.5
+          0.0
         ],
         "rotationZ": 0.0,
         "sizeDelta": [
-          160.0,
-          160.0
+          -60.0,
+          34.0
         ]
       },
       "shadow": {
@@ -588,8 +488,8 @@
       },
       "shape": "rect",
       "size": [
-        160.0,
-        160.0
+        460.0,
+        34.0
       ],
       "text": {
         "alignH": 1,
@@ -608,8 +508,8 @@
         "underline": false,
         "value": ""
       },
-      "type": "Panel",
-      "value": 0.5
+      "type": "Slider",
+      "value": 0.72
     },
     {
       "active": true,
@@ -617,10 +517,10 @@
       "id": 6,
       "image": {
         "alpha": 1.0,
-        "color": "#3C4054FF",
+        "color": "#00000000",
         "gradientTo": "#00C4CCFF",
         "preserveAspect": false,
-        "radius": 14.0,
+        "radius": 0.0,
         "source": "",
         "useGradient": false
       },
@@ -646,36 +546,36 @@
         ]
       },
       "mask": false,
-      "name": "Casilla 2",
+      "name": "Score",
       "onClick": "",
       "options": [],
       "outline": {
-        "color": "#6E7496FF",
-        "width": 2.0
+        "color": "#1E1E28FF",
+        "width": 0.0
       },
-      "parent": 4,
-      "raycastTarget": true,
+      "parent": 1,
+      "raycastTarget": false,
       "rect": {
         "anchorMax": [
-          0.5,
-          0.5
+          1.0,
+          1.0
         ],
         "anchorMin": [
-          0.5,
-          0.5
+          1.0,
+          1.0
         ],
         "anchoredPosition": [
-          -92.0,
-          166.0
+          -40.0,
+          -50.0
         ],
         "pivot": [
-          0.5,
-          0.5
+          1.0,
+          1.0
         ],
         "rotationZ": 0.0,
         "sizeDelta": [
-          160.0,
-          160.0
+          400.0,
+          60.0
         ]
       },
       "shadow": {
@@ -688,27 +588,27 @@
       },
       "shape": "rect",
       "size": [
-        160.0,
-        160.0
+        400.0,
+        60.0
       ],
       "text": {
-        "alignH": 1,
-        "alignV": 1,
-        "bold": false,
-        "color": "#14141EFF",
+        "alignH": 2,
+        "alignV": 0,
+        "bold": true,
+        "color": "#FFF096FF",
         "font": "",
-        "fontSize": 32.0,
-        "hasText": false,
+        "fontSize": 52.0,
+        "hasText": true,
         "italic": false,
         "padding": [
-          16.0,
-          16.0,
-          12.0
+          0.0,
+          0.0,
+          0.0
         ],
         "underline": false,
-        "value": ""
+        "value": "12 450"
       },
-      "type": "Panel",
+      "type": "Text",
       "value": 0.5
     },
     {
@@ -717,10 +617,10 @@
       "id": 7,
       "image": {
         "alpha": 1.0,
-        "color": "#3C4054FF",
+        "color": "#0A0A1478",
         "gradientTo": "#00C4CCFF",
         "preserveAspect": false,
-        "radius": 14.0,
+        "radius": 20.0,
         "source": "",
         "useGradient": false
       },
@@ -730,10 +630,10 @@
           100.0,
           100.0
         ],
-        "childAlignment": 0,
+        "childAlignment": 4,
         "expandHeight": false,
         "expandWidth": false,
-        "mode": 0,
+        "mode": 1,
         "padding": [
           16.0,
           16.0,
@@ -741,41 +641,41 @@
           16.0
         ],
         "spacing": [
-          12.0,
-          12.0
+          16.0,
+          0.0
         ]
       },
       "mask": false,
-      "name": "Casilla 3",
+      "name": "Action bar",
       "onClick": "",
       "options": [],
       "outline": {
-        "color": "#6E7496FF",
-        "width": 2.0
+        "color": "#1E1E28FF",
+        "width": 0.0
       },
-      "parent": 4,
+      "parent": -1,
       "raycastTarget": true,
       "rect": {
         "anchorMax": [
           0.5,
-          0.5
+          0.0
         ],
         "anchorMin": [
           0.5,
-          0.5
+          0.0
         ],
         "anchoredPosition": [
-          92.0,
-          166.0
+          0.0,
+          30.0
         ],
         "pivot": [
           0.5,
-          0.5
+          0.0
         ],
         "rotationZ": 0.0,
         "sizeDelta": [
-          160.0,
-          160.0
+          580.0,
+          140.0
         ]
       },
       "shadow": {
@@ -788,8 +688,8 @@
       },
       "shape": "rect",
       "size": [
-        160.0,
-        160.0
+        580.0,
+        140.0
       ],
       "text": {
         "alignH": 1,
@@ -817,10 +717,10 @@
       "id": 8,
       "image": {
         "alpha": 1.0,
-        "color": "#3C4054FF",
+        "color": "#0A0A1496",
         "gradientTo": "#00C4CCFF",
         "preserveAspect": false,
-        "radius": 14.0,
+        "radius": 16.0,
         "source": "",
         "useGradient": false
       },
@@ -846,14 +746,14 @@
         ]
       },
       "mask": false,
-      "name": "Casilla 4",
+      "name": "Slot 1",
       "onClick": "",
       "options": [],
       "outline": {
-        "color": "#6E7496FF",
-        "width": 2.0
+        "color": "#FFFFFFC8",
+        "width": 3.0
       },
-      "parent": 4,
+      "parent": 6,
       "raycastTarget": true,
       "rect": {
         "anchorMax": [
@@ -865,8 +765,8 @@
           0.5
         ],
         "anchoredPosition": [
-          276.0,
-          166.0
+          -192.0,
+          0.0
         ],
         "pivot": [
           0.5,
@@ -874,8 +774,8 @@
         ],
         "rotationZ": 0.0,
         "sizeDelta": [
-          160.0,
-          160.0
+          112.0,
+          112.0
         ]
       },
       "shadow": {
@@ -888,17 +788,17 @@
       },
       "shape": "rect",
       "size": [
-        160.0,
-        160.0
+        112.0,
+        112.0
       ],
       "text": {
-        "alignH": 1,
-        "alignV": 1,
+        "alignH": 2,
+        "alignV": 2,
         "bold": false,
-        "color": "#14141EFF",
+        "color": "#FFFFFFB4",
         "font": "",
-        "fontSize": 32.0,
-        "hasText": false,
+        "fontSize": 22.0,
+        "hasText": true,
         "italic": false,
         "padding": [
           16.0,
@@ -906,7 +806,7 @@
           12.0
         ],
         "underline": false,
-        "value": ""
+        "value": "1"
       },
       "type": "Panel",
       "value": 0.5
@@ -917,10 +817,10 @@
       "id": 9,
       "image": {
         "alpha": 1.0,
-        "color": "#3C4054FF",
+        "color": "#0A0A1496",
         "gradientTo": "#00C4CCFF",
         "preserveAspect": false,
-        "radius": 14.0,
+        "radius": 16.0,
         "source": "",
         "useGradient": false
       },
@@ -946,14 +846,14 @@
         ]
       },
       "mask": false,
-      "name": "Casilla 5",
+      "name": "Slot 2",
       "onClick": "",
       "options": [],
       "outline": {
-        "color": "#6E7496FF",
-        "width": 2.0
+        "color": "#FFFFFFC8",
+        "width": 3.0
       },
-      "parent": 4,
+      "parent": 6,
       "raycastTarget": true,
       "rect": {
         "anchorMax": [
@@ -965,8 +865,8 @@
           0.5
         ],
         "anchoredPosition": [
-          -276.0,
-          -18.0
+          -64.0,
+          0.0
         ],
         "pivot": [
           0.5,
@@ -974,8 +874,8 @@
         ],
         "rotationZ": 0.0,
         "sizeDelta": [
-          160.0,
-          160.0
+          112.0,
+          112.0
         ]
       },
       "shadow": {
@@ -988,17 +888,17 @@
       },
       "shape": "rect",
       "size": [
-        160.0,
-        160.0
+        112.0,
+        112.0
       ],
       "text": {
-        "alignH": 1,
-        "alignV": 1,
+        "alignH": 2,
+        "alignV": 2,
         "bold": false,
-        "color": "#14141EFF",
+        "color": "#FFFFFFB4",
         "font": "",
-        "fontSize": 32.0,
-        "hasText": false,
+        "fontSize": 22.0,
+        "hasText": true,
         "italic": false,
         "padding": [
           16.0,
@@ -1006,7 +906,7 @@
           12.0
         ],
         "underline": false,
-        "value": ""
+        "value": "2"
       },
       "type": "Panel",
       "value": 0.5
@@ -1017,10 +917,10 @@
       "id": 10,
       "image": {
         "alpha": 1.0,
-        "color": "#3C4054FF",
+        "color": "#0A0A1496",
         "gradientTo": "#00C4CCFF",
         "preserveAspect": false,
-        "radius": 14.0,
+        "radius": 16.0,
         "source": "",
         "useGradient": false
       },
@@ -1046,14 +946,14 @@
         ]
       },
       "mask": false,
-      "name": "Casilla 6",
+      "name": "Slot 3",
       "onClick": "",
       "options": [],
       "outline": {
-        "color": "#6E7496FF",
-        "width": 2.0
+        "color": "#FFFFFFC8",
+        "width": 3.0
       },
-      "parent": 4,
+      "parent": 6,
       "raycastTarget": true,
       "rect": {
         "anchorMax": [
@@ -1065,8 +965,8 @@
           0.5
         ],
         "anchoredPosition": [
-          -92.0,
-          -18.0
+          64.0,
+          0.0
         ],
         "pivot": [
           0.5,
@@ -1074,8 +974,8 @@
         ],
         "rotationZ": 0.0,
         "sizeDelta": [
-          160.0,
-          160.0
+          112.0,
+          112.0
         ]
       },
       "shadow": {
@@ -1088,17 +988,17 @@
       },
       "shape": "rect",
       "size": [
-        160.0,
-        160.0
+        112.0,
+        112.0
       ],
       "text": {
-        "alignH": 1,
-        "alignV": 1,
+        "alignH": 2,
+        "alignV": 2,
         "bold": false,
-        "color": "#14141EFF",
+        "color": "#FFFFFFB4",
         "font": "",
-        "fontSize": 32.0,
-        "hasText": false,
+        "fontSize": 22.0,
+        "hasText": true,
         "italic": false,
         "padding": [
           16.0,
@@ -1106,7 +1006,7 @@
           12.0
         ],
         "underline": false,
-        "value": ""
+        "value": "3"
       },
       "type": "Panel",
       "value": 0.5
@@ -1117,10 +1017,10 @@
       "id": 11,
       "image": {
         "alpha": 1.0,
-        "color": "#3C4054FF",
+        "color": "#0A0A1496",
         "gradientTo": "#00C4CCFF",
         "preserveAspect": false,
-        "radius": 14.0,
+        "radius": 16.0,
         "source": "",
         "useGradient": false
       },
@@ -1146,14 +1046,14 @@
         ]
       },
       "mask": false,
-      "name": "Casilla 7",
+      "name": "Slot 4",
       "onClick": "",
       "options": [],
       "outline": {
-        "color": "#6E7496FF",
-        "width": 2.0
+        "color": "#FFFFFFC8",
+        "width": 3.0
       },
-      "parent": 4,
+      "parent": 6,
       "raycastTarget": true,
       "rect": {
         "anchorMax": [
@@ -1165,8 +1065,8 @@
           0.5
         ],
         "anchoredPosition": [
-          92.0,
-          -18.0
+          192.0,
+          0.0
         ],
         "pivot": [
           0.5,
@@ -1174,8 +1074,8 @@
         ],
         "rotationZ": 0.0,
         "sizeDelta": [
-          160.0,
-          160.0
+          112.0,
+          112.0
         ]
       },
       "shadow": {
@@ -1188,17 +1088,17 @@
       },
       "shape": "rect",
       "size": [
-        160.0,
-        160.0
+        112.0,
+        112.0
       ],
       "text": {
-        "alignH": 1,
-        "alignV": 1,
+        "alignH": 2,
+        "alignV": 2,
         "bold": false,
-        "color": "#14141EFF",
+        "color": "#FFFFFFB4",
         "font": "",
-        "fontSize": 32.0,
-        "hasText": false,
+        "fontSize": 22.0,
+        "hasText": true,
         "italic": false,
         "padding": [
           16.0,
@@ -1206,7 +1106,7 @@
           12.0
         ],
         "underline": false,
-        "value": ""
+        "value": "4"
       },
       "type": "Panel",
       "value": 0.5
@@ -1217,10 +1117,10 @@
       "id": 12,
       "image": {
         "alpha": 1.0,
-        "color": "#3C4054FF",
+        "color": "#14281EC8",
         "gradientTo": "#00C4CCFF",
         "preserveAspect": false,
-        "radius": 14.0,
+        "radius": 0.0,
         "source": "",
         "useGradient": false
       },
@@ -1245,28 +1145,28 @@
           12.0
         ]
       },
-      "mask": false,
-      "name": "Casilla 8",
+      "mask": true,
+      "name": "Minimap",
       "onClick": "",
       "options": [],
       "outline": {
-        "color": "#6E7496FF",
-        "width": 2.0
+        "color": "#FFFFFFDC",
+        "width": 4.0
       },
-      "parent": 4,
+      "parent": -1,
       "raycastTarget": true,
       "rect": {
         "anchorMax": [
-          0.5,
-          0.5
+          1.0,
+          0.0
         ],
         "anchorMin": [
-          0.5,
-          0.5
+          1.0,
+          0.0
         ],
         "anchoredPosition": [
-          276.0,
-          -18.0
+          -170.0,
+          170.0
         ],
         "pivot": [
           0.5,
@@ -1274,8 +1174,8 @@
         ],
         "rotationZ": 0.0,
         "sizeDelta": [
-          160.0,
-          160.0
+          260.0,
+          260.0
         ]
       },
       "shadow": {
@@ -1286,10 +1186,10 @@
           -6.0
         ]
       },
-      "shape": "rect",
+      "shape": "ellipse",
       "size": [
-        160.0,
-        160.0
+        260.0,
+        260.0
       ],
       "text": {
         "alignH": 1,
@@ -1301,314 +1201,14 @@
         "hasText": false,
         "italic": false,
         "padding": [
-          16.0,
-          16.0,
-          12.0
+          39.0,
+          39.0,
+          39.0
         ],
         "underline": false,
         "value": ""
       },
-      "type": "Panel",
-      "value": 0.5
-    },
-    {
-      "active": true,
-      "contentHeight": 0.0,
-      "id": 13,
-      "image": {
-        "alpha": 1.0,
-        "color": "#3C4054FF",
-        "gradientTo": "#00C4CCFF",
-        "preserveAspect": false,
-        "radius": 14.0,
-        "source": "",
-        "useGradient": false
-      },
-      "interactable": true,
-      "layout": {
-        "cellSize": [
-          100.0,
-          100.0
-        ],
-        "childAlignment": 0,
-        "expandHeight": false,
-        "expandWidth": false,
-        "mode": 0,
-        "padding": [
-          16.0,
-          16.0,
-          16.0,
-          16.0
-        ],
-        "spacing": [
-          12.0,
-          12.0
-        ]
-      },
-      "mask": false,
-      "name": "Casilla 9",
-      "onClick": "",
-      "options": [],
-      "outline": {
-        "color": "#6E7496FF",
-        "width": 2.0
-      },
-      "parent": 4,
-      "raycastTarget": true,
-      "rect": {
-        "anchorMax": [
-          0.5,
-          0.5
-        ],
-        "anchorMin": [
-          0.5,
-          0.5
-        ],
-        "anchoredPosition": [
-          -276.0,
-          -202.0
-        ],
-        "pivot": [
-          0.5,
-          0.5
-        ],
-        "rotationZ": 0.0,
-        "sizeDelta": [
-          160.0,
-          160.0
-        ]
-      },
-      "shadow": {
-        "color": "#0000006E",
-        "enabled": false,
-        "offset": [
-          6.0,
-          -6.0
-        ]
-      },
-      "shape": "rect",
-      "size": [
-        160.0,
-        160.0
-      ],
-      "text": {
-        "alignH": 1,
-        "alignV": 1,
-        "bold": false,
-        "color": "#14141EFF",
-        "font": "",
-        "fontSize": 32.0,
-        "hasText": false,
-        "italic": false,
-        "padding": [
-          16.0,
-          16.0,
-          12.0
-        ],
-        "underline": false,
-        "value": ""
-      },
-      "type": "Panel",
-      "value": 0.5
-    },
-    {
-      "active": true,
-      "contentHeight": 0.0,
-      "id": 14,
-      "image": {
-        "alpha": 1.0,
-        "color": "#3C4054FF",
-        "gradientTo": "#00C4CCFF",
-        "preserveAspect": false,
-        "radius": 14.0,
-        "source": "",
-        "useGradient": false
-      },
-      "interactable": true,
-      "layout": {
-        "cellSize": [
-          100.0,
-          100.0
-        ],
-        "childAlignment": 0,
-        "expandHeight": false,
-        "expandWidth": false,
-        "mode": 0,
-        "padding": [
-          16.0,
-          16.0,
-          16.0,
-          16.0
-        ],
-        "spacing": [
-          12.0,
-          12.0
-        ]
-      },
-      "mask": false,
-      "name": "Casilla 10",
-      "onClick": "",
-      "options": [],
-      "outline": {
-        "color": "#6E7496FF",
-        "width": 2.0
-      },
-      "parent": 4,
-      "raycastTarget": true,
-      "rect": {
-        "anchorMax": [
-          0.5,
-          0.5
-        ],
-        "anchorMin": [
-          0.5,
-          0.5
-        ],
-        "anchoredPosition": [
-          -92.0,
-          -202.0
-        ],
-        "pivot": [
-          0.5,
-          0.5
-        ],
-        "rotationZ": 0.0,
-        "sizeDelta": [
-          160.0,
-          160.0
-        ]
-      },
-      "shadow": {
-        "color": "#0000006E",
-        "enabled": false,
-        "offset": [
-          6.0,
-          -6.0
-        ]
-      },
-      "shape": "rect",
-      "size": [
-        160.0,
-        160.0
-      ],
-      "text": {
-        "alignH": 1,
-        "alignV": 1,
-        "bold": false,
-        "color": "#14141EFF",
-        "font": "",
-        "fontSize": 32.0,
-        "hasText": false,
-        "italic": false,
-        "padding": [
-          16.0,
-          16.0,
-          12.0
-        ],
-        "underline": false,
-        "value": ""
-      },
-      "type": "Panel",
-      "value": 0.5
-    },
-    {
-      "active": true,
-      "contentHeight": 0.0,
-      "id": 15,
-      "image": {
-        "alpha": 1.0,
-        "color": "#3C4054FF",
-        "gradientTo": "#00C4CCFF",
-        "preserveAspect": false,
-        "radius": 14.0,
-        "source": "",
-        "useGradient": false
-      },
-      "interactable": true,
-      "layout": {
-        "cellSize": [
-          100.0,
-          100.0
-        ],
-        "childAlignment": 0,
-        "expandHeight": false,
-        "expandWidth": false,
-        "mode": 0,
-        "padding": [
-          16.0,
-          16.0,
-          16.0,
-          16.0
-        ],
-        "spacing": [
-          12.0,
-          12.0
-        ]
-      },
-      "mask": false,
-      "name": "Casilla 11",
-      "onClick": "",
-      "options": [],
-      "outline": {
-        "color": "#6E7496FF",
-        "width": 2.0
-      },
-      "parent": 4,
-      "raycastTarget": true,
-      "rect": {
-        "anchorMax": [
-          0.5,
-          0.5
-        ],
-        "anchorMin": [
-          0.5,
-          0.5
-        ],
-        "anchoredPosition": [
-          92.0,
-          -202.0
-        ],
-        "pivot": [
-          0.5,
-          0.5
-        ],
-        "rotationZ": 0.0,
-        "sizeDelta": [
-          160.0,
-          160.0
-        ]
-      },
-      "shadow": {
-        "color": "#0000006E",
-        "enabled": false,
-        "offset": [
-          6.0,
-          -6.0
-        ]
-      },
-      "shape": "rect",
-      "size": [
-        160.0,
-        160.0
-      ],
-      "text": {
-        "alignH": 1,
-        "alignV": 1,
-        "bold": false,
-        "color": "#14141EFF",
-        "font": "",
-        "fontSize": 32.0,
-        "hasText": false,
-        "italic": false,
-        "padding": [
-          16.0,
-          16.0,
-          12.0
-        ],
-        "underline": false,
-        "value": ""
-      },
-      "type": "Panel",
+      "type": "Image",
       "value": 0.5
     }
   ],

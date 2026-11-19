@@ -18,7 +18,7 @@
     },
     {
       "title": "테스트하고 Unity로 내보내기",
-      "text": "• 테스트 (F5): 디자인이 상호작용 가능해지고, 다른 화면(모바일, 4:3, 울트라와이드)을 시뮬레이션해서 어떻게 맞춰지는지 볼 수 있습니다.\n• 저장 (Ctrl+S): 나중에 계속 작업할 수 있도록 .editorgui.json 프로젝트를 저장합니다.\n• 검토: 작은 글자, 낮은 대비, 터치하기에 작은 버튼, 페이지 밖에 있는 요소, 빠진 이미지를 알려 줍니다.\n• Unity로 내보내기 (Ctrl+E): 처음에는 프로젝트 폴더(Assets가 들어 있는 폴더)를 선택하세요.\n\nUnity 창으로 돌아오면 디자인이 Assets/EditorGUI/Prefabs에 프리팹으로 나타납니다. 또한 메뉴 Tools › Lienzo UI › Importar diseño en la escena도 있습니다."
+      "text": "• 테스트 (F5): 디자인이 상호작용 가능해지고, 다른 화면(모바일, 4:3, 울트라와이드)을 시뮬레이션해서 어떻게 맞춰지는지 볼 수 있습니다.\n• 저장 (Ctrl+S): 나중에 계속 작업할 수 있도록 .editorgui.json 프로젝트를 저장합니다.\n• 검토: 작은 글자, 낮은 대비, 터치하기에 작은 버튼, 페이지 밖에 있는 요소, 빠진 이미지를 알려 줍니다.\n• Unity로 내보내기 (Ctrl+E): 처음에는 프로젝트 폴더(Assets가 들어 있는 폴더)를 선택하세요.\n\nUnity 창으로 돌아오면 디자인이 Assets/EditorGUI/Prefabs에 프리팹으로 나타납니다. 또한 메뉴 Tools › Lienzo UI › Import design into scene…도 있습니다."
     }
   ],
   "pro": [
@@ -36,11 +36,11 @@
     },
     {
       "title": "로직: 클릭 시 코드와 뷰",
-      "text": "테스트 모드에서는 각 요소가 클릭할 때 작은 Rhai 스크립트를 실행할 수 있습니다: mostrar(\"Nombre\"), ocultar, alternar, texto, color, mover… Unity 없이 흐름을 시험해 볼 때 유용합니다.\n\nUnity에서는 <Diseño>View.cs가 <Diseño>ViewBase를 상속하며, 모든 버튼, 슬라이더, 필드에 대한 타입이 지정된 참조와 클릭 및 값 이벤트를 제공합니다. 게임 로직은 여기에 넣으세요. 다시 내보내도 이 파일은 건드리지 않습니다."
+      "text": "테스트 모드에서는 각 요소가 클릭할 때 작은 Rhai 스크립트를 실행할 수 있습니다: show(\"Name\"), hide, toggle, set_text, set_color, move_by… Unity 없이 흐름을 시험해 볼 때 유용합니다.\n\nUnity에서는 <Diseño>View.cs가 <Diseño>ViewBase를 상속하며, 모든 버튼, 슬라이더, 필드에 대한 타입이 지정된 참조와 클릭 및 값 이벤트를 제공합니다. 게임 로직은 여기에 넣으세요. 다시 내보내도 이 파일은 건드리지 않습니다."
     },
     {
       "title": "명령줄과 자동화",
-      "text": "lienzo-ui --templates                         템플릿 목록을 봅니다\nlienzo-ui --template 0 --save menu.editorgui.json\nlienzo-ui --open menu.editorgui.json --review        디자인을 검토합니다 (오류가 있으면 종료 코드 1)\nlienzo-ui --open menu.editorgui.json --export <proyecto Unity>\nlienzo-ui --open menu.editorgui.json --screenshot captura.png\nlienzo-ui --test 1080x2400                    그 화면 크기로 테스트 모드에서 엽니다\n\n--export, --save, --review를 쓰면 창이 열리지 않습니다. 스크립트, CI, MCP 서버에서 사용하기 좋습니다."
+      "text": "lienzo-ui --templates                         템플릿 목록을 봅니다\nlienzo-ui --template 0 --save menu.editorgui.json\nlienzo-ui --open menu.editorgui.json --review        디자인을 검토합니다 (오류가 있으면 종료 코드 1)\nlienzo-ui --open menu.editorgui.json --export <proyecto Unity>\nlienzo-ui --open menu.editorgui.json --screenshot capture.png\nlienzo-ui --test 1080x2400                    그 화면 크기로 테스트 모드에서 엽니다\n\n--export, --save, --review를 쓰면 창이 열리지 않습니다. 스크립트, CI, MCP 서버에서 사용하기 좋습니다."
     },
     {
       "title": "MCP 서버와 기여하기",

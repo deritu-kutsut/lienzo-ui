@@ -60,7 +60,7 @@
 
 1. Нажмите **Экспорт в Unity** (Ctrl+E). В первый раз выберите папку вашего проекта (ту, что содержит `Assets`).
 2. Вернитесь в Unity: макет появится как prefab в `Assets/EditorGUI/Prefabs`.
-3. Перетащите его в сцену или воспользуйтесь меню **Tools › Lienzo UI › Importar diseño en la escena** (меню Unity на испанском: «Импортировать макет в сцену»).
+3. Перетащите его в сцену или воспользуйтесь меню **Tools › Lienzo UI › Import design into scene…**.
 
 При каждом новом экспорте Unity обновляет prefab сам.
 

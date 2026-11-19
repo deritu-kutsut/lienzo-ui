@@ -34,7 +34,7 @@
 
 ## Логика
 
-- **В редакторе**: в режиме проверки каждый элемент может по нажатию выполнять скрипт Rhai (`mostrar("Nombre")`, `ocultar`, `alternar`, `texto`, `color`, `mover`…). Полезно для прототипирования переходов. Изменения, сделанные во время проверки, отбрасываются при выходе из режима проверки и никогда не сохраняются и не экспортируются.
+- **В редакторе**: в режиме проверки каждый элемент может по нажатию выполнять скрипт Rhai (`show("Name")`, `hide`, `toggle`, `set_text`, `set_color`, `move_by`…). Полезно для прототипирования переходов. Изменения, сделанные во время проверки, отбрасываются при выходе из режима проверки и никогда не сохраняются и не экспортируются.
 - **В Unity**: `<Design>View` наследуется от `<Design>ViewBase`, с одним полем на каждую кнопку, слайдер, переключатель или поле ввода и методами `On<Element>Click` / `On<Element>Changed` для переопределения.
 
 ```csharp
@@ -48,7 +48,7 @@ public class AjustesView : AjustesViewBase
 
 ## Проверить макет
 
-Кнопка **Проверить** (и `--revisar` в командной строке) проверяет при опорном разрешении:
+Кнопка **Проверить** (и `--review` в командной строке) проверяет при опорном разрешении:
 
 | Проверка | Правило |
 |---|---|
@@ -64,17 +64,17 @@ public class AjustesView : AjustesViewBase
 ## Командная строка
 
 ```bash
-lienzo-ui --plantillas                                   # выводит список шаблонов (0-12)
-lienzo-ui --plantilla 4 --guardar inventario.editorgui.json
-lienzo-ui --abrir inventario.editorgui.json --revisar    # код выхода 1, если есть ошибки
-lienzo-ui --abrir inventario.editorgui.json --exportar "C:/MyGame"   # без окна
-lienzo-ui --abrir inventario.editorgui.json --screenshot capture.png
-lienzo-ui --probar 1080x2400                             # открывает в режиме проверки с этим экраном
-lienzo-ui --tutorial [--profesional]                     # принудительно открывает обучение
-lienzo-ui --sin-tutorial                                 # не открывает его
+lienzo-ui --templates                                   # выводит список шаблонов (0-12)
+lienzo-ui --template 4 --save inventory.editorgui.json
+lienzo-ui --open inventory.editorgui.json --review    # код выхода 1, если есть ошибки
+lienzo-ui --open inventory.editorgui.json --export "C:/MyGame"   # без окна
+lienzo-ui --open inventory.editorgui.json --screenshot capture.png
+lienzo-ui --test 1080x2400                             # открывает в режиме проверки с этим экраном
+lienzo-ui --tutorial [--pro]                     # принудительно открывает обучение
+lienzo-ui --no-tutorial                                 # не открывает его
 ```
 
-`--guardar`, `--exportar` и `--revisar` не открывают окно: используйте их в скриптах, CI и с [MCP-сервером](MCP.md) (инструмент `revisar_diseno`).
+`--save`, `--export` и `--review` не открывают окно: используйте их в скриптах, CI и с [MCP-сервером](MCP.md) (инструмент `review_design`).
 
 ## Исходный код
 

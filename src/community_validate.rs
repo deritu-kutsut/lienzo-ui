@@ -1,18 +1,18 @@
 //! Validation of what the community downloads and uploads. These are the same rules the server applies
-//! (`supabase/functions/_compartido/validar.ts`): the app NEVER trusts what it downloads and re-checks it.
+//! (`supabase/functions/_shared/validate.ts`): the app NEVER trusts what it downloads and re-checks it.
 //! Data formats only; never executables, installers, system scripts, archives or SVG.
 
 use sha2::{Digest, Sha256};
 use std::collections::BTreeMap;
 
-pub const KINDS: &[&str] = &["plugin", "imagen", "fuente", "plantilla", "elemento", "tema"];
+pub const KINDS: &[&str] = &["plugin", "image", "font", "template", "element", "theme"];
 
 pub fn byte_limit(kind: &str) -> usize {
     match kind {
-        "imagen" => 2 * 1024 * 1024,
-        "fuente" => 5 * 1024 * 1024,
-        "plantilla" => 512 * 1024,
-        "tema" => 32 * 1024,
+        "image" => 2 * 1024 * 1024,
+        "font" => 5 * 1024 * 1024,
+        "template" => 512 * 1024,
+        "theme" => 32 * 1024,
         _ => 256 * 1024, // element, plugin
     }
 }
@@ -108,13 +108,13 @@ fn validate_design(json: serde_json::Value, is_template: bool) -> Result<(), Str
 }
 
 /// A plugin travels as a single JSON: { manifest, files: { "path.rhai": "code" } }.
-/// On the wire the keys are still `manifiesto` and `archivos` (the server expects them); the English
-/// names are accepted when reading.
+/// Old community items (uploaded by app versions 1.0 - 1.3.3) use the Spanish keys `manifiesto` and `archivos`:
+/// they are still accepted when reading; new packages are written with the English keys.
 #[derive(serde::Serialize, serde::Deserialize)]
 pub struct Package {
-    #[serde(rename = "manifiesto", alias = "manifest")]
+    #[serde(alias = "manifiesto")]
     pub manifest: serde_json::Value,
-    #[serde(rename = "archivos", alias = "files")]
+    #[serde(alias = "archivos")]
     pub files: BTreeMap<String, String>,
 }
 
@@ -194,7 +194,7 @@ pub fn validate(kind: &str, name: &str, bytes: &[u8]) -> Result<(), String> {
         }
     }
     match kind {
-        "imagen" => {
+        "image" => {
             let r = real.filter(|r| ["png", "jpeg", "gif", "webp"].contains(r)).ok_or("Not a valid PNG, JPEG, GIF or WebP image.")?;
             let (w, h) = match r {
                 "png" if bytes.len() >= 24 => (u32::from_be_bytes(bytes[16..20].try_into().unwrap()), u32::from_be_bytes(bytes[20..24].try_into().unwrap())),
@@ -206,7 +206,7 @@ pub fn validate(kind: &str, name: &str, bytes: &[u8]) -> Result<(), String> {
             }
             Ok(())
         }
-        "fuente" => match real {
+        "font" => match real {
             Some("ttf") | Some("otf") => Ok(()),
             _ => Err("Only TTF or OTF fonts are allowed.".into()),
         },
@@ -216,14 +216,14 @@ pub fn validate(kind: &str, name: &str, bytes: &[u8]) -> Result<(), String> {
             }
             let text = std::str::from_utf8(bytes).map_err(|_| "The file is not valid UTF-8 JSON.")?;
             let json: serde_json::Value = serde_json::from_str(text).map_err(|_| "The file is not valid JSON.")?;
-            if kind == "tema" {
+            if kind == "theme" {
                 // Only the known theme fields: #RRGGBB colors, corners, light base and a font name.
                 let t: crate::theme::Theme = serde_json::from_value(json).map_err(|_| "The file is not a Lienzo UI theme.")?;
                 t.validate()
             } else if kind == "plugin" {
                 validate_plugin(json).map(|_| ())
             } else {
-                validate_design(json, kind == "plantilla")
+                validate_design(json, kind == "template")
             }
         }
     }
@@ -250,17 +250,17 @@ mod tests {
 
     #[test]
     fn valid_and_huge_image() {
-        assert!(validate("imagen", "a.png", &png(16, 16)).is_ok());
-        assert!(validate("imagen", "a.png", &png(9000, 10)).is_err());
+        assert!(validate("image", "a.png", &png(16, 16)).is_ok());
+        assert!(validate("image", "a.png", &png(9000, 10)).is_err());
     }
 
     #[test]
     fn executable_disguised_as_image() {
         let mut exe = vec![0u8; 64];
         exe[..2].copy_from_slice(b"MZ");
-        assert!(validate("imagen", "foto.png", &exe).unwrap_err().contains("Dangerous"));
+        assert!(validate("image", "foto.png", &exe).unwrap_err().contains("Dangerous"));
         for n in ["x.exe", "x.dll", "x.js", "x.svg", "x.zip", "x.ps1"] {
-            assert!(validate("imagen", n, &png(8, 8)).is_err(), "{}", n);
+            assert!(validate("image", n, &png(8, 8)).is_err(), "{}", n);
         }
     }
 
@@ -268,32 +268,32 @@ mod tests {
     fn zip_named_json() {
         let mut z = vec![0u8; 32];
         z[..4].copy_from_slice(&[0x50, 0x4b, 3, 4]);
-        assert!(validate("plantilla", "a.json", &z).is_err());
+        assert!(validate("template", "a.json", &z).is_err());
     }
 
     #[test]
     fn fonts() {
         let mut ttf = vec![0u8; 40];
         ttf[..4].copy_from_slice(&[0, 1, 0, 0]);
-        assert!(validate("fuente", "f.ttf", &ttf).is_ok());
-        assert!(validate("fuente", "f.ttf", &png(8, 8)).is_err());
+        assert!(validate("font", "f.ttf", &ttf).is_ok());
+        assert!(validate("font", "f.ttf", &png(8, 8)).is_err());
     }
 
     #[test]
     fn templates_and_elements() {
         let ok = br#"{"elements":[{"kind":"Text","text":"Hola mundo"}]}"#;
-        assert!(validate("plantilla", "t.json", ok).is_ok());
-        assert!(validate("plantilla", "t.json", br#"{"elements":[{"text":"visita https://malo.example"}]}"#).is_err());
-        assert!(validate("plantilla", "t.json", br#"{"elements":[{"image":"C:/Users/yo/foto.png"}]}"#).is_err());
-        assert!(validate("plantilla", "t.json", br#"{"elements":[{"image":"../../secreto.png"}]}"#).is_err());
-        assert!(validate("plantilla", "t.json", b"{no").is_err());
-        assert!(validate("elemento", "e.json", br#"[{"kind":"Text","text":"Hola"}]"#).is_ok());
-        assert!(validate("elemento", "e.json", br#"{"kind":"Text","text":"Hola"}"#).is_ok());
-        assert!(validate("elemento", "e.json", br#"[{"text":"https://malo.example"}]"#).is_err());
+        assert!(validate("template", "t.json", ok).is_ok());
+        assert!(validate("template", "t.json", br#"{"elements":[{"text":"visita https://malo.example"}]}"#).is_err());
+        assert!(validate("template", "t.json", br#"{"elements":[{"image":"C:/Users/yo/foto.png"}]}"#).is_err());
+        assert!(validate("template", "t.json", br#"{"elements":[{"image":"../../secreto.png"}]}"#).is_err());
+        assert!(validate("template", "t.json", b"{no").is_err());
+        assert!(validate("element", "e.json", br#"[{"kind":"Text","text":"Hola"}]"#).is_ok());
+        assert!(validate("element", "e.json", br#"{"kind":"Text","text":"Hola"}"#).is_ok());
+        assert!(validate("element", "e.json", br#"[{"text":"https://malo.example"}]"#).is_err());
     }
 
     fn plugin(files: &str) -> Vec<u8> {
-        format!(r#"{{"manifiesto":{{"nombre":"Ajustar","comandos":[{{"nombre":"x","script":"a.rhai"}}]}},"archivos":{}}}"#, files).into_bytes()
+        format!(r#"{{"manifest":{{"name":"Align","commands":[{{"name":"x","script":"a.rhai"}}]}},"files":{}}}"#, files).into_bytes()
     }
 
     #[test]
@@ -334,23 +334,23 @@ mod tests {
     }
 
     #[test]
-    fn package_reads_old_and_new_keys_and_writes_the_wire_keys() {
+    fn package_reads_old_and_new_keys_and_writes_english_keys() {
         let old = br#"{"manifiesto":{"nombre":"Plug","comandos":[{"nombre":"x","script":"a.rhai"}]},"archivos":{"a.rhai":"fn run(d){ d }"}}"#;
         let new = br#"{"manifest":{"name":"Plug","commands":[{"name":"x","script":"a.rhai"}]},"files":{"a.rhai":"fn run(d){ d }"}}"#;
         assert!(read_package(old).is_ok());
         assert!(read_package(new).is_ok());
         let out = serde_json::to_string(&read_package(new).unwrap()).unwrap();
-        assert!(out.contains("\"manifiesto\"") && out.contains("\"archivos\""), "the server still expects the old keys: {}", out);
+        assert!(out.contains("\"manifest\"") && out.contains("\"files\"") && !out.contains("manifiesto"), "new packages use the English keys: {}", out);
     }
 }
 
 /// Auxiliary images (icon and preview of a content item, profile avatar and banner): PNG only, with limits.
-/// Same rules as the server's `validarPng`. Returns (width, height).
+/// Same rules as the server's `validatePng`. Returns (width, height).
 pub fn validate_png(class: &str, bytes: &[u8]) -> Result<(u32, u32), String> {
     let (max_bytes, max_w, max_h) = match class {
-        "icono" => (256 * 1024, 512, 512),
+        "icon" => (256 * 1024, 512, 512),
         "avatar" => (512 * 1024, 512, 512),
-        "vista" => (1024 * 1024, 1920, 1080),
+        "preview" => (1024 * 1024, 1920, 1080),
         "banner" => (1536 * 1024, 1920, 640),
         _ => return Err("Unknown image type.".into()),
     };
@@ -380,8 +380,8 @@ mod tests_png {
     }
     #[test]
     fn helper_images() {
-        assert!(validate_png("icono", &png(256, 256)).is_ok());
-        assert!(validate_png("icono", &png(1024, 1024)).is_err());
+        assert!(validate_png("icon", &png(256, 256)).is_ok());
+        assert!(validate_png("icon", &png(1024, 1024)).is_err());
         assert!(validate_png("banner", &png(1500, 500)).is_ok());
         assert!(validate_png("banner", &png(1500, 900)).is_err());
         assert!(validate_png("avatar", &[0xff, 0xd8, 0xff, 0, 0, 0]).is_err());

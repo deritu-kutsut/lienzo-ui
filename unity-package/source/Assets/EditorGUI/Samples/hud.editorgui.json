@@ -1,5 +1,5 @@
 {
-  "title": "HUD de juego",
+  "title": "Game HUD",
   "width": 1920.0,
   "height": 1080.0,
   "background": [
@@ -11,7 +11,7 @@
   "elements": [
     {
       "id": 1,
-      "name": "Escena (vista previa)",
+      "name": "Scene (preview)",
       "kind": "Image",
       "x": 0.0,
       "y": 0.0,
@@ -112,7 +112,7 @@
     },
     {
       "id": 2,
-      "name": "Barra superior",
+      "name": "Top bar",
       "kind": "Empty",
       "x": 0.0,
       "y": 0.0,
@@ -213,7 +213,7 @@
     },
     {
       "id": 3,
-      "name": "Marco vida",
+      "name": "Health frame",
       "kind": "Panel",
       "x": 40.0,
       "y": 40.0,
@@ -314,7 +314,7 @@
     },
     {
       "id": 4,
-      "name": "Etiqueta vida",
+      "name": "Health label",
       "kind": "Text",
       "x": 70.0,
       "y": 50.0,
@@ -342,7 +342,7 @@
       "stroke_w": 0.0,
       "radius": 0.0,
       "opacity": 1.0,
-      "text": "VIDA 72/100",
+      "text": "HEALTH 72/100",
       "font_size": 28.0,
       "text_color": [
         255,
@@ -415,7 +415,7 @@
     },
     {
       "id": 5,
-      "name": "Barra de vida",
+      "name": "Health bar",
       "kind": "Slider",
       "x": 70.0,
       "y": 95.0,
@@ -516,7 +516,7 @@
     },
     {
       "id": 6,
-      "name": "Puntos",
+      "name": "Score",
       "kind": "Text",
       "x": 1480.0,
       "y": 50.0,
@@ -617,7 +617,7 @@
     },
     {
       "id": 7,
-      "name": "Barra de acciones",
+      "name": "Action bar",
       "kind": "Panel",
       "x": 670.0,
       "y": 910.0,
@@ -718,7 +718,7 @@
     },
     {
       "id": 8,
-      "name": "Ranura 1",
+      "name": "Slot 1",
       "kind": "Panel",
       "x": 712.0,
       "y": 924.0,
@@ -819,7 +819,7 @@
     },
     {
       "id": 9,
-      "name": "Ranura 2",
+      "name": "Slot 2",
       "kind": "Panel",
       "x": 840.0,
       "y": 924.0,
@@ -920,7 +920,7 @@
     },
     {
       "id": 10,
-      "name": "Ranura 3",
+      "name": "Slot 3",
       "kind": "Panel",
       "x": 968.0,
       "y": 924.0,
@@ -1021,7 +1021,7 @@
     },
     {
       "id": 11,
-      "name": "Ranura 4",
+      "name": "Slot 4",
       "kind": "Panel",
       "x": 1096.0,
       "y": 924.0,
@@ -1122,7 +1122,7 @@
     },
     {
       "id": 12,
-      "name": "Minimapa",
+      "name": "Minimap",
       "kind": "Ellipse",
       "x": 1620.0,
       "y": 780.0,

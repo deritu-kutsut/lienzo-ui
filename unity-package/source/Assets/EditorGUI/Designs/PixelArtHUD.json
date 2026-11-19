@@ -1,9 +1,9 @@
 {
   "canvas": {
     "background": "#46785AFF",
-    "className": "HUDPixelArt",
+    "className": "PixelArtHUD",
     "match": 0.5,
-    "name": "HUD pixel art",
+    "name": "Pixel art HUD",
     "pixelArt": true,
     "referenceResolution": [
       1920.0,
@@ -46,7 +46,7 @@
         ]
       },
       "mask": false,
-      "name": "Escena (vista previa)",
+      "name": "Scene (preview)",
       "onClick": "",
       "options": [],
       "outline": {
@@ -146,7 +146,7 @@
         ]
       },
       "mask": false,
-      "name": "Barra superior",
+      "name": "Top bar",
       "onClick": "",
       "options": [],
       "outline": {
@@ -246,7 +246,7 @@
         ]
       },
       "mask": false,
-      "name": "Marco vida",
+      "name": "Health frame",
       "onClick": "",
       "options": [],
       "outline": {
@@ -346,7 +346,7 @@
         ]
       },
       "mask": false,
-      "name": "Etiqueta vida",
+      "name": "Health label",
       "onClick": "",
       "options": [],
       "outline": {
@@ -406,7 +406,7 @@
           0.0
         ],
         "underline": false,
-        "value": "VIDA 72/100"
+        "value": "HEALTH 72/100"
       },
       "type": "Text",
       "value": 0.5
@@ -446,7 +446,7 @@
         ]
       },
       "mask": false,
-      "name": "Barra de vida",
+      "name": "Health bar",
       "onClick": "",
       "options": [],
       "outline": {
@@ -546,7 +546,7 @@
         ]
       },
       "mask": false,
-      "name": "Puntos",
+      "name": "Score",
       "onClick": "",
       "options": [],
       "outline": {
@@ -646,7 +646,7 @@
         ]
       },
       "mask": false,
-      "name": "Barra de acciones",
+      "name": "Action bar",
       "onClick": "",
       "options": [],
       "outline": {
@@ -746,7 +746,7 @@
         ]
       },
       "mask": false,
-      "name": "Ranura 1",
+      "name": "Slot 1",
       "onClick": "",
       "options": [],
       "outline": {
@@ -821,7 +821,7 @@
         "gradientTo": "#FFFFFFFF",
         "preserveAspect": false,
         "radius": 0.0,
-        "source": "Assets/EditorGUI/Sprites/espada.png",
+        "source": "Assets/EditorGUI/Sprites/sword.png",
         "useGradient": false
       },
       "interactable": true,
@@ -846,7 +846,7 @@
         ]
       },
       "mask": false,
-      "name": "Icono espada",
+      "name": "Sword icon",
       "onClick": "",
       "options": [],
       "outline": {
@@ -946,7 +946,7 @@
         ]
       },
       "mask": false,
-      "name": "Ranura 2",
+      "name": "Slot 2",
       "onClick": "",
       "options": [],
       "outline": {
@@ -1021,7 +1021,7 @@
         "gradientTo": "#FFFFFFFF",
         "preserveAspect": false,
         "radius": 0.0,
-        "source": "Assets/EditorGUI/Sprites/pocion.png",
+        "source": "Assets/EditorGUI/Sprites/potion.png",
         "useGradient": false
       },
       "interactable": true,
@@ -1046,7 +1046,7 @@
         ]
       },
       "mask": false,
-      "name": "Icono poción",
+      "name": "Potion icon",
       "onClick": "",
       "options": [],
       "outline": {
@@ -1146,7 +1146,7 @@
         ]
       },
       "mask": false,
-      "name": "Ranura 3",
+      "name": "Slot 3",
       "onClick": "",
       "options": [],
       "outline": {
@@ -1221,7 +1221,7 @@
         "gradientTo": "#FFFFFFFF",
         "preserveAspect": false,
         "radius": 0.0,
-        "source": "Assets/EditorGUI/Sprites/escudo.png",
+        "source": "Assets/EditorGUI/Sprites/shield.png",
         "useGradient": false
       },
       "interactable": true,
@@ -1246,7 +1246,7 @@
         ]
       },
       "mask": false,
-      "name": "Icono escudo",
+      "name": "Shield icon",
       "onClick": "",
       "options": [],
       "outline": {
@@ -1346,7 +1346,7 @@
         ]
       },
       "mask": false,
-      "name": "Ranura 4",
+      "name": "Slot 4",
       "onClick": "",
       "options": [],
       "outline": {
@@ -1421,7 +1421,7 @@
         "gradientTo": "#FFFFFFFF",
         "preserveAspect": false,
         "radius": 0.0,
-        "source": "Assets/EditorGUI/Sprites/moneda.png",
+        "source": "Assets/EditorGUI/Sprites/coin.png",
         "useGradient": false
       },
       "interactable": true,
@@ -1446,7 +1446,7 @@
         ]
       },
       "mask": false,
-      "name": "Icono moneda",
+      "name": "Coin icon",
       "onClick": "",
       "options": [],
       "outline": {
@@ -1546,7 +1546,7 @@
         ]
       },
       "mask": true,
-      "name": "Minimapa",
+      "name": "Minimap",
       "onClick": "",
       "options": [],
       "outline": {
@@ -1621,7 +1621,7 @@
         "gradientTo": "#FFFFFFFF",
         "preserveAspect": false,
         "radius": 0.0,
-        "source": "Assets/EditorGUI/Sprites/moneda.png",
+        "source": "Assets/EditorGUI/Sprites/coin.png",
         "useGradient": false
       },
       "interactable": true,
@@ -1646,7 +1646,7 @@
         ]
       },
       "mask": false,
-      "name": "Moneda puntos",
+      "name": "Score coin",
       "onClick": "",
       "options": [],
       "outline": {

@@ -18,7 +18,7 @@
     },
     {
       "title": "测试并导出到 Unity",
-      "text": "• 测试（F5）：设计变为可交互，你还可以模拟其他屏幕（手机、4:3、超宽屏）看看它如何适配。\n• 保存（Ctrl+S）：保存 .editorgui.json 项目，方便以后继续编辑。\n• 检查：会提醒字体过小、对比度不足、按钮太小不好点击、元素超出页面以及缺少图片的问题。\n• 导出到 Unity（Ctrl+E）：第一次导出时，选择你的项目文件夹（包含 Assets 的那个）。\n\n回到 Unity 窗口时，设计会以 prefab 的形式出现在 Assets/EditorGUI/Prefabs 中。也可以使用菜单 Tools › Lienzo UI › Importar diseño en la escena。"
+      "text": "• 测试（F5）：设计变为可交互，你还可以模拟其他屏幕（手机、4:3、超宽屏）看看它如何适配。\n• 保存（Ctrl+S）：保存 .editorgui.json 项目，方便以后继续编辑。\n• 检查：会提醒字体过小、对比度不足、按钮太小不好点击、元素超出页面以及缺少图片的问题。\n• 导出到 Unity（Ctrl+E）：第一次导出时，选择你的项目文件夹（包含 Assets 的那个）。\n\n回到 Unity 窗口时，设计会以 prefab 的形式出现在 Assets/EditorGUI/Prefabs 中。也可以使用菜单 Tools › Lienzo UI › Import design into scene…。"
     }
   ],
   "pro": [
@@ -36,11 +36,11 @@
     },
     {
       "title": "逻辑：点击脚本和视图",
-      "text": "在「测试」中，每个元素都可以在点击时运行一小段 Rhai 脚本：mostrar(\"Nombre\")、ocultar、alternar、texto、color、mover… 适合在没有 Unity 的情况下快速搭建流程原型。\n\n在 Unity 中，<设计>View.cs 继承 <设计>ViewBase，带有对每个按钮、滑块或输入框的类型化引用，以及点击和数值事件。把游戏逻辑写在这里：重新导出不会影响它。"
+      "text": "在「测试」中，每个元素都可以在点击时运行一小段 Rhai 脚本：show(\"Name\")、hide、toggle、set_text、set_color、move_by… 适合在没有 Unity 的情况下快速搭建流程原型。\n\n在 Unity 中，<设计>View.cs 继承 <设计>ViewBase，带有对每个按钮、滑块或输入框的类型化引用，以及点击和数值事件。把游戏逻辑写在这里：重新导出不会影响它。"
     },
     {
       "title": "命令行与自动化",
-      "text": "lienzo-ui --templates                         列出所有模板\nlienzo-ui --template 0 --save menu.editorgui.json\nlienzo-ui --open menu.editorgui.json --review        检查设计（有错误时返回代码 1）\nlienzo-ui --open menu.editorgui.json --export <Unity 项目>\nlienzo-ui --open menu.editorgui.json --screenshot captura.png\nlienzo-ui --test 1080x2400                    以该屏幕尺寸在「测试」中打开\n\n使用 --export、--save 和 --review 时不会打开窗口：适合脚本、CI 和 MCP 服务器。"
+      "text": "lienzo-ui --templates                         列出所有模板\nlienzo-ui --template 0 --save menu.editorgui.json\nlienzo-ui --open menu.editorgui.json --review        检查设计（有错误时返回代码 1）\nlienzo-ui --open menu.editorgui.json --export <Unity 项目>\nlienzo-ui --open menu.editorgui.json --screenshot capture.png\nlienzo-ui --test 1080x2400                    以该屏幕尺寸在「测试」中打开\n\n使用 --export、--save 和 --review 时不会打开窗口：适合脚本、CI 和 MCP 服务器。"
     },
     {
       "title": "MCP 服务器与参与贡献",

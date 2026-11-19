@@ -1,9 +1,9 @@
 {
   "canvas": {
     "background": "#181630FF",
-    "className": "MenuPrincipal",
+    "className": "MainMenu",
     "match": 0.5,
-    "name": "Menú principal",
+    "name": "Main menu",
     "pixelArt": false,
     "referenceResolution": [
       1920.0,
@@ -46,7 +46,7 @@
         ]
       },
       "mask": false,
-      "name": "Fondo",
+      "name": "Background",
       "onClick": "",
       "options": [],
       "outline": {
@@ -146,7 +146,7 @@
         ]
       },
       "mask": false,
-      "name": "Luna",
+      "name": "Moon",
       "onClick": "",
       "options": [],
       "outline": {
@@ -246,7 +246,7 @@
         ]
       },
       "mask": false,
-      "name": "Cabecera",
+      "name": "Header",
       "onClick": "",
       "options": [],
       "outline": {
@@ -346,7 +346,7 @@
         ]
       },
       "mask": false,
-      "name": "Título",
+      "name": "Title",
       "onClick": "",
       "options": [],
       "outline": {
@@ -406,7 +406,7 @@
           0.0
         ],
         "underline": false,
-        "value": "AVENTURA ESTELAR"
+        "value": "STAR ADVENTURE"
       },
       "type": "Text",
       "value": 0.5
@@ -446,7 +446,7 @@
         ]
       },
       "mask": false,
-      "name": "Subtítulo",
+      "name": "Subtitle",
       "onClick": "",
       "options": [],
       "outline": {
@@ -506,7 +506,7 @@
           0.0
         ],
         "underline": false,
-        "value": "Una demo de interfaz"
+        "value": "An interface demo"
       },
       "type": "Text",
       "value": 0.5
@@ -546,7 +546,7 @@
         ]
       },
       "mask": false,
-      "name": "Menú",
+      "name": "Menu",
       "onClick": "",
       "options": [],
       "outline": {
@@ -646,8 +646,8 @@
         ]
       },
       "mask": false,
-      "name": "Botón Jugar",
-      "onClick": "texto(\"Subtítulo\", \"¡Cargando nivel 1...!\");\ncolor(yo, \"#46BE78\");\nmensaje(\"Clic en \" + yo);",
+      "name": "Play button",
+      "onClick": "set_text(\"Subtitle\", \"Loading level 1...!\");\nset_color(me, \"#46BE78\");\nmessage(\"Click on \" + me);",
       "options": [],
       "outline": {
         "color": "#1E1E28FF",
@@ -706,7 +706,7 @@
           12.0
         ],
         "underline": false,
-        "value": "Jugar"
+        "value": "Play"
       },
       "type": "Button",
       "value": 0.5
@@ -746,8 +746,8 @@
         ]
       },
       "mask": false,
-      "name": "Botón Opciones",
-      "onClick": "mensaje(\"Abrir menú: Opciones\");",
+      "name": "Options button",
+      "onClick": "message(\"Open menu: Options\");",
       "options": [],
       "outline": {
         "color": "#1E1E28FF",
@@ -806,7 +806,7 @@
           12.0
         ],
         "underline": false,
-        "value": "Opciones"
+        "value": "Options"
       },
       "type": "Button",
       "value": 0.5
@@ -846,8 +846,8 @@
         ]
       },
       "mask": false,
-      "name": "Botón Créditos",
-      "onClick": "mensaje(\"Abrir menú: Créditos\");",
+      "name": "Credits button",
+      "onClick": "message(\"Open menu: Credits\");",
       "options": [],
       "outline": {
         "color": "#1E1E28FF",
@@ -906,7 +906,7 @@
           12.0
         ],
         "underline": false,
-        "value": "Créditos"
+        "value": "Credits"
       },
       "type": "Button",
       "value": 0.5
@@ -946,8 +946,8 @@
         ]
       },
       "mask": false,
-      "name": "Botón Salir",
-      "onClick": "alternar(\"Luna\");\nmensaje(\"La luna cambió de visibilidad\");",
+      "name": "Exit button",
+      "onClick": "toggle(\"Moon\");\nmessage(\"The moon changed visibility\");",
       "options": [],
       "outline": {
         "color": "#1E1E28FF",
@@ -1006,7 +1006,7 @@
           12.0
         ],
         "underline": false,
-        "value": "Salir"
+        "value": "Exit"
       },
       "type": "Button",
       "value": 0.5
@@ -1046,7 +1046,7 @@
         ]
       },
       "mask": false,
-      "name": "Versión",
+      "name": "Version",
       "onClick": "",
       "options": [],
       "outline": {

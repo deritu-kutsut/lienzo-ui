@@ -18,7 +18,7 @@
     },
     {
       "title": "Testar e exportar para Unity",
-      "text": "• Testar (F5): o design fica interativo e você pode simular outras telas (celular, 4:3, ultrawide) para ver como ele se adapta.\n• Salvar (Ctrl+S): salva o projeto .editorgui.json para continuar outro dia.\n• Revisar: avisa sobre fonte pequena, pouco contraste, botões pequenos para tocar, elementos fora da página e imagens ausentes.\n• Exportar para Unity (Ctrl+E): na primeira vez, escolha a pasta do seu projeto (a que contém Assets).\n\nNo Unity, ao voltar para a janela, o design aparece como prefab em Assets/EditorGUI/Prefabs. Você também tem o menu Tools › Lienzo UI › Importar diseño en la escena."
+      "text": "• Testar (F5): o design fica interativo e você pode simular outras telas (celular, 4:3, ultrawide) para ver como ele se adapta.\n• Salvar (Ctrl+S): salva o projeto .editorgui.json para continuar outro dia.\n• Revisar: avisa sobre fonte pequena, pouco contraste, botões pequenos para tocar, elementos fora da página e imagens ausentes.\n• Exportar para Unity (Ctrl+E): na primeira vez, escolha a pasta do seu projeto (a que contém Assets).\n\nNo Unity, ao voltar para a janela, o design aparece como prefab em Assets/EditorGUI/Prefabs. Você também tem o menu Tools › Lienzo UI › Import design into scene…."
     }
   ],
   "pro": [
@@ -36,11 +36,11 @@
     },
     {
       "title": "Lógica: código ao clicar e views",
-      "text": "Em Testar, cada elemento pode executar um pequeno script (Rhai) ao clicar: mostrar(\"Nombre\"), ocultar, alternar, texto, color, mover… Serve para prototipar fluxos sem o Unity.\n\nNo Unity, <Design>View.cs herda de <Design>ViewBase com referências tipadas para cada botão, slider ou campo, e eventos de clique e de valor. Coloque aí a lógica do jogo: as reexportações não mexem nele."
+      "text": "Em Testar, cada elemento pode executar um pequeno script (Rhai) ao clicar: show(\"Name\"), hide, toggle, set_text, set_color, move_by… Serve para prototipar fluxos sem o Unity.\n\nNo Unity, <Design>View.cs herda de <Design>ViewBase com referências tipadas para cada botão, slider ou campo, e eventos de clique e de valor. Coloque aí a lógica do jogo: as reexportações não mexem nele."
     },
     {
       "title": "Linha de comando e automação",
-      "text": "lienzo-ui --templates                         lista os modelos\nlienzo-ui --template 0 --save menu.editorgui.json\nlienzo-ui --open menu.editorgui.json --review        revisa o design (código 1 se houver erros)\nlienzo-ui --open menu.editorgui.json --export <proyecto Unity>\nlienzo-ui --open menu.editorgui.json --screenshot captura.png\nlienzo-ui --test 1080x2400                    abre em Testar com essa tela\n\nCom --export, --save e --review nenhuma janela é aberta: serve para scripts, CI e o servidor MCP."
+      "text": "lienzo-ui --templates                         lista os modelos\nlienzo-ui --template 0 --save menu.editorgui.json\nlienzo-ui --open menu.editorgui.json --review        revisa o design (código 1 se houver erros)\nlienzo-ui --open menu.editorgui.json --export <proyecto Unity>\nlienzo-ui --open menu.editorgui.json --screenshot capture.png\nlienzo-ui --test 1080x2400                    abre em Testar com essa tela\n\nCom --export, --save e --review nenhuma janela é aberta: serve para scripts, CI e o servidor MCP."
     },
     {
       "title": "Servidor MCP e como contribuir",

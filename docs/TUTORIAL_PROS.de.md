@@ -34,7 +34,7 @@ Ein Container kann seine untergeordneten Elemente horizontal, vertikal oder im R
 
 ## Logik
 
-- **Im Editor**: Im Testmodus kann jedes Element beim Klick ein Rhai-Skript ausführen (`mostrar("Name")`, `ocultar`, `alternar`, `texto`, `color`, `mover`…). Das ist nützlich, um Abläufe zu prototypen. Änderungen während des Tests werden verworfen, sobald du den Testmodus verlässt, und nie gespeichert oder exportiert.
+- **Im Editor**: Im Testmodus kann jedes Element beim Klick ein Rhai-Skript ausführen (`show("Name")`, `hide`, `toggle`, `set_text`, `set_color`, `move_by`…). Das ist nützlich, um Abläufe zu prototypen. Änderungen während des Tests werden verworfen, sobald du den Testmodus verlässt, und nie gespeichert oder exportiert.
 - **In Unity**: `<Design>View` erbt von `<Design>ViewBase`, mit einem Feld pro Button, Schieberegler, Schalter oder Eingabefeld sowie den Methoden `On<Element>Click` / `On<Element>Changed`, die du überschreiben kannst.
 
 ```csharp
@@ -48,7 +48,7 @@ Gib interaktiven Elementen eindeutige Namen: Skripte und `GameObject.Find` finde
 
 ## Entwurf prüfen
 
-Der Button **Prüfen** (und `--revisar` in der Kommandozeile) prüft bei der Referenzauflösung:
+Der Button **Prüfen** (und `--review` in der Kommandozeile) prüft bei der Referenzauflösung:
 
 | Prüfung | Regel |
 |---|---|
@@ -64,17 +64,17 @@ Kontrast unter 2:1, Elemente, die ganz außerhalb der Seite liegen, und fehlende
 ## Kommandozeile
 
 ```bash
-lienzo-ui --plantillas                                   # listet die Vorlagen (0-12)
-lienzo-ui --plantilla 4 --guardar inventario.editorgui.json
-lienzo-ui --abrir inventario.editorgui.json --revisar    # Exitcode 1, wenn es Fehler gibt
-lienzo-ui --abrir inventario.editorgui.json --exportar "C:/MyGame"   # ohne Fenster
-lienzo-ui --abrir inventario.editorgui.json --screenshot capture.png
-lienzo-ui --probar 1080x2400                             # öffnet im Testmodus mit diesem Bildschirm
-lienzo-ui --tutorial [--profesional]                     # erzwingt das Tutorial
-lienzo-ui --sin-tutorial                                 # öffnet es nicht
+lienzo-ui --templates                                   # listet die Vorlagen (0-12)
+lienzo-ui --template 4 --save inventory.editorgui.json
+lienzo-ui --open inventory.editorgui.json --review    # Exitcode 1, wenn es Fehler gibt
+lienzo-ui --open inventory.editorgui.json --export "C:/MyGame"   # ohne Fenster
+lienzo-ui --open inventory.editorgui.json --screenshot capture.png
+lienzo-ui --test 1080x2400                             # öffnet im Testmodus mit diesem Bildschirm
+lienzo-ui --tutorial [--pro]                     # erzwingt das Tutorial
+lienzo-ui --no-tutorial                                 # öffnet es nicht
 ```
 
-`--guardar`, `--exportar` und `--revisar` öffnen kein Fenster: Verwende sie für Skripte, CI und den [MCP-Server](MCP.md) (Werkzeug `revisar_diseno`).
+`--save`, `--export` und `--review` öffnen kein Fenster: Verwende sie für Skripte, CI und den [MCP-Server](MCP.md) (Werkzeug `review_design`).
 
 ## Quellcode
 

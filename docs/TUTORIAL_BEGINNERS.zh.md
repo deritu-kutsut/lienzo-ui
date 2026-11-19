@@ -60,7 +60,7 @@
 
 1. 点击**导出到 Unity**（Ctrl+E）。第一次导出时，选择你的项目文件夹（包含 `Assets` 的那个）。
 2. 回到 Unity：设计会以 prefab 的形式出现在 `Assets/EditorGUI/Prefabs` 中。
-3. 把它拖进场景，或者使用菜单 **Tools › Lienzo UI › Importar diseño en la escena**（Unity 菜单为西班牙语，意为「将设计导入场景」）。
+3. 把它拖进场景，或者使用菜单 **Tools › Lienzo UI › Import design into scene…**。
 
 以后每次重新导出，Unity 都会自动更新这个 prefab。
 

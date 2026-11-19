@@ -34,7 +34,7 @@
 
 ## ロジック
 
-- **エディター内**：テストモードでは、各要素のクリック時に Rhai スクリプト（`mostrar("Name")`、`ocultar`、`alternar`、`texto`、`color`、`mover` など）を実行できます。画面遷移のプロトタイプ作成に便利です。テスト中に行われた変更はテストモード終了時に破棄され、保存やエクスポートはされません。
+- **エディター内**：テストモードでは、各要素のクリック時に Rhai スクリプト（`show("Name")`、`hide`、`toggle`、`set_text`、`set_color`、`move_by` など）を実行できます。画面遷移のプロトタイプ作成に便利です。テスト中に行われた変更はテストモード終了時に破棄され、保存やエクスポートはされません。
 - **Unity 内**：`<Design>View` は `<Design>ViewBase` を継承し、ボタン・Slider・Toggle・Input Field ごとのフィールドと、オーバーライド用の `On<Element>Click` / `On<Element>Changed` メソッドを備えています。
 
 ```csharp
@@ -48,7 +48,7 @@ public class AjustesView : AjustesViewBase
 
 ## デザインをチェック
 
-**チェック** ボタン（およびコマンドラインの `--revisar`）は、基準解像度において以下の項目を検査します：
+**チェック** ボタン（およびコマンドラインの `--review`）は、基準解像度において以下の項目を検査します：
 
 | チェック項目 | ルール |
 |---|---|
@@ -64,17 +64,17 @@ public class AjustesView : AjustesViewBase
 ## コマンドライン
 
 ```bash
-lienzo-ui --plantillas                                   # テンプレート一覧を表示 (0-12)
-lienzo-ui --plantilla 4 --guardar inventario.editorgui.json
-lienzo-ui --abrir inventario.editorgui.json --revisar    # エラーがある場合は終了コード 1
-lienzo-ui --abrir inventario.editorgui.json --exportar "C:/MyGame"   # ウィンドウなし
-lienzo-ui --abrir inventario.editorgui.json --screenshot capture.png
-lienzo-ui --probar 1080x2400                             # 指定の画面サイズでテストモードを開く
-lienzo-ui --tutorial [--profesional]                     # チュートリアルを強制表示
-lienzo-ui --sin-tutorial                                 # チュートリアルを開かない
+lienzo-ui --templates                                   # テンプレート一覧を表示 (0-12)
+lienzo-ui --template 4 --save inventory.editorgui.json
+lienzo-ui --open inventory.editorgui.json --review    # エラーがある場合は終了コード 1
+lienzo-ui --open inventory.editorgui.json --export "C:/MyGame"   # ウィンドウなし
+lienzo-ui --open inventory.editorgui.json --screenshot capture.png
+lienzo-ui --test 1080x2400                             # 指定の画面サイズでテストモードを開く
+lienzo-ui --tutorial [--pro]                     # チュートリアルを強制表示
+lienzo-ui --no-tutorial                                 # チュートリアルを開かない
 ```
 
-`--guardar`、`--exportar`、`--revisar` はウィンドウを開きません。スクリプトや CI、[MCP サーバー](MCP.md)（`revisar_diseno` ツール）で使用します。
+`--save`、`--export`、`--review` はウィンドウを開きません。スクリプトや CI、[MCP サーバー](MCP.md)（`review_design` ツール）で使用します。
 
 ## ソースコード
 

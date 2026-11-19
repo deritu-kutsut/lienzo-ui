@@ -1,9 +1,9 @@
 {
   "canvas": {
-    "background": "#46785AFF",
-    "className": "HUDDeJuego",
+    "background": "#1C1E28FF",
+    "className": "Inventory",
     "match": 0.5,
-    "name": "HUD de juego",
+    "name": "Inventory",
     "pixelArt": false,
     "referenceResolution": [
       1920.0,
@@ -17,12 +17,12 @@
       "id": 1,
       "image": {
         "alpha": 1.0,
-        "color": "#78BEF0FF",
-        "gradientTo": "#468C50FF",
+        "color": "#2C2F3EFF",
+        "gradientTo": "#00C4CCFF",
         "preserveAspect": false,
-        "radius": 0.0,
+        "radius": 28.0,
         "source": "",
-        "useGradient": true
+        "useGradient": false
       },
       "interactable": true,
       "layout": {
@@ -46,23 +46,23 @@
         ]
       },
       "mask": false,
-      "name": "Escena (vista previa)",
+      "name": "Inventory",
       "onClick": "",
       "options": [],
       "outline": {
-        "color": "#1E1E28FF",
-        "width": 0.0
+        "color": "#5A6082FF",
+        "width": 3.0
       },
       "parent": -1,
-      "raycastTarget": false,
+      "raycastTarget": true,
       "rect": {
         "anchorMax": [
-          1.0,
-          1.0
+          0.5,
+          0.5
         ],
         "anchorMin": [
-          0.0,
-          0.0
+          0.5,
+          0.5
         ],
         "anchoredPosition": [
           0.0,
@@ -74,13 +74,13 @@
         ],
         "rotationZ": 0.0,
         "sizeDelta": [
-          0.0,
-          0.0
+          840.0,
+          760.0
         ]
       },
       "shadow": {
         "color": "#0000006E",
-        "enabled": false,
+        "enabled": true,
         "offset": [
           6.0,
           -6.0
@@ -88,8 +88,8 @@
       },
       "shape": "rect",
       "size": [
-        1920.0,
-        1080.0
+        840.0,
+        760.0
       ],
       "text": {
         "alignH": 1,
@@ -108,7 +108,7 @@
         "underline": false,
         "value": ""
       },
-      "type": "Image",
+      "type": "Panel",
       "value": 0.5
     },
     {
@@ -146,18 +146,18 @@
         ]
       },
       "mask": false,
-      "name": "Barra superior",
+      "name": "Title",
       "onClick": "",
       "options": [],
       "outline": {
         "color": "#1E1E28FF",
         "width": 0.0
       },
-      "parent": -1,
+      "parent": 0,
       "raycastTarget": false,
       "rect": {
         "anchorMax": [
-          1.0,
+          0.0,
           1.0
         ],
         "anchorMin": [
@@ -165,17 +165,17 @@
           1.0
         ],
         "anchoredPosition": [
-          0.0,
-          0.0
+          40.0,
+          -30.0
         ],
         "pivot": [
-          0.5,
+          0.0,
           1.0
         ],
         "rotationZ": 0.0,
         "sizeDelta": [
-          0.0,
-          170.0
+          600.0,
+          70.0
         ]
       },
       "shadow": {
@@ -188,27 +188,27 @@
       },
       "shape": "rect",
       "size": [
-        1920.0,
-        170.0
+        600.0,
+        70.0
       ],
       "text": {
-        "alignH": 1,
-        "alignV": 1,
-        "bold": false,
-        "color": "#14141EFF",
+        "alignH": 0,
+        "alignV": 0,
+        "bold": true,
+        "color": "#FFFFFFFF",
         "font": "",
-        "fontSize": 32.0,
-        "hasText": false,
+        "fontSize": 52.0,
+        "hasText": true,
         "italic": false,
         "padding": [
-          16.0,
-          16.0,
-          12.0
+          0.0,
+          0.0,
+          0.0
         ],
         "underline": false,
-        "value": ""
+        "value": "Inventory"
       },
-      "type": "Empty",
+      "type": "Text",
       "value": 0.5
     },
     {
@@ -217,10 +217,10 @@
       "id": 3,
       "image": {
         "alpha": 1.0,
-        "color": "#0A0A14A0",
+        "color": "#EB465AFF",
         "gradientTo": "#00C4CCFF",
         "preserveAspect": false,
-        "radius": 24.0,
+        "radius": 35.0,
         "source": "",
         "useGradient": false
       },
@@ -246,36 +246,36 @@
         ]
       },
       "mask": false,
-      "name": "Marco vida",
-      "onClick": "",
+      "name": "Close",
+      "onClick": "hide(\"Inventory\");",
       "options": [],
       "outline": {
         "color": "#1E1E28FF",
         "width": 0.0
       },
-      "parent": 1,
+      "parent": 0,
       "raycastTarget": true,
       "rect": {
         "anchorMax": [
-          0.0,
+          1.0,
           1.0
         ],
         "anchorMin": [
-          0.0,
+          1.0,
           1.0
         ],
         "anchoredPosition": [
-          40.0,
-          -40.0
+          -30.0,
+          -30.0
         ],
         "pivot": [
-          0.0,
+          1.0,
           1.0
         ],
         "rotationZ": 0.0,
         "sizeDelta": [
-          520.0,
-          110.0
+          70.0,
+          70.0
         ]
       },
       "shadow": {
@@ -288,8 +288,108 @@
       },
       "shape": "rect",
       "size": [
-        520.0,
-        110.0
+        70.0,
+        70.0
+      ],
+      "text": {
+        "alignH": 1,
+        "alignV": 1,
+        "bold": true,
+        "color": "#FFFFFFFF",
+        "font": "",
+        "fontSize": 32.0,
+        "hasText": true,
+        "italic": false,
+        "padding": [
+          16.0,
+          16.0,
+          12.0
+        ],
+        "underline": false,
+        "value": "X"
+      },
+      "type": "Button",
+      "value": 0.5
+    },
+    {
+      "active": true,
+      "contentHeight": 0.0,
+      "id": 4,
+      "image": {
+        "alpha": 1.0,
+        "color": "#1E202CFF",
+        "gradientTo": "#00C4CCFF",
+        "preserveAspect": false,
+        "radius": 18.0,
+        "source": "",
+        "useGradient": false
+      },
+      "interactable": true,
+      "layout": {
+        "cellSize": [
+          160.0,
+          160.0
+        ],
+        "childAlignment": 1,
+        "expandHeight": false,
+        "expandWidth": false,
+        "mode": 3,
+        "padding": [
+          24.0,
+          24.0,
+          24.0,
+          24.0
+        ],
+        "spacing": [
+          24.0,
+          24.0
+        ]
+      },
+      "mask": false,
+      "name": "Grid",
+      "onClick": "",
+      "options": [],
+      "outline": {
+        "color": "#1E1E28FF",
+        "width": 0.0
+      },
+      "parent": 0,
+      "raycastTarget": true,
+      "rect": {
+        "anchorMax": [
+          1.0,
+          1.0
+        ],
+        "anchorMin": [
+          0.0,
+          0.0
+        ],
+        "anchoredPosition": [
+          0.0,
+          -50.0
+        ],
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "rotationZ": 0.0,
+        "sizeDelta": [
+          -80.0,
+          -160.0
+        ]
+      },
+      "shadow": {
+        "color": "#0000006E",
+        "enabled": false,
+        "offset": [
+          6.0,
+          -6.0
+        ]
+      },
+      "shape": "rect",
+      "size": [
+        760.0,
+        600.0
       ],
       "text": {
         "alignH": 1,
@@ -314,13 +414,13 @@
     {
       "active": true,
       "contentHeight": 0.0,
-      "id": 4,
+      "id": 5,
       "image": {
         "alpha": 1.0,
-        "color": "#00000000",
+        "color": "#3C4054FF",
         "gradientTo": "#00C4CCFF",
         "preserveAspect": false,
-        "radius": 0.0,
+        "radius": 14.0,
         "source": "",
         "useGradient": false
       },
@@ -346,136 +446,36 @@
         ]
       },
       "mask": false,
-      "name": "Etiqueta vida",
+      "name": "Cell 1",
       "onClick": "",
       "options": [],
       "outline": {
-        "color": "#1E1E28FF",
-        "width": 0.0
+        "color": "#6E7496FF",
+        "width": 2.0
       },
-      "parent": 2,
-      "raycastTarget": false,
-      "rect": {
-        "anchorMax": [
-          0.0,
-          1.0
-        ],
-        "anchorMin": [
-          0.0,
-          1.0
-        ],
-        "anchoredPosition": [
-          30.0,
-          -10.0
-        ],
-        "pivot": [
-          0.0,
-          1.0
-        ],
-        "rotationZ": 0.0,
-        "sizeDelta": [
-          300.0,
-          40.0
-        ]
-      },
-      "shadow": {
-        "color": "#0000006E",
-        "enabled": false,
-        "offset": [
-          6.0,
-          -6.0
-        ]
-      },
-      "shape": "rect",
-      "size": [
-        300.0,
-        40.0
-      ],
-      "text": {
-        "alignH": 0,
-        "alignV": 0,
-        "bold": true,
-        "color": "#FFFFFFFF",
-        "font": "",
-        "fontSize": 28.0,
-        "hasText": true,
-        "italic": false,
-        "padding": [
-          0.0,
-          0.0,
-          0.0
-        ],
-        "underline": false,
-        "value": "VIDA 72/100"
-      },
-      "type": "Text",
-      "value": 0.5
-    },
-    {
-      "active": true,
-      "contentHeight": 0.0,
-      "id": 5,
-      "image": {
-        "alpha": 1.0,
-        "color": "#EB465AFF",
-        "gradientTo": "#3C3C46FF",
-        "preserveAspect": false,
-        "radius": 0.0,
-        "source": "",
-        "useGradient": false
-      },
-      "interactable": false,
-      "layout": {
-        "cellSize": [
-          100.0,
-          100.0
-        ],
-        "childAlignment": 0,
-        "expandHeight": false,
-        "expandWidth": false,
-        "mode": 0,
-        "padding": [
-          16.0,
-          16.0,
-          16.0,
-          16.0
-        ],
-        "spacing": [
-          12.0,
-          12.0
-        ]
-      },
-      "mask": false,
-      "name": "Barra de vida",
-      "onClick": "",
-      "options": [],
-      "outline": {
-        "color": "#1E1E28FF",
-        "width": 0.0
-      },
-      "parent": 2,
+      "parent": 3,
       "raycastTarget": true,
       "rect": {
         "anchorMax": [
-          1.0,
-          0.0
+          0.5,
+          0.5
         ],
         "anchorMin": [
-          0.0,
-          0.0
+          0.5,
+          0.5
         ],
         "anchoredPosition": [
-          0.0,
-          21.0
+          -276.0,
+          196.0
         ],
         "pivot": [
           0.5,
-          0.0
+          0.5
         ],
         "rotationZ": 0.0,
         "sizeDelta": [
-          -60.0,
-          34.0
+          160.0,
+          160.0
         ]
       },
       "shadow": {
@@ -488,8 +488,8 @@
       },
       "shape": "rect",
       "size": [
-        460.0,
-        34.0
+        160.0,
+        160.0
       ],
       "text": {
         "alignH": 1,
@@ -508,8 +508,8 @@
         "underline": false,
         "value": ""
       },
-      "type": "Slider",
-      "value": 0.72
+      "type": "Panel",
+      "value": 0.5
     },
     {
       "active": true,
@@ -517,10 +517,10 @@
       "id": 6,
       "image": {
         "alpha": 1.0,
-        "color": "#00000000",
+        "color": "#3C4054FF",
         "gradientTo": "#00C4CCFF",
         "preserveAspect": false,
-        "radius": 0.0,
+        "radius": 14.0,
         "source": "",
         "useGradient": false
       },
@@ -546,36 +546,36 @@
         ]
       },
       "mask": false,
-      "name": "Puntos",
+      "name": "Cell 2",
       "onClick": "",
       "options": [],
       "outline": {
-        "color": "#1E1E28FF",
-        "width": 0.0
+        "color": "#6E7496FF",
+        "width": 2.0
       },
-      "parent": 1,
-      "raycastTarget": false,
+      "parent": 3,
+      "raycastTarget": true,
       "rect": {
         "anchorMax": [
-          1.0,
-          1.0
+          0.5,
+          0.5
         ],
         "anchorMin": [
-          1.0,
-          1.0
+          0.5,
+          0.5
         ],
         "anchoredPosition": [
-          -40.0,
-          -50.0
+          -92.0,
+          196.0
         ],
         "pivot": [
-          1.0,
-          1.0
+          0.5,
+          0.5
         ],
         "rotationZ": 0.0,
         "sizeDelta": [
-          400.0,
-          60.0
+          160.0,
+          160.0
         ]
       },
       "shadow": {
@@ -588,27 +588,27 @@
       },
       "shape": "rect",
       "size": [
-        400.0,
-        60.0
+        160.0,
+        160.0
       ],
       "text": {
-        "alignH": 2,
-        "alignV": 0,
-        "bold": true,
-        "color": "#FFF096FF",
+        "alignH": 1,
+        "alignV": 1,
+        "bold": false,
+        "color": "#14141EFF",
         "font": "",
-        "fontSize": 52.0,
-        "hasText": true,
+        "fontSize": 32.0,
+        "hasText": false,
         "italic": false,
         "padding": [
-          0.0,
-          0.0,
-          0.0
+          16.0,
+          16.0,
+          12.0
         ],
         "underline": false,
-        "value": "12 450"
+        "value": ""
       },
-      "type": "Text",
+      "type": "Panel",
       "value": 0.5
     },
     {
@@ -617,10 +617,10 @@
       "id": 7,
       "image": {
         "alpha": 1.0,
-        "color": "#0A0A1478",
+        "color": "#3C4054FF",
         "gradientTo": "#00C4CCFF",
         "preserveAspect": false,
-        "radius": 20.0,
+        "radius": 14.0,
         "source": "",
         "useGradient": false
       },
@@ -630,10 +630,10 @@
           100.0,
           100.0
         ],
-        "childAlignment": 4,
+        "childAlignment": 0,
         "expandHeight": false,
         "expandWidth": false,
-        "mode": 1,
+        "mode": 0,
         "padding": [
           16.0,
           16.0,
@@ -641,41 +641,41 @@
           16.0
         ],
         "spacing": [
-          16.0,
-          0.0
+          12.0,
+          12.0
         ]
       },
       "mask": false,
-      "name": "Barra de acciones",
+      "name": "Cell 3",
       "onClick": "",
       "options": [],
       "outline": {
-        "color": "#1E1E28FF",
-        "width": 0.0
+        "color": "#6E7496FF",
+        "width": 2.0
       },
-      "parent": -1,
+      "parent": 3,
       "raycastTarget": true,
       "rect": {
         "anchorMax": [
           0.5,
-          0.0
+          0.5
         ],
         "anchorMin": [
           0.5,
-          0.0
+          0.5
         ],
         "anchoredPosition": [
-          0.0,
-          30.0
+          92.0,
+          196.0
         ],
         "pivot": [
           0.5,
-          0.0
+          0.5
         ],
         "rotationZ": 0.0,
         "sizeDelta": [
-          580.0,
-          140.0
+          160.0,
+          160.0
         ]
       },
       "shadow": {
@@ -688,8 +688,8 @@
       },
       "shape": "rect",
       "size": [
-        580.0,
-        140.0
+        160.0,
+        160.0
       ],
       "text": {
         "alignH": 1,
@@ -717,10 +717,10 @@
       "id": 8,
       "image": {
         "alpha": 1.0,
-        "color": "#0A0A1496",
+        "color": "#3C4054FF",
         "gradientTo": "#00C4CCFF",
         "preserveAspect": false,
-        "radius": 16.0,
+        "radius": 14.0,
         "source": "",
         "useGradient": false
       },
@@ -746,14 +746,14 @@
         ]
       },
       "mask": false,
-      "name": "Ranura 1",
+      "name": "Cell 4",
       "onClick": "",
       "options": [],
       "outline": {
-        "color": "#FFFFFFC8",
-        "width": 3.0
+        "color": "#6E7496FF",
+        "width": 2.0
       },
-      "parent": 6,
+      "parent": 3,
       "raycastTarget": true,
       "rect": {
         "anchorMax": [
@@ -765,8 +765,8 @@
           0.5
         ],
         "anchoredPosition": [
-          -192.0,
-          0.0
+          276.0,
+          196.0
         ],
         "pivot": [
           0.5,
@@ -774,8 +774,8 @@
         ],
         "rotationZ": 0.0,
         "sizeDelta": [
-          112.0,
-          112.0
+          160.0,
+          160.0
         ]
       },
       "shadow": {
@@ -788,408 +788,8 @@
       },
       "shape": "rect",
       "size": [
-        112.0,
-        112.0
-      ],
-      "text": {
-        "alignH": 2,
-        "alignV": 2,
-        "bold": false,
-        "color": "#FFFFFFB4",
-        "font": "",
-        "fontSize": 22.0,
-        "hasText": true,
-        "italic": false,
-        "padding": [
-          16.0,
-          16.0,
-          12.0
-        ],
-        "underline": false,
-        "value": "1"
-      },
-      "type": "Panel",
-      "value": 0.5
-    },
-    {
-      "active": true,
-      "contentHeight": 0.0,
-      "id": 9,
-      "image": {
-        "alpha": 1.0,
-        "color": "#0A0A1496",
-        "gradientTo": "#00C4CCFF",
-        "preserveAspect": false,
-        "radius": 16.0,
-        "source": "",
-        "useGradient": false
-      },
-      "interactable": true,
-      "layout": {
-        "cellSize": [
-          100.0,
-          100.0
-        ],
-        "childAlignment": 0,
-        "expandHeight": false,
-        "expandWidth": false,
-        "mode": 0,
-        "padding": [
-          16.0,
-          16.0,
-          16.0,
-          16.0
-        ],
-        "spacing": [
-          12.0,
-          12.0
-        ]
-      },
-      "mask": false,
-      "name": "Ranura 2",
-      "onClick": "",
-      "options": [],
-      "outline": {
-        "color": "#FFFFFFC8",
-        "width": 3.0
-      },
-      "parent": 6,
-      "raycastTarget": true,
-      "rect": {
-        "anchorMax": [
-          0.5,
-          0.5
-        ],
-        "anchorMin": [
-          0.5,
-          0.5
-        ],
-        "anchoredPosition": [
-          -64.0,
-          0.0
-        ],
-        "pivot": [
-          0.5,
-          0.5
-        ],
-        "rotationZ": 0.0,
-        "sizeDelta": [
-          112.0,
-          112.0
-        ]
-      },
-      "shadow": {
-        "color": "#0000006E",
-        "enabled": false,
-        "offset": [
-          6.0,
-          -6.0
-        ]
-      },
-      "shape": "rect",
-      "size": [
-        112.0,
-        112.0
-      ],
-      "text": {
-        "alignH": 2,
-        "alignV": 2,
-        "bold": false,
-        "color": "#FFFFFFB4",
-        "font": "",
-        "fontSize": 22.0,
-        "hasText": true,
-        "italic": false,
-        "padding": [
-          16.0,
-          16.0,
-          12.0
-        ],
-        "underline": false,
-        "value": "2"
-      },
-      "type": "Panel",
-      "value": 0.5
-    },
-    {
-      "active": true,
-      "contentHeight": 0.0,
-      "id": 10,
-      "image": {
-        "alpha": 1.0,
-        "color": "#0A0A1496",
-        "gradientTo": "#00C4CCFF",
-        "preserveAspect": false,
-        "radius": 16.0,
-        "source": "",
-        "useGradient": false
-      },
-      "interactable": true,
-      "layout": {
-        "cellSize": [
-          100.0,
-          100.0
-        ],
-        "childAlignment": 0,
-        "expandHeight": false,
-        "expandWidth": false,
-        "mode": 0,
-        "padding": [
-          16.0,
-          16.0,
-          16.0,
-          16.0
-        ],
-        "spacing": [
-          12.0,
-          12.0
-        ]
-      },
-      "mask": false,
-      "name": "Ranura 3",
-      "onClick": "",
-      "options": [],
-      "outline": {
-        "color": "#FFFFFFC8",
-        "width": 3.0
-      },
-      "parent": 6,
-      "raycastTarget": true,
-      "rect": {
-        "anchorMax": [
-          0.5,
-          0.5
-        ],
-        "anchorMin": [
-          0.5,
-          0.5
-        ],
-        "anchoredPosition": [
-          64.0,
-          0.0
-        ],
-        "pivot": [
-          0.5,
-          0.5
-        ],
-        "rotationZ": 0.0,
-        "sizeDelta": [
-          112.0,
-          112.0
-        ]
-      },
-      "shadow": {
-        "color": "#0000006E",
-        "enabled": false,
-        "offset": [
-          6.0,
-          -6.0
-        ]
-      },
-      "shape": "rect",
-      "size": [
-        112.0,
-        112.0
-      ],
-      "text": {
-        "alignH": 2,
-        "alignV": 2,
-        "bold": false,
-        "color": "#FFFFFFB4",
-        "font": "",
-        "fontSize": 22.0,
-        "hasText": true,
-        "italic": false,
-        "padding": [
-          16.0,
-          16.0,
-          12.0
-        ],
-        "underline": false,
-        "value": "3"
-      },
-      "type": "Panel",
-      "value": 0.5
-    },
-    {
-      "active": true,
-      "contentHeight": 0.0,
-      "id": 11,
-      "image": {
-        "alpha": 1.0,
-        "color": "#0A0A1496",
-        "gradientTo": "#00C4CCFF",
-        "preserveAspect": false,
-        "radius": 16.0,
-        "source": "",
-        "useGradient": false
-      },
-      "interactable": true,
-      "layout": {
-        "cellSize": [
-          100.0,
-          100.0
-        ],
-        "childAlignment": 0,
-        "expandHeight": false,
-        "expandWidth": false,
-        "mode": 0,
-        "padding": [
-          16.0,
-          16.0,
-          16.0,
-          16.0
-        ],
-        "spacing": [
-          12.0,
-          12.0
-        ]
-      },
-      "mask": false,
-      "name": "Ranura 4",
-      "onClick": "",
-      "options": [],
-      "outline": {
-        "color": "#FFFFFFC8",
-        "width": 3.0
-      },
-      "parent": 6,
-      "raycastTarget": true,
-      "rect": {
-        "anchorMax": [
-          0.5,
-          0.5
-        ],
-        "anchorMin": [
-          0.5,
-          0.5
-        ],
-        "anchoredPosition": [
-          192.0,
-          0.0
-        ],
-        "pivot": [
-          0.5,
-          0.5
-        ],
-        "rotationZ": 0.0,
-        "sizeDelta": [
-          112.0,
-          112.0
-        ]
-      },
-      "shadow": {
-        "color": "#0000006E",
-        "enabled": false,
-        "offset": [
-          6.0,
-          -6.0
-        ]
-      },
-      "shape": "rect",
-      "size": [
-        112.0,
-        112.0
-      ],
-      "text": {
-        "alignH": 2,
-        "alignV": 2,
-        "bold": false,
-        "color": "#FFFFFFB4",
-        "font": "",
-        "fontSize": 22.0,
-        "hasText": true,
-        "italic": false,
-        "padding": [
-          16.0,
-          16.0,
-          12.0
-        ],
-        "underline": false,
-        "value": "4"
-      },
-      "type": "Panel",
-      "value": 0.5
-    },
-    {
-      "active": true,
-      "contentHeight": 0.0,
-      "id": 12,
-      "image": {
-        "alpha": 1.0,
-        "color": "#14281EC8",
-        "gradientTo": "#00C4CCFF",
-        "preserveAspect": false,
-        "radius": 0.0,
-        "source": "",
-        "useGradient": false
-      },
-      "interactable": true,
-      "layout": {
-        "cellSize": [
-          100.0,
-          100.0
-        ],
-        "childAlignment": 0,
-        "expandHeight": false,
-        "expandWidth": false,
-        "mode": 0,
-        "padding": [
-          16.0,
-          16.0,
-          16.0,
-          16.0
-        ],
-        "spacing": [
-          12.0,
-          12.0
-        ]
-      },
-      "mask": true,
-      "name": "Minimapa",
-      "onClick": "",
-      "options": [],
-      "outline": {
-        "color": "#FFFFFFDC",
-        "width": 4.0
-      },
-      "parent": -1,
-      "raycastTarget": true,
-      "rect": {
-        "anchorMax": [
-          1.0,
-          0.0
-        ],
-        "anchorMin": [
-          1.0,
-          0.0
-        ],
-        "anchoredPosition": [
-          -170.0,
-          170.0
-        ],
-        "pivot": [
-          0.5,
-          0.5
-        ],
-        "rotationZ": 0.0,
-        "sizeDelta": [
-          260.0,
-          260.0
-        ]
-      },
-      "shadow": {
-        "color": "#0000006E",
-        "enabled": false,
-        "offset": [
-          6.0,
-          -6.0
-        ]
-      },
-      "shape": "ellipse",
-      "size": [
-        260.0,
-        260.0
+        160.0,
+        160.0
       ],
       "text": {
         "alignH": 1,
@@ -1201,14 +801,814 @@
         "hasText": false,
         "italic": false,
         "padding": [
-          39.0,
-          39.0,
-          39.0
+          16.0,
+          16.0,
+          12.0
         ],
         "underline": false,
         "value": ""
       },
-      "type": "Image",
+      "type": "Panel",
+      "value": 0.5
+    },
+    {
+      "active": true,
+      "contentHeight": 0.0,
+      "id": 9,
+      "image": {
+        "alpha": 1.0,
+        "color": "#3C4054FF",
+        "gradientTo": "#00C4CCFF",
+        "preserveAspect": false,
+        "radius": 14.0,
+        "source": "",
+        "useGradient": false
+      },
+      "interactable": true,
+      "layout": {
+        "cellSize": [
+          100.0,
+          100.0
+        ],
+        "childAlignment": 0,
+        "expandHeight": false,
+        "expandWidth": false,
+        "mode": 0,
+        "padding": [
+          16.0,
+          16.0,
+          16.0,
+          16.0
+        ],
+        "spacing": [
+          12.0,
+          12.0
+        ]
+      },
+      "mask": false,
+      "name": "Cell 5",
+      "onClick": "",
+      "options": [],
+      "outline": {
+        "color": "#6E7496FF",
+        "width": 2.0
+      },
+      "parent": 3,
+      "raycastTarget": true,
+      "rect": {
+        "anchorMax": [
+          0.5,
+          0.5
+        ],
+        "anchorMin": [
+          0.5,
+          0.5
+        ],
+        "anchoredPosition": [
+          -276.0,
+          12.0
+        ],
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "rotationZ": 0.0,
+        "sizeDelta": [
+          160.0,
+          160.0
+        ]
+      },
+      "shadow": {
+        "color": "#0000006E",
+        "enabled": false,
+        "offset": [
+          6.0,
+          -6.0
+        ]
+      },
+      "shape": "rect",
+      "size": [
+        160.0,
+        160.0
+      ],
+      "text": {
+        "alignH": 1,
+        "alignV": 1,
+        "bold": false,
+        "color": "#14141EFF",
+        "font": "",
+        "fontSize": 32.0,
+        "hasText": false,
+        "italic": false,
+        "padding": [
+          16.0,
+          16.0,
+          12.0
+        ],
+        "underline": false,
+        "value": ""
+      },
+      "type": "Panel",
+      "value": 0.5
+    },
+    {
+      "active": true,
+      "contentHeight": 0.0,
+      "id": 10,
+      "image": {
+        "alpha": 1.0,
+        "color": "#3C4054FF",
+        "gradientTo": "#00C4CCFF",
+        "preserveAspect": false,
+        "radius": 14.0,
+        "source": "",
+        "useGradient": false
+      },
+      "interactable": true,
+      "layout": {
+        "cellSize": [
+          100.0,
+          100.0
+        ],
+        "childAlignment": 0,
+        "expandHeight": false,
+        "expandWidth": false,
+        "mode": 0,
+        "padding": [
+          16.0,
+          16.0,
+          16.0,
+          16.0
+        ],
+        "spacing": [
+          12.0,
+          12.0
+        ]
+      },
+      "mask": false,
+      "name": "Cell 6",
+      "onClick": "",
+      "options": [],
+      "outline": {
+        "color": "#6E7496FF",
+        "width": 2.0
+      },
+      "parent": 3,
+      "raycastTarget": true,
+      "rect": {
+        "anchorMax": [
+          0.5,
+          0.5
+        ],
+        "anchorMin": [
+          0.5,
+          0.5
+        ],
+        "anchoredPosition": [
+          -92.0,
+          12.0
+        ],
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "rotationZ": 0.0,
+        "sizeDelta": [
+          160.0,
+          160.0
+        ]
+      },
+      "shadow": {
+        "color": "#0000006E",
+        "enabled": false,
+        "offset": [
+          6.0,
+          -6.0
+        ]
+      },
+      "shape": "rect",
+      "size": [
+        160.0,
+        160.0
+      ],
+      "text": {
+        "alignH": 1,
+        "alignV": 1,
+        "bold": false,
+        "color": "#14141EFF",
+        "font": "",
+        "fontSize": 32.0,
+        "hasText": false,
+        "italic": false,
+        "padding": [
+          16.0,
+          16.0,
+          12.0
+        ],
+        "underline": false,
+        "value": ""
+      },
+      "type": "Panel",
+      "value": 0.5
+    },
+    {
+      "active": true,
+      "contentHeight": 0.0,
+      "id": 11,
+      "image": {
+        "alpha": 1.0,
+        "color": "#3C4054FF",
+        "gradientTo": "#00C4CCFF",
+        "preserveAspect": false,
+        "radius": 14.0,
+        "source": "",
+        "useGradient": false
+      },
+      "interactable": true,
+      "layout": {
+        "cellSize": [
+          100.0,
+          100.0
+        ],
+        "childAlignment": 0,
+        "expandHeight": false,
+        "expandWidth": false,
+        "mode": 0,
+        "padding": [
+          16.0,
+          16.0,
+          16.0,
+          16.0
+        ],
+        "spacing": [
+          12.0,
+          12.0
+        ]
+      },
+      "mask": false,
+      "name": "Cell 7",
+      "onClick": "",
+      "options": [],
+      "outline": {
+        "color": "#6E7496FF",
+        "width": 2.0
+      },
+      "parent": 3,
+      "raycastTarget": true,
+      "rect": {
+        "anchorMax": [
+          0.5,
+          0.5
+        ],
+        "anchorMin": [
+          0.5,
+          0.5
+        ],
+        "anchoredPosition": [
+          92.0,
+          12.0
+        ],
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "rotationZ": 0.0,
+        "sizeDelta": [
+          160.0,
+          160.0
+        ]
+      },
+      "shadow": {
+        "color": "#0000006E",
+        "enabled": false,
+        "offset": [
+          6.0,
+          -6.0
+        ]
+      },
+      "shape": "rect",
+      "size": [
+        160.0,
+        160.0
+      ],
+      "text": {
+        "alignH": 1,
+        "alignV": 1,
+        "bold": false,
+        "color": "#14141EFF",
+        "font": "",
+        "fontSize": 32.0,
+        "hasText": false,
+        "italic": false,
+        "padding": [
+          16.0,
+          16.0,
+          12.0
+        ],
+        "underline": false,
+        "value": ""
+      },
+      "type": "Panel",
+      "value": 0.5
+    },
+    {
+      "active": true,
+      "contentHeight": 0.0,
+      "id": 12,
+      "image": {
+        "alpha": 1.0,
+        "color": "#3C4054FF",
+        "gradientTo": "#00C4CCFF",
+        "preserveAspect": false,
+        "radius": 14.0,
+        "source": "",
+        "useGradient": false
+      },
+      "interactable": true,
+      "layout": {
+        "cellSize": [
+          100.0,
+          100.0
+        ],
+        "childAlignment": 0,
+        "expandHeight": false,
+        "expandWidth": false,
+        "mode": 0,
+        "padding": [
+          16.0,
+          16.0,
+          16.0,
+          16.0
+        ],
+        "spacing": [
+          12.0,
+          12.0
+        ]
+      },
+      "mask": false,
+      "name": "Cell 8",
+      "onClick": "",
+      "options": [],
+      "outline": {
+        "color": "#6E7496FF",
+        "width": 2.0
+      },
+      "parent": 3,
+      "raycastTarget": true,
+      "rect": {
+        "anchorMax": [
+          0.5,
+          0.5
+        ],
+        "anchorMin": [
+          0.5,
+          0.5
+        ],
+        "anchoredPosition": [
+          276.0,
+          12.0
+        ],
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "rotationZ": 0.0,
+        "sizeDelta": [
+          160.0,
+          160.0
+        ]
+      },
+      "shadow": {
+        "color": "#0000006E",
+        "enabled": false,
+        "offset": [
+          6.0,
+          -6.0
+        ]
+      },
+      "shape": "rect",
+      "size": [
+        160.0,
+        160.0
+      ],
+      "text": {
+        "alignH": 1,
+        "alignV": 1,
+        "bold": false,
+        "color": "#14141EFF",
+        "font": "",
+        "fontSize": 32.0,
+        "hasText": false,
+        "italic": false,
+        "padding": [
+          16.0,
+          16.0,
+          12.0
+        ],
+        "underline": false,
+        "value": ""
+      },
+      "type": "Panel",
+      "value": 0.5
+    },
+    {
+      "active": true,
+      "contentHeight": 0.0,
+      "id": 13,
+      "image": {
+        "alpha": 1.0,
+        "color": "#3C4054FF",
+        "gradientTo": "#00C4CCFF",
+        "preserveAspect": false,
+        "radius": 14.0,
+        "source": "",
+        "useGradient": false
+      },
+      "interactable": true,
+      "layout": {
+        "cellSize": [
+          100.0,
+          100.0
+        ],
+        "childAlignment": 0,
+        "expandHeight": false,
+        "expandWidth": false,
+        "mode": 0,
+        "padding": [
+          16.0,
+          16.0,
+          16.0,
+          16.0
+        ],
+        "spacing": [
+          12.0,
+          12.0
+        ]
+      },
+      "mask": false,
+      "name": "Cell 9",
+      "onClick": "",
+      "options": [],
+      "outline": {
+        "color": "#6E7496FF",
+        "width": 2.0
+      },
+      "parent": 3,
+      "raycastTarget": true,
+      "rect": {
+        "anchorMax": [
+          0.5,
+          0.5
+        ],
+        "anchorMin": [
+          0.5,
+          0.5
+        ],
+        "anchoredPosition": [
+          -276.0,
+          -172.0
+        ],
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "rotationZ": 0.0,
+        "sizeDelta": [
+          160.0,
+          160.0
+        ]
+      },
+      "shadow": {
+        "color": "#0000006E",
+        "enabled": false,
+        "offset": [
+          6.0,
+          -6.0
+        ]
+      },
+      "shape": "rect",
+      "size": [
+        160.0,
+        160.0
+      ],
+      "text": {
+        "alignH": 1,
+        "alignV": 1,
+        "bold": false,
+        "color": "#14141EFF",
+        "font": "",
+        "fontSize": 32.0,
+        "hasText": false,
+        "italic": false,
+        "padding": [
+          16.0,
+          16.0,
+          12.0
+        ],
+        "underline": false,
+        "value": ""
+      },
+      "type": "Panel",
+      "value": 0.5
+    },
+    {
+      "active": true,
+      "contentHeight": 0.0,
+      "id": 14,
+      "image": {
+        "alpha": 1.0,
+        "color": "#3C4054FF",
+        "gradientTo": "#00C4CCFF",
+        "preserveAspect": false,
+        "radius": 14.0,
+        "source": "",
+        "useGradient": false
+      },
+      "interactable": true,
+      "layout": {
+        "cellSize": [
+          100.0,
+          100.0
+        ],
+        "childAlignment": 0,
+        "expandHeight": false,
+        "expandWidth": false,
+        "mode": 0,
+        "padding": [
+          16.0,
+          16.0,
+          16.0,
+          16.0
+        ],
+        "spacing": [
+          12.0,
+          12.0
+        ]
+      },
+      "mask": false,
+      "name": "Cell 10",
+      "onClick": "",
+      "options": [],
+      "outline": {
+        "color": "#6E7496FF",
+        "width": 2.0
+      },
+      "parent": 3,
+      "raycastTarget": true,
+      "rect": {
+        "anchorMax": [
+          0.5,
+          0.5
+        ],
+        "anchorMin": [
+          0.5,
+          0.5
+        ],
+        "anchoredPosition": [
+          -92.0,
+          -172.0
+        ],
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "rotationZ": 0.0,
+        "sizeDelta": [
+          160.0,
+          160.0
+        ]
+      },
+      "shadow": {
+        "color": "#0000006E",
+        "enabled": false,
+        "offset": [
+          6.0,
+          -6.0
+        ]
+      },
+      "shape": "rect",
+      "size": [
+        160.0,
+        160.0
+      ],
+      "text": {
+        "alignH": 1,
+        "alignV": 1,
+        "bold": false,
+        "color": "#14141EFF",
+        "font": "",
+        "fontSize": 32.0,
+        "hasText": false,
+        "italic": false,
+        "padding": [
+          16.0,
+          16.0,
+          12.0
+        ],
+        "underline": false,
+        "value": ""
+      },
+      "type": "Panel",
+      "value": 0.5
+    },
+    {
+      "active": true,
+      "contentHeight": 0.0,
+      "id": 15,
+      "image": {
+        "alpha": 1.0,
+        "color": "#3C4054FF",
+        "gradientTo": "#00C4CCFF",
+        "preserveAspect": false,
+        "radius": 14.0,
+        "source": "",
+        "useGradient": false
+      },
+      "interactable": true,
+      "layout": {
+        "cellSize": [
+          100.0,
+          100.0
+        ],
+        "childAlignment": 0,
+        "expandHeight": false,
+        "expandWidth": false,
+        "mode": 0,
+        "padding": [
+          16.0,
+          16.0,
+          16.0,
+          16.0
+        ],
+        "spacing": [
+          12.0,
+          12.0
+        ]
+      },
+      "mask": false,
+      "name": "Cell 11",
+      "onClick": "",
+      "options": [],
+      "outline": {
+        "color": "#6E7496FF",
+        "width": 2.0
+      },
+      "parent": 3,
+      "raycastTarget": true,
+      "rect": {
+        "anchorMax": [
+          0.5,
+          0.5
+        ],
+        "anchorMin": [
+          0.5,
+          0.5
+        ],
+        "anchoredPosition": [
+          92.0,
+          -172.0
+        ],
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "rotationZ": 0.0,
+        "sizeDelta": [
+          160.0,
+          160.0
+        ]
+      },
+      "shadow": {
+        "color": "#0000006E",
+        "enabled": false,
+        "offset": [
+          6.0,
+          -6.0
+        ]
+      },
+      "shape": "rect",
+      "size": [
+        160.0,
+        160.0
+      ],
+      "text": {
+        "alignH": 1,
+        "alignV": 1,
+        "bold": false,
+        "color": "#14141EFF",
+        "font": "",
+        "fontSize": 32.0,
+        "hasText": false,
+        "italic": false,
+        "padding": [
+          16.0,
+          16.0,
+          12.0
+        ],
+        "underline": false,
+        "value": ""
+      },
+      "type": "Panel",
+      "value": 0.5
+    },
+    {
+      "active": true,
+      "contentHeight": 0.0,
+      "id": 16,
+      "image": {
+        "alpha": 1.0,
+        "color": "#3C4054FF",
+        "gradientTo": "#00C4CCFF",
+        "preserveAspect": false,
+        "radius": 14.0,
+        "source": "",
+        "useGradient": false
+      },
+      "interactable": true,
+      "layout": {
+        "cellSize": [
+          100.0,
+          100.0
+        ],
+        "childAlignment": 0,
+        "expandHeight": false,
+        "expandWidth": false,
+        "mode": 0,
+        "padding": [
+          16.0,
+          16.0,
+          16.0,
+          16.0
+        ],
+        "spacing": [
+          12.0,
+          12.0
+        ]
+      },
+      "mask": false,
+      "name": "Cell 12",
+      "onClick": "",
+      "options": [],
+      "outline": {
+        "color": "#6E7496FF",
+        "width": 2.0
+      },
+      "parent": 3,
+      "raycastTarget": true,
+      "rect": {
+        "anchorMax": [
+          0.5,
+          0.5
+        ],
+        "anchorMin": [
+          0.5,
+          0.5
+        ],
+        "anchoredPosition": [
+          276.0,
+          -172.0
+        ],
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "rotationZ": 0.0,
+        "sizeDelta": [
+          160.0,
+          160.0
+        ]
+      },
+      "shadow": {
+        "color": "#0000006E",
+        "enabled": false,
+        "offset": [
+          6.0,
+          -6.0
+        ]
+      },
+      "shape": "rect",
+      "size": [
+        160.0,
+        160.0
+      ],
+      "text": {
+        "alignH": 1,
+        "alignV": 1,
+        "bold": false,
+        "color": "#14141EFF",
+        "font": "",
+        "fontSize": 32.0,
+        "hasText": false,
+        "italic": false,
+        "padding": [
+          16.0,
+          16.0,
+          12.0
+        ],
+        "underline": false,
+        "value": ""
+      },
+      "type": "Panel",
       "value": 0.5
     }
   ],

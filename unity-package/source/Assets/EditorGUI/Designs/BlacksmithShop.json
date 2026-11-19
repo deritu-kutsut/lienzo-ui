@@ -1,9 +1,9 @@
 {
   "canvas": {
-    "background": "#ECEEF5FF",
-    "className": "Ajustes",
+    "background": "#1C1E28FF",
+    "className": "BlacksmithShop",
     "match": 0.5,
-    "name": "Ajustes",
+    "name": "Blacksmith shop",
     "pixelArt": false,
     "referenceResolution": [
       1920.0,
@@ -15,6 +15,106 @@
       "active": true,
       "contentHeight": 0.0,
       "id": 1,
+      "image": {
+        "alpha": 1.0,
+        "color": "#2C2F3EFF",
+        "gradientTo": "#00C4CCFF",
+        "preserveAspect": false,
+        "radius": 28.0,
+        "source": "",
+        "useGradient": false
+      },
+      "interactable": true,
+      "layout": {
+        "cellSize": [
+          100.0,
+          100.0
+        ],
+        "childAlignment": 0,
+        "expandHeight": false,
+        "expandWidth": false,
+        "mode": 0,
+        "padding": [
+          16.0,
+          16.0,
+          16.0,
+          16.0
+        ],
+        "spacing": [
+          12.0,
+          12.0
+        ]
+      },
+      "mask": false,
+      "name": "Inventory",
+      "onClick": "",
+      "options": [],
+      "outline": {
+        "color": "#5A6082FF",
+        "width": 3.0
+      },
+      "parent": -1,
+      "raycastTarget": true,
+      "rect": {
+        "anchorMax": [
+          0.5,
+          0.5
+        ],
+        "anchorMin": [
+          0.5,
+          0.5
+        ],
+        "anchoredPosition": [
+          0.0,
+          -40.0
+        ],
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "rotationZ": 0.0,
+        "sizeDelta": [
+          840.0,
+          900.0
+        ]
+      },
+      "shadow": {
+        "color": "#0000006E",
+        "enabled": true,
+        "offset": [
+          6.0,
+          -6.0
+        ]
+      },
+      "shape": "rect",
+      "size": [
+        840.0,
+        900.0
+      ],
+      "text": {
+        "alignH": 1,
+        "alignV": 1,
+        "bold": false,
+        "color": "#14141EFF",
+        "font": "",
+        "fontSize": 32.0,
+        "hasText": false,
+        "italic": false,
+        "padding": [
+          16.0,
+          16.0,
+          12.0
+        ],
+        "underline": false,
+        "value": ""
+      },
+      "type": "Panel",
+      "value": 0.5
+    },
+    {
+      "active": true,
+      "contentHeight": 0.0,
+      "id": 2,
       "image": {
         "alpha": 1.0,
         "color": "#00000000",
@@ -46,14 +146,14 @@
         ]
       },
       "mask": false,
-      "name": "Título",
+      "name": "Title",
       "onClick": "",
       "options": [],
       "outline": {
         "color": "#1E1E28FF",
         "width": 0.0
       },
-      "parent": -1,
+      "parent": 0,
       "raycastTarget": false,
       "rect": {
         "anchorMax": [
@@ -65,8 +165,8 @@
           1.0
         ],
         "anchoredPosition": [
-          120.0,
-          -70.0
+          40.0,
+          -30.0
         ],
         "pivot": [
           0.0,
@@ -74,8 +174,8 @@
         ],
         "rotationZ": 0.0,
         "sizeDelta": [
-          800.0,
-          90.0
+          600.0,
+          70.0
         ]
       },
       "shadow": {
@@ -88,16 +188,16 @@
       },
       "shape": "rect",
       "size": [
-        800.0,
-        90.0
+        600.0,
+        70.0
       ],
       "text": {
         "alignH": 0,
         "alignV": 0,
         "bold": true,
-        "color": "#14141EFF",
+        "color": "#FFD27AFF",
         "font": "",
-        "fontSize": 72.0,
+        "fontSize": 52.0,
         "hasText": true,
         "italic": false,
         "padding": [
@@ -106,7 +206,7 @@
           0.0
         ],
         "underline": false,
-        "value": "Ajustes"
+        "value": "Blacksmith"
       },
       "type": "Text",
       "value": 0.5
@@ -114,13 +214,13 @@
     {
       "active": true,
       "contentHeight": 0.0,
-      "id": 2,
+      "id": 3,
       "image": {
         "alpha": 1.0,
-        "color": "#FFFFFFFF",
+        "color": "#EB465AFF",
         "gradientTo": "#00C4CCFF",
         "preserveAspect": false,
-        "radius": 24.0,
+        "radius": 35.0,
         "source": "",
         "useGradient": false
       },
@@ -146,14 +246,14 @@
         ]
       },
       "mask": false,
-      "name": "Tarjeta",
-      "onClick": "",
+      "name": "Close",
+      "onClick": "hide(\"Inventory\");",
       "options": [],
       "outline": {
         "color": "#1E1E28FF",
         "width": 0.0
       },
-      "parent": -1,
+      "parent": 0,
       "raycastTarget": true,
       "rect": {
         "anchorMax": [
@@ -161,26 +261,26 @@
           1.0
         ],
         "anchorMin": [
-          0.0,
-          0.0
+          1.0,
+          1.0
         ],
         "anchoredPosition": [
-          0.0,
-          10.0
+          -30.0,
+          -30.0
         ],
         "pivot": [
-          0.5,
-          0.5
+          1.0,
+          1.0
         ],
         "rotationZ": 0.0,
         "sizeDelta": [
-          -240.0,
-          -400.0
+          70.0,
+          70.0
         ]
       },
       "shadow": {
-        "color": "#00000028",
-        "enabled": true,
+        "color": "#0000006E",
+        "enabled": false,
         "offset": [
           6.0,
           -6.0
@@ -188,17 +288,17 @@
       },
       "shape": "rect",
       "size": [
-        1680.0,
-        680.0
+        70.0,
+        70.0
       ],
       "text": {
         "alignH": 1,
         "alignV": 1,
-        "bold": false,
-        "color": "#14141EFF",
+        "bold": true,
+        "color": "#FFFFFFFF",
         "font": "",
         "fontSize": 32.0,
-        "hasText": false,
+        "hasText": true,
         "italic": false,
         "padding": [
           16.0,
@@ -206,18 +306,18 @@
           12.0
         ],
         "underline": false,
-        "value": ""
+        "value": "X"
       },
-      "type": "Panel",
+      "type": "Button",
       "value": 0.5
     },
     {
       "active": true,
-      "contentHeight": 620.0,
-      "id": 3,
+      "contentHeight": 0.0,
+      "id": 17,
       "image": {
         "alpha": 1.0,
-        "color": "#FFFFFF00",
+        "color": "#3FB46AFF",
         "gradientTo": "#00C4CCFF",
         "preserveAspect": false,
         "radius": 14.0,
@@ -245,15 +345,15 @@
           12.0
         ]
       },
-      "mask": true,
-      "name": "Opciones",
-      "onClick": "",
+      "mask": false,
+      "name": "Buy",
+      "onClick": "hide(\"Inventory\");",
       "options": [],
       "outline": {
-        "color": "#D2D4DEFF",
+        "color": "#1E1E28FF",
         "width": 0.0
       },
-      "parent": 1,
+      "parent": 0,
       "raycastTarget": true,
       "rect": {
         "anchorMax": [
@@ -261,925 +361,20 @@
           1.0
         ],
         "anchorMin": [
-          0.0,
-          0.0
-        ],
-        "anchoredPosition": [
-          0.0,
-          0.0
-        ],
-        "pivot": [
-          0.5,
-          0.5
-        ],
-        "rotationZ": 0.0,
-        "sizeDelta": [
-          -60.0,
-          -60.0
-        ]
-      },
-      "shadow": {
-        "color": "#0000006E",
-        "enabled": false,
-        "offset": [
-          6.0,
-          -6.0
-        ]
-      },
-      "shape": "rect",
-      "size": [
-        1620.0,
-        620.0
-      ],
-      "text": {
-        "alignH": 1,
-        "alignV": 1,
-        "bold": false,
-        "color": "#14141EFF",
-        "font": "",
-        "fontSize": 32.0,
-        "hasText": false,
-        "italic": false,
-        "padding": [
-          16.0,
-          16.0,
-          12.0
-        ],
-        "underline": false,
-        "value": ""
-      },
-      "type": "ScrollView",
-      "value": 0.5
-    },
-    {
-      "active": true,
-      "contentHeight": 0.0,
-      "id": 4,
-      "image": {
-        "alpha": 1.0,
-        "color": "#00000000",
-        "gradientTo": "#00C4CCFF",
-        "preserveAspect": false,
-        "radius": 0.0,
-        "source": "",
-        "useGradient": false
-      },
-      "interactable": true,
-      "layout": {
-        "cellSize": [
-          100.0,
-          100.0
-        ],
-        "childAlignment": 0,
-        "expandHeight": false,
-        "expandWidth": false,
-        "mode": 0,
-        "padding": [
-          16.0,
-          16.0,
-          16.0,
-          16.0
-        ],
-        "spacing": [
-          12.0,
-          12.0
-        ]
-      },
-      "mask": false,
-      "name": "Volumen música",
-      "onClick": "",
-      "options": [],
-      "outline": {
-        "color": "#1E1E28FF",
-        "width": 0.0
-      },
-      "parent": 2,
-      "raycastTarget": false,
-      "rect": {
-        "anchorMax": [
-          0.0,
-          1.0
-        ],
-        "anchorMin": [
-          0.0,
-          1.0
-        ],
-        "anchoredPosition": [
-          280.0,
-          -55.0
-        ],
-        "pivot": [
-          0.5,
-          0.5
-        ],
-        "rotationZ": 0.0,
-        "sizeDelta": [
-          500.0,
-          50.0
-        ]
-      },
-      "shadow": {
-        "color": "#0000006E",
-        "enabled": false,
-        "offset": [
-          6.0,
-          -6.0
-        ]
-      },
-      "shape": "rect",
-      "size": [
-        500.0,
-        50.0
-      ],
-      "text": {
-        "alignH": 0,
-        "alignV": 0,
-        "bold": false,
-        "color": "#14141EFF",
-        "font": "",
-        "fontSize": 34.0,
-        "hasText": true,
-        "italic": false,
-        "padding": [
-          0.0,
-          0.0,
-          0.0
-        ],
-        "underline": false,
-        "value": "Volumen música"
-      },
-      "type": "Text",
-      "value": 0.5
-    },
-    {
-      "active": true,
-      "contentHeight": 0.0,
-      "id": 5,
-      "image": {
-        "alpha": 1.0,
-        "color": "#7C5CFFFF",
-        "gradientTo": "#DEDEE8FF",
-        "preserveAspect": false,
-        "radius": 0.0,
-        "source": "",
-        "useGradient": false
-      },
-      "interactable": true,
-      "layout": {
-        "cellSize": [
-          100.0,
-          100.0
-        ],
-        "childAlignment": 0,
-        "expandHeight": false,
-        "expandWidth": false,
-        "mode": 0,
-        "padding": [
-          16.0,
-          16.0,
-          16.0,
-          16.0
-        ],
-        "spacing": [
-          12.0,
-          12.0
-        ]
-      },
-      "mask": false,
-      "name": "Slider Volumen música",
-      "onClick": "",
-      "options": [],
-      "outline": {
-        "color": "#1E1E28FF",
-        "width": 0.0
-      },
-      "parent": 2,
-      "raycastTarget": true,
-      "rect": {
-        "anchorMax": [
           1.0,
           1.0
         ],
-        "anchorMin": [
-          0.0,
-          1.0
-        ],
         "anchoredPosition": [
-          60.0,
-          -55.0
+          -40.0,
+          -790.0
         ],
         "pivot": [
-          0.5,
-          0.5
-        ],
-        "rotationZ": 0.0,
-        "sizeDelta": [
-          -1020.0,
-          40.0
-        ]
-      },
-      "shadow": {
-        "color": "#0000006E",
-        "enabled": false,
-        "offset": [
-          6.0,
-          -6.0
-        ]
-      },
-      "shape": "rect",
-      "size": [
-        600.0,
-        40.0
-      ],
-      "text": {
-        "alignH": 1,
-        "alignV": 1,
-        "bold": false,
-        "color": "#14141EFF",
-        "font": "",
-        "fontSize": 32.0,
-        "hasText": false,
-        "italic": false,
-        "padding": [
-          16.0,
-          16.0,
-          12.0
-        ],
-        "underline": false,
-        "value": ""
-      },
-      "type": "Slider",
-      "value": 0.3
-    },
-    {
-      "active": true,
-      "contentHeight": 0.0,
-      "id": 6,
-      "image": {
-        "alpha": 1.0,
-        "color": "#00000000",
-        "gradientTo": "#00C4CCFF",
-        "preserveAspect": false,
-        "radius": 0.0,
-        "source": "",
-        "useGradient": false
-      },
-      "interactable": true,
-      "layout": {
-        "cellSize": [
-          100.0,
-          100.0
-        ],
-        "childAlignment": 0,
-        "expandHeight": false,
-        "expandWidth": false,
-        "mode": 0,
-        "padding": [
-          16.0,
-          16.0,
-          16.0,
-          16.0
-        ],
-        "spacing": [
-          12.0,
-          12.0
-        ]
-      },
-      "mask": false,
-      "name": "Volumen efectos",
-      "onClick": "",
-      "options": [],
-      "outline": {
-        "color": "#1E1E28FF",
-        "width": 0.0
-      },
-      "parent": 2,
-      "raycastTarget": false,
-      "rect": {
-        "anchorMax": [
-          0.0,
-          1.0
-        ],
-        "anchorMin": [
-          0.0,
-          1.0
-        ],
-        "anchoredPosition": [
-          280.0,
-          -165.0
-        ],
-        "pivot": [
-          0.5,
-          0.5
-        ],
-        "rotationZ": 0.0,
-        "sizeDelta": [
-          500.0,
-          50.0
-        ]
-      },
-      "shadow": {
-        "color": "#0000006E",
-        "enabled": false,
-        "offset": [
-          6.0,
-          -6.0
-        ]
-      },
-      "shape": "rect",
-      "size": [
-        500.0,
-        50.0
-      ],
-      "text": {
-        "alignH": 0,
-        "alignV": 0,
-        "bold": false,
-        "color": "#14141EFF",
-        "font": "",
-        "fontSize": 34.0,
-        "hasText": true,
-        "italic": false,
-        "padding": [
-          0.0,
-          0.0,
-          0.0
-        ],
-        "underline": false,
-        "value": "Volumen efectos"
-      },
-      "type": "Text",
-      "value": 0.5
-    },
-    {
-      "active": true,
-      "contentHeight": 0.0,
-      "id": 7,
-      "image": {
-        "alpha": 1.0,
-        "color": "#7C5CFFFF",
-        "gradientTo": "#DEDEE8FF",
-        "preserveAspect": false,
-        "radius": 0.0,
-        "source": "",
-        "useGradient": false
-      },
-      "interactable": true,
-      "layout": {
-        "cellSize": [
-          100.0,
-          100.0
-        ],
-        "childAlignment": 0,
-        "expandHeight": false,
-        "expandWidth": false,
-        "mode": 0,
-        "padding": [
-          16.0,
-          16.0,
-          16.0,
-          16.0
-        ],
-        "spacing": [
-          12.0,
-          12.0
-        ]
-      },
-      "mask": false,
-      "name": "Slider Volumen efectos",
-      "onClick": "",
-      "options": [],
-      "outline": {
-        "color": "#1E1E28FF",
-        "width": 0.0
-      },
-      "parent": 2,
-      "raycastTarget": true,
-      "rect": {
-        "anchorMax": [
           1.0,
           1.0
         ],
-        "anchorMin": [
-          0.0,
-          1.0
-        ],
-        "anchoredPosition": [
-          60.0,
-          -165.0
-        ],
-        "pivot": [
-          0.5,
-          0.5
-        ],
         "rotationZ": 0.0,
         "sizeDelta": [
-          -1020.0,
-          40.0
-        ]
-      },
-      "shadow": {
-        "color": "#0000006E",
-        "enabled": false,
-        "offset": [
-          6.0,
-          -6.0
-        ]
-      },
-      "shape": "rect",
-      "size": [
-        600.0,
-        40.0
-      ],
-      "text": {
-        "alignH": 1,
-        "alignV": 1,
-        "bold": false,
-        "color": "#14141EFF",
-        "font": "",
-        "fontSize": 32.0,
-        "hasText": false,
-        "italic": false,
-        "padding": [
-          16.0,
-          16.0,
-          12.0
-        ],
-        "underline": false,
-        "value": ""
-      },
-      "type": "Slider",
-      "value": 0.5
-    },
-    {
-      "active": true,
-      "contentHeight": 0.0,
-      "id": 8,
-      "image": {
-        "alpha": 1.0,
-        "color": "#00000000",
-        "gradientTo": "#00C4CCFF",
-        "preserveAspect": false,
-        "radius": 0.0,
-        "source": "",
-        "useGradient": false
-      },
-      "interactable": true,
-      "layout": {
-        "cellSize": [
-          100.0,
-          100.0
-        ],
-        "childAlignment": 0,
-        "expandHeight": false,
-        "expandWidth": false,
-        "mode": 0,
-        "padding": [
-          16.0,
-          16.0,
-          16.0,
-          16.0
-        ],
-        "spacing": [
-          12.0,
-          12.0
-        ]
-      },
-      "mask": false,
-      "name": "Brillo",
-      "onClick": "",
-      "options": [],
-      "outline": {
-        "color": "#1E1E28FF",
-        "width": 0.0
-      },
-      "parent": 2,
-      "raycastTarget": false,
-      "rect": {
-        "anchorMax": [
-          0.0,
-          1.0
-        ],
-        "anchorMin": [
-          0.0,
-          1.0
-        ],
-        "anchoredPosition": [
-          280.0,
-          -275.0
-        ],
-        "pivot": [
-          0.5,
-          0.5
-        ],
-        "rotationZ": 0.0,
-        "sizeDelta": [
-          500.0,
-          50.0
-        ]
-      },
-      "shadow": {
-        "color": "#0000006E",
-        "enabled": false,
-        "offset": [
-          6.0,
-          -6.0
-        ]
-      },
-      "shape": "rect",
-      "size": [
-        500.0,
-        50.0
-      ],
-      "text": {
-        "alignH": 0,
-        "alignV": 0,
-        "bold": false,
-        "color": "#14141EFF",
-        "font": "",
-        "fontSize": 34.0,
-        "hasText": true,
-        "italic": false,
-        "padding": [
-          0.0,
-          0.0,
-          0.0
-        ],
-        "underline": false,
-        "value": "Brillo"
-      },
-      "type": "Text",
-      "value": 0.5
-    },
-    {
-      "active": true,
-      "contentHeight": 0.0,
-      "id": 9,
-      "image": {
-        "alpha": 1.0,
-        "color": "#7C5CFFFF",
-        "gradientTo": "#DEDEE8FF",
-        "preserveAspect": false,
-        "radius": 0.0,
-        "source": "",
-        "useGradient": false
-      },
-      "interactable": true,
-      "layout": {
-        "cellSize": [
-          100.0,
-          100.0
-        ],
-        "childAlignment": 0,
-        "expandHeight": false,
-        "expandWidth": false,
-        "mode": 0,
-        "padding": [
-          16.0,
-          16.0,
-          16.0,
-          16.0
-        ],
-        "spacing": [
-          12.0,
-          12.0
-        ]
-      },
-      "mask": false,
-      "name": "Slider Brillo",
-      "onClick": "",
-      "options": [],
-      "outline": {
-        "color": "#1E1E28FF",
-        "width": 0.0
-      },
-      "parent": 2,
-      "raycastTarget": true,
-      "rect": {
-        "anchorMax": [
-          1.0,
-          1.0
-        ],
-        "anchorMin": [
-          0.0,
-          1.0
-        ],
-        "anchoredPosition": [
-          60.0,
-          -275.0
-        ],
-        "pivot": [
-          0.5,
-          0.5
-        ],
-        "rotationZ": 0.0,
-        "sizeDelta": [
-          -1020.0,
-          40.0
-        ]
-      },
-      "shadow": {
-        "color": "#0000006E",
-        "enabled": false,
-        "offset": [
-          6.0,
-          -6.0
-        ]
-      },
-      "shape": "rect",
-      "size": [
-        600.0,
-        40.0
-      ],
-      "text": {
-        "alignH": 1,
-        "alignV": 1,
-        "bold": false,
-        "color": "#14141EFF",
-        "font": "",
-        "fontSize": 32.0,
-        "hasText": false,
-        "italic": false,
-        "padding": [
-          16.0,
-          16.0,
-          12.0
-        ],
-        "underline": false,
-        "value": ""
-      },
-      "type": "Slider",
-      "value": 0.7
-    },
-    {
-      "active": true,
-      "contentHeight": 0.0,
-      "id": 10,
-      "image": {
-        "alpha": 1.0,
-        "color": "#7C5CFFFF",
-        "gradientTo": "#00C4CCFF",
-        "preserveAspect": false,
-        "radius": 0.0,
-        "source": "",
-        "useGradient": false
-      },
-      "interactable": true,
-      "layout": {
-        "cellSize": [
-          100.0,
-          100.0
-        ],
-        "childAlignment": 0,
-        "expandHeight": false,
-        "expandWidth": false,
-        "mode": 0,
-        "padding": [
-          16.0,
-          16.0,
-          16.0,
-          16.0
-        ],
-        "spacing": [
-          12.0,
-          12.0
-        ]
-      },
-      "mask": false,
-      "name": "Pantalla completa",
-      "onClick": "",
-      "options": [],
-      "outline": {
-        "color": "#1E1E28FF",
-        "width": 0.0
-      },
-      "parent": 2,
-      "raycastTarget": true,
-      "rect": {
-        "anchorMax": [
-          0.0,
-          1.0
-        ],
-        "anchorMin": [
-          0.0,
-          1.0
-        ],
-        "anchoredPosition": [
-          280.0,
-          -395.0
-        ],
-        "pivot": [
-          0.5,
-          0.5
-        ],
-        "rotationZ": 0.0,
-        "sizeDelta": [
-          500.0,
-          50.0
-        ]
-      },
-      "shadow": {
-        "color": "#0000006E",
-        "enabled": false,
-        "offset": [
-          6.0,
-          -6.0
-        ]
-      },
-      "shape": "rect",
-      "size": [
-        500.0,
-        50.0
-      ],
-      "text": {
-        "alignH": 0,
-        "alignV": 1,
-        "bold": false,
-        "color": "#14141EFF",
-        "font": "",
-        "fontSize": 34.0,
-        "hasText": true,
-        "italic": false,
-        "padding": [
-          59.0,
-          12.0,
-          0.0
-        ],
-        "underline": false,
-        "value": "Pantalla completa"
-      },
-      "type": "Toggle",
-      "value": 1.0
-    },
-    {
-      "active": true,
-      "contentHeight": 0.0,
-      "id": 11,
-      "image": {
-        "alpha": 1.0,
-        "color": "#FFFFFFFF",
-        "gradientTo": "#00C4CCFF",
-        "preserveAspect": false,
-        "radius": 10.0,
-        "source": "",
-        "useGradient": false
-      },
-      "interactable": true,
-      "layout": {
-        "cellSize": [
-          100.0,
-          100.0
-        ],
-        "childAlignment": 0,
-        "expandHeight": false,
-        "expandWidth": false,
-        "mode": 0,
-        "padding": [
-          16.0,
-          16.0,
-          16.0,
-          16.0
-        ],
-        "spacing": [
-          12.0,
-          12.0
-        ]
-      },
-      "mask": false,
-      "name": "Calidad",
-      "onClick": "",
-      "options": [
-        "Baja",
-        "Media",
-        "Alta",
-        "Ultra"
-      ],
-      "outline": {
-        "color": "#C8C8D2FF",
-        "width": 2.0
-      },
-      "parent": 2,
-      "raycastTarget": true,
-      "rect": {
-        "anchorMax": [
-          0.0,
-          1.0
-        ],
-        "anchorMin": [
-          0.0,
-          1.0
-        ],
-        "anchoredPosition": [
-          780.0,
-          -395.0
-        ],
-        "pivot": [
-          0.5,
-          0.5
-        ],
-        "rotationZ": 0.0,
-        "sizeDelta": [
-          420.0,
-          70.0
-        ]
-      },
-      "shadow": {
-        "color": "#0000006E",
-        "enabled": false,
-        "offset": [
-          6.0,
-          -6.0
-        ]
-      },
-      "shape": "rect",
-      "size": [
-        420.0,
-        70.0
-      ],
-      "text": {
-        "alignH": 0,
-        "alignV": 1,
-        "bold": false,
-        "color": "#14141EFF",
-        "font": "",
-        "fontSize": 26.0,
-        "hasText": true,
-        "italic": false,
-        "padding": [
-          18.0,
-          60.0,
-          8.0
-        ],
-        "underline": false,
-        "value": "Opción A"
-      },
-      "type": "Dropdown",
-      "value": 2.0
-    },
-    {
-      "active": true,
-      "contentHeight": 0.0,
-      "id": 12,
-      "image": {
-        "alpha": 1.0,
-        "color": "#FFFFFFFF",
-        "gradientTo": "#00C4CCFF",
-        "preserveAspect": false,
-        "radius": 10.0,
-        "source": "",
-        "useGradient": false
-      },
-      "interactable": true,
-      "layout": {
-        "cellSize": [
-          100.0,
-          100.0
-        ],
-        "childAlignment": 0,
-        "expandHeight": false,
-        "expandWidth": false,
-        "mode": 0,
-        "padding": [
-          16.0,
-          16.0,
-          16.0,
-          16.0
-        ],
-        "spacing": [
-          12.0,
-          12.0
-        ]
-      },
-      "mask": false,
-      "name": "Nombre jugador",
-      "onClick": "",
-      "options": [],
-      "outline": {
-        "color": "#C8C8D2FF",
-        "width": 2.0
-      },
-      "parent": 2,
-      "raycastTarget": true,
-      "rect": {
-        "anchorMax": [
-          0.0,
-          1.0
-        ],
-        "anchorMin": [
-          0.0,
-          1.0
-        ],
-        "anchoredPosition": [
-          330.0,
-          -508.0
-        ],
-        "pivot": [
-          0.5,
-          0.5
-        ],
-        "rotationZ": 0.0,
-        "sizeDelta": [
-          600.0,
+          300.0,
           76.0
         ]
       },
@@ -1193,108 +388,8 @@
       },
       "shape": "rect",
       "size": [
-        600.0,
-        76.0
-      ],
-      "text": {
-        "alignH": 0,
-        "alignV": 1,
-        "bold": false,
-        "color": "#8C8C96FF",
-        "font": "",
-        "fontSize": 26.0,
-        "hasText": true,
-        "italic": false,
-        "padding": [
-          18.0,
-          18.0,
-          8.0
-        ],
-        "underline": false,
-        "value": "Nombre del jugador"
-      },
-      "type": "InputField",
-      "value": 0.5
-    },
-    {
-      "active": true,
-      "contentHeight": 0.0,
-      "id": 13,
-      "image": {
-        "alpha": 1.0,
-        "color": "#7C5CFFFF",
-        "gradientTo": "#00C4CCFF",
-        "preserveAspect": false,
-        "radius": 18.0,
-        "source": "",
-        "useGradient": false
-      },
-      "interactable": true,
-      "layout": {
-        "cellSize": [
-          100.0,
-          100.0
-        ],
-        "childAlignment": 0,
-        "expandHeight": false,
-        "expandWidth": false,
-        "mode": 0,
-        "padding": [
-          16.0,
-          16.0,
-          16.0,
-          16.0
-        ],
-        "spacing": [
-          12.0,
-          12.0
-        ]
-      },
-      "mask": false,
-      "name": "Botón volver",
-      "onClick": "mensaje(\"Volver al menú\");",
-      "options": [],
-      "outline": {
-        "color": "#1E1E28FF",
-        "width": 0.0
-      },
-      "parent": -1,
-      "raycastTarget": true,
-      "rect": {
-        "anchorMax": [
-          0.0,
-          0.0
-        ],
-        "anchorMin": [
-          0.0,
-          0.0
-        ],
-        "anchoredPosition": [
-          270.0,
-          128.0
-        ],
-        "pivot": [
-          0.5,
-          0.5
-        ],
-        "rotationZ": 0.0,
-        "sizeDelta": [
-          300.0,
-          84.0
-        ]
-      },
-      "shadow": {
-        "color": "#0000006E",
-        "enabled": false,
-        "offset": [
-          6.0,
-          -6.0
-        ]
-      },
-      "shape": "rect",
-      "size": [
         300.0,
-        84.0
+        76.0
       ],
       "text": {
         "alignH": 1,
@@ -1311,9 +406,1209 @@
           12.0
         ],
         "underline": false,
-        "value": "Volver"
+        "value": "Buy · 120 gold"
       },
       "type": "Button",
+      "value": 0.5
+    },
+    {
+      "active": true,
+      "contentHeight": 0.0,
+      "id": 4,
+      "image": {
+        "alpha": 1.0,
+        "color": "#1E202CFF",
+        "gradientTo": "#00C4CCFF",
+        "preserveAspect": false,
+        "radius": 18.0,
+        "source": "",
+        "useGradient": false
+      },
+      "interactable": true,
+      "layout": {
+        "cellSize": [
+          160.0,
+          160.0
+        ],
+        "childAlignment": 1,
+        "expandHeight": false,
+        "expandWidth": false,
+        "mode": 3,
+        "padding": [
+          24.0,
+          24.0,
+          24.0,
+          24.0
+        ],
+        "spacing": [
+          24.0,
+          24.0
+        ]
+      },
+      "mask": false,
+      "name": "Grid",
+      "onClick": "",
+      "options": [],
+      "outline": {
+        "color": "#1E1E28FF",
+        "width": 0.0
+      },
+      "parent": 0,
+      "raycastTarget": true,
+      "rect": {
+        "anchorMax": [
+          1.0,
+          1.0
+        ],
+        "anchorMin": [
+          0.0,
+          0.0
+        ],
+        "anchoredPosition": [
+          0.0,
+          20.0
+        ],
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "rotationZ": 0.0,
+        "sizeDelta": [
+          -80.0,
+          -300.0
+        ]
+      },
+      "shadow": {
+        "color": "#0000006E",
+        "enabled": false,
+        "offset": [
+          6.0,
+          -6.0
+        ]
+      },
+      "shape": "rect",
+      "size": [
+        760.0,
+        600.0
+      ],
+      "text": {
+        "alignH": 1,
+        "alignV": 1,
+        "bold": false,
+        "color": "#14141EFF",
+        "font": "",
+        "fontSize": 32.0,
+        "hasText": false,
+        "italic": false,
+        "padding": [
+          16.0,
+          16.0,
+          12.0
+        ],
+        "underline": false,
+        "value": ""
+      },
+      "type": "Panel",
+      "value": 0.5
+    },
+    {
+      "active": true,
+      "contentHeight": 0.0,
+      "id": 5,
+      "image": {
+        "alpha": 1.0,
+        "color": "#3C4054FF",
+        "gradientTo": "#00C4CCFF",
+        "preserveAspect": false,
+        "radius": 14.0,
+        "source": "",
+        "useGradient": false
+      },
+      "interactable": true,
+      "layout": {
+        "cellSize": [
+          100.0,
+          100.0
+        ],
+        "childAlignment": 0,
+        "expandHeight": false,
+        "expandWidth": false,
+        "mode": 0,
+        "padding": [
+          16.0,
+          16.0,
+          16.0,
+          16.0
+        ],
+        "spacing": [
+          12.0,
+          12.0
+        ]
+      },
+      "mask": false,
+      "name": "Cell 1",
+      "onClick": "",
+      "options": [],
+      "outline": {
+        "color": "#6E7496FF",
+        "width": 2.0
+      },
+      "parent": 4,
+      "raycastTarget": true,
+      "rect": {
+        "anchorMax": [
+          0.5,
+          0.5
+        ],
+        "anchorMin": [
+          0.5,
+          0.5
+        ],
+        "anchoredPosition": [
+          -276.0,
+          166.0
+        ],
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "rotationZ": 0.0,
+        "sizeDelta": [
+          160.0,
+          160.0
+        ]
+      },
+      "shadow": {
+        "color": "#0000006E",
+        "enabled": false,
+        "offset": [
+          6.0,
+          -6.0
+        ]
+      },
+      "shape": "rect",
+      "size": [
+        160.0,
+        160.0
+      ],
+      "text": {
+        "alignH": 1,
+        "alignV": 1,
+        "bold": false,
+        "color": "#14141EFF",
+        "font": "",
+        "fontSize": 32.0,
+        "hasText": false,
+        "italic": false,
+        "padding": [
+          16.0,
+          16.0,
+          12.0
+        ],
+        "underline": false,
+        "value": ""
+      },
+      "type": "Panel",
+      "value": 0.5
+    },
+    {
+      "active": true,
+      "contentHeight": 0.0,
+      "id": 6,
+      "image": {
+        "alpha": 1.0,
+        "color": "#3C4054FF",
+        "gradientTo": "#00C4CCFF",
+        "preserveAspect": false,
+        "radius": 14.0,
+        "source": "",
+        "useGradient": false
+      },
+      "interactable": true,
+      "layout": {
+        "cellSize": [
+          100.0,
+          100.0
+        ],
+        "childAlignment": 0,
+        "expandHeight": false,
+        "expandWidth": false,
+        "mode": 0,
+        "padding": [
+          16.0,
+          16.0,
+          16.0,
+          16.0
+        ],
+        "spacing": [
+          12.0,
+          12.0
+        ]
+      },
+      "mask": false,
+      "name": "Cell 2",
+      "onClick": "",
+      "options": [],
+      "outline": {
+        "color": "#6E7496FF",
+        "width": 2.0
+      },
+      "parent": 4,
+      "raycastTarget": true,
+      "rect": {
+        "anchorMax": [
+          0.5,
+          0.5
+        ],
+        "anchorMin": [
+          0.5,
+          0.5
+        ],
+        "anchoredPosition": [
+          -92.0,
+          166.0
+        ],
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "rotationZ": 0.0,
+        "sizeDelta": [
+          160.0,
+          160.0
+        ]
+      },
+      "shadow": {
+        "color": "#0000006E",
+        "enabled": false,
+        "offset": [
+          6.0,
+          -6.0
+        ]
+      },
+      "shape": "rect",
+      "size": [
+        160.0,
+        160.0
+      ],
+      "text": {
+        "alignH": 1,
+        "alignV": 1,
+        "bold": false,
+        "color": "#14141EFF",
+        "font": "",
+        "fontSize": 32.0,
+        "hasText": false,
+        "italic": false,
+        "padding": [
+          16.0,
+          16.0,
+          12.0
+        ],
+        "underline": false,
+        "value": ""
+      },
+      "type": "Panel",
+      "value": 0.5
+    },
+    {
+      "active": true,
+      "contentHeight": 0.0,
+      "id": 7,
+      "image": {
+        "alpha": 1.0,
+        "color": "#3C4054FF",
+        "gradientTo": "#00C4CCFF",
+        "preserveAspect": false,
+        "radius": 14.0,
+        "source": "",
+        "useGradient": false
+      },
+      "interactable": true,
+      "layout": {
+        "cellSize": [
+          100.0,
+          100.0
+        ],
+        "childAlignment": 0,
+        "expandHeight": false,
+        "expandWidth": false,
+        "mode": 0,
+        "padding": [
+          16.0,
+          16.0,
+          16.0,
+          16.0
+        ],
+        "spacing": [
+          12.0,
+          12.0
+        ]
+      },
+      "mask": false,
+      "name": "Cell 3",
+      "onClick": "",
+      "options": [],
+      "outline": {
+        "color": "#6E7496FF",
+        "width": 2.0
+      },
+      "parent": 4,
+      "raycastTarget": true,
+      "rect": {
+        "anchorMax": [
+          0.5,
+          0.5
+        ],
+        "anchorMin": [
+          0.5,
+          0.5
+        ],
+        "anchoredPosition": [
+          92.0,
+          166.0
+        ],
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "rotationZ": 0.0,
+        "sizeDelta": [
+          160.0,
+          160.0
+        ]
+      },
+      "shadow": {
+        "color": "#0000006E",
+        "enabled": false,
+        "offset": [
+          6.0,
+          -6.0
+        ]
+      },
+      "shape": "rect",
+      "size": [
+        160.0,
+        160.0
+      ],
+      "text": {
+        "alignH": 1,
+        "alignV": 1,
+        "bold": false,
+        "color": "#14141EFF",
+        "font": "",
+        "fontSize": 32.0,
+        "hasText": false,
+        "italic": false,
+        "padding": [
+          16.0,
+          16.0,
+          12.0
+        ],
+        "underline": false,
+        "value": ""
+      },
+      "type": "Panel",
+      "value": 0.5
+    },
+    {
+      "active": true,
+      "contentHeight": 0.0,
+      "id": 8,
+      "image": {
+        "alpha": 1.0,
+        "color": "#3C4054FF",
+        "gradientTo": "#00C4CCFF",
+        "preserveAspect": false,
+        "radius": 14.0,
+        "source": "",
+        "useGradient": false
+      },
+      "interactable": true,
+      "layout": {
+        "cellSize": [
+          100.0,
+          100.0
+        ],
+        "childAlignment": 0,
+        "expandHeight": false,
+        "expandWidth": false,
+        "mode": 0,
+        "padding": [
+          16.0,
+          16.0,
+          16.0,
+          16.0
+        ],
+        "spacing": [
+          12.0,
+          12.0
+        ]
+      },
+      "mask": false,
+      "name": "Cell 4",
+      "onClick": "",
+      "options": [],
+      "outline": {
+        "color": "#6E7496FF",
+        "width": 2.0
+      },
+      "parent": 4,
+      "raycastTarget": true,
+      "rect": {
+        "anchorMax": [
+          0.5,
+          0.5
+        ],
+        "anchorMin": [
+          0.5,
+          0.5
+        ],
+        "anchoredPosition": [
+          276.0,
+          166.0
+        ],
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "rotationZ": 0.0,
+        "sizeDelta": [
+          160.0,
+          160.0
+        ]
+      },
+      "shadow": {
+        "color": "#0000006E",
+        "enabled": false,
+        "offset": [
+          6.0,
+          -6.0
+        ]
+      },
+      "shape": "rect",
+      "size": [
+        160.0,
+        160.0
+      ],
+      "text": {
+        "alignH": 1,
+        "alignV": 1,
+        "bold": false,
+        "color": "#14141EFF",
+        "font": "",
+        "fontSize": 32.0,
+        "hasText": false,
+        "italic": false,
+        "padding": [
+          16.0,
+          16.0,
+          12.0
+        ],
+        "underline": false,
+        "value": ""
+      },
+      "type": "Panel",
+      "value": 0.5
+    },
+    {
+      "active": true,
+      "contentHeight": 0.0,
+      "id": 9,
+      "image": {
+        "alpha": 1.0,
+        "color": "#3C4054FF",
+        "gradientTo": "#00C4CCFF",
+        "preserveAspect": false,
+        "radius": 14.0,
+        "source": "",
+        "useGradient": false
+      },
+      "interactable": true,
+      "layout": {
+        "cellSize": [
+          100.0,
+          100.0
+        ],
+        "childAlignment": 0,
+        "expandHeight": false,
+        "expandWidth": false,
+        "mode": 0,
+        "padding": [
+          16.0,
+          16.0,
+          16.0,
+          16.0
+        ],
+        "spacing": [
+          12.0,
+          12.0
+        ]
+      },
+      "mask": false,
+      "name": "Cell 5",
+      "onClick": "",
+      "options": [],
+      "outline": {
+        "color": "#6E7496FF",
+        "width": 2.0
+      },
+      "parent": 4,
+      "raycastTarget": true,
+      "rect": {
+        "anchorMax": [
+          0.5,
+          0.5
+        ],
+        "anchorMin": [
+          0.5,
+          0.5
+        ],
+        "anchoredPosition": [
+          -276.0,
+          -18.0
+        ],
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "rotationZ": 0.0,
+        "sizeDelta": [
+          160.0,
+          160.0
+        ]
+      },
+      "shadow": {
+        "color": "#0000006E",
+        "enabled": false,
+        "offset": [
+          6.0,
+          -6.0
+        ]
+      },
+      "shape": "rect",
+      "size": [
+        160.0,
+        160.0
+      ],
+      "text": {
+        "alignH": 1,
+        "alignV": 1,
+        "bold": false,
+        "color": "#14141EFF",
+        "font": "",
+        "fontSize": 32.0,
+        "hasText": false,
+        "italic": false,
+        "padding": [
+          16.0,
+          16.0,
+          12.0
+        ],
+        "underline": false,
+        "value": ""
+      },
+      "type": "Panel",
+      "value": 0.5
+    },
+    {
+      "active": true,
+      "contentHeight": 0.0,
+      "id": 10,
+      "image": {
+        "alpha": 1.0,
+        "color": "#3C4054FF",
+        "gradientTo": "#00C4CCFF",
+        "preserveAspect": false,
+        "radius": 14.0,
+        "source": "",
+        "useGradient": false
+      },
+      "interactable": true,
+      "layout": {
+        "cellSize": [
+          100.0,
+          100.0
+        ],
+        "childAlignment": 0,
+        "expandHeight": false,
+        "expandWidth": false,
+        "mode": 0,
+        "padding": [
+          16.0,
+          16.0,
+          16.0,
+          16.0
+        ],
+        "spacing": [
+          12.0,
+          12.0
+        ]
+      },
+      "mask": false,
+      "name": "Cell 6",
+      "onClick": "",
+      "options": [],
+      "outline": {
+        "color": "#6E7496FF",
+        "width": 2.0
+      },
+      "parent": 4,
+      "raycastTarget": true,
+      "rect": {
+        "anchorMax": [
+          0.5,
+          0.5
+        ],
+        "anchorMin": [
+          0.5,
+          0.5
+        ],
+        "anchoredPosition": [
+          -92.0,
+          -18.0
+        ],
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "rotationZ": 0.0,
+        "sizeDelta": [
+          160.0,
+          160.0
+        ]
+      },
+      "shadow": {
+        "color": "#0000006E",
+        "enabled": false,
+        "offset": [
+          6.0,
+          -6.0
+        ]
+      },
+      "shape": "rect",
+      "size": [
+        160.0,
+        160.0
+      ],
+      "text": {
+        "alignH": 1,
+        "alignV": 1,
+        "bold": false,
+        "color": "#14141EFF",
+        "font": "",
+        "fontSize": 32.0,
+        "hasText": false,
+        "italic": false,
+        "padding": [
+          16.0,
+          16.0,
+          12.0
+        ],
+        "underline": false,
+        "value": ""
+      },
+      "type": "Panel",
+      "value": 0.5
+    },
+    {
+      "active": true,
+      "contentHeight": 0.0,
+      "id": 11,
+      "image": {
+        "alpha": 1.0,
+        "color": "#3C4054FF",
+        "gradientTo": "#00C4CCFF",
+        "preserveAspect": false,
+        "radius": 14.0,
+        "source": "",
+        "useGradient": false
+      },
+      "interactable": true,
+      "layout": {
+        "cellSize": [
+          100.0,
+          100.0
+        ],
+        "childAlignment": 0,
+        "expandHeight": false,
+        "expandWidth": false,
+        "mode": 0,
+        "padding": [
+          16.0,
+          16.0,
+          16.0,
+          16.0
+        ],
+        "spacing": [
+          12.0,
+          12.0
+        ]
+      },
+      "mask": false,
+      "name": "Cell 7",
+      "onClick": "",
+      "options": [],
+      "outline": {
+        "color": "#6E7496FF",
+        "width": 2.0
+      },
+      "parent": 4,
+      "raycastTarget": true,
+      "rect": {
+        "anchorMax": [
+          0.5,
+          0.5
+        ],
+        "anchorMin": [
+          0.5,
+          0.5
+        ],
+        "anchoredPosition": [
+          92.0,
+          -18.0
+        ],
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "rotationZ": 0.0,
+        "sizeDelta": [
+          160.0,
+          160.0
+        ]
+      },
+      "shadow": {
+        "color": "#0000006E",
+        "enabled": false,
+        "offset": [
+          6.0,
+          -6.0
+        ]
+      },
+      "shape": "rect",
+      "size": [
+        160.0,
+        160.0
+      ],
+      "text": {
+        "alignH": 1,
+        "alignV": 1,
+        "bold": false,
+        "color": "#14141EFF",
+        "font": "",
+        "fontSize": 32.0,
+        "hasText": false,
+        "italic": false,
+        "padding": [
+          16.0,
+          16.0,
+          12.0
+        ],
+        "underline": false,
+        "value": ""
+      },
+      "type": "Panel",
+      "value": 0.5
+    },
+    {
+      "active": true,
+      "contentHeight": 0.0,
+      "id": 12,
+      "image": {
+        "alpha": 1.0,
+        "color": "#3C4054FF",
+        "gradientTo": "#00C4CCFF",
+        "preserveAspect": false,
+        "radius": 14.0,
+        "source": "",
+        "useGradient": false
+      },
+      "interactable": true,
+      "layout": {
+        "cellSize": [
+          100.0,
+          100.0
+        ],
+        "childAlignment": 0,
+        "expandHeight": false,
+        "expandWidth": false,
+        "mode": 0,
+        "padding": [
+          16.0,
+          16.0,
+          16.0,
+          16.0
+        ],
+        "spacing": [
+          12.0,
+          12.0
+        ]
+      },
+      "mask": false,
+      "name": "Cell 8",
+      "onClick": "",
+      "options": [],
+      "outline": {
+        "color": "#6E7496FF",
+        "width": 2.0
+      },
+      "parent": 4,
+      "raycastTarget": true,
+      "rect": {
+        "anchorMax": [
+          0.5,
+          0.5
+        ],
+        "anchorMin": [
+          0.5,
+          0.5
+        ],
+        "anchoredPosition": [
+          276.0,
+          -18.0
+        ],
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "rotationZ": 0.0,
+        "sizeDelta": [
+          160.0,
+          160.0
+        ]
+      },
+      "shadow": {
+        "color": "#0000006E",
+        "enabled": false,
+        "offset": [
+          6.0,
+          -6.0
+        ]
+      },
+      "shape": "rect",
+      "size": [
+        160.0,
+        160.0
+      ],
+      "text": {
+        "alignH": 1,
+        "alignV": 1,
+        "bold": false,
+        "color": "#14141EFF",
+        "font": "",
+        "fontSize": 32.0,
+        "hasText": false,
+        "italic": false,
+        "padding": [
+          16.0,
+          16.0,
+          12.0
+        ],
+        "underline": false,
+        "value": ""
+      },
+      "type": "Panel",
+      "value": 0.5
+    },
+    {
+      "active": true,
+      "contentHeight": 0.0,
+      "id": 13,
+      "image": {
+        "alpha": 1.0,
+        "color": "#3C4054FF",
+        "gradientTo": "#00C4CCFF",
+        "preserveAspect": false,
+        "radius": 14.0,
+        "source": "",
+        "useGradient": false
+      },
+      "interactable": true,
+      "layout": {
+        "cellSize": [
+          100.0,
+          100.0
+        ],
+        "childAlignment": 0,
+        "expandHeight": false,
+        "expandWidth": false,
+        "mode": 0,
+        "padding": [
+          16.0,
+          16.0,
+          16.0,
+          16.0
+        ],
+        "spacing": [
+          12.0,
+          12.0
+        ]
+      },
+      "mask": false,
+      "name": "Cell 9",
+      "onClick": "",
+      "options": [],
+      "outline": {
+        "color": "#6E7496FF",
+        "width": 2.0
+      },
+      "parent": 4,
+      "raycastTarget": true,
+      "rect": {
+        "anchorMax": [
+          0.5,
+          0.5
+        ],
+        "anchorMin": [
+          0.5,
+          0.5
+        ],
+        "anchoredPosition": [
+          -276.0,
+          -202.0
+        ],
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "rotationZ": 0.0,
+        "sizeDelta": [
+          160.0,
+          160.0
+        ]
+      },
+      "shadow": {
+        "color": "#0000006E",
+        "enabled": false,
+        "offset": [
+          6.0,
+          -6.0
+        ]
+      },
+      "shape": "rect",
+      "size": [
+        160.0,
+        160.0
+      ],
+      "text": {
+        "alignH": 1,
+        "alignV": 1,
+        "bold": false,
+        "color": "#14141EFF",
+        "font": "",
+        "fontSize": 32.0,
+        "hasText": false,
+        "italic": false,
+        "padding": [
+          16.0,
+          16.0,
+          12.0
+        ],
+        "underline": false,
+        "value": ""
+      },
+      "type": "Panel",
+      "value": 0.5
+    },
+    {
+      "active": true,
+      "contentHeight": 0.0,
+      "id": 14,
+      "image": {
+        "alpha": 1.0,
+        "color": "#3C4054FF",
+        "gradientTo": "#00C4CCFF",
+        "preserveAspect": false,
+        "radius": 14.0,
+        "source": "",
+        "useGradient": false
+      },
+      "interactable": true,
+      "layout": {
+        "cellSize": [
+          100.0,
+          100.0
+        ],
+        "childAlignment": 0,
+        "expandHeight": false,
+        "expandWidth": false,
+        "mode": 0,
+        "padding": [
+          16.0,
+          16.0,
+          16.0,
+          16.0
+        ],
+        "spacing": [
+          12.0,
+          12.0
+        ]
+      },
+      "mask": false,
+      "name": "Cell 10",
+      "onClick": "",
+      "options": [],
+      "outline": {
+        "color": "#6E7496FF",
+        "width": 2.0
+      },
+      "parent": 4,
+      "raycastTarget": true,
+      "rect": {
+        "anchorMax": [
+          0.5,
+          0.5
+        ],
+        "anchorMin": [
+          0.5,
+          0.5
+        ],
+        "anchoredPosition": [
+          -92.0,
+          -202.0
+        ],
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "rotationZ": 0.0,
+        "sizeDelta": [
+          160.0,
+          160.0
+        ]
+      },
+      "shadow": {
+        "color": "#0000006E",
+        "enabled": false,
+        "offset": [
+          6.0,
+          -6.0
+        ]
+      },
+      "shape": "rect",
+      "size": [
+        160.0,
+        160.0
+      ],
+      "text": {
+        "alignH": 1,
+        "alignV": 1,
+        "bold": false,
+        "color": "#14141EFF",
+        "font": "",
+        "fontSize": 32.0,
+        "hasText": false,
+        "italic": false,
+        "padding": [
+          16.0,
+          16.0,
+          12.0
+        ],
+        "underline": false,
+        "value": ""
+      },
+      "type": "Panel",
+      "value": 0.5
+    },
+    {
+      "active": true,
+      "contentHeight": 0.0,
+      "id": 15,
+      "image": {
+        "alpha": 1.0,
+        "color": "#3C4054FF",
+        "gradientTo": "#00C4CCFF",
+        "preserveAspect": false,
+        "radius": 14.0,
+        "source": "",
+        "useGradient": false
+      },
+      "interactable": true,
+      "layout": {
+        "cellSize": [
+          100.0,
+          100.0
+        ],
+        "childAlignment": 0,
+        "expandHeight": false,
+        "expandWidth": false,
+        "mode": 0,
+        "padding": [
+          16.0,
+          16.0,
+          16.0,
+          16.0
+        ],
+        "spacing": [
+          12.0,
+          12.0
+        ]
+      },
+      "mask": false,
+      "name": "Cell 11",
+      "onClick": "",
+      "options": [],
+      "outline": {
+        "color": "#6E7496FF",
+        "width": 2.0
+      },
+      "parent": 4,
+      "raycastTarget": true,
+      "rect": {
+        "anchorMax": [
+          0.5,
+          0.5
+        ],
+        "anchorMin": [
+          0.5,
+          0.5
+        ],
+        "anchoredPosition": [
+          92.0,
+          -202.0
+        ],
+        "pivot": [
+          0.5,
+          0.5
+        ],
+        "rotationZ": 0.0,
+        "sizeDelta": [
+          160.0,
+          160.0
+        ]
+      },
+      "shadow": {
+        "color": "#0000006E",
+        "enabled": false,
+        "offset": [
+          6.0,
+          -6.0
+        ]
+      },
+      "shape": "rect",
+      "size": [
+        160.0,
+        160.0
+      ],
+      "text": {
+        "alignH": 1,
+        "alignV": 1,
+        "bold": false,
+        "color": "#14141EFF",
+        "font": "",
+        "fontSize": 32.0,
+        "hasText": false,
+        "italic": false,
+        "padding": [
+          16.0,
+          16.0,
+          12.0
+        ],
+        "underline": false,
+        "value": ""
+      },
+      "type": "Panel",
       "value": 0.5
     }
   ],

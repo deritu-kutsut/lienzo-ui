@@ -64,30 +64,6 @@ pub fn manifest_key<'a>(m: &'a serde_json::Value, new: &str, old: &str) -> Optio
     m.get(new).or_else(|| m.get(old))
 }
 
-/// The manifest with the old Spanish keys. The community server still validates plugin packages with those names,
-/// so a plugin is converted with this before it is uploaded.
-pub fn legacy_manifest(m: &serde_json::Value) -> serde_json::Value {
-    const TOP: &[(&str, &str)] = &[("name", "nombre"), ("author", "autor"), ("description", "descripcion"), ("exporters", "exportadores"), ("commands", "comandos"), ("templates", "plantillas")];
-    const ITEM: &[(&str, &str)] = &[("name", "nombre"), ("description", "descripcion")];
-    fn rename(v: &mut serde_json::Value, table: &[(&str, &str)]) {
-        if let Some(o) = v.as_object_mut() {
-            for (new, old) in table {
-                if let Some(x) = o.remove(*new) {
-                    o.insert(old.to_string(), x);
-                }
-            }
-        }
-    }
-    let mut v = m.clone();
-    rename(&mut v, TOP);
-    for key in ["comandos", "exportadores"] {
-        if let Some(list) = v.get_mut(key).and_then(|l| l.as_array_mut()) {
-            list.iter_mut().for_each(|x| rename(x, ITEM));
-        }
-    }
-    v
-}
-
 #[derive(Clone, Debug)]
 pub struct Plugin {
     pub folder: PathBuf,
@@ -419,14 +395,14 @@ mod tests {
     }
 
     #[test]
-    fn new_manifest_is_uploaded_with_the_old_keys() {
+    fn manifests_with_the_old_spanish_keys_are_read_like_the_english_ones() {
+        // Community items uploaded by app versions 1.0 - 1.3.3 still carry Spanish manifests.
         let m: serde_json::Value = serde_json::from_str(&std::fs::read_to_string(examples_folder().join("snap-to-grid/plugin.json")).unwrap()).unwrap();
-        let old = legacy_manifest(&m);
-        assert_eq!(old["nombre"], m["name"]);
-        assert_eq!(old["comandos"][0]["nombre"], m["commands"][0]["name"]);
-        assert!(old.get("name").is_none() && old.get("commands").is_none());
-        // and the two key sets are read the same way
+        let old = serde_json::json!({ "nombre": m["name"], "comandos": [{ "nombre": m["commands"][0]["name"], "script": m["commands"][0]["script"] }] });
         assert_eq!(manifest_key(&old, "name", "nombre"), manifest_key(&m, "name", "nombre"));
+        assert_eq!(manifest_key(&old, "commands", "comandos").and_then(|c| c[0]["nombre"].as_str()), m["commands"][0]["name"].as_str());
+        let parsed: Manifest = serde_json::from_value(old).unwrap();
+        assert_eq!((parsed.name.as_str(), parsed.commands.len(), parsed.commands[0].name.as_str()), (m["name"].as_str().unwrap(), 1, m["commands"][0]["name"].as_str().unwrap()));
     }
 }
 

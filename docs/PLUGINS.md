@@ -22,17 +22,17 @@ Copy the plugin folder and press **Reload**.
 
 ```json
 {
-  "nombre": "Mi plugin",
+  "name": "My plugin",
   "version": "1.0.0",
-  "autor": "Tu nombre",
-  "descripcion": "Qué hace, en una frase.",
-  "comandos": [
-    { "nombre": "Ajustar a 8 px", "descripcion": "Texto de ayuda", "script": "ajustar.rhai" }
+  "author": "Your name",
+  "description": "What it does, in one sentence.",
+  "commands": [
+    { "name": "Snap to 8 px", "description": "Help text", "script": "snap.rhai" }
   ],
-  "exportadores": [
-    { "nombre": "Textos para traducir", "extension": "csv", "script": "csv.rhai" }
+  "exporters": [
+    { "name": "Texts to translate", "extension": "csv", "script": "csv.rhai" }
   ],
-  "plantillas": ["tienda.editorgui.json"]
+  "templates": ["shop.editorgui.json"]
 }
 ```
 
@@ -44,31 +44,31 @@ Scripts use [Rhai](https://rhai.rs), a language similar to Rust/JavaScript.
 
 ### Command
 
-Define `fn ejecutar(diseno)`, which receives the design and **returns the modified design**:
+Define `fn run(design)`, which receives the design and **returns the modified design**:
 
 ```rust
-fn ejecutar(diseno) {
-    for i in 0..diseno.elements.len() {
-        let e = diseno.elements[i];
+fn run(design) {
+    for i in 0..design.elements.len() {
+        let e = design.elements[i];
         e.x = (e.x / 8.0).round() * 8.0;
-        diseno.elements[i] = e;      // elements are copied: they must be stored back
+        design.elements[i] = e;      // elements are copied: they must be stored back
     }
-    log("listo");                    // the message appears in the status bar
-    diseno
+    log("done");                     // the message appears in the status bar
+    design
 }
 ```
 
 ### Exporter
 
-Define `fn exportar(diseno)` and **return a text**; Lienzo UI asks where to save it, using the extension from the manifest.
+Define `fn export_text(design)` and **return a text**; Lienzo UI asks where to save it, using the extension from the manifest.
 
 ```rust
-fn exportar(diseno) {
-    let salida = "elemento,texto\n";
-    for e in diseno.elements {
-        if e.text != "" { salida += e.name + "," + e.text + "\n"; }
+fn export_text(design) {
+    let output = "element,text\n";
+    for e in design.elements {
+        if e.text != "" { output += e.name + "," + e.text + "\n"; }
     }
-    salida
+    output
 }
 ```
 
@@ -94,9 +94,9 @@ Each element has, among others: `id`, `name`, `kind` (`"Panel"`, `"Image"`, `"Te
 
 | Folder | Provides |
 |---|---|
-| `plugins/ajustar-cuadricula` | "Ajustar a 8 px" command |
-| `plugins/textos-csv` | Exporter of all texts to CSV (for translating) |
-| `plugins/plantillas-extra` | "Tienda del herrero" template |
+| `plugins/snap-to-grid` | "Snap to 8 px" command |
+| `plugins/text-to-csv` | Exporter of all texts to CSV (for translating) |
+| `plugins/extra-templates` | "Blacksmith shop" template |
 
 ## Testing a plugin
 
@@ -105,3 +105,14 @@ cargo test plugins     # loads the examples and runs their command and exporter
 ```
 
 To publish your plugin, upload it to your own repository or propose adding it to `plugins/` with a pull request (see [CONTRIBUTING.md](../CONTRIBUTING.md)).
+
+## Legacy names
+
+Plugins written with the old Spanish names **keep working unchanged**:
+
+| Now | Before |
+|---|---|
+| `plugin.json` keys `name`, `author`, `description`, `commands`, `exporters`, `templates` | `nombre`, `autor`, `descripcion`, `comandos`, `exportadores`, `plantillas` |
+| Command function `fn run(design)` | `fn ejecutar(diseno)` |
+| Exporter function `fn export_text(design)` | `fn exportar(diseno)` |
+| "On click" script functions `show`, `hide`, `toggle`, `set_text`, `read_text`, `set_color`, `set_text_color`, `move_by`, `set_position`, `rotate`, `set_value`, `read_value`, `set_opacity`, `message` and the constant `me` | `mostrar`, `ocultar`, `alternar`, `texto`, `leer_texto`, `color`, `color_texto`, `mover`, `posicion`, `girar`, `valor`, `leer_valor`, `transparencia`, `mensaje` and `yo` |

@@ -34,7 +34,7 @@
 
 ## 로직
 
-- **편집기에서**: 테스트 모드에서 각 요소는 클릭 시 Rhai 스크립트를 실행할 수 있습니다(`mostrar("Name")`, `ocultar`, `alternar`, `texto`, `color`, `mover`…). 흐름을 시험해 보기에 좋습니다. 테스트 중 바꾼 내용은 테스트 모드를 나갈 때 버려지며 저장되거나 내보내지지 않습니다.
+- **편집기에서**: 테스트 모드에서 각 요소는 클릭 시 Rhai 스크립트를 실행할 수 있습니다(`show("Name")`, `hide`, `toggle`, `set_text`, `set_color`, `move_by`…). 흐름을 시험해 보기에 좋습니다. 테스트 중 바꾼 내용은 테스트 모드를 나갈 때 버려지며 저장되거나 내보내지지 않습니다.
 - **Unity에서**: `<Design>View`는 `<Design>ViewBase`를 상속하며, 버튼, 슬라이더, 토글, 입력 필드마다 필드가 하나씩 있고, 재정의할 `On<Element>Click` / `On<Element>Changed` 메서드가 있습니다.
 
 ```csharp
@@ -48,7 +48,7 @@ public class AjustesView : AjustesViewBase
 
 ## 디자인 검토
 
-**검토** 버튼(및 명령줄의 `--revisar`)은 기준 해상도에서 다음을 확인합니다:
+**검토** 버튼(및 명령줄의 `--review`)은 기준 해상도에서 다음을 확인합니다:
 
 | 검사 | 규칙 |
 |---|---|
@@ -64,17 +64,17 @@ public class AjustesView : AjustesViewBase
 ## 명령줄
 
 ```bash
-lienzo-ui --plantillas                                   # 템플릿 목록 표시 (0-12)
-lienzo-ui --plantilla 4 --guardar inventario.editorgui.json
-lienzo-ui --abrir inventario.editorgui.json --revisar    # 오류가 있으면 종료 코드 1
-lienzo-ui --abrir inventario.editorgui.json --exportar "C:/MyGame"   # 창 없이
-lienzo-ui --abrir inventario.editorgui.json --screenshot capture.png
-lienzo-ui --probar 1080x2400                             # 해당 화면으로 테스트 모드에서 엽니다
-lienzo-ui --tutorial [--profesional]                     # 튜토리얼을 강제로 엽니다
-lienzo-ui --sin-tutorial                                 # 튜토리얼을 열지 않습니다
+lienzo-ui --templates                                   # 템플릿 목록 표시 (0-12)
+lienzo-ui --template 4 --save inventory.editorgui.json
+lienzo-ui --open inventory.editorgui.json --review    # 오류가 있으면 종료 코드 1
+lienzo-ui --open inventory.editorgui.json --export "C:/MyGame"   # 창 없이
+lienzo-ui --open inventory.editorgui.json --screenshot capture.png
+lienzo-ui --test 1080x2400                             # 해당 화면으로 테스트 모드에서 엽니다
+lienzo-ui --tutorial [--pro]                     # 튜토리얼을 강제로 엽니다
+lienzo-ui --no-tutorial                                 # 튜토리얼을 열지 않습니다
 ```
 
-`--guardar`, `--exportar`, `--revisar`는 창을 열지 않습니다. 스크립트, CI 및 [MCP 서버](MCP.md)(`revisar_diseno` 도구)에서 사용하세요.
+`--save`, `--export`, `--review`는 창을 열지 않습니다. 스크립트, CI 및 [MCP 서버](MCP.md)(`review_design` 도구)에서 사용하세요.
 
 ## 소스 코드
 

@@ -60,7 +60,7 @@ Press **Review** in the top bar. It warns about text too small to read, low cont
 
 1. Press **Export to Unity** (Ctrl+E). The first time, choose your project folder (the one that contains `Assets`).
 2. Go back to Unity: the design appears as a prefab in `Assets/EditorGUI/Prefabs`.
-3. Drag it into the scene, or use the menu **Tools › Lienzo UI › Importar diseño en la escena** (the Unity menu is in Spanish: «Import design into the scene»).
+3. Drag it into the scene, or use the menu **Tools › Lienzo UI › Import design into scene…**.
 
 Every time you export again, Unity updates the prefab by itself.
 

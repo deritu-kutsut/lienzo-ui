@@ -18,7 +18,7 @@
     },
     {
       "title": "Tester et exporter vers Unity",
-      "text": "• Tester (F5) : le design devient interactif et tu peux simuler d'autres écrans (mobile, 4:3, ultra-large) pour voir comment il s'adapte.\n• Enregistrer (Ctrl+S) : enregistre le projet .editorgui.json pour continuer un autre jour.\n• Vérifier : signale le texte trop petit, le contraste faible, les boutons trop petits pour être touchés, les éléments hors de la page et les images manquantes.\n• Exporter vers Unity (Ctrl+E) : la première fois, choisis le dossier de ton projet (celui qui contient Assets).\n\nDans Unity, en revenant à la fenêtre, le design apparaît comme prefab dans Assets/EditorGUI/Prefabs. Tu as aussi le menu Tools › Lienzo UI › Importar diseño en la escena."
+      "text": "• Tester (F5) : le design devient interactif et tu peux simuler d'autres écrans (mobile, 4:3, ultra-large) pour voir comment il s'adapte.\n• Enregistrer (Ctrl+S) : enregistre le projet .editorgui.json pour continuer un autre jour.\n• Vérifier : signale le texte trop petit, le contraste faible, les boutons trop petits pour être touchés, les éléments hors de la page et les images manquantes.\n• Exporter vers Unity (Ctrl+E) : la première fois, choisis le dossier de ton projet (celui qui contient Assets).\n\nDans Unity, en revenant à la fenêtre, le design apparaît comme prefab dans Assets/EditorGUI/Prefabs. Tu as aussi le menu Tools › Lienzo UI › Import design into scene…."
     }
   ],
   "pro": [
@@ -36,11 +36,11 @@
     },
     {
       "title": "Logique : script au clic et vues",
-      "text": "Dans Tester, chaque élément peut exécuter un petit script (Rhai) au clic : mostrar(\"Nombre\"), ocultar, alternar, texto, color, mover… Ça sert à prototyper des parcours sans Unity.\n\nDans Unity, <Design>View.cs hérite de <Design>ViewBase avec des références typées vers chaque bouton, slider ou champ, et des événements de clic et de valeur. Mets-y la logique de ton jeu : les réexportations n'y touchent pas."
+      "text": "Dans Tester, chaque élément peut exécuter un petit script (Rhai) au clic : show(\"Name\"), hide, toggle, set_text, set_color, move_by… Ça sert à prototyper des parcours sans Unity.\n\nDans Unity, <Design>View.cs hérite de <Design>ViewBase avec des références typées vers chaque bouton, slider ou champ, et des événements de clic et de valeur. Mets-y la logique de ton jeu : les réexportations n'y touchent pas."
     },
     {
       "title": "Ligne de commande et automatisation",
-      "text": "lienzo-ui --templates                         liste les modèles\nlienzo-ui --template 0 --save menu.editorgui.json\nlienzo-ui --open menu.editorgui.json --review        vérifie le design (code 1 s'il y a des erreurs)\nlienzo-ui --open menu.editorgui.json --export <proyecto Unity>\nlienzo-ui --open menu.editorgui.json --screenshot captura.png\nlienzo-ui --test 1080x2400                    ouvre dans Tester avec cet écran\n\nAvec --export, --save et --review, aucune fenêtre ne s'ouvre : c'est fait pour les scripts, la CI et le serveur MCP."
+      "text": "lienzo-ui --templates                         liste les modèles\nlienzo-ui --template 0 --save menu.editorgui.json\nlienzo-ui --open menu.editorgui.json --review        vérifie le design (code 1 s'il y a des erreurs)\nlienzo-ui --open menu.editorgui.json --export <proyecto Unity>\nlienzo-ui --open menu.editorgui.json --screenshot capture.png\nlienzo-ui --test 1080x2400                    ouvre dans Tester avec cet écran\n\nAvec --export, --save et --review, aucune fenêtre ne s'ouvre : c'est fait pour les scripts, la CI et le serveur MCP."
     },
     {
       "title": "Serveur MCP et contribution",

@@ -1,9 +1,9 @@
 {
   "canvas": {
     "background": "#282C3CFF",
-    "className": "VentanaDeDialogo",
+    "className": "DialogWindow",
     "match": 0.5,
-    "name": "Ventana de diálogo",
+    "name": "Dialog window",
     "pixelArt": false,
     "referenceResolution": [
       1920.0,
@@ -46,7 +46,7 @@
         ]
       },
       "mask": false,
-      "name": "Oscurecer",
+      "name": "Dim",
       "onClick": "",
       "options": [],
       "outline": {
@@ -146,7 +146,7 @@
         ]
       },
       "mask": false,
-      "name": "Ventana",
+      "name": "Window",
       "onClick": "",
       "options": [],
       "outline": {
@@ -246,7 +246,7 @@
         ]
       },
       "mask": false,
-      "name": "Título ventana",
+      "name": "Window title",
       "onClick": "",
       "options": [],
       "outline": {
@@ -306,7 +306,7 @@
           0.0
         ],
         "underline": false,
-        "value": "¿Guardar la partida?"
+        "value": "Save the game?"
       },
       "type": "Text",
       "value": 0.5
@@ -346,7 +346,7 @@
         ]
       },
       "mask": false,
-      "name": "Mensaje",
+      "name": "Message",
       "onClick": "",
       "options": [],
       "outline": {
@@ -406,7 +406,7 @@
           0.0
         ],
         "underline": false,
-        "value": "Tu progreso se guardará en la ranura 1. Puedes continuar más tarde."
+        "value": "Your progress will be saved in slot 1. You can continue later."
       },
       "type": "Text",
       "value": 0.5
@@ -446,7 +446,7 @@
         ]
       },
       "mask": false,
-      "name": "Botones",
+      "name": "Buttons",
       "onClick": "",
       "options": [],
       "outline": {
@@ -546,8 +546,8 @@
         ]
       },
       "mask": false,
-      "name": "Botón cancelar",
-      "onClick": "ocultar(\"Ventana\");\nocultar(\"Oscurecer\");",
+      "name": "Cancel button",
+      "onClick": "hide(\"Window\");\nhide(\"Dim\");",
       "options": [],
       "outline": {
         "color": "#1E1E28FF",
@@ -606,7 +606,7 @@
           12.0
         ],
         "underline": false,
-        "value": "Cancelar"
+        "value": "Cancel"
       },
       "type": "Button",
       "value": 0.5
@@ -646,8 +646,8 @@
         ]
       },
       "mask": false,
-      "name": "Botón aceptar",
-      "onClick": "texto(\"Mensaje\", \"¡Partida guardada!\");",
+      "name": "Save button",
+      "onClick": "set_text(\"Message\", \"Game saved!\");",
       "options": [],
       "outline": {
         "color": "#1E1E28FF",
@@ -706,7 +706,7 @@
           12.0
         ],
         "underline": false,
-        "value": "Guardar"
+        "value": "Save"
       },
       "type": "Button",
       "value": 0.5

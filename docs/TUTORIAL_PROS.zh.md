@@ -34,7 +34,7 @@
 
 ## 逻辑
 
-- **在编辑器里**：在测试模式下，每个元素可以在单击时运行一段 Rhai 脚本（`mostrar("Name")`、`ocultar`、`alternar`、`texto`、`color`、`mover`…）。很适合用来做流程原型。测试时做的改动在退出测试模式后会被丢弃，既不会保存也不会导出。
+- **在编辑器里**：在测试模式下，每个元素可以在单击时运行一段 Rhai 脚本（`show("Name")`、`hide`、`toggle`、`set_text`、`set_color`、`move_by`…）。很适合用来做流程原型。测试时做的改动在退出测试模式后会被丢弃，既不会保存也不会导出。
 - **在 Unity 里**：`<Design>View` 继承自 `<Design>ViewBase`，每个按钮、滑块、开关或输入框对应一个字段，并带有可重写的 `On<Element>Click` / `On<Element>Changed` 方法。
 
 ```csharp
@@ -48,7 +48,7 @@ public class AjustesView : AjustesViewBase
 
 ## 检查设计
 
-**检查**按钮（以及命令行上的 `--revisar`）会在参考分辨率下检查：
+**检查**按钮（以及命令行上的 `--review`）会在参考分辨率下检查：
 
 | 检查项 | 规则 |
 |---|---|
@@ -64,17 +64,17 @@ public class AjustesView : AjustesViewBase
 ## 命令行
 
 ```bash
-lienzo-ui --plantillas                                   # 列出模板（0-12）
-lienzo-ui --plantilla 4 --guardar inventario.editorgui.json
-lienzo-ui --abrir inventario.editorgui.json --revisar    # 如果有错误，退出码为 1
-lienzo-ui --abrir inventario.editorgui.json --exportar "C:/MyGame"   # 不打开窗口
-lienzo-ui --abrir inventario.editorgui.json --screenshot capture.png
-lienzo-ui --probar 1080x2400                             # 以该屏幕尺寸的测试模式打开
-lienzo-ui --tutorial [--profesional]                     # 强制显示教程
-lienzo-ui --sin-tutorial                                 # 不打开教程
+lienzo-ui --templates                                   # 列出模板（0-12）
+lienzo-ui --template 4 --save inventory.editorgui.json
+lienzo-ui --open inventory.editorgui.json --review    # 如果有错误，退出码为 1
+lienzo-ui --open inventory.editorgui.json --export "C:/MyGame"   # 不打开窗口
+lienzo-ui --open inventory.editorgui.json --screenshot capture.png
+lienzo-ui --test 1080x2400                             # 以该屏幕尺寸的测试模式打开
+lienzo-ui --tutorial [--pro]                     # 强制显示教程
+lienzo-ui --no-tutorial                                 # 不打开教程
 ```
 
-`--guardar`、`--exportar` 和 `--revisar` 不会打开窗口：适合用于脚本、CI 和 [MCP 服务器](MCP.md)（`revisar_diseno` 工具）。
+`--save`、`--export` 和 `--review` 不会打开窗口：适合用于脚本、CI 和 [MCP 服务器](MCP.md)（`review_design` 工具）。
 
 ## 源代码
 

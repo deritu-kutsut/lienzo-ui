@@ -58,7 +58,7 @@ Pulsa **Revisar** en la barra superior. Avisa de letra demasiado pequeña, poco 
 
 1. Pulsa **Exportar a Unity** (Ctrl+E). La primera vez elige la carpeta de tu proyecto (la que contiene `Assets`).
 2. Vuelve a Unity: el diseño aparece como prefab en `Assets/EditorGUI/Prefabs`.
-3. Arrástralo a la escena, o usa **Tools › Lienzo UI › Importar diseño en la escena**.
+3. Arrástralo a la escena, o usa **Tools › Lienzo UI › Import design into scene…**.
 
 Cada vez que vuelvas a exportar, Unity actualiza el prefab solo.
 

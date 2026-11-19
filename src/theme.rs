@@ -74,27 +74,6 @@ pub const COLORS: &[(&str, &str)] = &[
     ("guide", "Canvas guides"),
 ];
 
-/// Old Spanish JSON field names of a theme, as (new, old). The community server still validates themes with
-/// the old names, so themes are converted with [`Theme::to_legacy_json`] before uploading.
-pub const LEGACY_FIELDS: &[(&str, &str)] = &[
-    ("name", "nombre"),
-    ("author", "autor"),
-    ("light", "claro"),
-    ("background", "fondo"),
-    ("dark_panel", "panel_oscuro"),
-    ("field", "campo"),
-    ("line", "linea"),
-    ("border", "borde"),
-    ("text", "texto"),
-    ("muted", "apagado"),
-    ("accent", "acento"),
-    ("soft_accent", "acento_suave"),
-    ("warning", "aviso"),
-    ("guide", "guia"),
-    ("corners", "esquinas"),
-    ("font", "fuente"),
-];
-
 impl Theme {
     pub fn color_mut(&mut self, field: &str) -> Option<&mut String> {
         Some(match field {
@@ -114,19 +93,6 @@ impl Theme {
             "guide" => &mut self.guide,
             _ => return None,
         })
-    }
-
-    /// The theme as JSON with the old Spanish field names (what the community server expects when uploading).
-    pub fn to_legacy_json(&self) -> serde_json::Value {
-        let mut v = serde_json::to_value(self).unwrap_or_default();
-        if let Some(o) = v.as_object_mut() {
-            for (new, old) in LEGACY_FIELDS {
-                if let Some(x) = o.remove(*new) {
-                    o.insert(old.to_string(), x);
-                }
-            }
-        }
-        v
     }
 
     pub fn color(&self, field: &str) -> Color32 {
@@ -397,11 +363,11 @@ mod tests {
         let t: Theme = serde_json::from_str(old).expect("a theme with Spanish keys must load");
         assert_eq!((t.name.as_str(), t.light, t.accent.as_str(), t.corners), ("Viejo", true, "#2F6FE4", 5.0));
         assert!(t.validate().is_ok());
-        // what is uploaded to the community keeps the old keys, and loads again
-        let legacy = t.to_legacy_json();
-        assert_eq!(legacy["acento"], "#2F6FE4");
-        assert!(legacy.get("accent").is_none());
-        assert_eq!(serde_json::from_value::<Theme>(legacy).unwrap(), t);
+        // what is uploaded to the community now uses the English keys, and still loads again
+        let json = serde_json::to_value(&t).unwrap();
+        assert_eq!(json["accent"], "#2F6FE4");
+        assert!(json.get("acento").is_none());
+        assert_eq!(serde_json::from_value::<Theme>(json).unwrap(), t);
         // the old names of the bundled themes still select them
         assert_eq!(find_default("Lienzo claro").unwrap().name, "Lienzo Light");
         assert_eq!(find_default("Medianoche").unwrap().name, "Midnight");

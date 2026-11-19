@@ -60,7 +60,7 @@ Si prefieres empezar de cero, elige «En blanco» o Archivo › Nuevo diseño en
 • Guardar (Ctrl+S): guarda el proyecto .editorgui.json para seguir otro día.\n\
 • Revisar: avisa de letra pequeña, poco contraste, botones pequeños para tocar, elementos fuera de la página e imágenes que faltan.\n\
 • Exportar a Unity (Ctrl+E): la primera vez elige la carpeta de tu proyecto (la que contiene Assets).\n\n\
-En Unity, al volver a la ventana, el diseño aparece como prefab en Assets/EditorGUI/Prefabs. También tienes el menú Tools › Lienzo UI › Importar diseño en la escena.",
+En Unity, al volver a la ventana, el diseño aparece como prefab en Assets/EditorGUI/Prefabs. También tienes el menú Tools › Lienzo UI › Import design into scene….",
     },
 ];
 
@@ -89,7 +89,7 @@ Agrupa (Ctrl+G) para mover partes enteras y usa la Jerarquía para reordenar cap
     },
     Page {
         title: "Lógica: código al hacer clic y vistas",
-        text: "En Probar, cada elemento puede ejecutar un pequeño script (Rhai) al hacer clic: mostrar(\"Nombre\"), ocultar, alternar, texto, color, mover… Sirve para prototipar flujos sin Unity.\n\n\
+        text: "En Probar, cada elemento puede ejecutar un pequeño script (Rhai) al hacer clic: show(\"Name\"), hide, toggle, set_text, set_color, move_by… Sirve para prototipar flujos sin Unity.\n\n\
 En Unity, <Diseño>View.cs hereda de <Diseño>ViewBase con referencias tipadas a cada botón, slider o campo, y eventos de clic y de valor. Pon ahí la lógica del juego: las reexportaciones no la tocan.",
     },
     Page {
@@ -98,7 +98,7 @@ En Unity, <Diseño>View.cs hereda de <Diseño>ViewBase con referencias tipadas a
 lienzo-ui --template 0 --save menu.editorgui.json\n\
 lienzo-ui --open menu.editorgui.json --review         revisa el diseño (código 1 si hay errores)\n\
 lienzo-ui --open menu.editorgui.json --export <proyecto Unity>\n\
-lienzo-ui --open menu.editorgui.json --screenshot captura.png\n\
+lienzo-ui --open menu.editorgui.json --screenshot capture.png\n\
 lienzo-ui --test   1080x2400                    abre en Probar con esa pantalla\n\n\
 Con --export, --save y --review no se abre ventana: sirve para scripts, CI y el servidor MCP.",
     },
@@ -170,7 +170,7 @@ To start from scratch, choose «Blank» or File › New blank design.",
 • Save (Ctrl+S): saves the .editorgui.json project to keep working later.\n\
 • Review: warns about small text, low contrast, buttons too small to tap, elements outside the page and missing images.\n\
 • Export to Unity (Ctrl+E): the first time, choose your project folder (the one that contains Assets).\n\n\
-Back in Unity, when you return to the window, the design appears as a prefab in Assets/EditorGUI/Prefabs. There is also the menu Tools › Lienzo UI › Importar diseño en la escena (Import design into the scene).",
+Back in Unity, when you return to the window, the design appears as a prefab in Assets/EditorGUI/Prefabs. There is also the menu Tools › Lienzo UI › Import design into scene….",
     },
 ];
 
@@ -199,7 +199,7 @@ Group (Ctrl+G) to move whole parts and use the Hierarchy to reorder layers: the 
     },
     Page {
         title: "Logic: click scripts and views",
-        text: "In Test mode each element can run a small Rhai script on click: mostrar(\"Name\"), ocultar, alternar, texto, color, mover… Useful to prototype flows without Unity.\n\n\
+        text: "In Test mode each element can run a small Rhai script on click: show(\"Name\"), hide, toggle, set_text, set_color, move_by… Useful to prototype flows without Unity.\n\n\
 In Unity, <Design>View.cs inherits from <Design>ViewBase with typed references to every button, slider or field, and click and value events. Put your game logic there: re-exports never touch it.",
     },
     Page {

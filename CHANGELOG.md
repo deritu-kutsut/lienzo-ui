@@ -2,6 +2,20 @@
 
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow [SemVer](https://semver.org/).
 
+## [Unreleased]
+
+### Changed
+- **Everything is English-first.** Code, command-line flags, MCP tools and parameters, plugin manifests and Rhai function names, the `designs/` folder, sample designs, the Unity package (class, menu, sample, sprite and file names) and the documentation now use English names. Spanish stays available as a language of the interface, the tutorials and the written guides.
+  - Command line: `--open`, `--save`, `--export`, `--template`, `--templates`, `--review`, `--language`, `--scale`, `--theme`, `--tab`, `--high-contrast`, `--no-tutorial`, `--test`, `--pro`…
+  - MCP tools: `lienzo_info`, `list_templates`, `create_design`, `adjust_design`, `review_design`, `list_designs`, `read_design`, `modify_element`, `add_element`, `duplicate_element`, `delete_element`, `screenshot`, `export_unity`; parameters `file`, `template`, `title`, `background`, `element`, `changes`, `type`, `name`, `parent`, `text`, `new_name`, `unity_project`. Review lines use `[ERROR]` / `[WARNING]`. Screenshots go to `designs/screenshots/`.
+  - Designs folder: `designs/` (was `disenos/`), environment variable `LIENZO_DESIGNS`; sample designs `settings`, `dialog`, `inventory`, `main_menu`, `shop`, `hud`, `hud_pixel` and images in `designs/pixel/` (`shield`, `sword`, `coin`, `potion`).
+  - Plugins: `plugin.json` keys `name`, `author`, `description`, `commands`, `exporters`, `templates`; functions `run(design)` and `export_text(design)`; example plugins `snap-to-grid`, `text-to-csv`, `extra-templates`. Test-mode scripts: `show`, `hide`, `toggle`, `set_text`, `read_text`, `set_color`, `set_text_color`, `move_by`, `set_position`, `rotate`, `set_value`, `read_value`, `set_opacity`, `message` and `me`.
+  - Unity package: `unity-package/build.py`, `store_images.py` and `source/`; window `Tools › Lienzo UI › Open Lienzo UI (app)`; samples and exported designs with English names, in sync with `designs/`.
+  - Translation template: copy `assets/i18n/es.tsv` (the keys are the English texts).
+
+### Compatibility
+Nothing you already have stops working. The old Spanish command-line flags (`--abrir`, `--exportar`, `--guardar`, `--plantilla`, `--revisar`, `--comunidad-*`…), the old MCP tool names (`crear_diseno`, `captura`…, as hidden aliases) and parameter names (`archivo`, `elemento`, `cambios`…), the `LIENZO_DISENOS` variable and an existing `disenos/` folder, plugin manifests with Spanish keys and scripts with `ejecutar`/`exportar` or the Spanish test-mode functions (`mostrar`, `yo`…), and tutorial JSON files with Spanish keys are all still accepted. In the Unity package, renamed files keep the GUIDs of their old paths and the old `LienzoUIVentana` type remains as an `[Obsolete]` shim. See "Legacy names" in [docs/MCP.md](docs/MCP.md) and [docs/PLUGINS.md](docs/PLUGINS.md).
+
 ## [1.3.3] - 2026-11-18
 
 Bug fixes: canvas, test mode, plugins and damaged files.

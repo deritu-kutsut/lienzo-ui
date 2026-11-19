@@ -18,7 +18,7 @@
     },
     {
       "title": "Testen und nach Unity exportieren",
-      "text": "• Testen (F5): Der Entwurf wird interaktiv, und du kannst andere Bildschirme simulieren (Handy, 4:3, Ultrawide), um zu sehen, wie er sich anpasst.\n• Speichern (Strg+S): speichert das Projekt .editorgui.json, damit du später weitermachen kannst.\n• Prüfen: warnt vor kleiner Schrift, schwachem Kontrast, zu kleinen Schaltflächen zum Antippen, Elementen außerhalb der Seite und fehlenden Bildern.\n• In Unity exportieren (Strg+E): Beim ersten Mal wählst du den Ordner deines Projekts (den, der Assets enthält).\n\nWenn du in Unity zum Fenster zurückkehrst, erscheint der Entwurf als Prefab in Assets/EditorGUI/Prefabs. Außerdem gibt es das Menü Tools › Lienzo UI › Importar diseño en la escena."
+      "text": "• Testen (F5): Der Entwurf wird interaktiv, und du kannst andere Bildschirme simulieren (Handy, 4:3, Ultrawide), um zu sehen, wie er sich anpasst.\n• Speichern (Strg+S): speichert das Projekt .editorgui.json, damit du später weitermachen kannst.\n• Prüfen: warnt vor kleiner Schrift, schwachem Kontrast, zu kleinen Schaltflächen zum Antippen, Elementen außerhalb der Seite und fehlenden Bildern.\n• In Unity exportieren (Strg+E): Beim ersten Mal wählst du den Ordner deines Projekts (den, der Assets enthält).\n\nWenn du in Unity zum Fenster zurückkehrst, erscheint der Entwurf als Prefab in Assets/EditorGUI/Prefabs. Außerdem gibt es das Menü Tools › Lienzo UI › Import design into scene…."
     }
   ],
   "pro": [
@@ -36,11 +36,11 @@
     },
     {
       "title": "Logik: Klick-Code und Views",
-      "text": "Im Testmodus kann jedes Element beim Klick ein kleines Skript (Rhai) ausführen: mostrar(\"Nombre\"), ocultar, alternar, texto, color, mover… Damit kannst du Abläufe ohne Unity prototypen.\n\nIn Unity erbt <Diseño>View.cs von <Diseño>ViewBase, mit typisierten Referenzen auf jede Schaltfläche, jeden Slider und jedes Feld sowie auf Klick- und Wertereignisse. Lege dort die Spiellogik ab: Die Neuexporte berühren sie nicht."
+      "text": "Im Testmodus kann jedes Element beim Klick ein kleines Skript (Rhai) ausführen: show(\"Name\"), hide, toggle, set_text, set_color, move_by… Damit kannst du Abläufe ohne Unity prototypen.\n\nIn Unity erbt <Diseño>View.cs von <Diseño>ViewBase, mit typisierten Referenzen auf jede Schaltfläche, jeden Slider und jedes Feld sowie auf Klick- und Wertereignisse. Lege dort die Spiellogik ab: Die Neuexporte berühren sie nicht."
     },
     {
       "title": "Kommandozeile und Automatisierung",
-      "text": "lienzo-ui --templates                         listet die Vorlagen auf\nlienzo-ui --template 0 --save menu.editorgui.json\nlienzo-ui --open menu.editorgui.json --review        prüft den Entwurf (Code 1 bei Fehlern)\nlienzo-ui --open menu.editorgui.json --export <proyecto Unity>\nlienzo-ui --open menu.editorgui.json --screenshot captura.png\nlienzo-ui --test 1080x2400                    öffnet im Testmodus mit diesem Bildschirm\n\nMit --export, --save und --review wird kein Fenster geöffnet: Das eignet sich für Skripte, CI und den MCP-Server."
+      "text": "lienzo-ui --templates                         listet die Vorlagen auf\nlienzo-ui --template 0 --save menu.editorgui.json\nlienzo-ui --open menu.editorgui.json --review        prüft den Entwurf (Code 1 bei Fehlern)\nlienzo-ui --open menu.editorgui.json --export <proyecto Unity>\nlienzo-ui --open menu.editorgui.json --screenshot capture.png\nlienzo-ui --test 1080x2400                    öffnet im Testmodus mit diesem Bildschirm\n\nMit --export, --save und --review wird kein Fenster geöffnet: Das eignet sich für Skripte, CI und den MCP-Server."
     },
     {
       "title": "MCP-Server und Mitwirken",

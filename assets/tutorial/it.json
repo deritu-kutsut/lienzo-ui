@@ -18,7 +18,7 @@
     },
     {
       "title": "Provare ed esportare in Unity",
-      "text": "• Prova (F5): il design diventa interattivo e puoi simulare altri schermi (telefono, 4:3, ultrawide) per vedere come si adatta.\n• Salva (Ctrl+S): salva il progetto .editorgui.json per continuare un altro giorno.\n• Controlla: segnala testo troppo piccolo, basso contrasto, pulsanti troppo piccoli da toccare, elementi fuori dalla pagina e immagini mancanti.\n• Esporta in Unity (Ctrl+E): la prima volta scegli la cartella del tuo progetto (quella che contiene Assets).\n\nIn Unity, tornando alla finestra, il design appare come prefab in Assets/EditorGUI/Prefabs. Hai anche il menu Tools › Lienzo UI › Importar diseño en la escena."
+      "text": "• Prova (F5): il design diventa interattivo e puoi simulare altri schermi (telefono, 4:3, ultrawide) per vedere come si adatta.\n• Salva (Ctrl+S): salva il progetto .editorgui.json per continuare un altro giorno.\n• Controlla: segnala testo troppo piccolo, basso contrasto, pulsanti troppo piccoli da toccare, elementi fuori dalla pagina e immagini mancanti.\n• Esporta in Unity (Ctrl+E): la prima volta scegli la cartella del tuo progetto (quella che contiene Assets).\n\nIn Unity, tornando alla finestra, il design appare come prefab in Assets/EditorGUI/Prefabs. Hai anche il menu Tools › Lienzo UI › Import design into scene…."
     }
   ],
   "pro": [
@@ -36,11 +36,11 @@
     },
     {
       "title": "Logica: codice al clic e viste",
-      "text": "In Prova, ogni elemento può eseguire un piccolo script (Rhai) al clic: mostrar(\"Nombre\"), ocultar, alternar, texto, color, mover… Serve per prototipare flussi senza Unity.\n\nIn Unity, <Design>View.cs eredita da <Design>ViewBase con riferimenti tipizzati a ogni pulsante, slider o campo, ed eventi di clic e di valore. Metti lì la logica di gioco: le nuove esportazioni non la toccano."
+      "text": "In Prova, ogni elemento può eseguire un piccolo script (Rhai) al clic: show(\"Name\"), hide, toggle, set_text, set_color, move_by… Serve per prototipare flussi senza Unity.\n\nIn Unity, <Design>View.cs eredita da <Design>ViewBase con riferimenti tipizzati a ogni pulsante, slider o campo, ed eventi di clic e di valore. Metti lì la logica di gioco: le nuove esportazioni non la toccano."
     },
     {
       "title": "Riga di comando e automazione",
-      "text": "lienzo-ui --templates                         elenca i modelli\nlienzo-ui --template 0 --save menu.editorgui.json\nlienzo-ui --open menu.editorgui.json --review        controlla il design (codice 1 in caso di errori)\nlienzo-ui --open menu.editorgui.json --export <proyecto Unity>\nlienzo-ui --open menu.editorgui.json --screenshot captura.png\nlienzo-ui --test 1080x2400                    apre in Prova con quello schermo\n\nCon --export, --save e --review non si apre nessuna finestra: è pensato per script, CI e il server MCP."
+      "text": "lienzo-ui --templates                         elenca i modelli\nlienzo-ui --template 0 --save menu.editorgui.json\nlienzo-ui --open menu.editorgui.json --review        controlla il design (codice 1 in caso di errori)\nlienzo-ui --open menu.editorgui.json --export <proyecto Unity>\nlienzo-ui --open menu.editorgui.json --screenshot capture.png\nlienzo-ui --test 1080x2400                    apre in Prova con quello schermo\n\nCon --export, --save e --review non si apre nessuna finestra: è pensato per script, CI e il server MCP."
     },
     {
       "title": "Server MCP e come contribuire",

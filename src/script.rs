@@ -238,7 +238,7 @@ mod tests {
     #[test]
     fn bundled_sample_designs_load_and_their_click_code_runs() {
         let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
-        let mut files: Vec<std::path::PathBuf> = std::fs::read_dir(root.join("disenos")).unwrap().filter_map(|e| e.ok()).map(|e| e.path()).filter(|p| p.to_string_lossy().ends_with(".editorgui.json")).collect();
+        let mut files: Vec<std::path::PathBuf> = std::fs::read_dir(root.join("designs")).unwrap().filter_map(|e| e.ok()).map(|e| e.path()).filter(|p| p.to_string_lossy().ends_with(".editorgui.json")).collect();
         files.push(root.join("plugins/extra-templates/shop.editorgui.json"));
         assert!(files.len() >= 7, "{:?}", files);
         for f in files {

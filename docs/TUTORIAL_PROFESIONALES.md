@@ -34,7 +34,7 @@ Un contenedor puede ordenar sus hijos en horizontal, vertical o cuadrícula (com
 
 ## Lógica
 
-- **En el editor**: en Probar, cada elemento puede ejecutar un script Rhai al hacer clic (`mostrar("Nombre")`, `ocultar`, `alternar`, `texto`, `color`, `mover`…). Útil para prototipar flujos. Los cambios de la prueba se descartan al salir y nunca se guardan ni se exportan.
+- **En el editor**: en Probar, cada elemento puede ejecutar un script Rhai al hacer clic (`show("Name")`, `hide`, `toggle`, `set_text`, `set_color`, `move_by`…). Útil para prototipar flujos. Los cambios de la prueba se descartan al salir y nunca se guardan ni se exportan.
 - **En Unity**: `<Diseño>View` hereda de `<Diseño>ViewBase`, con un campo por botón, slider, toggle o campo de texto, y métodos `On<Elemento>Click` / `On<Elemento>Changed` para sobrescribir.
 
 ```csharp
@@ -48,7 +48,7 @@ Pon nombres únicos a los elementos interactivos: los scripts y `GameObject.Find
 
 ## Revisar diseño
 
-El botón **Revisar** (y `--revisar` en la línea de comandos) comprueba, a la resolución de referencia:
+El botón **Revisar** (y `--review` en la línea de comandos) comprueba, a la resolución de referencia:
 
 | Comprobación | Regla |
 |---|---|
@@ -64,17 +64,17 @@ Contraste por debajo de 2:1, elementos del todo fuera de la página e imágenes 
 ## Línea de comandos
 
 ```bash
-lienzo-ui --plantillas                                   # lista las plantillas (0-12)
-lienzo-ui --plantilla 4 --guardar inventario.editorgui.json
-lienzo-ui --abrir inventario.editorgui.json --revisar    # código 1 si hay errores
-lienzo-ui --abrir inventario.editorgui.json --exportar "C:/MiJuego"   # sin ventana
-lienzo-ui --abrir inventario.editorgui.json --screenshot captura.png
-lienzo-ui --probar 1080x2400                             # abre en Probar con esa pantalla
-lienzo-ui --tutorial [--profesional]                     # fuerza el tutorial
-lienzo-ui --sin-tutorial                                 # no lo abre
+lienzo-ui --templates                                   # lista las plantillas (0-12)
+lienzo-ui --template 4 --save inventory.editorgui.json
+lienzo-ui --open inventory.editorgui.json --review    # código 1 si hay errores
+lienzo-ui --open inventory.editorgui.json --export "C:/MiJuego"   # sin ventana
+lienzo-ui --open inventory.editorgui.json --screenshot capture.png
+lienzo-ui --test 1080x2400                             # abre en Probar con esa pantalla
+lienzo-ui --tutorial [--pro]                     # fuerza el tutorial
+lienzo-ui --no-tutorial                                 # no lo abre
 ```
 
-`--guardar`, `--exportar` y `--revisar` no abren ventana: sirven para scripts, CI y el [servidor MCP](MCP.md) (herramienta `revisar_diseno`).
+`--save`, `--export` y `--review` no abren ventana: sirven para scripts, CI y el [servidor MCP](MCP.md) (herramienta `review_design`).
 
 ## Código fuente
 

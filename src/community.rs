@@ -43,9 +43,7 @@ pub struct Session {
 #[derive(Clone, Debug, Default, Deserialize)]
 #[serde(default)]
 pub struct Profile {
-    #[serde(rename = "nombre_publico")]
     pub public_name: String,
-    #[serde(rename = "mostrar_18")]
     pub show_18: bool,
 }
 
@@ -53,32 +51,20 @@ pub struct Profile {
 #[serde(default)]
 pub struct Item {
     pub id: String,
-    #[serde(rename = "tipo")]
     pub kind: String,
-    #[serde(rename = "titulo")]
     pub title: String,
-    #[serde(rename = "descripcion")]
     pub description: String,
-    #[serde(rename = "etiquetas")]
-    pub labels: Vec<String>,
-    #[serde(rename = "es_18")]
+    pub tags: Vec<String>,
     pub is_18: bool,
-    #[serde(rename = "ruta_publica")]
     pub public_path: Option<String>,
     pub sha256: Option<String>,
     pub bytes: Option<i64>,
-    #[serde(rename = "descargas")]
     pub downloads: i64,
     pub version: String,
-    #[serde(rename = "autor")]
     pub author: String,
-    #[serde(rename = "autor_nombre")]
     pub author_name: String,
-    #[serde(rename = "icono_publico")]
     pub public_icon: Option<String>,
-    #[serde(rename = "vista_publica")]
-    pub public_view: Option<String>,
-    #[serde(rename = "corazones")]
+    pub public_preview: Option<String>,
     pub hearts: i64,
 }
 
@@ -87,23 +73,15 @@ pub struct Item {
 #[serde(default)]
 pub struct ProfilePublic {
     pub id: String,
-    #[serde(rename = "nombre_publico")]
     pub public_name: String,
     pub bio: String,
     pub github: Option<String>,
-    #[serde(rename = "enlaces")]
     pub links: std::collections::BTreeMap<String, String>,
-    #[serde(rename = "avatar_publico")]
     pub public_avatar: Option<String>,
-    #[serde(rename = "banner_publico")]
     pub public_banner: Option<String>,
-    #[serde(rename = "avatar_pendiente")]
-    pub pending_avatar: bool,
-    #[serde(rename = "banner_pendiente")]
-    pub pending_banner: bool,
-    #[serde(rename = "seguidores")]
+    pub avatar_pending: bool,
+    pub banner_pending: bool,
     pub followers: i64,
-    #[serde(rename = "corazones_recibidos")]
     pub hearts_received: i64,
 }
 
@@ -533,41 +511,41 @@ fn list(session: Option<&Session>, filter: Option<&str>, search: &str, with_18: 
             return Ok(Vec::new()); // you follow no one: nothing to request
         }
     }
-    let mut q = String::from("/rest/v1/items?select=id,tipo,titulo,descripcion,etiquetas,es_18,ruta_publica,sha256,bytes,descargas,version,autor,autor_nombre,icono_publico,vista_publica,corazones&estado=eq.aprobado&order=creado_en.desc&limit=60");
+    let mut q = String::from("/rest/v1/community_items?select=id,kind,title,description,tags,is_18,public_path,sha256,bytes,downloads,version,author,author_name,public_icon,public_preview,hearts&status=eq.approved&order=created_at.desc&limit=60");
     if let Some(f) = filter.filter(|f| val::KINDS.contains(f)) {
-        q.push_str(&format!("&tipo=eq.{}", f));
+        q.push_str(&format!("&kind=eq.{}", f));
     }
     if !with_18 {
-        q.push_str("&es_18=eq.false");
+        q.push_str("&is_18=eq.false");
     }
     if let Some(ids) = only_from {
         let valid: Vec<&str> = ids.iter().map(|i| i.as_str()).filter(|i| is_uuid(i)).collect();
-        q.push_str(&format!("&autor=in.({})", valid.join(",")));
+        q.push_str(&format!("&author=in.({})", valid.join(",")));
     }
     let b = clear_search(search);
     if !b.is_empty() {
-        q.push_str(&format!("&or=({})", encode(&format!("titulo.ilike.*{0}*,descripcion.ilike.*{0}*", b))));
+        q.push_str(&format!("&or=({})", encode(&format!("title.ilike.*{0}*,description.ilike.*{0}*", b))));
     }
     let mut items: Vec<Item> = request("GET", &q, session, None, None, &[], 2 << 20)?.ok()?.json()?;
     items.retain(|i| is_uuid(&i.id) && is_uuid(&i.author) && val::KINDS.contains(&i.kind.as_str()));
     Ok(items)
 }
 
-const ITEM_COLUMNS: &str = "id,tipo,titulo,descripcion,etiquetas,es_18,ruta_publica,sha256,bytes,descargas,version,autor,autor_nombre,icono_publico,vista_publica,corazones";
+const ITEM_COLUMNS: &str = "id,kind,title,description,tags,is_18,public_path,sha256,bytes,downloads,version,author,author_name,public_icon,public_preview,hearts";
 
 fn load_public_profile(session: Option<&Session>, uid: &str) -> Result<(ProfilePublic, Vec<Item>), String> {
     if !is_uuid(uid) {
         return Err("Invalid creator.".into());
     }
-    let p: Vec<ProfilePublic> = request("GET", &format!("/rest/v1/perfiles_publicos?select=id,nombre_publico,bio,github,enlaces,avatar_publico,banner_publico,seguidores,corazones_recibidos&id=eq.{}", uid), session, None, None, &[], 1 << 18)?.ok()?.json()?;
+    let p: Vec<ProfilePublic> = request("GET", &format!("/rest/v1/public_profiles?select=id,public_name,bio,github,links,public_avatar,public_banner,followers,hearts_received&id=eq.{}", uid), session, None, None, &[], 1 << 18)?.ok()?.json()?;
     let p = p.into_iter().next().ok_or("This creator does not have a public profile yet.")?;
-    let mut items: Vec<Item> = request("GET", &format!("/rest/v1/items?select={}&estado=eq.aprobado&autor=eq.{}&order=creado_en.desc&limit=60", ITEM_COLUMNS, uid), session, None, None, &[], 2 << 20)?.ok()?.json()?;
+    let mut items: Vec<Item> = request("GET", &format!("/rest/v1/community_items?select={}&status=eq.approved&author=eq.{}&order=created_at.desc&limit=60", ITEM_COLUMNS, uid), session, None, None, &[], 2 << 20)?.ok()?.json()?;
     items.retain(|i| is_uuid(&i.id) && val::KINDS.contains(&i.kind.as_str()));
     Ok((p, items))
 }
 
 fn load_my_profile(s: &Session) -> Option<ProfilePublic> {
-    let r = request("GET", &format!("/rest/v1/perfiles_publicos?select=*&id=eq.{}", s.uid), Some(s), None, None, &[], 1 << 18).ok()?.ok().ok()?;
+    let r = request("GET", &format!("/rest/v1/public_profiles?select=*&id=eq.{}", s.uid), Some(s), None, None, &[], 1 << 18).ok()?.ok().ok()?;
     r.json::<Vec<ProfilePublic>>().ok()?.into_iter().next()
 }
 
@@ -611,14 +589,14 @@ fn upload_profile_image(s: &Session, class: &str, bytes: &[u8]) -> Result<String
     let path = format!("{}/perfil/{}.png", s.uid, class);
     let _ = request("DELETE", &format!("/storage/v1/object/cuarentena/{}", path), Some(s), None, None, &[], 1 << 16); // replaces the previous one
     request("POST", &format!("/storage/v1/object/cuarentena/{}", path), Some(s), Some("image/png"), Some(bytes), &[("x-upsert", "false")], 1 << 16)?.ok()?;
-    let r = json_post("/functions/v1/perfil", Some(s), &serde_json::json!({ "accion": "imagen", "clase": class }), &[])?;
+    let r = json_post("/functions/v1/profile", Some(s), &serde_json::json!({ "v": 2, "action": "image", "class": class }), &[])?;
     let v: serde_json::Value = r.json().unwrap_or_default();
     if !(200..300).contains(&r.state) {
         return Err(v["error"].as_str().unwrap_or("Could not upload the image.").to_string());
     }
-    Ok(match v["estado"].as_str().unwrap_or("") {
-        "publicado" => "Image published on your profile.".to_string(),
-        _ => v["motivo"].as_str().unwrap_or("Image sent for review.").to_string(),
+    Ok(match v["status"].as_str().unwrap_or("") {
+        "published" => "Image published on your profile.".to_string(),
+        _ => v["reason"].as_str().unwrap_or("Image sent for review.").to_string(),
     })
 }
 
@@ -628,11 +606,11 @@ fn load_mine(s: &Session) -> Option<(Vec<String>, Vec<String>)> {
         let v: Vec<serde_json::Value> = request("GET", path, Some(s), None, None, &[], 1 << 20).ok()?.ok().ok()?.json().ok()?;
         Some(v.iter().filter_map(|f| f[field].as_str().filter(|i| is_uuid(i)).map(|i| i.to_string())).collect())
     };
-    Some((col(&format!("/rest/v1/corazones?select=item&persona=eq.{}&limit=1000", s.uid), "item")?, col(&format!("/rest/v1/seguidores?select=seguido&seguidor=eq.{}&limit=1000", s.uid), "seguido")?))
+    Some((col(&format!("/rest/v1/hearts?select=item&person=eq.{}&limit=1000", s.uid), "item")?, col(&format!("/rest/v1/follows?select=followed&follower=eq.{}&limit=1000", s.uid), "followed")?))
 }
 
 fn load_profile(s: &Session) -> Option<Profile> {
-    let r = request("GET", &format!("/rest/v1/perfiles?select=nombre_publico,mostrar_18&id=eq.{}", s.uid), Some(s), None, None, &[], 1 << 16).ok()?.ok().ok()?;
+    let r = request("GET", &format!("/rest/v1/profiles?select=public_name,show_18&id=eq.{}", s.uid), Some(s), None, None, &[], 1 << 16).ok()?.ok().ok()?;
     r.json::<Vec<Profile>>().ok()?.into_iter().next()
 }
 
@@ -654,21 +632,13 @@ fn download(item: &Item, session: Option<&Session>) -> Result<Vec<u8>, String> {
     let name = path.rsplit('/').next().unwrap_or("");
     val::validate(&item.kind, name, &bytes).map_err(|e| format!("Did not pass local validation: {}", e))?;
     if let Some(s) = session {
-        let _ = json_post("/rest/v1/rpc/registrar_descarga", Some(s), &serde_json::json!({ "p_item": item.id }), &[]); // only counts when signed in
+        let _ = json_post("/rest/v1/rpc/record_download", Some(s), &serde_json::json!({ "p_item": item.id }), &[]); // only counts when signed in
     }
     Ok(bytes)
 }
 
 fn upload_content(s: &Session, kind: &str, title: &str, description: &str, labels: Vec<String>, is_18: bool, name: &str, bytes: &[u8], extras: &[(&str, Vec<u8>)], tx: &Sender<Message>) -> Result<String, String> {
     val::validate(kind, name, bytes)?;
-    // The server still validates themes with the old Spanish field names.
-    let legacy_theme;
-    let bytes = if kind == "tema" {
-        legacy_theme = serde_json::from_slice::<crate::theme::Theme>(bytes).ok().and_then(|t| serde_json::to_vec(&t.to_legacy_json()).ok());
-        legacy_theme.as_deref().unwrap_or(bytes)
-    } else {
-        bytes
-    };
     for (class, b) in extras {
         val::validate_png(class, b).map_err(|e| format!("{} ({})", e, class))?;
     }
@@ -677,12 +647,12 @@ fn upload_content(s: &Session, kind: &str, title: &str, description: &str, label
     let file = safe_name(name);
     let path = format!("{}/{}/{}", s.uid, id, file);
     let row = serde_json::json!({
-        "id": id, "autor": s.uid, "tipo": kind, "titulo": title, "descripcion": description,
-        "etiquetas": labels, "es_18": is_18, "version": "1.0.0", "ruta_cuarentena": path,
-        "icono_cuarentena": extras.iter().any(|(c, _)| *c == "icono").then(|| format!("{}/{}/icono.png", s.uid, id)),
-        "vista_cuarentena": extras.iter().any(|(c, _)| *c == "vista").then(|| format!("{}/{}/vista.png", s.uid, id)),
+        "id": id, "author": s.uid, "kind": kind, "title": title, "description": description,
+        "tags": labels, "is_18": is_18, "version": "1.0.0", "quarantine_path": path,
+        "quarantine_icon": extras.iter().any(|(c, _)| *c == "icon").then(|| format!("{}/{}/icon.png", s.uid, id)),
+        "quarantine_preview": extras.iter().any(|(c, _)| *c == "preview").then(|| format!("{}/{}/preview.png", s.uid, id)),
     });
-    json_post("/rest/v1/items", Some(&s), &row, &[("Prefer", "return=minimal")])?.ok()?;
+    json_post("/rest/v1/community_items", Some(&s), &row, &[("Prefer", "return=minimal")])?.ok()?;
     let mime = match file.rsplit('.').next().unwrap_or("").to_lowercase().as_str() {
         "png" => "image/png",
         "jpg" | "jpeg" => "image/jpeg",
@@ -699,15 +669,15 @@ fn upload_content(s: &Session, kind: &str, title: &str, description: &str, label
         }
     }
     if let Err(e) = upload {
-        let _ = request("DELETE", &format!("/rest/v1/items?id=eq.{}", id), Some(&s), None, None, &[], 1 << 16); // don't leave a listing without a file
+        let _ = request("DELETE", &format!("/rest/v1/community_items?id=eq.{}", id), Some(&s), None, None, &[], 1 << 16); // don't leave a listing without a file
         return Err(e);
     }
-    let r = json_post("/functions/v1/moderar", Some(&s), &serde_json::json!({ "item": id }), &[])?.ok()?;
+    let r = json_post("/functions/v1/moderate", Some(&s), &serde_json::json!({ "v": 2, "item": id }), &[])?.ok()?;
     let v: serde_json::Value = r.json()?;
-    let reason = v["motivo"].as_str().unwrap_or("");
-    Ok(match v["estado"].as_str().unwrap_or("") {
-        "aprobado" => "Published in the community.".to_string(),
-        "rechazado" => format!("Rejected: {}", reason),
+    let reason = v["reason"].as_str().unwrap_or("");
+    Ok(match v["status"].as_str().unwrap_or("") {
+        "approved" => "Published in the community.".to_string(),
+        "rejected" => format!("Rejected: {}", reason),
         _ => format!("Sent for review: {}", reason),
     })
 }
@@ -743,8 +713,6 @@ fn install_plugin(bytes: &[u8]) -> Result<String, String> {
 /// Turns a plugin folder into the package that gets uploaded.
 fn pack_plugin(folder: &std::path::Path) -> Result<Vec<u8>, String> {
     let manifest: serde_json::Value = serde_json::from_str(&std::fs::read_to_string(folder.join("plugin.json")).map_err(|_| "The folder has no plugin.json.")?).map_err(|_| "plugin.json is not valid.")?;
-    // The server still validates manifests with the old Spanish keys: the package is uploaded in that form.
-    let manifest = crate::plugins::legacy_manifest(&manifest);
     let mut files = std::collections::BTreeMap::new();
     files.insert("plugin.json".to_string(), serde_json::to_string(&manifest).map_err(|e| e.to_string())?);
     for (new, old) in [("commands", "comandos"), ("exporters", "exportadores")] {
@@ -769,8 +737,8 @@ fn pack_plugin(folder: &std::path::Path) -> Result<Vec<u8>, String> {
 
 // ───────────────────────────── UI ─────────────────────────────
 
-const KIND_NAMES: &[(&str, &str)] = &[("plugin", "Plugins"), ("imagen", "Images"), ("fuente", "Fonts"), ("plantilla", "Templates"), ("elemento", "Elements"), ("tema", "Themes")];
-const REASONS: &[(&str, &str)] = &[("malware", "Malware or viruses"), ("contenido_18", "Unmarked 18+ content"), ("odio_o_acoso", "Hate or harassment"), ("derechos_de_autor", "Copyright"), ("otro", "Other")];
+const KIND_NAMES: &[(&str, &str)] = &[("plugin", "Plugins"), ("image", "Images"), ("font", "Fonts"), ("template", "Templates"), ("element", "Elements"), ("theme", "Themes")];
+const REASONS: &[(&str, &str)] = &[("malware", "Malware or viruses"), ("adult_content", "Unmarked 18+ content"), ("hate_or_harassment", "Hate or harassment"), ("copyright", "Copyright"), ("other", "Other")];
 
 fn kind_name(t: &str) -> &'static str {
     KIND_NAMES.iter().find(|(k, _)| *k == t).map(|(_, n)| *n).unwrap_or("")
@@ -884,7 +852,7 @@ impl EditorApp {
                 }
                 Message::Image { path, bytes } => {
                     let tex = bytes.and_then(|b| {
-                        val::validate_png("vista", &b).or_else(|_| val::validate_png("banner", &b)).ok()?;
+                        val::validate_png("preview", &b).or_else(|_| val::validate_png("banner", &b)).ok()?;
                         let img = image::load_from_memory_with_format(&b, image::ImageFormat::Png).ok()?.to_rgba8();
                         let (w, h) = img.dimensions();
                         let ci = egui::ColorImage::from_rgba_unmultiplied([w as usize, h as usize], img.as_raw());
@@ -923,7 +891,7 @@ impl EditorApp {
                         pr.public_name = n;
                     }
                     // the image under review may have changed: request it again
-                    self.community.textures.retain(|k, _| !k.starts_with("cuarentena:"));
+                    self.community.textures.retain(|k, _| !k.starts_with("quarantine:"));
                     self.community.my_profile = p;
                 }
                 Message::State(e) => {
@@ -958,13 +926,13 @@ impl EditorApp {
                 self.plugins = crate::plugins::load_all();
                 format!("{} “{}” (Plugins tab)", t("Plugin installed:"), n)
             }
-            "imagen" => {
+            "image" => {
                 let f = write_temp(name, bytes)?;
                 let r = self.library.add_image(&f);
                 let _ = std::fs::remove_file(&f);
                 format!("{} “{}” (Images tab)", t("Image installed:"), r?)
             }
-            "fuente" => {
+            "font" => {
                 let f = write_temp(name, bytes)?;
                 let r = crate::library::add_font_file(&f);
                 let _ = std::fs::remove_file(&f);
@@ -972,7 +940,7 @@ impl EditorApp {
                 crate::render::add_font(ctx, &n, data, path);
                 format!("{} “{}” (Text tab)", t("Font installed:"), n)
             }
-            "tema" => {
+            "theme" => {
                 let theme: crate::theme::Theme = serde_json::from_slice(bytes).map_err(|_| "The theme is not valid.".to_string())?;
                 theme.validate()?;
                 crate::themes::save(&theme)?;
@@ -980,7 +948,7 @@ impl EditorApp {
                 self.apply_theme(ctx, theme);
                 format!("{} “{}” (Themes button to change it)", t("Theme installed and in use:"), n)
             }
-            "plantilla" => {
+            "template" => {
                 let f = write_temp(&format!("{}.json", safe_name(&item.title)), bytes)?;
                 let r = self.library.add_template_file(&f);
                 let _ = std::fs::remove_file(&f);
@@ -1075,14 +1043,14 @@ impl EditorApp {
                 // First time: choose a public name and accept the rules.
                 ui.label(RichText::new(t("Choose your public name")).strong());
                 ui.label(RichText::new(t("It is all the community will see. 3-32 characters: letters, numbers, dot, hyphen and underscore.")).small().color(MUTED()));
-                ui.add(egui::TextEdit::singleline(&mut self.community.new_name).hint_text("nombre_publico").desired_width(f32::INFINITY));
+                ui.add(egui::TextEdit::singleline(&mut self.community.new_name).hint_text("public_name").desired_width(f32::INFINITY));
                 ui.checkbox(&mut self.community.accepted, t("I accept the rules: no malware, hate, plagiarism or unmarked 18+ content"));
                 let n = self.community.new_name.trim().to_string();
                 let valid = (3..=32).contains(&n.chars().count()) && n.chars().all(|c| c.is_ascii_alphanumeric() || "_.-".contains(c));
                 if ui.add_enabled(valid && self.community.accepted && self.community.busy == 0, egui::Button::new(t("Create profile"))).clicked() {
                     let s = self.community.session.clone().unwrap();
                     self.community_launch(ctx, move |tx| {
-                        let r = current(&s, tx).and_then(|s| json_post("/rest/v1/perfiles", Some(&s), &serde_json::json!({ "id": s.uid, "nombre_publico": n, "acepto_terminos_en": iso(now()) }), &[("Prefer", "return=minimal")])?.ok().map(|_| s));
+                        let r = current(&s, tx).and_then(|s| json_post("/rest/v1/profiles", Some(&s), &serde_json::json!({ "id": s.uid, "public_name": n, "terms_accepted_at": iso(now()) }), &[("Prefer", "return=minimal")])?.ok().map(|_| s));
                         match r {
                             Ok(s) => {
                                 let _ = tx.send(Message::Profile(load_profile(&s)));
@@ -1128,7 +1096,7 @@ impl EditorApp {
                     p.show_18 = m18;
                 }
                 self.community_launch(ctx, move |tx| {
-                    let r = current(&s, tx).and_then(|s| request("PATCH", &format!("/rest/v1/perfiles?id=eq.{}", s.uid), Some(&s), None, Some(if m18 { serde_json::json!({ "mostrar_18": true, "declara_mayor_18_en": iso(now()) }) } else { serde_json::json!({ "mostrar_18": false }) }.to_string().as_bytes()), &[], 1 << 16)?.ok().map(|_| ()));
+                    let r = current(&s, tx).and_then(|s| request("PATCH", &format!("/rest/v1/profiles?id=eq.{}", s.uid), Some(&s), None, Some(if m18 { serde_json::json!({ "show_18": true, "declared_adult_at": iso(now()) }) } else { serde_json::json!({ "show_18": false }) }.to_string().as_bytes()), &[], 1 << 16)?.ok().map(|_| ()));
                     let _ = tx.send(Message::State(match r {
                         Ok(()) => String::new(),
                         Err(e) => e,
@@ -1145,7 +1113,7 @@ impl EditorApp {
                 if ui.add_enabled(self.community.delete_confirmed && self.community.busy == 0, egui::Button::new(RichText::new(t("Delete my account")).color(WARN()))).clicked() {
                     let s = self.community.session.clone().unwrap();
                     self.community_launch(ctx, move |tx| {
-                        let r = current(&s, tx).and_then(|s| json_post("/functions/v1/borrar-cuenta", Some(&s), &serde_json::json!({}), &[])?.ok().map(|_| ()));
+                        let r = current(&s, tx).and_then(|s| json_post("/functions/v1/delete-account", Some(&s), &serde_json::json!({ "v": 2 }), &[])?.ok().map(|_| ()));
                         let _ = tx.send(Message::AccountDeleted(r));
                     });
                 }
@@ -1214,12 +1182,12 @@ impl EditorApp {
                 if ui.button(button).clicked() {
                     self.community.upload.file = match kind {
                         "plugin" => rfd::FileDialog::new().set_title("Plugin folder (with plugin.json)").pick_folder(),
-                        "imagen" => rfd::FileDialog::new().add_filter("Images", &["png", "jpg", "jpeg", "gif", "webp"]).pick_file(),
-                        "fuente" => rfd::FileDialog::new().add_filter("Fonts", &["ttf", "otf"]).pick_file(),
+                        "image" => rfd::FileDialog::new().add_filter("Images", &["png", "jpg", "jpeg", "gif", "webp"]).pick_file(),
+                        "font" => rfd::FileDialog::new().add_filter("Fonts", &["ttf", "otf"]).pick_file(),
                         _ => rfd::FileDialog::new().add_filter("JSON", &["json"]).pick_file(),
                     };
                 }
-                if kind == "tema" && ui.button(t("Use the current theme")).clicked() {
+                if kind == "theme" && ui.button(t("Use the current theme")).clicked() {
                     let theme = self.settings.theme.clone().unwrap_or_default();
                     let f = std::env::temp_dir().join("lienzo-ui-community");
                     let _ = std::fs::create_dir_all(&f);
@@ -1231,7 +1199,7 @@ impl EditorApp {
                         }
                     }
                 }
-                if kind == "plantilla" && ui.button(t("Use the open design")).clicked() {
+                if kind == "template" && ui.button(t("Use the open design")).clicked() {
                     let f = std::env::temp_dir().join("lienzo-ui-community");
                     let _ = std::fs::create_dir_all(&f);
                     let f = f.join("current-design.json");
@@ -1262,7 +1230,7 @@ impl EditorApp {
                 let read = if path.is_dir() { pack_plugin(&path).map(|b| ("plugin.json".to_string(), b)) } else { std::fs::read(&path).map(|b| (path.file_name().map(|n| n.to_string_lossy().to_string()).unwrap_or_default(), b)).map_err(|e| e.to_string()) };
                 let mut extras: Vec<(&'static str, Vec<u8>)> = Vec::new();
                 let mut extra_failure = None;
-                for (class, path) in [("vista", self.community.upload.view.clone())] {
+                for (class, path) in [("preview", self.community.upload.view.clone())] {
                     if let Some(r) = path {
                         match std::fs::read(&r) {
                             Ok(b) => extras.push((class, b)),
@@ -1346,20 +1314,24 @@ mod tests {
 
     #[test]
     fn cli_accepts_english_and_old_spanish_names() {
-        assert_eq!((cli_kind("image"), cli_kind("imagen"), cli_kind("font"), cli_kind("fuente")), ("imagen", "imagen", "fuente", "fuente"));
-        assert_eq!((cli_kind("template"), cli_kind("plantilla"), cli_kind("element"), cli_kind("theme"), cli_kind("plugin")), ("plantilla", "plantilla", "elemento", "tema", "plugin"));
-        assert_eq!((review_action("approve"), review_action("aprobar"), review_action("reject-profile"), review_action("rechazar-perfil")), ("aprobar", "aprobar", "rechazar-perfil", "rechazar-perfil"));
-        assert_eq!((review_action("token-create"), review_action("rescan"), review_action("list"), review_action("tokens")), ("token-crear", "reanalizar", "listar", "tokens"));
-        assert_eq!((review_scope("read"), review_scope("leer"), review_scope("reject")), ("leer", "leer", "rechazar"));
+        assert_eq!((cli_kind("image"), cli_kind("imagen"), cli_kind("font"), cli_kind("fuente")), ("image", "image", "font", "font"));
+        assert_eq!((cli_kind("template"), cli_kind("plantilla"), cli_kind("element"), cli_kind("theme"), cli_kind("plugin")), ("template", "template", "element", "theme", "plugin"));
+        assert_eq!((cli_kind("elemento"), cli_kind("tema")), ("element", "theme"));
+        assert_eq!((review_action("approve"), review_action("aprobar"), review_action("reject-profile"), review_action("rechazar-perfil")), ("approve", "approve", "reject-profile", "reject-profile"));
+        assert_eq!((review_action("token-create"), review_action("token-crear"), review_action("reanalizar"), review_action("rescan"), review_action("list"), review_action("tokens")), ("token-create", "token-create", "rescan", "rescan", "list", "tokens"));
+        assert_eq!((review_scope("read"), review_scope("leer"), review_scope("reject"), review_scope("aprobar")), ("read", "read", "reject", "approve"));
         assert!(cli_kind("image").len() > 0 && val::KINDS.contains(&cli_kind("image")));
     }
 
     #[test]
-    fn wire_names_of_the_server_are_still_read() {
-        let row = r#"{"id":"x","tipo":"plantilla","titulo":"T","descripcion":"D","etiquetas":["a"],"es_18":true,"ruta_publica":"p/q.json","descargas":3,
-            "autor":"u","autor_nombre":"N","icono_publico":"i.png","vista_publica":"v.png","corazones":2}"#;
+    fn english_wire_names_of_the_server_are_read() {
+        let row = r#"{"id":"x","kind":"template","title":"T","description":"D","tags":["a"],"is_18":true,"public_path":"p/q.json","downloads":3,
+            "author":"u","author_name":"N","public_icon":"i.png","public_preview":"v.png","hearts":2}"#;
         let it: Item = serde_json::from_str(row).unwrap();
-        assert_eq!((it.kind.as_str(), it.title.as_str(), it.is_18, it.downloads, it.author_name.as_str(), it.hearts), ("plantilla", "T", true, 3, "N", 2));
+        assert_eq!((it.kind.as_str(), it.title.as_str(), it.is_18, it.downloads, it.author_name.as_str(), it.hearts), ("template", "T", true, 3, "N", 2));
+        assert_eq!((it.tags.as_slice(), it.public_preview.as_deref()), (&["a".to_string()][..], Some("v.png")));
+        let p: ProfilePublic = serde_json::from_str(r#"{"id":"u","public_name":"N","links":{"x":"https://x.com/a"},"avatar_pending":true,"followers":4,"hearts_received":5}"#).unwrap();
+        assert_eq!((p.public_name.as_str(), p.avatar_pending, p.followers, p.hearts_received, p.links.len()), ("N", true, 4, 5, 1));
     }
 }
 
@@ -1368,38 +1340,39 @@ mod tests {
 /// Uses exactly the same code as the "Submit for review" button. Close the app before using it: the session
 /// token is renewed and the app, left open with the old token, would lose the session.
 /// CLI names for the kinds of content. English names are primary; the old Spanish ones are still accepted.
-/// The value returned is what the server expects (its kinds are still the Spanish ones).
+/// The value returned is the canonical English kind the server stores.
 fn cli_kind(k: &str) -> &str {
     match k {
-        "image" | "imagen" => "imagen",
-        "font" | "fuente" => "fuente",
-        "template" | "plantilla" => "plantilla",
-        "element" | "elemento" => "elemento",
-        "theme" | "tema" => "tema",
+        "image" | "imagen" => "image",
+        "font" | "fuente" => "font",
+        "template" | "plantilla" => "template",
+        "element" | "elemento" => "element",
+        "theme" | "tema" => "theme",
         other => other,
     }
 }
 
 /// Review actions and token scopes of `--community-review`: English names are primary, old Spanish ones still work.
-/// Returns the name the server API expects.
+/// Returns the canonical English name (the server API v2 uses it, with `_` instead of `-`).
 fn review_action(a: &str) -> &str {
     match a {
-        "list" | "listar" => "listar",
-        "approve" | "aprobar" => "aprobar",
-        "reject" | "rechazar" => "rechazar",
-        "approve-profile" | "aprobar-perfil" => "aprobar-perfil",
-        "reject-profile" | "rechazar-perfil" => "rechazar-perfil",
-        "token-create" | "token-crear" => "token-crear",
-        "token-revoke" | "token-revocar" => "token-revocar",
-        "rescan" | "reanalizar" => "reanalizar",
+        "list" | "listar" => "list",
+        "approve" | "aprobar" => "approve",
+        "reject" | "rechazar" => "reject",
+        "approve-profile" | "aprobar-perfil" => "approve-profile",
+        "reject-profile" | "rechazar-perfil" => "reject-profile",
+        "token-create" | "token-crear" => "token-create",
+        "token-revoke" | "token-revocar" => "token-revoke",
+        "rescan" | "reanalizar" => "rescan",
         other => other,
     }
 }
 
 fn review_scope(a: &str) -> &str {
     match a {
-        "read" | "leer" => "leer",
-        "reject" | "rechazar" => "rechazar",
+        "read" | "leer" => "read",
+        "approve" | "aprobar" => "approve",
+        "reject" | "rechazar" => "reject",
         other => other,
     }
 }
@@ -1440,7 +1413,7 @@ pub fn upload_cli(args: &[String]) -> i32 {
         }
     };
     let mut extras: Vec<(&str, Vec<u8>)> = Vec::new();
-    for (class, k) in [("icono", "--icon"), ("vista", "--preview")] {
+    for (class, k) in [("icon", "--icon"), ("preview", "--preview")] {
         let r = option(k);
         if !r.is_empty() {
             match std::fs::read(&r) {
@@ -1480,7 +1453,7 @@ pub fn retry_cli() -> i32 {
         }
     };
     save_credential(Some(&s));
-    let list = request("GET", &format!("/rest/v1/items?select=id,titulo&autor=eq.{}&estado=eq.pendiente&revisado_en=is.null&ruta_cuarentena=not.is.null", s.uid), Some(&s), None, None, &[], 1 << 20).and_then(|r| r.ok());
+    let list = request("GET", &format!("/rest/v1/community_items?select=id,title&author=eq.{}&status=eq.pending&reviewed_at=is.null&quarantine_path=not.is.null", s.uid), Some(&s), None, None, &[], 1 << 20).and_then(|r| r.ok());
     let rows: Vec<serde_json::Value> = match list.and_then(|r| r.json()) {
         Ok(v) => v,
         Err(e) => {
@@ -1490,12 +1463,12 @@ pub fn retry_cli() -> i32 {
     };
     let mut failures = 0;
     for f in &rows {
-        let (id, title) = (f["id"].as_str().unwrap_or(""), f["titulo"].as_str().unwrap_or(""));
+        let (id, title) = (f["id"].as_str().unwrap_or(""), f["title"].as_str().unwrap_or(""));
         if !is_uuid(id) {
             continue;
         }
-        match json_post("/functions/v1/moderar", Some(&s), &serde_json::json!({ "item": id }), &[]).and_then(|r| r.ok()).and_then(|r| r.json::<serde_json::Value>()) {
-            Ok(v) => println!("{}: {} ({})", title, v["estado"].as_str().unwrap_or("?"), v["motivo"].as_str().unwrap_or("")),
+        match json_post("/functions/v1/moderate", Some(&s), &serde_json::json!({ "v": 2, "item": id }), &[]).and_then(|r| r.ok()).and_then(|r| r.json::<serde_json::Value>()) {
+            Ok(v) => println!("{}: {} ({})", title, v["status"].as_str().unwrap_or("?"), v["reason"].as_str().unwrap_or("")),
             Err(e) => {
                 eprintln!("{}: {}", title, e);
                 failures += 1;
@@ -1528,7 +1501,7 @@ pub fn me_cli() -> i32 {
     }
 }
 
-/// Human review (only accounts listed in the server's MODERADORES secret):
+/// Human review (only accounts listed in the server's MODERATORS secret):
 ///   lienzo-ui --community-review list
 ///   lienzo-ui --community-review approve <id> [--18]      · reject <id> "reason"
 ///   lienzo-ui --community-review approve-profile <account-id> avatar|banner  · reject-profile <account-id> avatar|banner
@@ -1542,16 +1515,16 @@ pub fn review_cli(args: &[String]) -> i32 {
     let a2 = args.get(2).map(|s| s.as_str()).unwrap_or("");
     let usage = "Usage: lienzo-ui --community-review list | approve <id> [--18] | reject <id> \"reason\" | approve-profile <account> avatar|banner | reject-profile <account> avatar|banner | token-create \"name\" read,reject [days] | tokens | token-revoke <id> | rescan [id]";
     let body = match action {
-        "listar" | "tokens" => serde_json::json!({ "accion": if action == "tokens" { "listar_tokens" } else { "listar" } }),
-        "aprobar" | "rechazar" if is_uuid(a1) => serde_json::json!({ "accion": action, "item": a1, "motivo": a2, "es_18": args.iter().any(|x| x == "--18") }),
-        "aprobar-perfil" | "rechazar-perfil" if is_uuid(a1) && ["avatar", "banner"].contains(&a2) => serde_json::json!({ "accion": action.replace('-', "_"), "usuario": a1, "clase": a2 }),
-        "token-crear" if !a1.is_empty() => {
+        "list" | "tokens" => serde_json::json!({ "v": 2, "action": if action == "tokens" { "list_tokens" } else { "list" } }),
+        "approve" | "reject" if is_uuid(a1) => serde_json::json!({ "v": 2, "action": action, "item": a1, "reason": a2, "is_18": args.iter().any(|x| x == "--18") }),
+        "approve-profile" | "reject-profile" if is_uuid(a1) && ["avatar", "banner"].contains(&a2) => serde_json::json!({ "v": 2, "action": action.replace('-', "_"), "user": a1, "class": a2 }),
+        "token-create" if !a1.is_empty() => {
             let scopes: Vec<&str> = a2.split(',').filter(|x| !x.is_empty()).map(review_scope).collect();
             let days: u32 = args.get(3).and_then(|d| d.parse().ok()).unwrap_or(30);
-            serde_json::json!({ "accion": "crear_token", "nombre": a1, "alcances": scopes, "dias": days })
+            serde_json::json!({ "v": 2, "action": "create_token", "name": a1, "scopes": scopes, "days": days })
         }
-        "token-revocar" if is_uuid(a1) => serde_json::json!({ "accion": "revocar_token", "id": a1 }),
-        "reanalizar" if a1.is_empty() || is_uuid(a1) => serde_json::json!({ "accion": "reanalizar", "item": if a1.is_empty() { serde_json::Value::Null } else { serde_json::json!(a1) } }),
+        "token-revoke" if is_uuid(a1) => serde_json::json!({ "v": 2, "action": "revoke_token", "id": a1 }),
+        "rescan" if a1.is_empty() || is_uuid(a1) => serde_json::json!({ "v": 2, "action": "rescan", "item": if a1.is_empty() { serde_json::Value::Null } else { serde_json::json!(a1) } }),
         _ => {
             eprintln!("{}", usage);
             return 2;
@@ -1564,7 +1537,7 @@ pub fn review_cli(args: &[String]) -> i32 {
             return 1;
         }
     };
-    let r = match json_post("/functions/v1/revisar", Some(&s), &body, &[]) {
+    let r = match json_post("/functions/v1/review", Some(&s), &body, &[]) {
         Ok(r) => r,
         Err(e) => {
             eprintln!("{}", e);
@@ -1577,29 +1550,29 @@ pub fn review_cli(args: &[String]) -> i32 {
         return 1;
     }
     match action {
-        "listar" => {
-            let list = v["pendientes"].as_array().cloned().unwrap_or_default();
+        "list" => {
+            let list = v["pending"].as_array().cloned().unwrap_or_default();
             for f in &list {
-                println!("{}  [{}] {}  (by {}, {} bytes{})", f["id"].as_str().unwrap_or(""), f["tipo"].as_str().unwrap_or(""), f["titulo"].as_str().unwrap_or(""), f["autor_nombre"].as_str().unwrap_or(""), f["bytes"].as_i64().unwrap_or(0), if f["es_18"].as_bool().unwrap_or(false) { ", +18" } else { "" });
-                println!("    reason: {}", f["motivo_rechazo"].as_str().unwrap_or("-"));
+                println!("{}  [{}] {}  (by {}, {} bytes{})", f["id"].as_str().unwrap_or(""), f["kind"].as_str().unwrap_or(""), f["title"].as_str().unwrap_or(""), f["author_name"].as_str().unwrap_or(""), f["bytes"].as_i64().unwrap_or(0), if f["is_18"].as_bool().unwrap_or(false) { ", +18" } else { "" });
+                println!("    reason: {}", f["rejection_reason"].as_str().unwrap_or("-"));
             }
-            let profiles = v["perfiles"].as_array().cloned().unwrap_or_default();
+            let profiles = v["profiles"].as_array().cloned().unwrap_or_default();
             for p in &profiles {
-                println!("{}  [profile {}] by {}", p["usuario"].as_str().unwrap_or(""), p["clase"].as_str().unwrap_or(""), p["nombre_publico"].as_str().unwrap_or(""));
+                println!("{}  [profile {}] by {}", p["user"].as_str().unwrap_or(""), p["class"].as_str().unwrap_or(""), p["public_name"].as_str().unwrap_or(""));
             }
             println!("{} content item(s) and {} profile image(s) pending. To see the files use the moderation website.", list.len(), profiles.len());
         }
         "tokens" => {
             for t in v["tokens"].as_array().cloned().unwrap_or_default() {
-                println!("{}  {}  [{}]  expires {}{}", t["id"].as_str().unwrap_or(""), t["nombre"].as_str().unwrap_or(""), t["alcances"].as_array().map(|a| a.iter().filter_map(|x| x.as_str()).collect::<Vec<_>>().join(",")).unwrap_or_default(), t["expira_en"].as_str().unwrap_or("").get(..10).unwrap_or(""), if t["revocado"].as_bool().unwrap_or(false) { "  (revoked)" } else { "" });
+                println!("{}  {}  [{}]  expires {}{}", t["id"].as_str().unwrap_or(""), t["name"].as_str().unwrap_or(""), t["scopes"].as_array().map(|a| a.iter().filter_map(|x| x.as_str()).collect::<Vec<_>>().join(",")).unwrap_or_default(), t["expires_at"].as_str().unwrap_or("").get(..10).unwrap_or(""), if t["revoked"].as_bool().unwrap_or(false) { "  (revoked)" } else { "" });
             }
         }
-        "token-crear" => {
-            println!("Token created (expires {}). Copy it now, it cannot be viewed again:", v["expira_en"].as_str().unwrap_or(""));
+        "token-create" => {
+            println!("Token created (expires {}). Copy it now, it cannot be viewed again:", v["expires_at"].as_str().unwrap_or(""));
             println!("{}", v["token"].as_str().unwrap_or(""));
         }
-        "reanalizar" => println!("rescan: {} {}{}", v["estado"].as_str().unwrap_or("?"), v["titulo"].as_str().unwrap_or(""), v["motivo"].as_str().map(|m| format!(" · {}", m)).unwrap_or_default()),
-        _ => println!("{}: {}", action, v["estado"].as_str().unwrap_or("?")),
+        "rescan" => println!("rescan: {} {}{}", v["status"].as_str().unwrap_or("?"), v["title"].as_str().unwrap_or(""), v["reason"].as_str().map(|m| format!(" · {}", m)).unwrap_or_default()),
+        _ => println!("{}: {}", action, v["status"].as_str().unwrap_or("?")),
     }
     0
 }
@@ -1679,9 +1652,9 @@ impl EditorApp {
         std::thread::spawn(move || {
             let r = current(&s, &tx).and_then(|s| {
                 if hearted {
-                    request("DELETE", &format!("/rest/v1/corazones?persona=eq.{}&item=eq.{}", s.uid, item), Some(&s), None, None, &[], 1 << 16)?.ok().map(|_| s)
+                    request("DELETE", &format!("/rest/v1/hearts?person=eq.{}&item=eq.{}", s.uid, item), Some(&s), None, None, &[], 1 << 16)?.ok().map(|_| s)
                 } else {
-                    let r = json_post("/rest/v1/corazones", Some(&s), &serde_json::json!({ "persona": s.uid, "item": item }), &[("Prefer", "return=minimal")])?;
+                    let r = json_post("/rest/v1/hearts", Some(&s), &serde_json::json!({ "person": s.uid, "item": item }), &[("Prefer", "return=minimal")])?;
                     if r.state == 409 { Ok(s) } else { r.ok().map(|_| s) } // already had it: fine
                 }
             });
@@ -1721,9 +1694,9 @@ impl EditorApp {
         std::thread::spawn(move || {
             let r = current(&s, &tx).and_then(|s| {
                 if following_creator {
-                    request("DELETE", &format!("/rest/v1/seguidores?seguidor=eq.{}&seguido=eq.{}", s.uid, creator), Some(&s), None, None, &[], 1 << 16)?.ok().map(|_| s)
+                    request("DELETE", &format!("/rest/v1/follows?follower=eq.{}&followed=eq.{}", s.uid, creator), Some(&s), None, None, &[], 1 << 16)?.ok().map(|_| s)
                 } else {
-                    let r = json_post("/rest/v1/seguidores", Some(&s), &serde_json::json!({ "seguidor": s.uid, "seguido": creator }), &[("Prefer", "return=minimal")])?;
+                    let r = json_post("/rest/v1/follows", Some(&s), &serde_json::json!({ "follower": s.uid, "followed": creator }), &[("Prefer", "return=minimal")])?;
                     if r.state == 409 { Ok(s) } else { r.ok().map(|_| s) }
                 }
             });
@@ -1880,10 +1853,10 @@ impl EditorApp {
                 // Content type icon, drawn as SVG (uploaded images are only used as previews).
                 let icon_name = match it.kind.as_str() {
                     "plugin" => "tab_plugins",
-                    "imagen" => "tab_images",
-                    "fuente" => "kind_font",
-                    "plantilla" => "tab_templates",
-                    "elemento" => "tab_elements",
+                    "image" => "tab_images",
+                    "font" => "kind_font",
+                    "template" => "tab_templates",
+                    "element" => "tab_elements",
                     _ => "kind_theme",
                 };
                 let (r, _) = ui.allocate_exact_size(egui::Vec2::splat(40.0), egui::Sense::hover());
@@ -1910,11 +1883,11 @@ impl EditorApp {
             if !it.description.is_empty() {
                 ui.label(RichText::new(&it.description).small());
             }
-            if !it.labels.is_empty() {
-                ui.label(RichText::new(it.labels.iter().map(|e| format!("#{}", e)).collect::<Vec<_>>().join(" ")).small().color(MUTED()));
+            if !it.tags.is_empty() {
+                ui.label(RichText::new(it.tags.iter().map(|e| format!("#{}", e)).collect::<Vec<_>>().join(" ")).small().color(MUTED()));
             }
-            if let Some(r) = it.public_view.clone() {
-                egui::CollapsingHeader::new(RichText::new(t("Preview")).small()).id_salt(("vista", &it.id)).show(ui, |ui| match self.community_texture(ctx, &r) {
+            if let Some(r) = it.public_preview.clone() {
+                egui::CollapsingHeader::new(RichText::new(t("Preview")).small()).id_salt(("preview", &it.id)).show(ui, |ui| match self.community_texture(ctx, &r) {
                     Some(tex) => {
                         let w = ui.available_width();
                         let s = tex.size_vec2();
@@ -1957,7 +1930,7 @@ impl EditorApp {
                         let (s, id, reason) = (self.community.session.clone().unwrap(), it.id.clone(), k.to_string());
                         self.community.report = None;
                         self.community_launch(ctx, move |tx| {
-                            let r = current(&s, tx).and_then(|s| json_post("/rest/v1/reportes", Some(&s), &serde_json::json!({ "item": id, "reportante": s.uid, "motivo": reason }), &[("Prefer", "return=minimal")])?.ok().map(|_| ()));
+                            let r = current(&s, tx).and_then(|s| json_post("/rest/v1/reports", Some(&s), &serde_json::json!({ "item": id, "reporter": s.uid, "reason": reason }), &[("Prefer", "return=minimal")])?.ok().map(|_| ()));
                             let _ = tx.send(Message::Reported(r));
                         });
                     }
@@ -2108,12 +2081,12 @@ impl EditorApp {
                 action = Some(("avatar", true));
             }
             ui.add_space(62.0);
-            let has_avatar = mi.public_avatar.is_some() || mi.pending_avatar || self.community.previous.contains_key("avatar");
+            let has_avatar = mi.public_avatar.is_some() || mi.avatar_pending || self.community.previous.contains_key("avatar");
             if has_avatar && ui.small_button(t("Remove the profile picture")).clicked() {
                 action = Some(("avatar", false));
             }
             // ── Review notice (like X's) ──
-            let pending: Vec<String> = [("avatar", mi.pending_avatar, t("the profile picture")), ("banner", mi.pending_banner, t("the banner"))]
+            let pending: Vec<String> = [("avatar", mi.avatar_pending, t("the profile picture")), ("banner", mi.banner_pending, t("the banner"))]
                 .into_iter()
                 .filter(|(_, p, _)| *p)
                 .map(|(_, _, n)| n)
@@ -2132,7 +2105,7 @@ impl EditorApp {
                 f.links.resize(NETWORKS.len(), String::new());
             }
             let mut errors: Vec<String> = Vec::new();
-            field_x(ui, &t("Name"), &mut f.name, 1, "nombre_publico");
+            field_x(ui, &t("Name"), &mut f.name, 1, "public_name");
             let name = f.name.trim().to_string();
             if !((3..=32).contains(&name.chars().count()) && name.chars().all(|c| c.is_ascii_alphanumeric() || "_.-".contains(c))) {
                 errors.push(t("Name: 3-32 characters (letters, numbers, dot, hyphen and underscore)."));
@@ -2174,7 +2147,7 @@ impl EditorApp {
                     self.community.previous.remove(class);
                     let s = s.clone();
                     self.community_launch(ctx, move |tx| {
-                        let r = current(&s, tx).and_then(|s| json_post("/functions/v1/perfil", Some(&s), &serde_json::json!({ "accion": "quitar", "clase": class }), &[])?.ok().map(|_| s));
+                        let r = current(&s, tx).and_then(|s| json_post("/functions/v1/profile", Some(&s), &serde_json::json!({ "v": 2, "action": "remove", "class": class }), &[])?.ok().map(|_| s));
                         if let Ok(s) = &r {
                             let _ = tx.send(Message::MyProfile(load_my_profile(s)));
                         }
@@ -2190,15 +2163,15 @@ impl EditorApp {
                     let f = &self.community.profile_form;
                     let new_name = (Some(name.clone()) != self.community.profile.as_ref().map(|p| p.public_name.clone())).then_some(name.clone());
                     let links: serde_json::Map<String, serde_json::Value> = NETWORKS.iter().zip(&f.links).filter(|(_, u)| !u.trim().is_empty()).map(|((k, _, _), u)| (k.to_string(), serde_json::Value::String(u.trim().to_string()))).collect();
-                    let body = serde_json::json!({ "accion": "guardar", "bio": f.bio.trim(), "github": gh, "enlaces": links });
+                    let body = serde_json::json!({ "v": 2, "action": "save", "bio": f.bio.trim(), "github": gh, "links": links });
                     let s = s.clone();
                     self.community.state = t("Saving…");
                     self.community_launch(ctx, move |tx| {
                         let r = current(&s, tx).and_then(|s| {
                             if let Some(n) = &new_name {
-                                request("PATCH", &format!("/rest/v1/perfiles?id=eq.{}", s.uid), Some(&s), None, Some(serde_json::json!({ "nombre_publico": n }).to_string().as_bytes()), &[], 1 << 16)?.ok()?;
+                                request("PATCH", &format!("/rest/v1/profiles?id=eq.{}", s.uid), Some(&s), None, Some(serde_json::json!({ "public_name": n }).to_string().as_bytes()), &[], 1 << 16)?.ok()?;
                             }
-                            let r = json_post("/functions/v1/perfil", Some(&s), &body, &[])?;
+                            let r = json_post("/functions/v1/profile", Some(&s), &body, &[])?;
                             if (200..300).contains(&r.state) {
                                 Ok(s)
                             } else {
@@ -2220,7 +2193,7 @@ impl EditorApp {
         if let Some(t) = self.community.previous.get(class) {
             return Some(t.clone());
         }
-        let pending = if class == "avatar" { mi.pending_avatar } else { mi.pending_banner };
+        let pending = if class == "avatar" { mi.avatar_pending } else { mi.banner_pending };
         let public = if class == "avatar" { mi.public_avatar.clone() } else { mi.public_banner.clone() };
         if pending {
             return self.community_quarantine_texture(ctx, class);
@@ -2230,7 +2203,7 @@ impl EditorApp {
 
     /// My profile image under review: only its owner can read it (quarantine is private).
     fn community_quarantine_texture(&mut self, ctx: &egui::Context, class: &'static str) -> Option<egui::TextureHandle> {
-        let key = format!("cuarentena:{}", class);
+        let key = format!("quarantine:{}", class);
         if let Some(t) = self.community.textures.get(&key) {
             return t.clone();
         }
@@ -2333,9 +2306,9 @@ pub fn social_cli(what: &str, id: &str) -> i32 {
         return 1;
     };
     let (path_get, path_post, field, row, ya) = if what == "heart" {
-        (format!("/rest/v1/corazones?persona=eq.{}&item=eq.{}", s.uid, id), "/rest/v1/corazones", "item", serde_json::json!({ "persona": s.uid, "item": id }), hearts.iter().any(|i| i == id))
+        (format!("/rest/v1/hearts?person=eq.{}&item=eq.{}", s.uid, id), "/rest/v1/hearts", "item", serde_json::json!({ "person": s.uid, "item": id }), hearts.iter().any(|i| i == id))
     } else {
-        (format!("/rest/v1/seguidores?seguidor=eq.{}&seguido=eq.{}", s.uid, id), "/rest/v1/seguidores", "seguido", serde_json::json!({ "seguidor": s.uid, "seguido": id }), following.iter().any(|i| i == id))
+        (format!("/rest/v1/follows?follower=eq.{}&followed=eq.{}", s.uid, id), "/rest/v1/follows", "followed", serde_json::json!({ "follower": s.uid, "followed": id }), following.iter().any(|i| i == id))
     };
     let r = if ya { request("DELETE", &path_get, Some(&s), None, None, &[], 1 << 16) } else { json_post(path_post, Some(&s), &row, &[("Prefer", "return=minimal")]) };
     match r.and_then(|r| r.ok()) {
@@ -2345,7 +2318,7 @@ pub fn social_cli(what: &str, id: &str) -> i32 {
             return 1;
         }
     }
-    let total = if what == "heart" { request("GET", &format!("/rest/v1/items?select=corazones&id=eq.{}", id), None, None, None, &[], 1 << 16) } else { request("GET", &format!("/rest/v1/perfiles_publicos?select=seguidores&id=eq.{}", id), None, None, None, &[], 1 << 16) };
+    let total = if what == "heart" { request("GET", &format!("/rest/v1/community_items?select=hearts&id=eq.{}", id), None, None, None, &[], 1 << 16) } else { request("GET", &format!("/rest/v1/public_profiles?select=followers&id=eq.{}", id), None, None, None, &[], 1 << 16) };
     if let Ok(t) = total.and_then(|r| r.ok()) {
         println!("total now: {}", t.text());
     }

@@ -60,7 +60,7 @@ Lienzo UI で初めてのインターフェースを作り、Unity へ初めて�
 
 1. **Unity へエクスポート** (Ctrl+E) を押します。初回はプロジェクトのフォルダー（`Assets` が入っているフォルダー）を選択します。
 2. Unity に戻ると、`Assets/EditorGUI/Prefabs` にデザインが Prefab として作成されています。
-3. シーンにドラッグするか、メニューの **Tools › Lienzo UI › Importar diseño en la escena**（Unity のメニューはスペイン語で「デザインをシーンにインポート」の意味）を使用します。
+3. シーンにドラッグするか、メニューの **Tools › Lienzo UI › Import design into scene…**を使用します。
 
 再エクスポートするたびに、Unity が自動で Prefab を更新します。
 

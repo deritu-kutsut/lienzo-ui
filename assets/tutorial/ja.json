@@ -18,7 +18,7 @@
     },
     {
       "title": "テストと Unity へのエクスポート",
-      "text": "• 「テスト」 (F5)：デザインが操作可能になり、他の画面サイズ（スマホ、4:3、ウルトラワイド）をシミュレートしてレイアウトの適応を確認できます。\n• 「保存」 (Ctrl+S)：後から続きを作業できるように .editorgui.json プロジェクトを保存します。\n• 「チェック」：小さすぎる文字、低いコントラスト、タップしにくい小さなボタン、ページからはみ出た要素、欠落している画像を警告します。\n• 「Unity へエクスポート」 (Ctrl+E)：初回のみ、Unity プロジェクトのフォルダー（Assets を含むフォルダー）を選択します。\n\nUnity のウィンドウに戻ると、Assets/EditorGUI/Prefabs にデザインが Prefab として生成されます。また、Unity のメニュー「Tools › Lienzo UI › Importar diseño en la escena」からもシーンへ直接インポートできます。"
+      "text": "• 「テスト」 (F5)：デザインが操作可能になり、他の画面サイズ（スマホ、4:3、ウルトラワイド）をシミュレートしてレイアウトの適応を確認できます。\n• 「保存」 (Ctrl+S)：後から続きを作業できるように .editorgui.json プロジェクトを保存します。\n• 「チェック」：小さすぎる文字、低いコントラスト、タップしにくい小さなボタン、ページからはみ出た要素、欠落している画像を警告します。\n• 「Unity へエクスポート」 (Ctrl+E)：初回のみ、Unity プロジェクトのフォルダー（Assets を含むフォルダー）を選択します。\n\nUnity のウィンドウに戻ると、Assets/EditorGUI/Prefabs にデザインが Prefab として生成されます。また、Unity のメニュー「Tools › Lienzo UI › Import design into scene…」からもシーンへ直接インポートできます。"
     }
   ],
   "pro": [
@@ -36,11 +36,11 @@
     },
     {
       "title": "ロジック：クリック時のスクリプトと View",
-      "text": "「テスト」モードでは、各要素をクリックしたときに小さなスクリプト (Rhai) を実行できます：mostrar(\"Nombre\")、ocultar、alternar、texto、color、mover など。Unity を開かずに画面遷移のプロトタイプを作るときに便利です。\n\nUnity では、<デザイン>View.cs が <デザイン>ViewBase を継承しており、各ボタン、Slider、入力欄への型付き参照や、クリック・値変更イベントが用意されています。ゲームのロジックはそこに記述してください。再エクスポートしても上書きされません。"
+      "text": "「テスト」モードでは、各要素をクリックしたときに小さなスクリプト (Rhai) を実行できます：show(\"Name\")、hide、toggle、set_text、set_color、move_by など。Unity を開かずに画面遷移のプロトタイプを作るときに便利です。\n\nUnity では、<デザイン>View.cs が <デザイン>ViewBase を継承しており、各ボタン、Slider、入力欄への型付き参照や、クリック・値変更イベントが用意されています。ゲームのロジックはそこに記述してください。再エクスポートしても上書きされません。"
     },
     {
       "title": "コマンドラインと自動化",
-      "text": "lienzo-ui --templates                         テンプレートの一覧を表示\nlienzo-ui --template 0 --save menu.editorgui.json\nlienzo-ui --open menu.editorgui.json --review        デザインをチェック（エラー時は終了コード 1）\nlienzo-ui --open menu.editorgui.json --export <proyecto Unity>\nlienzo-ui --open menu.editorgui.json --screenshot captura.png\nlienzo-ui --test 1080x2400                    指定した画面サイズで「テスト」モードを開く\n\n--export、--save、--review を指定するとウィンドウは開かないため、スクリプト、CI、MCP サーバーでの自動化に最適です。"
+      "text": "lienzo-ui --templates                         テンプレートの一覧を表示\nlienzo-ui --template 0 --save menu.editorgui.json\nlienzo-ui --open menu.editorgui.json --review        デザインをチェック（エラー時は終了コード 1）\nlienzo-ui --open menu.editorgui.json --export <proyecto Unity>\nlienzo-ui --open menu.editorgui.json --screenshot capture.png\nlienzo-ui --test 1080x2400                    指定した画面サイズで「テスト」モードを開く\n\n--export、--save、--review を指定するとウィンドウは開かないため、スクリプト、CI、MCP サーバーでの自動化に最適です。"
     },
     {
       "title": "MCP サーバーとプロジェクトへの貢献",
