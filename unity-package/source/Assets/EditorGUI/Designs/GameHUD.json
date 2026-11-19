@@ -14,6 +14,7 @@
     {
       "active": true,
       "contentHeight": 0.0,
+      "field": "scenePreview",
       "id": 1,
       "image": {
         "alpha": 1.0,
@@ -114,6 +115,7 @@
     {
       "active": true,
       "contentHeight": 0.0,
+      "field": "topBar",
       "id": 2,
       "image": {
         "alpha": 1.0,
@@ -214,6 +216,7 @@
     {
       "active": true,
       "contentHeight": 0.0,
+      "field": "healthFrame",
       "id": 3,
       "image": {
         "alpha": 1.0,
@@ -314,6 +317,7 @@
     {
       "active": true,
       "contentHeight": 0.0,
+      "field": "healthLabel",
       "id": 4,
       "image": {
         "alpha": 1.0,
@@ -414,6 +418,7 @@
     {
       "active": true,
       "contentHeight": 0.0,
+      "field": "healthBar",
       "id": 5,
       "image": {
         "alpha": 1.0,
@@ -514,6 +519,7 @@
     {
       "active": true,
       "contentHeight": 0.0,
+      "field": "score",
       "id": 6,
       "image": {
         "alpha": 1.0,
@@ -614,6 +620,7 @@
     {
       "active": true,
       "contentHeight": 0.0,
+      "field": "actionBar",
       "id": 7,
       "image": {
         "alpha": 1.0,
@@ -714,6 +721,7 @@
     {
       "active": true,
       "contentHeight": 0.0,
+      "field": "slot1",
       "id": 8,
       "image": {
         "alpha": 1.0,
@@ -814,6 +822,7 @@
     {
       "active": true,
       "contentHeight": 0.0,
+      "field": "slot2",
       "id": 9,
       "image": {
         "alpha": 1.0,
@@ -914,6 +923,7 @@
     {
       "active": true,
       "contentHeight": 0.0,
+      "field": "slot3",
       "id": 10,
       "image": {
         "alpha": 1.0,
@@ -1014,6 +1024,7 @@
     {
       "active": true,
       "contentHeight": 0.0,
+      "field": "slot4",
       "id": 11,
       "image": {
         "alpha": 1.0,
@@ -1114,6 +1125,7 @@
     {
       "active": true,
       "contentHeight": 0.0,
+      "field": "minimap",
       "id": 12,
       "image": {
         "alpha": 1.0,

@@ -13,3 +13,5 @@ python unity-package/store_images.py   # icon, card, cover and screenshots for t
 - `asset-store/ficha.md`: the texts and data for the Publisher Portal and the steps to upload it.
 
 Validated on Unity 6000.3.25f1: with `com.unity.ugui` it compiles without errors, and without it the project doesn't break either.
+
+Export behaviour (see also `source/Assets/EditorGUI/Documentation/README.md` and `docs/FORMAT.md`): the importer builds prefabs after the generated scripts compile (pending list in `Library/LienzoUI`), binds the View by serialized references, honours `unity.scripts_dir` / `unity.assembly` / `unity.generate`, canvas options, sprite slicing, TMP fonts and the portrait layout. The runtime helpers `LienzoSafeArea` and `LienzoOrientationLayout` are generated per project (they are not part of this package).

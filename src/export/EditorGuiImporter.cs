@@ -6,6 +6,9 @@
 //    turned into a prefab in Assets/EditorGUI/Prefabs.
 //  * Menu Tools > Lienzo UI > Import design into scene… creates it in the open scene.
 //  * Menu Tools > Lienzo UI > Regenerate all prefabs.
+//  * First export: the prefab is built after the new *View scripts have compiled (a pending list kept in
+//    Library/LienzoUI/pending.txt survives the domain reload), so the View component is attached and its
+//    serialized references are filled in.
 // Requires the packages "Unity UI" (com.unity.ugui) and TextMeshPro (included in ugui 2.0).
 using System;
 using System.Collections.Generic;
@@ -13,6 +16,7 @@ using System.IO;
 using System.Linq;
 using TMPro;
 using UnityEditor;
+using UnityEditor.Compilation;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -25,6 +29,13 @@ namespace EditorGui
     {
         public const string Root = "Assets/EditorGUI";
         const string Generated = Root + "/Sprites/Generated";
+
+        // Names of the objects the importer creates itself. The "__" prefix keeps them from colliding with names the user chose.
+        public const string BorderName = "__border", TextName = "__text", TickName = "__tick", BackgroundName = "__canvas_background", SafeAreaName = "__safe_area";
+
+        /// userData of a sprite texture that Lienzo created / manages: its import settings may be rewritten.
+        /// A texture without it that already exists in the project belongs to the user (only what the design sets is applied).
+        const string OwnedMarker = "lienzo:sprite";
 
         // ------------------------------------------------------------------ JSON format
         [Serializable] public class RT { public float[] anchorMin, anchorMax, pivot, anchoredPosition, sizeDelta; public float rotationZ; }
@@ -48,9 +59,24 @@ namespace EditorGui
             public Lay layout;
             public float value, contentHeight;
             public string[] options;
+            // optional (absent in older exports)
+            public string unityName, field, sprite, imageMode;
+            public float[] slice; // [left, bottom, right, top] in source pixels
+            public float ppu;     // 0 = not set
         }
-        [Serializable] public class Cv { public string name, className, background; public float[] referenceResolution; public float match; public bool pixelArt; }
-        [Serializable] public class Doc { public string format; public Cv canvas; public El[] elements; }
+        [Serializable]
+        public class Cv
+        {
+            public string name, className, background, renderMode;
+            public float[] referenceResolution;
+            public float match, planeDistance;
+            public bool pixelArt, safeArea, embed;
+            public int sortOrder;
+        }
+        [Serializable] public class Un { public string scriptsDir, assembly, defaultFont; public string[] fallbackFonts; }
+        [Serializable] public class POv { public int id; public bool hasRect, hasVisible, visible, hasFontSize, hasLayout; public RT rect; public float fontSize; public Lay layout; }
+        [Serializable] public class Por { public float width, height; public POv[] overrides; }
+        [Serializable] public class Doc { public string format; public Cv canvas; public El[] elements; public Un unity; public Por portrait; }
 
         // ------------------------------------------------------------------ menus
         [MenuItem("Tools/Lienzo UI/Import design into scene…")]
@@ -70,8 +96,18 @@ namespace EditorGui
         public static void RebuildAll()
         {
             if (!Directory.Exists(Root + "/Designs")) { Debug.LogWarning("[Lienzo UI] There are no designs in " + Root + "/Designs"); return; }
-            foreach (var p in Directory.GetFiles(Root + "/Designs", "*.json")) BuildPrefab(p.Replace('\\', '/'));
+            int ok = 0, failed = 0;
+            foreach (var p in Directory.GetFiles(Root + "/Designs", "*.json"))
+            {
+                try { if (BuildPrefab(p.Replace('\\', '/')) != null) ok++; else failed++; }
+                catch (Exception ex) { failed++; Debug.LogError("[Lienzo UI] Could not build " + p + ": " + ex); }
+            }
+            Debug.Log("[Lienzo UI] Regenerate all prefabs: " + ok + " built" + (failed > 0 ? ", " + failed + " not built (see the messages above)" : "") + ".");
         }
+
+        /// A MonoBehaviour type by exact name (global or any namespace), not abstract. Null if it has not compiled yet.
+        public static Type FindType(string name) =>
+            string.IsNullOrEmpty(name) ? null : TypeCache.GetTypesDerivedFrom<MonoBehaviour>().FirstOrDefault(x => x.Name == name && !x.IsAbstract);
 
         public static Doc Load(string path) => JsonUtility.FromJson<Doc>(File.ReadAllText(path));
 
@@ -116,32 +152,93 @@ namespace EditorGui
             {
                 EditorSceneManager.ClosePreviewScene(scene);
             }
-            Debug.Log("[Lienzo UI] Prefab updated: " + prefabPath);
+            var vt = FindType((doc.canvas ?? new Cv()).className + "View");
+            Debug.Log("[Lienzo UI] Prefab updated: " + prefabPath + (vt == null && !string.IsNullOrEmpty((doc.canvas ?? new Cv()).className) ? " (the " + doc.canvas.className + "View script is not compiled yet: the prefab is rebuilt when it is)" : ""));
             return prefabPath;
         }
 
         // ------------------------------------------------------------------ construction
+        // Per-build state (a build is synchronous and never re-entered).
+        static Dictionary<int, List<TMP_Text>> textsOf = new Dictionary<int, List<TMP_Text>>();
+        static Dictionary<string, HashSet<uint>> missingGlyphs = new Dictionary<string, HashSet<uint>>();
+        static HashSet<TMP_FontAsset> fallbacksDone = new HashSet<TMP_FontAsset>();
+        static HashSet<string> warned = new HashSet<string>();
+        static string defaultFontName;
+        static string[] fallbackFontNames = new string[0];
+
         public static GameObject Build(Doc doc)
         {
             var cv = doc.canvas ?? new Cv();
             pixelArt = cv.pixelArt;
-            var canvasGo = new GameObject(string.IsNullOrEmpty(cv.name) ? "Canvas" : cv.name, typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
-            canvasGo.GetComponent<Canvas>().renderMode = RenderMode.ScreenSpaceOverlay;
-            canvasGo.GetComponent<Canvas>().pixelPerfect = cv.pixelArt;
-            var scaler = canvasGo.GetComponent<CanvasScaler>();
-            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = V(cv.referenceResolution, new Vector2(1920, 1080));
-            scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
-            scaler.matchWidthOrHeight = cv.match;
+            textsOf = new Dictionary<int, List<TMP_Text>>();
+            missingGlyphs = new Dictionary<string, HashSet<uint>>();
+            fallbacksDone = new HashSet<TMP_FontAsset>();
+            warned = new HashSet<string>();
+            var un = doc.unity ?? new Un();
+            defaultFontName = string.IsNullOrEmpty(un.defaultFont) ? null : un.defaultFont;
+            fallbackFontNames = un.fallbackFonts ?? new string[0];
+            var refRes = V(cv.referenceResolution, new Vector2(1920, 1080));
 
-            var bg = Col(cv.background, 1f);
-            if (bg.a > 0.001f)
+            GameObject canvasGo;
+            var rootName = string.IsNullOrEmpty(cv.name) ? "Canvas" : cv.name;
+            if (cv.embed)
             {
-                var b = NewUI("Fondo del lienzo", canvasGo.transform);
-                Stretch((RectTransform)b.transform);
-                var im = b.AddComponent<Image>();
-                im.color = bg;
-                im.raycastTarget = false;
+                // Lives under the game's own canvas: a plain stretched RectTransform, no Canvas / CanvasScaler / GraphicRaycaster.
+                canvasGo = new GameObject(rootName, typeof(RectTransform));
+                Stretch((RectTransform)canvasGo.transform);
+            }
+            else
+            {
+                canvasGo = new GameObject(rootName, typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
+                var canvas = canvasGo.GetComponent<Canvas>();
+                var world = cv.renderMode == "WorldSpace";
+                canvas.renderMode = world ? RenderMode.WorldSpace : cv.renderMode == "ScreenSpaceCamera" ? RenderMode.ScreenSpaceCamera : RenderMode.ScreenSpaceOverlay;
+                canvas.sortingOrder = cv.sortOrder;
+                canvas.planeDistance = cv.planeDistance > 0f ? cv.planeDistance : 100f; // Screen Space - Camera (assign the camera in the scene)
+                canvas.pixelPerfect = cv.pixelArt && !world;
+                var scaler = canvasGo.GetComponent<CanvasScaler>();
+                scaler.referenceResolution = refRes;
+                if (world)
+                {
+                    // 1 reference pixel = 1 cm; the Canvas is as big as the reference resolution.
+                    var crt = (RectTransform)canvasGo.transform;
+                    crt.sizeDelta = refRes;
+                    crt.localScale = Vector3.one * 0.01f;
+                    scaler.uiScaleMode = CanvasScaler.ScaleMode.ConstantPixelSize;
+                }
+                else
+                {
+                    scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+                    scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
+                    scaler.matchWidthOrHeight = cv.match;
+                }
+            }
+
+            // No "background" in the file = transparent page: no background image at all.
+            if (!string.IsNullOrEmpty(cv.background))
+            {
+                var bg = Col(cv.background, 1f);
+                if (bg.a > 0.001f)
+                {
+                    var b = NewUI(BackgroundName, canvasGo.transform);
+                    Stretch((RectTransform)b.transform);
+                    var im = b.AddComponent<Image>();
+                    im.color = bg;
+                    im.raycastTarget = false;
+                }
+            }
+
+            // Safe area: every top-level element lives in a container that follows Screen.safeArea.
+            Transform top = canvasGo.transform;
+            GameObject safe = null;
+            if (cv.safeArea)
+            {
+                safe = NewUI(SafeAreaName, canvasGo.transform);
+                Stretch((RectTransform)safe.transform);
+                var sat = FindType("LienzoSafeArea");
+                if (sat != null) safe.AddComponent(sat);
+                else Debug.LogWarning("[Lienzo UI] LienzoSafeArea is not compiled yet: the prefab will be rebuilt automatically when it is (or run Tools > Lienzo UI > Regenerate all prefabs).");
+                top = safe.transform;
             }
 
             var els = doc.elements ?? new El[0];
@@ -151,11 +248,11 @@ namespace EditorGui
             for (int i = 0; i < els.Length; i++)
             {
                 var e = Fix(els[i]);
-                Transform parent = canvasGo.transform;
+                Transform parent = top;
                 if (e.parent >= 0 && made.TryGetValue(e.parent, out var pgo))
                     parent = contentOf.TryGetValue(e.parent, out var content) ? content : pgo.transform;
                 var go = Create(e);
-                go.name = e.name;
+                go.name = e.name; // exactly the name of the design (a `unity_name` is already applied by the exporter)
                 go.transform.SetParent(parent, false);
                 ApplyRect((RectTransform)go.transform, e.rect);
                 Style(go, e);
@@ -173,8 +270,154 @@ namespace EditorGui
             foreach (var go in inactive) go.SetActive(false);
             int ui = LayerMask.NameToLayer("UI");
             if (ui >= 0) SetLayer(canvasGo.transform, ui);
-            AttachView(canvasGo, cv.className);
+            AttachView(canvasGo, cv.className, els, made);
+            AttachPortrait(canvasGo, doc, els, made, contentOf);
+            // Edit-mode components (the safe area) may have touched their rect while being added: store the neutral one.
+            if (safe != null) Stretch((RectTransform)safe.transform);
+            ReportGlyphs(string.IsNullOrEmpty(cv.name) ? cv.className : cv.name);
             return canvasGo;
+        }
+
+        static T Pick<T>(GameObject go) where T : Component => go.GetComponent<T>();
+
+        /// Component that the generated `<Class>ViewBase` field of an element holds.
+        static Component ComponentFor(GameObject go, string type)
+        {
+            switch (type)
+            {
+                case "Button": return Pick<Button>(go);
+                case "Toggle": return Pick<Toggle>(go);
+                case "Slider": return Pick<Slider>(go);
+                case "InputField": return Pick<TMP_InputField>(go);
+                case "Dropdown": return Pick<TMP_Dropdown>(go);
+                case "ScrollView": return Pick<ScrollRect>(go);
+                case "Text": return Pick<TextMeshProUGUI>(go);
+                case "Empty": return go.transform;
+                default: return Pick<Image>(go);
+            }
+        }
+
+        /// Adds the generated `<Class>View` and assigns its fields as serialized references, so that renaming an
+        /// element (in Lienzo or in Unity) no longer breaks the code. Returns false if the View is not compiled yet.
+        static bool AttachView(GameObject go, string className, El[] els, Dictionary<int, GameObject> made)
+        {
+            if (string.IsNullOrEmpty(className)) return false;
+            var t = FindType(className + "View");
+            if (t == null) return false;
+            var view = go.AddComponent(t);
+            var so = new SerializedObject(view);
+            int bound = 0;
+            for (int i = 0; i < els.Length; i++)
+            {
+                var e = els[i];
+                if (string.IsNullOrEmpty(e.field) || !made.TryGetValue(i, out var eg)) continue;
+                var prop = so.FindProperty(e.field);
+                if (prop == null || prop.propertyType != SerializedPropertyType.ObjectReference) continue;
+                var c = ComponentFor(eg, e.type);
+                if (c == null) continue;
+                prop.objectReferenceValue = c;
+                bound++;
+            }
+            so.ApplyModifiedPropertiesWithoutUndo();
+            return true;
+        }
+
+        static int IndexOfId(El[] els, int id)
+        {
+            for (int i = 0; i < els.Length; i++) if (els[i].id == id) return i;
+            return -1;
+        }
+
+        static void SetRectState(SerializedProperty st, Vector2 amin, Vector2 amax, Vector2 pivot, Vector2 pos, Vector2 size, float rot)
+        {
+            st.FindPropertyRelative("hasRect").boolValue = true;
+            st.FindPropertyRelative("anchorMin").vector2Value = amin;
+            st.FindPropertyRelative("anchorMax").vector2Value = amax;
+            st.FindPropertyRelative("pivot").vector2Value = pivot;
+            st.FindPropertyRelative("anchoredPosition").vector2Value = pos;
+            st.FindPropertyRelative("sizeDelta").vector2Value = size;
+            st.FindPropertyRelative("rotationZ").floatValue = rot;
+        }
+
+        static void SetLayoutState(SerializedProperty st, Lay l)
+        {
+            st.FindPropertyRelative("hasLayout").boolValue = true;
+            var ls = st.FindPropertyRelative("layout");
+            var p = l.padding ?? new float[4];
+            ls.FindPropertyRelative("mode").intValue = l.mode;
+            ls.FindPropertyRelative("left").intValue = Mathf.RoundToInt(P(p, 0));
+            ls.FindPropertyRelative("right").intValue = Mathf.RoundToInt(P(p, 1));
+            ls.FindPropertyRelative("top").intValue = Mathf.RoundToInt(P(p, 2));
+            ls.FindPropertyRelative("bottom").intValue = Mathf.RoundToInt(P(p, 3));
+            ls.FindPropertyRelative("spacing").vector2Value = V(l.spacing, Vector2.zero);
+            ls.FindPropertyRelative("cellSize").vector2Value = V(l.cellSize, new Vector2(100, 100));
+            ls.FindPropertyRelative("childAlignment").intValue = l.childAlignment;
+            ls.FindPropertyRelative("expandWidth").boolValue = l.expandWidth;
+            ls.FindPropertyRelative("expandHeight").boolValue = l.expandHeight;
+        }
+
+        /// Portrait layout: adds LienzoOrientationLayout holding the landscape state (as built) and the portrait state of
+        /// every element the design lays out differently.
+        static void AttachPortrait(GameObject root, Doc doc, El[] els, Dictionary<int, GameObject> made, Dictionary<int, Transform> contentOf)
+        {
+            var por = doc.portrait;
+            if (por == null || por.overrides == null || por.overrides.Length == 0) return;
+            var t = FindType("LienzoOrientationLayout");
+            if (t == null)
+            {
+                Debug.LogWarning("[Lienzo UI] LienzoOrientationLayout is not compiled yet: the portrait layout will be added when the prefab is rebuilt after the scripts compile.");
+                return;
+            }
+            var comp = root.AddComponent(t);
+            var so = new SerializedObject(comp);
+            var arr = so.FindProperty("entries");
+            var list = new List<(int idx, POv ov)>();
+            foreach (var ov in por.overrides)
+            {
+                int idx = IndexOfId(els, ov.id);
+                if (idx >= 0 && made.ContainsKey(idx)) list.Add((idx, ov));
+            }
+            arr.arraySize = list.Count;
+            for (int k = 0; k < list.Count; k++)
+            {
+                var (idx, ov) = list[k];
+                var e = Fix(els[idx]);
+                var go = made[idx];
+                var en = arr.GetArrayElementAtIndex(k);
+                var rt = (RectTransform)go.transform;
+                en.FindPropertyRelative("target").objectReferenceValue = rt;
+                en.FindPropertyRelative("layoutHolder").objectReferenceValue = contentOf.TryGetValue(idx, out var content) ? content : go.transform;
+                var texts = textsOf.TryGetValue(e.id, out var tl) ? tl : new List<TMP_Text>();
+                var tp = en.FindPropertyRelative("texts");
+                tp.arraySize = texts.Count;
+                for (int j = 0; j < texts.Count; j++) tp.GetArrayElementAtIndex(j).objectReferenceValue = texts[j];
+                var land = en.FindPropertyRelative("landscape");
+                var port = en.FindPropertyRelative("portrait");
+                if (ov.hasRect)
+                {
+                    SetRectState(land, rt.anchorMin, rt.anchorMax, rt.pivot, rt.anchoredPosition, rt.sizeDelta, e.rect.rotationZ);
+                    var r = ov.rect ?? new RT();
+                    SetRectState(port, V(r.anchorMin, new Vector2(0.5f, 0.5f)), V(r.anchorMax, new Vector2(0.5f, 0.5f)), V(r.pivot, new Vector2(0.5f, 0.5f)), V(r.anchoredPosition, Vector2.zero), V(r.sizeDelta, new Vector2(100, 100)), r.rotationZ);
+                }
+                if (ov.hasVisible)
+                {
+                    land.FindPropertyRelative("hasActive").boolValue = true;
+                    land.FindPropertyRelative("active").boolValue = e.active;
+                    port.FindPropertyRelative("hasActive").boolValue = true;
+                    port.FindPropertyRelative("active").boolValue = ov.visible;
+                }
+                if (ov.hasFontSize)
+                {
+                    land.FindPropertyRelative("fontSize").floatValue = e.text.fontSize;
+                    port.FindPropertyRelative("fontSize").floatValue = ov.fontSize;
+                }
+                if (ov.hasLayout)
+                {
+                    SetLayoutState(land, e.layout);
+                    SetLayoutState(port, ov.layout ?? new Lay());
+                }
+            }
+            so.ApplyModifiedPropertiesWithoutUndo();
         }
 
         static El Fix(El e)
@@ -276,7 +519,7 @@ namespace EditorGui
             check.sprite = RoundedSprite(s * 0.2f, 0);
             check.type = Image.Type.Sliced;
             check.color = Col(e.image.color, e.image.alpha);
-            var tick = NewUI("Tick", check.transform);
+            var tick = NewUI(TickName, check.transform);
             var trt = (RectTransform)tick.transform;
             Stretch(trt);
             trt.offsetMin = new Vector2(s * 0.15f, s * 0.15f);
@@ -397,6 +640,7 @@ namespace EditorGui
             if (cap != null)
             {
                 ApplyText(cap, e, cap.text);
+                foreach (var o in e.options ?? new string[0]) CheckGlyphs(cap.font, o);
                 var p = e.text.padding;
                 var r = cap.rectTransform;
                 r.anchorMin = Vector2.zero;
@@ -506,12 +750,13 @@ namespace EditorGui
             img.type = Image.Type.Simple;
             img.pixelsPerUnitMultiplier = 1f;
             img.preserveAspect = false;
-            Sprite src = string.IsNullOrEmpty(im.source) ? null : ImportSprite(im.source);
+            Sprite src = string.IsNullOrEmpty(im.source) ? null : ImportSprite(im.source, e);
             if (src != null)
             {
                 img.sprite = src;
                 img.color = new Color(1, 1, 1, im.alpha);
                 img.preserveAspect = im.preserveAspect;
+                ApplyImageType(img, e, src);
             }
             else if (im.useGradient)
             {
@@ -538,10 +783,30 @@ namespace EditorGui
             }
         }
 
+        /// Image.type from the design (`imageMode`, which a `slice` implies as Sliced).
+        static void ApplyImageType(Image img, El e, Sprite sp)
+        {
+            switch (e.imageMode)
+            {
+                case "Sliced":
+                    img.type = Image.Type.Sliced;
+                    if (sp.border == Vector4.zero) Warn("slice:" + sp.name, "[Lienzo UI] \"" + e.name + "\" is Sliced but the sprite \"" + sp.name + "\" has no border (set the 9-slice in its Sprite Editor or give the element a slice).");
+                    break;
+                case "Tiled": img.type = Image.Type.Tiled; break;
+                case "Filled": img.type = Image.Type.Filled; img.fillMethod = Image.FillMethod.Horizontal; break;
+                default: img.type = Image.Type.Simple; break;
+            }
+        }
+
+        static void Warn(string key, string message)
+        {
+            if (warned.Add(key)) Debug.LogWarning(message);
+        }
+
         /// Border: stretched child with a ring sprite (radius &lt; 0 = ellipse).
         static void AddRing(GameObject go, Color color, float radius, float width)
         {
-            var b = NewUI("Borde", go.transform);
+            var b = NewUI(BorderName, go.transform);
             var rt = (RectTransform)b.transform;
             Stretch(rt);
             rt.SetAsFirstSibling();
@@ -560,7 +825,7 @@ namespace EditorGui
         static void AddLabel(GameObject go, El e)
         {
             if (!e.text.hasText) return;
-            var l = NewUI("Texto", go.transform);
+            var l = NewUI(TextName, go.transform);
             var rt = (RectTransform)l.transform;
             Stretch(rt);
             Pad(rt, e.text.padding);
@@ -580,9 +845,14 @@ namespace EditorGui
         static void ApplyText(TextMeshProUGUI t, El e, string value)
         {
             var x = e.text;
-            var fa = FontAsset(x.font);
-            if (fa != null) t.font = fa;
+            // the element's font, else the design's default font, else TMP's own default
+            var family = !string.IsNullOrEmpty(x.font) && x.font != "Monospace" && x.font != "Monoespaciada" ? x.font : defaultFontName;
+            var fa = FontAsset(family);
+            if (fa != null) { t.font = fa; EnsureFallbacks(fa); }
             t.text = value ?? "";
+            CheckGlyphs(t.font, t.text);
+            if (!textsOf.TryGetValue(e.id, out var list)) textsOf[e.id] = list = new List<TMP_Text>();
+            list.Add(t);
             t.fontSize = x.fontSize;
             t.color = Col(x.color, e.image != null ? e.image.alpha : 1f);
             var fs = FontStyles.Normal;
@@ -602,18 +872,19 @@ namespace EditorGui
 
         static readonly Dictionary<string, TMP_FontAsset> fontCache = new Dictionary<string, TMP_FontAsset>();
 
-        /// Finds or creates a TMP_FontAsset from Assets/EditorGUI/Fonts/&lt;familia&gt;.ttf|otf.
+        /// Resolves a TMP_FontAsset by name. An existing asset of the project always wins (searched by name, also in
+        /// "Fonts & Materials"); an SDF asset is only created from Assets/EditorGUI/Fonts/&lt;family&gt;.ttf|otf when none exists.
         static TMP_FontAsset FontAsset(string family)
         {
-            if (string.IsNullOrEmpty(family) || family == "Monoespaciada") return null;
+            if (string.IsNullOrEmpty(family) || family == "Monoespaciada" || family == "Monospace") return null;
             if (fontCache.TryGetValue(family, out var cached) && cached != null) return cached;
-            var assetPath = Root + "/Fonts/" + family + " SDF.asset";
-            var fa = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(assetPath);
+            var fa = FindFontAsset(family);
             if (fa == null)
             {
                 var src = new[] { ".ttf", ".otf" }.Select(x => Root + "/Fonts/" + family + x).FirstOrDefault(File.Exists);
                 if (src != null)
                 {
+                    var assetPath = Root + "/Fonts/" + family + " SDF.asset";
                     AssetDatabase.ImportAsset(src, ImportAssetOptions.ForceSynchronousImport);
                     var font = AssetDatabase.LoadAssetAtPath<Font>(src);
                     if (font != null)
@@ -631,14 +902,76 @@ namespace EditorGui
                         }
                     }
                 }
-                else
-                {
-                    var guid = AssetDatabase.FindAssets(family + " t:TMP_FontAsset").FirstOrDefault();
-                    if (guid != null) fa = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(AssetDatabase.GUIDToAssetPath(guid));
-                }
+                else Warn("font:" + family, "[Lienzo UI] No TextMeshPro font asset named \"" + family + "\" in the project (and no " + Root + "/Fonts/" + family + ".ttf): the default TMP font is used.");
             }
             fontCache[family] = fa;
             return fa;
+        }
+
+        static TMP_FontAsset FindFontAsset(string family)
+        {
+            var conventional = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(Root + "/Fonts/" + family + " SDF.asset");
+            if (conventional != null) return conventional;
+            foreach (var guid in AssetDatabase.FindAssets("t:TMP_FontAsset"))
+            {
+                var path = AssetDatabase.GUIDToAssetPath(guid);
+                var n = Path.GetFileNameWithoutExtension(path);
+                if (string.Equals(n, family, StringComparison.OrdinalIgnoreCase) || string.Equals(n, family + " SDF", StringComparison.OrdinalIgnoreCase))
+                {
+                    var fa = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(path);
+                    if (fa != null) return fa;
+                }
+            }
+            return null;
+        }
+
+        /// Adds the design's fallback fonts to a font asset that does not have them yet (never removes any).
+        static void EnsureFallbacks(TMP_FontAsset fa)
+        {
+            if (fa == null || fallbackFontNames.Length == 0 || !fallbacksDone.Add(fa)) return;
+            var table = fa.fallbackFontAssetTable ?? new List<TMP_FontAsset>();
+            bool changed = false;
+            foreach (var n in fallbackFontNames)
+            {
+                var fb = FontAsset(n);
+                if (fb == null || fb == fa || table.Contains(fb)) continue;
+                table.Add(fb);
+                changed = true;
+            }
+            if (!changed) return;
+            fa.fallbackFontAssetTable = table;
+            EditorUtility.SetDirty(fa);
+            AssetDatabase.SaveAssetIfDirty(fa);
+        }
+
+        /// Remembers the characters of `text` that the font (and its fallbacks) cannot draw.
+        static void CheckGlyphs(TMP_FontAsset fa, string text)
+        {
+            if (string.IsNullOrEmpty(text)) return;
+            if (fa == null) fa = TMP_Settings.defaultFontAsset;
+            if (fa == null) return;
+            if (fa.HasCharacters(text, out var missing, true, fa.atlasPopulationMode == AtlasPopulationMode.Dynamic)) return;
+            if (missing == null) return;
+            if (!missingGlyphs.TryGetValue(fa.name, out var set)) missingGlyphs[fa.name] = set = new HashSet<uint>();
+            foreach (var c in missing) if (Visible(c)) set.Add(c);
+        }
+
+        /// Unicode code point that is not a control / white-space character (those never need a glyph).
+        static bool Visible(uint cp)
+        {
+            if (cp < 32 || (cp >= 127 && cp < 160) || cp > 0x10FFFF || (cp >= 0xD800 && cp <= 0xDFFF)) return false;
+            return !char.IsWhiteSpace(char.ConvertFromUtf32((int)cp), 0);
+        }
+
+        static void ReportGlyphs(string design)
+        {
+            foreach (var kv in missingGlyphs)
+            {
+                if (kv.Value.Count == 0) continue;
+                var chars = string.Join(" ", kv.Value.OrderBy(c => c).Select(c => char.ConvertFromUtf32((int)c)));
+                Debug.LogWarning("[Lienzo UI] The font \"" + kv.Key + "\" has no glyph for " + kv.Value.Count + " character(s) used in \"" + design + "\": " + chars +
+                                 ". Add them to the font asset (Window > TextMeshPro > Font Asset Creator, or a Dynamic atlas), or list a fallback font in the design's Unity settings.");
+            }
         }
 
         // ------------------------------------------------------------------ generated sprites
@@ -650,7 +983,7 @@ namespace EditorGui
             int b = Mathf.Max(r, s) + 2;
             int size = 2 * b + 2;
             float half = size / 2f;
-            return SaveSprite("rr_" + r + "_" + s, size, size, (x, y) =>
+            return SaveSprite("rr_" + r + "_" + s + PixelSuffix, size, size, (x, y) =>
             {
                 float d = RoundedDistance(x + 0.5f - half, y + 0.5f - half, half, half, r);
                 float a = Mathf.Clamp01(0.5f - d);
@@ -670,7 +1003,7 @@ namespace EditorGui
         public static Sprite EllipseSprite(int ring)
         {
             const int n = 256;
-            return SaveSprite("ellipse_" + ring, n, n, (x, y) =>
+            return SaveSprite("ellipse_" + ring + PixelSuffix, n, n, (x, y) =>
             {
                 float dx = x + 0.5f - n / 2f, dy = y + 0.5f - n / 2f;
                 float d = Mathf.Sqrt(dx * dx + dy * dy) - n / 2f;
@@ -684,7 +1017,7 @@ namespace EditorGui
         public static Sprite GradientSprite(Color a, Color b)
         {
             const int n = 64;
-            var key = "grad_" + ColorUtility.ToHtmlStringRGBA(a) + "_" + ColorUtility.ToHtmlStringRGBA(b);
+            var key = "grad_" + ColorUtility.ToHtmlStringRGBA(a) + "_" + ColorUtility.ToHtmlStringRGBA(b) + PixelSuffix;
             return SaveSprite(key, n, n, (x, y) =>
             {
                 float u = x / (n - 1f), vDown = 1f - y / (n - 1f);
@@ -692,6 +1025,10 @@ namespace EditorGui
                 return Color.Lerp(a, b, t);
             }, Vector4.zero);
         }
+
+        /// Pixel-art and smooth designs use different files (Point vs Bilinear filter), so a shared
+        /// rr_* / ellipse_* / grad_* texture never flip-flops between filter modes.
+        static string PixelSuffix => pixelArt ? "_px" : "";
 
         static Sprite SaveSprite(string name, int w, int h, Func<int, int, Color> px, Vector4 border)
         {
@@ -710,49 +1047,138 @@ namespace EditorGui
                 UnityEngine.Object.DestroyImmediate(tex);
                 AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceSynchronousImport);
             }
-            ConfigureSprite(path, border);
+            ConfigureGenerated(path, border);
             return AssetDatabase.LoadAssetAtPath<Sprite>(path);
         }
 
         /// Design in pixel art mode: sprites with Point filter, no compression or mipmaps.
         static bool pixelArt;
 
-        static void ConfigureSprite(string path, Vector4 border)
+        /// Sprites that Lienzo generates (Sprites/Generated) are always Lienzo's: fully configured and marked.
+        static void ConfigureGenerated(string path, Vector4 border)
+        {
+            var ti = GetImporter(path);
+            if (ti == null) return;
+            var filter = pixelArt ? FilterMode.Point : FilterMode.Bilinear;
+            if (ti.userData == OwnedMarker && ti.textureType == TextureImporterType.Sprite && ti.spriteImportMode == SpriteImportMode.Single && ti.spriteBorder == border && !ti.mipmapEnabled && ti.filterMode == filter) return;
+            ApplyLienzoDefaults(ti, border, 100f);
+            ti.SaveAndReimport();
+        }
+
+        static void ApplyLienzoDefaults(TextureImporter ti, Vector4 border, float ppu)
+        {
+            ti.textureType = TextureImporterType.Sprite;
+            ti.spriteImportMode = SpriteImportMode.Single;
+            ti.spriteBorder = border;
+            ti.spritePixelsPerUnit = ppu;
+            ti.mipmapEnabled = false;
+            ti.alphaIsTransparency = true;
+            ti.wrapMode = TextureWrapMode.Clamp;
+            ti.filterMode = pixelArt ? FilterMode.Point : FilterMode.Bilinear;
+            if (pixelArt) ti.textureCompression = TextureImporterCompression.Uncompressed;
+            ti.userData = OwnedMarker;
+        }
+
+        static TextureImporter GetImporter(string path)
         {
             var ti = AssetImporter.GetAtPath(path) as TextureImporter;
             if (ti == null)
             {
                 AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceSynchronousImport);
                 ti = AssetImporter.GetAtPath(path) as TextureImporter;
-                if (ti == null) return;
             }
-            if (ti.textureType == TextureImporterType.Sprite && ti.spriteImportMode == SpriteImportMode.Single && ti.spriteBorder == border && !ti.mipmapEnabled && ti.filterMode == (pixelArt ? FilterMode.Point : FilterMode.Bilinear)) return;
-            ti.textureType = TextureImporterType.Sprite;
-            ti.spriteImportMode = SpriteImportMode.Single;
-            ti.spriteBorder = border;
-            ti.spritePixelsPerUnit = 100;
-            ti.mipmapEnabled = false;
-            ti.alphaIsTransparency = true;
-            ti.wrapMode = TextureWrapMode.Clamp;
-            ti.filterMode = pixelArt ? FilterMode.Point : FilterMode.Bilinear;
-            if (pixelArt) ti.textureCompression = TextureImporterCompression.Uncompressed;
-            ti.SaveAndReimport();
+            return ti;
         }
 
-        static Sprite ImportSprite(string source)
+        /// Import settings of a picture used by an element. A texture that already exists in the project belongs to
+        /// the user: only what the design specifies is applied (9-slice border, pixels per unit, Point filter in
+        /// pixel-art mode) and everything else is left alone. A texture Lienzo copied itself (marker in userData, or a
+        /// brand-new one in Assets/EditorGUI/Sprites) is configured completely.
+        static void ConfigureProjectSprite(string path, El e)
+        {
+            var ti = GetImporter(path);
+            if (ti == null) return; // not a texture (atlas, package asset...): used as it is
+            bool hasBorder = e.slice != null && e.slice.Length >= 4;
+            var border = hasBorder ? new Vector4(e.slice[0], e.slice[1], e.slice[2], e.slice[3]) : Vector4.zero;
+            bool hasPpu = e.ppu > 0f;
+            bool fresh = ti.textureType != TextureImporterType.Sprite;
+            bool owned = ti.userData == OwnedMarker || (fresh && path.StartsWith(Root + "/Sprites/"));
+            if (owned)
+            {
+                var ppu = hasPpu ? e.ppu : 100f;
+                var filter = pixelArt ? FilterMode.Point : FilterMode.Bilinear;
+                if (ti.userData == OwnedMarker && ti.textureType == TextureImporterType.Sprite && ti.spriteBorder == border && Mathf.Approximately(ti.spritePixelsPerUnit, ppu) && !ti.mipmapEnabled && ti.filterMode == filter) return;
+                ApplyLienzoDefaults(ti, border, ppu);
+                ti.SaveAndReimport();
+                return;
+            }
+            bool changed = false;
+            if (fresh)
+            {
+                // a plain texture of the user's: it must be a Sprite to be used by an Image, nothing else is touched
+                ti.textureType = TextureImporterType.Sprite;
+                ti.spriteImportMode = SpriteImportMode.Single;
+                changed = true;
+            }
+            bool multiple = ti.spriteImportMode == SpriteImportMode.Multiple;
+            if (hasBorder)
+            {
+                if (multiple) Warn("multi:" + path, "[Lienzo UI] \"" + path + "\" is a multi-sprite sheet: set the 9-slice border of its sprites in the Sprite Editor (the design's slice was not applied).");
+                else if (ti.spriteBorder != border) { ti.spriteBorder = border; changed = true; }
+            }
+            if (hasPpu && !Mathf.Approximately(ti.spritePixelsPerUnit, e.ppu)) { ti.spritePixelsPerUnit = e.ppu; changed = true; }
+            if (pixelArt && ti.filterMode != FilterMode.Point) { ti.filterMode = FilterMode.Point; changed = true; }
+            if (changed) ti.SaveAndReimport();
+        }
+
+        /// Loads the sprite of `path`: the sub-sprite called `sub` of a multi-sprite sheet, or the (first) sprite.
+        static Sprite LoadSprite(string path, string sub)
+        {
+            var all = AssetDatabase.LoadAllAssetsAtPath(path).OfType<Sprite>().ToArray();
+            if (!string.IsNullOrEmpty(sub))
+            {
+                var hit = all.FirstOrDefault(x => x.name == sub);
+                if (hit != null) return hit;
+                Warn("sub:" + path + "#" + sub, "[Lienzo UI] No sprite named \"" + sub + "\" in " + path + (all.Length > 0 ? ". It has: " + string.Join(", ", all.Select(x => x.name)) : "") + ".");
+            }
+            else if (all.Length > 1)
+                Warn("many:" + path, "[Lienzo UI] " + path + " holds " + all.Length + " sprites (" + string.Join(", ", all.Take(6).Select(x => x.name)) + (all.Length > 6 ? ", ..." : "") + "): set the element's `sprite` to pick one. The first is used.");
+            return AssetDatabase.LoadAssetAtPath<Sprite>(path) ?? all.FirstOrDefault();
+        }
+
+        /// Picture of an element. A path that already lives in the project (`unity:` reference or under Assets/) is
+        /// referenced as it is and never copied or overwritten; a picture from outside the project is copied into
+        /// Assets/EditorGUI/Sprites (only when it differs from what is there).
+        static Sprite ImportSprite(string source, El e)
         {
             var path = source.Replace('\\', '/');
-            if (!path.StartsWith("Assets/"))
+            if (path.StartsWith("unity:")) path = path.Substring(6);
+            string sub = e.sprite;
+            int hash = path.IndexOf('#');
+            if (hash >= 0)
+            {
+                if (string.IsNullOrEmpty(sub)) sub = path.Substring(hash + 1);
+                path = path.Substring(0, hash);
+            }
+            if (!(path.StartsWith("Assets/") || path.StartsWith("Packages/")))
             {
                 if (!File.Exists(path)) { Debug.LogWarning("[Lienzo UI] The image does not exist: " + path); return null; }
                 Directory.CreateDirectory(Root + "/Sprites");
                 var dest = Root + "/Sprites/" + Path.GetFileName(path);
-                File.Copy(path, dest, true);
+                if (!File.Exists(dest) || !File.ReadAllBytes(dest).SequenceEqual(File.ReadAllBytes(path)))
+                {
+                    File.Copy(path, dest, true);
+                    AssetDatabase.ImportAsset(dest, ImportAssetOptions.ForceSynchronousImport);
+                }
                 path = dest;
             }
-            if (!File.Exists(path)) { Debug.LogWarning("[Lienzo UI] The image does not exist: " + path); return null; }
-            ConfigureSprite(path, Vector4.zero);
-            return AssetDatabase.LoadAssetAtPath<Sprite>(path);
+            else if (AssetDatabase.LoadMainAssetAtPath(path) == null)
+            {
+                if (File.Exists(path)) AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceSynchronousImport);
+                if (AssetDatabase.LoadMainAssetAtPath(path) == null) { Debug.LogWarning("[Lienzo UI] The image does not exist in the project: " + path); return null; }
+            }
+            ConfigureProjectSprite(path, e);
+            return LoadSprite(path, sub);
         }
 
         // ------------------------------------------------------------------ utilities
@@ -832,14 +1258,6 @@ namespace EditorGui
             foreach (Transform c in t) SetLayer(c, layer);
         }
 
-        /// Adds the &lt;Clase&gt;View script if it exists in the project.
-        static void AttachView(GameObject go, string className)
-        {
-            if (string.IsNullOrEmpty(className)) return;
-            var t = TypeCache.GetTypesDerivedFrom<MonoBehaviour>().FirstOrDefault(x => x.Name == className + "View" && !x.IsAbstract);
-            if (t != null) go.AddComponent(t);
-        }
-
         static void EnsureEventSystem()
         {
             if (UnityEngine.Object.FindAnyObjectByType<EventSystem>() != null) return;
@@ -851,45 +1269,175 @@ namespace EditorGui
         }
     }
 
-    /// Regenerates the prefab when an exported design changes (or on opening Unity if it was left outdated).
+    /// Notices exported designs and compiled scripts and hands them to <see cref="EditorGuiPending"/>.
     class EditorGuiAutoImport : AssetPostprocessor
     {
         static void OnPostprocessAllAssets(string[] imported, string[] deleted, string[] moved, string[] movedFrom)
         {
-            var designs = imported.Where(p => p.StartsWith(EditorGuiImporter.Root + "/Designs/") && p.EndsWith(".json")).ToArray();
             // After importing the TMP Essential Resources, the pending prefabs are generated.
             if (imported.Any(p => p.EndsWith("TMP Settings.asset")))
             {
-                EditorApplication.delayCall += EditorGuiImporter.RebuildAll;
+                EditorGuiPending.AddAll();
                 return;
             }
+            var designs = imported.Where(p => p.StartsWith(EditorGuiImporter.Root + "/Designs/") && p.EndsWith(".json")).ToArray();
             if (designs.Length == 0) return;
-            EditorApplication.delayCall += () =>
-            {
-                foreach (var p in designs) Rebuild(p);
-            };
+            // Scripts imported in the same batch compile (and reload the domain) before the prefab can reference them.
+            bool scripts = imported.Any(p => p.EndsWith(".cs"));
+            foreach (var d in designs) EditorGuiPending.Add(d, scripts);
+        }
+    }
+
+    /// Persistent list of designs whose prefab is still to be (re)built, kept in Library/LienzoUI/pending.txt so it
+    /// survives the domain reload that follows compiling the new *View scripts. The first export therefore ends with a
+    /// prefab that has its View component attached and its references assigned.
+    ///
+    /// Flow: a design JSON is imported -> it is added to the list -> we wait until Unity has finished importing and
+    /// compiling (a few idle seconds with nothing compiling) -> the prefabs are built. When the domain reloads
+    /// ([InitializeOnLoad], AssemblyReloadEvents.afterAssemblyReload, CompilationPipeline.compilationFinished) the
+    /// wait starts again, because after a reload the list is processed with the new types in place.
+    [InitializeOnLoad]
+    static class EditorGuiPending
+    {
+        const string Dir = "Library/LienzoUI";
+        const string FilePath = Dir + "/pending.txt";
+        const int MaxAttempts = 3;
+        static bool polling;
+        static double deadline;
+
+        static EditorGuiPending()
+        {
+            AssemblyReloadEvents.afterAssemblyReload += Schedule;
+            CompilationPipeline.compilationFinished += _ => Schedule();
+            // Opening Unity / a reload: first catch up with designs left outdated, then process what is pending.
+            EditorApplication.delayCall += () => { CatchUp(); Schedule(); };
         }
 
-        [InitializeOnLoadMethod]
+        // ---- list on disk: path <TAB> attempts
+        static List<(string path, int attempts)> Read()
+        {
+            var list = new List<(string, int)>();
+            try
+            {
+                if (!File.Exists(FilePath)) return list;
+                foreach (var line in File.ReadAllLines(FilePath))
+                {
+                    var parts = line.Split('\t');
+                    if (parts[0].Length == 0 || list.Any(x => x.Item1 == parts[0])) continue;
+                    list.Add((parts[0], parts.Length > 1 && int.TryParse(parts[1], out var n) ? n : 0));
+                }
+            }
+            catch (Exception ex) { Debug.LogWarning("[Lienzo UI] Could not read the pending list: " + ex.Message); }
+            return list;
+        }
+
+        static void Write(List<(string path, int attempts)> list)
+        {
+            try
+            {
+                Directory.CreateDirectory(Dir);
+                if (list.Count == 0) { if (File.Exists(FilePath)) File.Delete(FilePath); return; }
+                File.WriteAllLines(FilePath, list.Select(x => x.path + "\t" + x.attempts));
+            }
+            catch (Exception ex) { Debug.LogWarning("[Lienzo UI] Could not write the pending list: " + ex.Message); }
+        }
+
+        public static void Add(string json, bool afterScripts)
+        {
+            var list = Read();
+            if (!list.Any(x => x.path == json)) list.Add((json, 0));
+            Write(list);
+            Schedule();
+        }
+
+        public static void AddAll()
+        {
+            var dir = EditorGuiImporter.Root + "/Designs";
+            if (!Directory.Exists(dir)) return;
+            foreach (var f in Directory.GetFiles(dir, "*.json")) Add(f.Replace('\\', '/'), false);
+        }
+
+        /// Waits until Unity is idle (not importing, not compiling) for a few seconds, then processes the list.
+        static void Schedule()
+        {
+            if (polling) return;
+            polling = true;
+            deadline = EditorApplication.timeSinceStartup + 3.0;
+            EditorApplication.update += Poll;
+        }
+
+        static void Poll()
+        {
+            var now = EditorApplication.timeSinceStartup;
+            if (EditorApplication.isCompiling || EditorApplication.isUpdating) { deadline = now + 3.0; return; }
+            if (now < deadline) return; // grace period: a compile may be about to start
+            EditorApplication.update -= Poll;
+            polling = false;
+            Process();
+        }
+
+        static bool ViewReady(string json)
+        {
+            string cls;
+            try { cls = (EditorGuiImporter.Load(json).canvas ?? new EditorGuiImporter.Cv()).className; } catch { return true; }
+            if (string.IsNullOrEmpty(cls)) return true;
+            var scripts = AssetDatabase.FindAssets(cls + "View t:MonoScript")
+                .Select(AssetDatabase.GUIDToAssetPath)
+                .Where(p => { var n = Path.GetFileNameWithoutExtension(p); return n == cls + "View" || n == cls + "ViewBase"; });
+            if (!scripts.Any()) return true; // the design has no View scripts
+            return EditorGuiImporter.FindType(cls + "View") != null;
+        }
+
+        static void Process()
+        {
+            if (EditorUtility.scriptCompilationFailed) return; // fix the compile errors; it runs again after the next reload
+            var list = Read();
+            if (list.Count == 0) return;
+            var keep = new List<(string path, int attempts)>();
+            int built = 0;
+            foreach (var (path, attempts) in list)
+            {
+                if (!File.Exists(path)) continue;
+                if (!ViewReady(path) && attempts + 1 < MaxAttempts) { keep.Add((path, attempts + 1)); continue; }
+                try
+                {
+                    if (EditorGuiImporter.BuildPrefab(path) != null) built++;
+                    else keep.Add((path, attempts)); // TMP Essentials missing: stays pending until they are imported
+                }
+                catch (Exception ex) { Debug.LogError("[Lienzo UI] Could not build " + path + ": " + ex); }
+            }
+            Write(keep);
+            if (built > 0) Debug.Log("[Lienzo UI] Prefabs generated: " + built + (keep.Count > 0 ? " (" + keep.Count + " still pending)" : "") + ".");
+        }
+
+        /// Prefab missing, older than its design, or without the View / runtime components its design needs.
+        static bool NeedsRebuild(string json)
+        {
+            var prefab = EditorGuiImporter.PrefabPathFor(json);
+            if (!File.Exists(prefab) || File.GetLastWriteTimeUtc(json) > File.GetLastWriteTimeUtc(prefab)) return true;
+            var go = AssetDatabase.LoadAssetAtPath<GameObject>(prefab);
+            if (go == null) return true;
+            EditorGuiImporter.Doc doc;
+            try { doc = EditorGuiImporter.Load(json); } catch { return false; }
+            var cv = doc.canvas ?? new EditorGuiImporter.Cv();
+            var view = EditorGuiImporter.FindType(cv.className + "View");
+            if (view != null && go.GetComponent(view) == null) return true; // the View component is missing
+            var safe = cv.safeArea ? EditorGuiImporter.FindType("LienzoSafeArea") : null;
+            if (safe != null && go.GetComponentInChildren(safe, true) == null) return true;
+            var orient = doc.portrait != null && doc.portrait.overrides != null && doc.portrait.overrides.Length > 0 ? EditorGuiImporter.FindType("LienzoOrientationLayout") : null;
+            if (orient != null && go.GetComponent(orient) == null) return true;
+            return false;
+        }
+
         static void CatchUp()
         {
-            EditorApplication.delayCall += () =>
+            var dir = EditorGuiImporter.Root + "/Designs";
+            if (!Directory.Exists(dir)) return;
+            foreach (var f in Directory.GetFiles(dir, "*.json"))
             {
-                var dir = EditorGuiImporter.Root + "/Designs";
-                if (!Directory.Exists(dir)) return;
-                foreach (var f in Directory.GetFiles(dir, "*.json"))
-                {
-                    var json = f.Replace('\\', '/');
-                    var prefab = EditorGuiImporter.PrefabPathFor(json);
-                    if (!File.Exists(prefab) || File.GetLastWriteTimeUtc(json) > File.GetLastWriteTimeUtc(prefab)) Rebuild(json);
-                }
-            };
-        }
-
-        static void Rebuild(string json)
-        {
-            try { EditorGuiImporter.BuildPrefab(json); }
-            catch (Exception ex) { Debug.LogError("[Lienzo UI] Could not build " + json + ": " + ex); }
+                var json = f.Replace('\\', '/');
+                if (NeedsRebuild(json)) Add(json, false);
+            }
         }
     }
 }

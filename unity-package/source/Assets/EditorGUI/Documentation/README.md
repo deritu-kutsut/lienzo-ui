@@ -32,6 +32,18 @@ Assets/EditorGUI/
   Documentation/ this guide, license and third-party notices
 ```
 
+## How the generated code behaves
+
+- **Prefab first generation.** The prefab is built *after* the new `*View` scripts have compiled: the designs waiting for it are kept in `Library/LienzoUI/pending.txt`, which survives the domain reload. So the first export ends with the View component attached and its references assigned. `Tools > Lienzo UI > Regenerate all prefabs` rebuilds everything and logs a summary; on opening Unity a prefab that is missing, outdated or without its View is rebuilt.
+- **References, not paths.** `<Name>ViewBase` has public fields that the importer fills as serialized references, so renaming an element in Lienzo or in Unity does not break your code. `Bind()` only fills empty fields (old prefabs) by path.
+- **Names.** An element's `unity_name` is the exact GameObject name; the importer's own helper objects are called `__border`, `__text`, `__tick`, `__canvas_background` and `__safe_area`.
+- **Scripts folder / assembly.** Generated scripts go to `unity.scripts_dir` (default `Assets/EditorGUI/Scripts`). With `unity.assembly` set to an existing assembly definition the scripts are written under the folder of that `.asmdef` (or `.asmref`) so they compile into it (the asmdef needs to reference `Unity.TextMeshPro` and `UnityEngine.UI`); if no such assembly exists they stay in `scripts_dir` (Assembly-CSharp). The runtime helpers `LienzoSafeArea` and `LienzoOrientationLayout` go into a `Runtime` folder next to them, once per project.
+- **Outputs.** Only what the design selects is written (prefab, UI Toolkit, IMGUI, view scripts). `*OnGUI.cs` exists only when IMGUI is on.
+- **Canvas.** Render mode (Overlay / Camera / World Space), sorting order, plane distance, *embed* (no Canvas / CanvasScaler: a plain stretched RectTransform to live under your own canvas) and *safe area* (a `__safe_area` container with `LienzoSafeArea`). A transparent design page creates no background image.
+- **Portrait.** If the design has a portrait layout, the prefab gets `LienzoOrientationLayout`, which stores both states (anchors, offsets, visibility, font size, layout) and applies the portrait one when `Screen.width < Screen.height` (or call `Apply(bool portrait)`). Changing a layout group's *type* between orientations is not applied at runtime.
+- **Sprites.** `slice`, `ppu`, `image_mode`, `preserve_aspect` and `sprite` (a sub-sprite of a sheet, by name) are applied. A picture written as `unity:Assets/Path/file.png` (or `...#sub-sprite`) already lives in your project: it is referenced, never copied or overwritten, and its import settings are only changed where the design says so (9-slice border, pixels per unit, Point filter in pixel-art mode). Textures that Lienzo created are marked in their `userData` and may be re-configured. Smooth and pixel-art generated sprites use different files (`*_px.png`).
+- **Fonts.** `default_font` / per-element fonts are resolved as existing TextMeshPro font assets by name (also `Fonts & Materials`); an SDF asset is created from `Assets/EditorGUI/Fonts/<name>.ttf` only when none exists. `fallback_fonts` are added to the font asset's fallback table when missing, and the Console lists characters (for example « » —) that the chosen font lacks.
+
 ## Support
 
 Issues and questions: https://github.com/deritu-kutsut/lienzo-ui/issues · MIT license.

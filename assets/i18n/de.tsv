@@ -850,3 +850,89 @@ Corners must be between 0 and 16.	Die Ecken müssen zwischen 0 und 16 liegen.
 Invalid font name.	Ungültiger Schriftname.
 Align and order	Ausrichten und anordnen
 Align to parent and order	Am übergeordneten Element ausrichten und anordnen
+Edit the landscape layout	Querformat-Layout bearbeiten
+Edit the portrait layout: changes are stored as overrides and the landscape layout is not touched	Hochformat-Layout bearbeiten: Änderungen werden als Ausnahmen gespeichert, das Querformat bleibt unverändert
+Overridden in the portrait layout (right-click: Reset to landscape)	Im Hochformat überschrieben (Rechtsklick: Auf Querformat zurücksetzen)
+Reset to landscape	Auf Querformat zurücksetzen
+Portrait view: the reference resolution below is the portrait one.	Hochformat-Ansicht: Die Referenzauflösung unten ist die des Hochformats.
+Transparent overlay	Transparentes Overlay
+Alpha 0 = transparent overlay: the page shows a checkerboard and no background image is exported to Unity.	Alpha 0 = transparentes Overlay: Die Seite zeigt ein Schachbrett und es wird kein Hintergrundbild nach Unity exportiert.
+Canvas (Unity)	Canvas (Unity)
+Render mode	Render-Modus
+Screen Space - Overlay	Screen Space - Overlay
+Screen Space - Camera	Screen Space - Camera
+World Space	World Space
+Sort order	Sortierreihenfolge
+Plane distance	Ebenenabstand
+Safe area	Safe Area
+Respect notch and rounded corners	Notch und abgerundete Ecken beachten
+Applies the device safe area to the root, so nothing hides under a notch.	Wendet die Safe Area des Geräts auf die Wurzel an, damit nichts unter einer Notch verschwindet.
+Embed	Einbetten
+Embed (no own Canvas)	Einbetten (kein eigener Canvas)
+Exports a plain RectTransform meant to live under the Canvas of your game: no Canvas or CanvasScaler is created.	Exportiert ein einfaches RectTransform, das unter dem Canvas deines Spiels liegt: Es werden weder Canvas noch CanvasScaler erstellt.
+Unity export	Unity-Export
+Scripts folder	Skriptordner
+Invalid folder: it must start with Assets, use / and contain no “..”, no drive and no empty parts.	Ungültiger Ordner: Er muss mit Assets beginnen, / verwenden und darf weder „..“, Laufwerk noch leere Teile enthalten.
+Where the generated scripts go (empty = the default folder).	Wohin die erzeugten Skripte kommen (leer = Standardordner).
+Assembly name	Assembly-Name
+Assembly Definition of your game (optional)	Assembly Definition deines Spiels (optional)
+Invalid assembly name: letters, digits, _ . - and it must start with a letter or _.	Ungültiger Assembly-Name: Buchstaben, Ziffern, _ . - und er muss mit einem Buchstaben oder _ beginnen.
+Outputs	Ausgaben
+Prefab	Prefab
+UI Toolkit (UXML / USS)	UI Toolkit (UXML / USS)
+IMGUI script	IMGUI-Skript
+View scripts	View-Skripte
+Default font (TextMeshPro asset)	Standardschrift (TextMeshPro-Asset)
+Name of a font asset in your project	Name eines Schrift-Assets in deinem Projekt
+Fallback fonts	Ersatzschriften
+Fallback font asset name	Name des Ersatzschrift-Assets
+Add	Hinzufügen
+Portrait layout	Hochformat-Layout
+No portrait layout yet. Create one to design the same screen for devices held upright; elements start where they are in landscape.	Noch kein Hochformat-Layout. Erstelle eins, um denselben Bildschirm für aufrecht gehaltene Geräte zu gestalten; die Elemente starten dort, wo sie im Querformat sind.
+Create portrait layout	Hochformat-Layout erstellen
+Portrait size	Hochformat-Größe
+{} element(s) differ from the landscape layout. Use the Landscape / Portrait buttons in the top bar to switch the view.	{} Element(e) weichen vom Querformat ab. Mit den Schaltflächen Quer / Hoch in der oberen Leiste wechselst du die Ansicht.
+Remove portrait layout	Hochformat-Layout entfernen
+Deletes every portrait override and the portrait size	Löscht alle Hochformat-Ausnahmen und die Hochformat-Größe
+Unity name	Unity-Name
+Automatic (same as the name)	Automatisch (wie der Name)
+Exact GameObject name in Unity. Leave it empty to use the name above.	Genauer GameObject-Name in Unity. Leer lassen, um den Namen oben zu verwenden.
+Invalid Unity name: it must not be blank, contain “/” or control characters, or exceed 128 characters (the name above is used instead).	Ungültiger Unity-Name: Er darf nicht leer sein, kein „/“ oder Steuerzeichen enthalten und nicht länger als 128 Zeichen sein (der Name oben wird verwendet).
+A sibling already uses this name: it will be exported as “{}”.	Ein Geschwisterelement verwendet diesen Namen bereits: Er wird als „{}“ exportiert.
+Exported as “{}”	Wird als „{}“ exportiert
+Differs from landscape: {}	Weicht vom Querformat ab: {}
+Image settings (Unity)	Bildeinstellungen (Unity)
+9-slice	9-Slice
+Border of the 9-slice in pixels of the source image (left, bottom, right, top), like Unity's Sprite Editor. The canvas shows the result.	Rand des 9-Slice in Pixeln des Originalbilds (links, unten, rechts, oben), wie im Sprite Editor von Unity. Die Zeichenfläche zeigt das Ergebnis.
+Clear	Löschen
+Source image: {} × {} px	Originalbild: {} × {} px
+Pixels per unit	Pixel pro Einheit
+Sprite pixels per unit: 100 keeps the borders at their pixel size, 200 makes them half as big.	Pixel pro Einheit des Sprites: 100 hält die Ränder in ihrer Pixelgröße, 200 halbiert sie.
+Auto	Auto
+Sub-sprite	Sub-Sprite
+Name inside an atlas (optional)	Name in einem Atlas (optional)
+Image mode	Bildmodus
+Automatic	Automatisch
+Preserve aspect	Seitenverhältnis beibehalten
+Back to the landscape layout	Zurück zum Querformat-Layout
+Portrait layout · {} × {}	Hochformat-Layout · {} × {}
+Font {} lacks characters: {}	Die Schrift {} hat diese Zeichen nicht: {}
+position	Position
+size	Größe
+rotation	Drehung
+anchors	Anker
+visibility	Sichtbarkeit
+font size	Schriftgröße
+layout	Layout
+Simple	Simple
+Sliced	Sliced
+Tiled	Tiled
+Filled	Filled
+Portrait view: edits are stored as overrides of the landscape layout	Hochformat-Ansicht: Änderungen werden als Ausnahmen des Querformat-Layouts gespeichert
+Landscape view	Querformat-Ansicht
+Import from Unity…	Aus Unity importieren…
+Turn a uGUI prefab (.prefab) or a Lienzo UI exported design into an editable design	Wandelt ein uGUI-Prefab (.prefab) oder ein von Lienzo UI exportiertes Design in ein bearbeitbares Design um
+Import from Unity	Aus Unity importieren
+Imported {} ({} warnings). Save it as a project to keep it.	{} importiert ({} Warnungen). Speichere es als Projekt, um es zu behalten.
+Could not import: {}	Import nicht möglich: {}
+{} things could not be mapped exactly:	{} Dinge konnten nicht exakt übernommen werden:

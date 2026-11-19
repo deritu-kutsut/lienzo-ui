@@ -24,8 +24,11 @@ mod updater;
 mod review;
 mod docext;
 mod schema;
+mod unity_import;
 #[cfg(test)]
 mod docext_tests;
+#[cfg(test)]
+mod unity_import_tests;
 
 use eframe::egui;
 use std::sync::{
@@ -63,6 +66,7 @@ impl eframe::App for app::EditorApp {
         });
         self.export_window(&ctx);
         self.save_window(&ctx);
+        self.import_window(&ctx);
         self.community_poll(&ctx);
         self.community_windows(&ctx);
         self.tutorial_window(&ctx);
@@ -152,8 +156,16 @@ fn arg_after<'a>(args: &'a [String], flag: &str) -> Option<&'a String> {
     args.iter().position(|a| a == flag).and_then(|i| args.get(i + 1))
 }
 
-/// Design given on the command line: `--open <file>` or `--template <n>`.
+/// Design given on the command line: `--open <file>`, `--import-unity <file>` or `--template <n>`.
 fn doc_from_args(args: &[String]) -> Result<Option<model::Doc>, String> {
+    if let Some(file) = arg_after(args, "--import-unity") {
+        let imp = unity_import::import_file(std::path::Path::new(file))?;
+        for w in &imp.warnings {
+            eprintln!("{}", i18n::tf("Warning: {}", &[w]));
+        }
+        println!("{}", i18n::tf("Imported {} elements from {} ({} warnings)", &[&imp.doc.elements.len().to_string(), file, &imp.warnings.len().to_string()]));
+        return Ok(Some(imp.doc));
+    }
     if let Some(file) = arg_after(args, "--open") {
         library::set_design_folder(std::path::Path::new(file));
         let text = std::fs::read_to_string(file).map_err(|e| format!("{}: {}", file, e))?;
@@ -175,6 +187,8 @@ fn doc_from_args(args: &[String]) -> Result<Option<model::Doc>, String> {
 ///   --review                   reviews the design (--open or --template): legibility, contrast, touch size
 ///   --save <file>              saves the design (--open or --template) as a project and exits
 ///   --export <Unity project>   exports the design to Unity and exits
+///   --import-unity <file>      imports a Unity uGUI .prefab or a Lienzo Designs/*.json as the design (combine with --save / --export / --review)
+///   --import-unity-project <Unity project> --out <folder>   converts every UI prefab of the project to .editorgui.json files
 /// (The old Spanish flags, like --abrir or --exportar, are rewritten to these by `normalize_args`.)
 ///   --community-upload <type> <file> --title "…"  uploads content to the community with your saved session
 fn headless(args: &[String]) -> Option<i32> {
@@ -210,6 +224,13 @@ fn headless(args: &[String]) -> Option<i32> {
             }
         });
     }
+    if let Some(i) = args.iter().position(|a| a == "--import-unity-project") {
+        return Some(import_project_cli(args, i));
+    }
+    if args.iter().any(|a| a == "--import-unity") && arg_after(args, "--import-unity").is_none_or(|v| v.starts_with("--")) {
+        eprintln!("{}", i18n::t("Usage: --import-unity <file.prefab|file.json> [--save <file.editorgui.json>] [--export <Unity project>]"));
+        return Some(2);
+    }
     if args.iter().any(|a| a == "--review") {
         return Some(match doc_from_args(args) {
             Ok(Some(d)) => {
@@ -229,7 +250,8 @@ fn headless(args: &[String]) -> Option<i32> {
     }
     let export = arg_after(args, "--export");
     let save = arg_after(args, "--save");
-    if export.is_none() && save.is_none() {
+    let importing = args.iter().any(|a| a == "--import-unity");
+    if export.is_none() && save.is_none() && !importing {
         return None;
     }
     let doc = match doc_from_args(args) {
@@ -263,6 +285,35 @@ fn headless(args: &[String]) -> Option<i32> {
         }
     }
     Some(0)
+}
+
+/// `--import-unity-project <Unity project> --out <folder>`: converts every UI prefab of the project. Exit 0 / 1 / 2.
+fn import_project_cli(args: &[String], i: usize) -> i32 {
+    let dir = args.get(i + 1).filter(|v| !v.starts_with("--"));
+    let out = arg_after(args, "--out").filter(|v| !v.starts_with("--"));
+    let (Some(dir), Some(out)) = (dir, out) else {
+        eprintln!("{}", i18n::t("Usage: --import-unity-project <Unity project folder> --out <folder for the .editorgui.json files>"));
+        return 2;
+    };
+    match unity_import::import_unity_project_report(std::path::Path::new(dir), std::path::Path::new(out)) {
+        Ok(r) => {
+            for (file, n) in &r.written {
+                println!("{}", i18n::tf("{}  ({} elements)", &[file, &n.to_string()]));
+            }
+            for (prefab, w) in &r.warnings {
+                eprintln!("{}", i18n::tf("Warning in {}: {}", &[prefab, w]));
+            }
+            for (prefab, e) in &r.failed {
+                eprintln!("{}", i18n::tf("Could not import {}: {}", &[prefab, e]));
+            }
+            println!("{}", i18n::tf("Converted {} prefabs, skipped {} (not UI), failed {}, {} warnings", &[&r.written.len().to_string(), &r.skipped.len().to_string(), &r.failed.len().to_string(), &r.warnings.len().to_string()]));
+            if r.failed.is_empty() { 0 } else { 1 }
+        }
+        Err(e) => {
+            eprintln!("{}", i18n::tf("Could not import: {}", &[&e]));
+            1
+        }
+    }
 }
 
 fn main() -> eframe::Result<()> {
@@ -444,6 +495,29 @@ mod tests {
         // every old flag maps to a distinct English one
         let mut seen = std::collections::HashSet::new();
         assert!(LEGACY_FLAGS.iter().all(|(old, new)| old != new && old.starts_with("--") && new.starts_with("--") && seen.insert(*new)));
+    }
+
+    #[test]
+    fn headless_import_unity_modes_and_exit_codes() {
+        let dir = std::env::temp_dir().join(format!("lienzo_cli_import_{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        std::fs::create_dir_all(&dir).unwrap();
+        let src = dir.join("Design.json");
+        std::fs::write(&src, export::ugui::json(&model::template(2, 1920.0, 1080.0), true)).unwrap();
+        let out = dir.join("out.editorgui.json");
+        let (s, o) = (src.to_string_lossy().to_string(), out.to_string_lossy().to_string());
+        assert_eq!(headless(&args(&["lienzo-ui", "--import-unity", &s, "--save", &o])), Some(0));
+        let d = model::Doc::from_json_str(&std::fs::read_to_string(&out).unwrap()).unwrap();
+        assert_eq!(d.elements.len(), model::template(2, 1920.0, 1080.0).elements.len());
+        // only importing is also a headless run
+        assert_eq!(headless(&args(&["lienzo-ui", "--import-unity", &s])), Some(0));
+        // missing value / missing file / project without --out
+        assert_eq!(headless(&args(&["lienzo-ui", "--import-unity"])), Some(2));
+        assert_eq!(headless(&args(&["lienzo-ui", "--import-unity", "--save", &o])), Some(2));
+        assert_eq!(headless(&args(&["lienzo-ui", "--import-unity", &dir.join("none.prefab").to_string_lossy(), "--save", &o])), Some(1));
+        assert_eq!(headless(&args(&["lienzo-ui", "--import-unity-project", &dir.to_string_lossy()])), Some(2));
+        assert_eq!(headless(&args(&["lienzo-ui", "--import-unity-project", &dir.to_string_lossy(), "--out", &dir.join("o").to_string_lossy()])), Some(1), "no Assets folder");
+        let _ = std::fs::remove_dir_all(&dir);
     }
 
     #[test]

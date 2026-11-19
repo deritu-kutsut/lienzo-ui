@@ -64,6 +64,29 @@ fn templates_dir() -> PathBuf {
 /// no personal machine paths).
 pub static DESIGN_FOLDER: std::sync::Mutex<Option<PathBuf>> = std::sync::Mutex::new(None);
 
+/// The Unity project folder (the one that contains `Assets`): images imported from Unity are
+/// stored as `unity:Assets/...[#sub-sprite]` and resolved against it.
+pub static UNITY_PROJECT: std::sync::Mutex<Option<PathBuf>> = std::sync::Mutex::new(None);
+
+pub fn set_unity_project(dir: &str) {
+    if let Ok(mut g) = UNITY_PROJECT.lock() {
+        let p = Path::new(dir);
+        *g = if dir.trim().is_empty() || !p.join("Assets").is_dir() { None } else { Some(p.to_path_buf()) };
+    }
+}
+
+/// The Unity project folder that contains `file` (walks up looking for an `Assets` folder next to a `ProjectSettings` one).
+pub fn find_unity_project(file: &Path) -> Option<PathBuf> {
+    let mut cur = file.parent();
+    while let Some(d) = cur {
+        if d.join("Assets").is_dir() && d.join("ProjectSettings").is_dir() {
+            return Some(d.to_path_buf());
+        }
+        cur = d.parent();
+    }
+    None
+}
+
 pub fn set_design_folder(file: &Path) {
     if let Ok(mut g) = DESIGN_FOLDER.lock() {
         *g = file.parent().map(|p| std::fs::canonicalize(p).unwrap_or_else(|_| p.to_path_buf()));
@@ -87,6 +110,15 @@ pub fn is_unc_or_stream(name: &str) -> bool {
 pub fn resolve_image(name: &str) -> PathBuf {
     if is_unc_or_stream(name) {
         // refused: a path that does not exist (the caller reports a missing image)
+        return images_dir().join("__blocked__");
+    }
+    if let Some(rest) = name.strip_prefix("unity:") {
+        // «unity:Assets/UI/frame.png#sub-sprite»: a file inside the Unity project (never outside it).
+        let rel = rest.split('#').next().unwrap_or("");
+        let safe = !rel.is_empty() && !rel.contains("..") && !Path::new(rel).is_absolute() && rel.starts_with("Assets");
+        if let (true, Some(root)) = (safe, UNITY_PROJECT.lock().ok().and_then(|g| g.clone())) {
+            return root.join(rel);
+        }
         return images_dir().join("__blocked__");
     }
     let p = Path::new(name);

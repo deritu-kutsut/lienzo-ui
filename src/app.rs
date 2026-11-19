@@ -1,5 +1,6 @@
 //! Editor state, undo history and editing commands.
 
+use crate::docext::{ElementOverride, Orientation};
 use crate::model::{self, Doc, Element, Frame, Kind};
 use eframe::egui::{self, Event, Key, Modifiers, Pos2, Vec2};
 
@@ -107,6 +108,8 @@ pub struct EditorApp {
     pub library: crate::library::Library,
     pub settings: crate::library::Settings,
     pub save_open: bool,
+    /// Warnings of the last «Import from Unity…» (shown in a window until closed).
+    pub import_warnings: Vec<String>,
     pub template_name: String,
     pub element_name: String,
     /// Thumbnails of the built-in templates for the current page size (generated once).
@@ -122,6 +125,11 @@ pub struct EditorApp {
     pub updater: crate::updater::Updater,
     pub long_screenshot: bool,
     pub theme_name: String,
+    /// Portrait view: `Some(full design)` while the portrait layout is being edited. In that case `doc` is the
+    /// resolved portrait design (`Doc::resolved_for(Portrait)`) and edits are folded back into `real` as overrides.
+    real: Option<Doc>,
+    /// The working copy (`doc`) as it was when it was last folded into `real`.
+    folded: Doc,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -162,8 +170,11 @@ impl EditorApp {
         lock_backgrounds(&mut doc);
         let first_button = doc.elements.iter().find(|e| e.kind == Kind::Button).map(|e| e.id);
         let settings = crate::library::Settings::load();
+        crate::library::set_unity_project(&settings.unity_project);
         EditorApp {
             committed: doc.clone(),
+            folded: doc.clone(),
+            real: None,
             doc,
             sel: first_button.into_iter().collect(),
             undo: Vec::new(),
@@ -201,6 +212,7 @@ impl EditorApp {
             library: crate::library::Library::load(),
             settings,
             save_open: false,
+            import_warnings: Vec::new(),
             template_name: String::new(),
             element_name: String::new(),
             template_thumbs: None,
@@ -231,14 +243,18 @@ impl EditorApp {
         if self.preview {
             return;
         }
+        self.fold();
         // Changes made while a field had focus are not a step yet: they are saved before undoing.
-        if !self.preview && self.doc != self.committed {
-            let prev = std::mem::replace(&mut self.committed, self.doc.clone());
+        if *self.real_doc() != self.committed {
+            let cur = self.real_doc().clone();
+            let prev = std::mem::replace(&mut self.committed, cur);
             self.undo.push(prev);
         }
         if let Some(prev) = self.undo.pop() {
-            self.redo.push(std::mem::replace(&mut self.doc, prev));
-            self.committed = self.doc.clone();
+            let cur = self.real_doc().clone();
+            self.redo.push(cur);
+            self.committed = prev.clone();
+            self.load_full(prev);
             self.after_history();
         }
     }
@@ -248,8 +264,10 @@ impl EditorApp {
             return;
         }
         if let Some(next) = self.redo.pop() {
-            self.undo.push(std::mem::replace(&mut self.doc, next));
-            self.committed = self.doc.clone();
+            let cur = self.real_doc().clone();
+            self.undo.push(cur);
+            self.committed = next.clone();
+            self.load_full(next);
             self.after_history();
         }
     }
@@ -268,12 +286,18 @@ impl EditorApp {
         if self.preview {
             return; // test-mode changes are thrown away on exit
         }
+        let busy = ctx.input(|i| i.pointer.any_down()) || ctx.memory(|m| m.focused().is_some()) || self.drag.is_some();
+        self.commit_state(busy);
+    }
+
+    /// The state half of [`commit`] (no egui): folds the portrait edits and records the undo step.
+    pub fn commit_state(&mut self, busy: bool) {
+        self.fold();
         if self.settle > 0 {
             self.settle -= 1;
-            self.committed = self.doc.clone();
+            self.committed = self.real_doc().clone();
             return;
         }
-        let busy = ctx.input(|i| i.pointer.any_down()) || ctx.memory(|m| m.focused().is_some()) || self.drag.is_some();
         if self.doc.pixel_art && !busy {
             for e in &mut self.doc.elements {
                 e.x = e.x.round();
@@ -282,14 +306,155 @@ impl EditorApp {
                 e.h = e.h.round().max(1.0);
             }
         }
-        if !busy && self.doc != self.committed {
-            let prev = std::mem::replace(&mut self.committed, self.doc.clone());
+        if !busy && *self.real_doc() != self.committed {
+            let cur = self.real_doc().clone();
+            let prev = std::mem::replace(&mut self.committed, cur);
             self.undo.push(prev);
             if self.undo.len() > 200 {
                 self.undo.remove(0);
             }
             self.redo.clear();
         }
+    }
+
+    // ------------------------------------------------------------- portrait / landscape view
+
+    /// The full design (landscape values + portrait overrides), whichever view is open.
+    pub fn real_doc(&self) -> &Doc {
+        self.real.as_ref().unwrap_or(&self.doc)
+    }
+
+    pub fn orientation(&self) -> Orientation {
+        if self.real.is_some() { Orientation::Portrait } else { Orientation::Landscape }
+    }
+
+    /// Replaces the full design (undo / redo) keeping the current view when it still makes sense.
+    fn load_full(&mut self, d: Doc) {
+        if self.real.is_some() && d.portrait.is_some() {
+            self.doc = d.resolved_for(Orientation::Portrait);
+            self.folded = self.doc.clone();
+            self.real = Some(d);
+            self.settle = self.settle.max(1);
+        } else {
+            self.real = None;
+            self.doc = d;
+        }
+        self.fit_pending = true;
+    }
+
+    /// Leaves the portrait view (folding what was edited) without changing the design.
+    fn leave_portrait(&mut self) {
+        self.fold();
+        if let Some(r) = self.real.take() {
+            self.doc = r;
+        }
+    }
+
+    /// Switch between editing the landscape and the portrait layout. Entering the portrait view creates the
+    /// portrait layout (landscape height x width) when the design has none. The view only changes what is shown:
+    /// the design is the same; edits in portrait are stored as per-element overrides.
+    pub fn set_orientation(&mut self, o: Orientation) {
+        if self.preview || o == self.orientation() {
+            return;
+        }
+        self.drag = None;
+        self.editing = None;
+        match o {
+            Orientation::Landscape => self.leave_portrait(),
+            Orientation::Portrait => {
+                let mut full = std::mem::take(&mut self.doc);
+                if full.portrait.is_none() {
+                    full.portrait = Some(crate::docext::PortraitLayout { width: full.height, height: full.width, overrides: Vec::new() });
+                }
+                self.doc = full.resolved_for(Orientation::Portrait);
+                self.folded = self.doc.clone();
+                self.real = Some(full);
+                self.settle = self.settle.max(1);
+            }
+        }
+        self.fit_pending = true;
+        self.status = crate::i18n::t(if o == Orientation::Portrait { "Portrait view: edits are stored as overrides of the landscape layout" } else { "Landscape view" });
+    }
+
+    /// Folds the edits made on the working copy since the last fold into the full design.
+    pub fn fold(&mut self) {
+        let Some(real) = self.real.as_mut() else { return };
+        if self.settle > 0 {
+            self.folded = self.doc.clone();
+            return;
+        }
+        if self.doc != self.folded {
+            fold_portrait_edit(real, &self.folded, &self.doc);
+            self.folded = self.doc.clone();
+        }
+    }
+
+    /// Edit the full design (landscape values, canvas, portrait layout...) from any view. In the portrait view the
+    /// change is applied to the full design as one undo step and the working copy is rebuilt.
+    pub fn edit_full(&mut self, f: impl FnOnce(&mut Doc)) {
+        if self.real.is_none() {
+            f(&mut self.doc);
+            return;
+        }
+        self.fold();
+        let mut real = self.real.take().unwrap_or_default();
+        f(&mut real);
+        real.prune_overrides();
+        if real != self.committed {
+            let prev = std::mem::replace(&mut self.committed, real.clone());
+            self.undo.push(prev);
+            self.redo.clear();
+        }
+        self.real = Some(Doc::default());
+        self.load_full(real);
+        if self.real.is_none() {
+            // the portrait layout was removed: the working copy is the landscape design
+            self.committed = self.doc.clone();
+        }
+    }
+
+    /// Portrait view: drop the portrait overrides of these elements (they follow the landscape layout again).
+    pub fn reset_to_landscape(&mut self, ids: &[u64]) {
+        let ids = ids.to_vec();
+        self.edit_full(move |d| {
+            for id in &ids {
+                d.clear_override(*id);
+            }
+        });
+        self.status = crate::i18n::t("Back to the landscape layout");
+    }
+
+    /// Creates the portrait layout (landscape height x width) when the design has none.
+    pub fn create_portrait_layout(&mut self) {
+        self.edit_full(|d| {
+            if d.portrait.is_none() {
+                d.portrait = Some(crate::docext::PortraitLayout { width: d.height, height: d.width, overrides: Vec::new() });
+            }
+        });
+    }
+
+    /// Portrait reference resolution (from any view).
+    pub fn set_portrait_size(&mut self, w: f32, h: f32) {
+        if self.real.is_some() {
+            self.resize_page(w, h);
+            return;
+        }
+        self.edit_full(|d| {
+            if let Some(p) = d.portrait.as_mut() {
+                p.width = w;
+                p.height = h;
+            }
+        });
+    }
+
+    /// Portrait overrides of an element (portrait view only).
+    pub fn portrait_override(&self, id: u64) -> Option<&ElementOverride> {
+        self.real.as_ref()?.override_of(id)
+    }
+
+    /// True when the element has portrait overrides (portrait view only).
+    pub fn is_overridden(&self, id: u64) -> bool {
+        self.real.as_ref().and_then(|r| r.override_of(id)).is_some()
     }
 
     // ------------------------------------------------------------- selection
@@ -701,6 +866,7 @@ impl EditorApp {
 
     pub fn load_template(&mut self, i: usize) {
         self.set_preview(false);
+        self.leave_portrait();
         let mut d = model::template(i, self.doc.width, self.doc.height);
         lock_backgrounds(&mut d);
         self.doc = d;
@@ -727,6 +893,7 @@ impl EditorApp {
     }
 
     pub fn save_project(&mut self) {
+        self.fold();
         match serde_json::to_string_pretty(self.doc_real()).map_err(|e| e.to_string()).and_then(|s| std::fs::write(&self.project_path, s).map_err(|e| e.to_string())) {
             Ok(()) => {
                 self.status = crate::i18n::tf("Project saved to {}", &[&self.project_path]);
@@ -741,6 +908,7 @@ impl EditorApp {
             Ok(d) => {
                 self.set_preview(false);
                 crate::library::set_design_folder(std::path::Path::new(&self.project_path));
+                self.real = None;
                 self.doc = d;
                 // A different document: undo must not bring the previous one back.
                 self.undo.clear();
@@ -753,6 +921,16 @@ impl EditorApp {
                 self.fit_pending = true;
                 self.status = format!("{} {}", crate::i18n::t("Project opened:"), self.project_path);
                 self.remember_project();
+                // LIENZO_SELECT=<element id>: start with that element selected (screenshots and tests).
+                if let Some(id) = std::env::var("LIENZO_SELECT").ok().and_then(|v| v.parse::<u64>().ok()) {
+                    if self.doc.get(id).is_some() {
+                        self.sel = vec![id];
+                    }
+                }
+                // LIENZO_START_PORTRAIT=1: start in the portrait view (screenshots and tests).
+                if std::env::var("LIENZO_START_PORTRAIT").map(|v| v == "1").unwrap_or(false) {
+                    self.set_orientation(Orientation::Portrait);
+                }
             }
             Err(e) => self.status = crate::i18n::tf("Could not open: {}", &[&e.to_string()]),
         }
@@ -876,6 +1054,7 @@ impl EditorApp {
     }
 
     pub fn save_as_template(&mut self, name: &str) {
+        self.fold();
         let name = if name.trim().is_empty() { self.doc.title.clone() } else { name.trim().to_string() };
         let doc = self.doc_real().clone();
         match self.library.save_template(&name, &doc) {
@@ -886,6 +1065,7 @@ impl EditorApp {
 
     pub fn load_user_template(&mut self, doc: &Doc) {
         self.set_preview(false);
+        self.leave_portrait();
         let mut d = doc.clone();
         d.migrate_groups();
         lock_backgrounds(&mut d);
@@ -904,6 +1084,33 @@ impl EditorApp {
         }
     }
 
+    /// «Import from Unity…»: a `.prefab` (uGUI) or a Lienzo `Designs/*.json` becomes a new, unsaved design.
+    pub fn import_unity_dialog(&mut self) {
+        let Some(path) = rfd::FileDialog::new().set_title("Import from Unity").add_filter("Unity UI", &["prefab", "json"]).pick_file() else { return };
+        match crate::unity_import::import_file(&path) {
+            Ok(imp) => {
+                if let Some(root) = crate::library::find_unity_project(&path) {
+                    if self.settings.unity_project.is_empty() {
+                        self.settings.unity_project = root.to_string_lossy().to_string();
+                        self.settings.save();
+                    }
+                }
+                crate::library::set_unity_project(&self.settings.unity_project);
+                self.set_preview(false);
+                self.leave_portrait();
+                self.doc = imp.doc;
+                self.project_path = String::new();
+                self.sel.clear();
+                self.editing = None;
+                self.fit_pending = true;
+                let n = imp.warnings.len();
+                self.import_warnings = imp.warnings;
+                self.status = crate::i18n::tf("Imported {} ({} warnings). Save it as a project to keep it.", &[&path.file_name().map(|n| n.to_string_lossy().to_string()).unwrap_or_default(), &n.to_string()]);
+            }
+            Err(e) => self.status = crate::i18n::tf("Could not import: {}", &[&e]),
+        }
+    }
+
     pub fn open_project_dialog(&mut self) {
         if let Some(path) = rfd::FileDialog::new().set_title("Open project").add_filter("Proyecto", &["json"]).pick_file() {
             self.project_path = path.to_string_lossy().to_string();
@@ -915,6 +1122,9 @@ impl EditorApp {
 
     /// The design that is saved or exported: in test mode, the one from before the test (clicks do not count).
     pub fn doc_real(&self) -> &Doc {
+        if let Some(r) = &self.real {
+            return r; // portrait view: the full design (the working copy is a resolved view of it)
+        }
         self.preview_backup.as_ref().filter(|_| self.preview).unwrap_or(&self.doc)
     }
 
@@ -956,6 +1166,7 @@ impl EditorApp {
 
     /// Write the whole package into the Unity project chosen before (or ask for one).
     pub fn export_to_unity(&mut self, ask: bool) {
+        self.fold();
         let mut dir = self.settings.unity_project.clone();
         if ask || dir.is_empty() || crate::export::find_unity_root(std::path::Path::new(&dir)).is_none() {
             let mut dlg = rfd::FileDialog::new().set_title("Unity project folder (the one that contains Assets)");
@@ -971,6 +1182,7 @@ impl EditorApp {
             Ok(files) => {
                 let root = crate::export::find_unity_root(std::path::Path::new(&dir)).map(|p| p.to_string_lossy().to_string()).unwrap_or(dir.clone());
                 self.settings.unity_project = root.clone();
+                crate::library::set_unity_project(&root);
                 self.settings.save();
                 self.status = crate::i18n::tf(
                     "Exported to Unity ({} files) in {}\\{} · Unity creates the prefab in Assets/EditorGUI/Prefabs when you return to the window",
@@ -1153,6 +1365,135 @@ pub fn layout_texts(ctx: &egui::Context, doc: &mut Doc) {
     }
 }
 
+fn near(a: f32, b: f32) -> bool {
+    (a - b).abs() < 0.001
+}
+
+fn near2(a: [f32; 2], b: [f32; 2]) -> bool {
+    near(a[0], b[0]) && near(a[1], b[1])
+}
+
+fn layout_eq(a: &model::LayoutGroup, b: &model::LayoutGroup) -> bool {
+    a == b
+}
+
+/// Folds the edit `old` -> `new` of a portrait working copy (`Doc::resolved_for(Portrait)`) into the full design `real`:
+/// * page size changes become the portrait resolution;
+/// * a value of an overridable property (box, rotation, anchors, pivot, visibility, font size, layout) that the edit
+///   changed becomes a portrait override (or removes it when it equals the landscape value); the landscape value is untouched;
+/// * everything else (names, texts, colours, hierarchy, new / deleted elements, canvas, Unity options) is shared and
+///   is written to the design itself.
+///
+/// Children of a layout group keep following their group: their box is never turned into an override.
+pub fn fold_portrait_edit(real: &mut Doc, old: &Doc, new: &Doc) {
+    if !near(new.width, old.width) || !near(new.height, old.height) {
+        let (lw, lh) = (real.height, real.width);
+        let p = real.portrait.get_or_insert_with(|| crate::docext::PortraitLayout { width: lw, height: lh, overrides: Vec::new() });
+        p.width = new.width;
+        p.height = new.height;
+    }
+    real.title = new.title.clone();
+    real.background = new.background;
+    real.canvas_match = new.canvas_match;
+    real.pixel_art = new.pixel_art;
+    real.canvas = new.canvas.clone();
+    real.unity = new.unity.clone();
+    real.next_id = real.next_id.max(new.next_id);
+
+    let mut overrides: std::collections::HashMap<u64, ElementOverride> = real.portrait.as_ref().map(|p| p.overrides.iter().cloned().map(|o| (o.id, o)).collect()).unwrap_or_default();
+    let mut landscape: std::collections::HashMap<u64, Element> = real.elements.drain(..).map(|e| (e.id, e)).collect();
+    let old_by: std::collections::HashMap<u64, &Element> = old.elements.iter().map(|e| (e.id, e)).collect();
+    let (lw, lh) = (real.width, real.height);
+    let mut out = Vec::with_capacity(new.elements.len());
+    let mut final_ov: Vec<ElementOverride> = Vec::new();
+    for ne in &new.elements {
+        let id = ne.id;
+        let mut ov = overrides.remove(&id).unwrap_or_else(|| ElementOverride::new(id));
+        let driven = new.driven_by_layout(id);
+        let merged = match landscape.remove(&id) {
+            Some(le) => {
+                let oe = old_by.get(&id).copied();
+                // shared properties come from the edit, the overridable ones keep the landscape value
+                let mut m = ne.clone();
+                m.x = le.x;
+                m.y = le.y;
+                m.w = le.w;
+                m.h = le.h;
+                m.rot = le.rot;
+                m.anchor_min = le.anchor_min;
+                m.anchor_max = le.anchor_max;
+                m.pivot = le.pivot;
+                m.visible = le.visible;
+                m.font_size = le.font_size;
+                m.layout = le.layout.clone();
+                // a property counts as edited when it differs from what the element had before the edit
+                macro_rules! num {
+                    ($f:ident, $skip:expr) => {
+                        if !$skip && oe.map(|o| !near(o.$f, ne.$f)).unwrap_or(true) {
+                            ov.$f = if near(ne.$f, le.$f) { None } else { Some(ne.$f) };
+                        }
+                    };
+                }
+                macro_rules! pair {
+                    ($f:ident) => {
+                        if oe.map(|o| !near2(o.$f, ne.$f)).unwrap_or(true) {
+                            ov.$f = if near2(ne.$f, le.$f) { None } else { Some(ne.$f) };
+                        }
+                    };
+                }
+                num!(x, driven);
+                num!(y, driven);
+                num!(w, driven);
+                num!(h, driven);
+                num!(rot, false);
+                num!(font_size, false);
+                pair!(anchor_min);
+                pair!(anchor_max);
+                pair!(pivot);
+                if oe.map(|o| o.visible != ne.visible).unwrap_or(true) {
+                    ov.visible = if ne.visible == le.visible { None } else { Some(ne.visible) };
+                }
+                if oe.map(|o| !layout_eq(&o.layout, &ne.layout)).unwrap_or(true) {
+                    ov.layout = if layout_eq(&ne.layout, &le.layout) { None } else { Some(ne.layout.clone()) };
+                }
+                m
+            }
+            None => {
+                // An element created while the portrait view is open: its landscape box is the portrait box kept
+                // inside the landscape page, and the portrait box is an override.
+                let mut m = ne.clone();
+                m.w = ne.w.min(lw).max(0.0);
+                m.h = ne.h.min(lh).max(0.0);
+                m.x = ne.x.clamp(0.0, (lw - m.w).max(0.0));
+                m.y = ne.y.clamp(0.0, (lh - m.h).max(0.0));
+                if !near(m.x, ne.x) {
+                    ov.x = Some(ne.x);
+                }
+                if !near(m.y, ne.y) {
+                    ov.y = Some(ne.y);
+                }
+                if !near(m.w, ne.w) {
+                    ov.w = Some(ne.w);
+                }
+                if !near(m.h, ne.h) {
+                    ov.h = Some(ne.h);
+                }
+                m
+            }
+        };
+        out.push(merged);
+        ov.sanitize();
+        if !ov.is_empty() {
+            final_ov.push(ov);
+        }
+    }
+    real.elements = out;
+    if let Some(p) = real.portrait.as_mut() {
+        p.overrides = final_ov;
+    }
+    real.prune_overrides();
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1286,5 +1627,143 @@ mod history_tests {
         assert_eq!((a.undo.len(), a.redo.len()), (1, 1));
         a.set_preview(false);
         assert!(a.can_undo() && a.can_redo());
+    }
+}
+
+#[cfg(test)]
+mod portrait_tests {
+    use super::*;
+
+    fn app() -> EditorApp {
+        let mut a = EditorApp::new(None);
+        a.doc = model::template(0, 1920.0, 1080.0);
+        a.committed = a.doc.clone();
+        a.folded = a.doc.clone();
+        a.settle = 0;
+        a.sel.clear();
+        a
+    }
+
+    fn id(a: &EditorApp, n: &str) -> u64 {
+        a.doc.elements.iter().find(|e| e.name == n).unwrap().id
+    }
+
+    #[test]
+    fn move_in_portrait_creates_only_an_override() {
+        let mut a = app();
+        let play = id(&a, "Moon");
+        let land = a.doc.get(play).unwrap().clone();
+        a.set_orientation(Orientation::Portrait);
+        a.commit_state(false);
+        assert_eq!((a.doc.width, a.doc.height), (1080.0, 1920.0));
+        a.doc.translate_subtree(play, 25.0, 40.0);
+        a.commit_state(false);
+        let real = a.real_doc().clone();
+        let le = real.get(play).unwrap();
+        assert_eq!((le.x, le.y, le.w, le.h), (land.x, land.y, land.w, land.h), "landscape values are untouched");
+        let ov = real.override_of(play).expect("an override was created");
+        assert!((ov.x.unwrap() - (land.x + 25.0)).abs() < 0.01 && (ov.y.unwrap() - (land.y + 40.0)).abs() < 0.01);
+        assert!(ov.w.is_none() && ov.h.is_none() && ov.visible.is_none());
+        // only the moved element (and the ones that moved with it) have overrides
+        assert!(real.portrait.as_ref().unwrap().overrides.len() < real.elements.len());
+        // back to landscape: the old geometry
+        a.set_orientation(Orientation::Landscape);
+        let e = a.doc.get(play).unwrap();
+        assert_eq!((e.x, e.y), (land.x, land.y));
+        assert!(a.doc.portrait.is_some());
+    }
+
+    #[test]
+    fn visibility_and_font_size_are_overrides_and_shared_fields_are_not() {
+        let mut a = app();
+        let title = id(&a, "Header");
+        let (vis, size) = { let e = a.doc.get(title).unwrap(); (e.visible, e.font_size) };
+        a.set_orientation(Orientation::Portrait);
+        a.commit_state(false);
+        {
+            let e = a.doc.get_mut(title).unwrap();
+            e.visible = false;
+            e.font_size = size + 10.0;
+            e.text = "Other text".into();
+        }
+        a.commit_state(false);
+        let real = a.real_doc();
+        let ov = real.override_of(title).unwrap();
+        assert_eq!((ov.visible, ov.font_size), (Some(false), Some(size + 10.0)));
+        let le = real.get(title).unwrap();
+        assert_eq!((le.visible, le.font_size), (vis, size));
+        assert_eq!(le.text, "Other text", "text is shared between both layouts");
+    }
+
+    #[test]
+    fn reset_to_landscape_clears_and_undo_works_across_views() {
+        let mut a = app();
+        let play = id(&a, "Moon");
+        let x0 = a.doc.get(play).unwrap().x;
+        a.set_orientation(Orientation::Portrait);
+        a.commit_state(false);
+        a.commit_state(false); // the new portrait layout is one step
+        a.doc.translate_subtree(play, 100.0, 0.0);
+        a.commit_state(false);
+        assert!(a.is_overridden(play));
+        assert!(a.can_undo());
+        a.undo();
+        assert!(!a.is_overridden(play), "undo removes the override");
+        assert!((a.doc.get(play).unwrap().x - x0).abs() < 0.01);
+        a.redo();
+        assert!(a.is_overridden(play));
+        assert!((a.doc.get(play).unwrap().x - (x0 + 100.0)).abs() < 0.01);
+        a.reset_to_landscape(&[play]);
+        assert!(!a.is_overridden(play));
+        assert!((a.doc.get(play).unwrap().x - x0).abs() < 0.01, "the working copy follows the landscape value again");
+        a.undo();
+        assert!(a.is_overridden(play), "the reset is undoable");
+        // undoing the move itself leaves the portrait view open with no override
+        a.undo();
+        assert!(!a.is_overridden(play));
+        assert_eq!(a.orientation(), Orientation::Portrait);
+        // a design without portrait layout (undo target) falls back to the landscape view
+        let mut plain = a.real_doc().clone();
+        plain.portrait = None;
+        a.load_full(plain);
+        assert_eq!(a.orientation(), Orientation::Landscape);
+    }
+
+    #[test]
+    fn editing_back_to_the_landscape_value_removes_the_override() {
+        let mut a = app();
+        let play = id(&a, "Moon");
+        a.set_orientation(Orientation::Portrait);
+        a.commit_state(false);
+        a.doc.translate_subtree(play, 30.0, 0.0);
+        a.commit_state(false);
+        assert!(a.is_overridden(play));
+        a.doc.translate_subtree(play, -30.0, 0.0);
+        a.commit_state(false);
+        assert!(!a.is_overridden(play));
+    }
+
+    #[test]
+    fn portrait_size_new_elements_and_saving() {
+        let mut a = app();
+        a.set_orientation(Orientation::Portrait);
+        a.commit_state(false);
+        a.resize_page(1200.0, 2000.0);
+        let mut e = Element::new(0, Kind::Button);
+        e.w = 300.0;
+        e.h = 90.0;
+        a.insert(e, Some([600.0, 1900.0]));
+        a.commit_state(false);
+        let real = a.real_doc();
+        let p = real.portrait.as_ref().unwrap();
+        assert_eq!((p.width, p.height), (1200.0, 2000.0));
+        assert_eq!((real.width, real.height), (1920.0, 1080.0), "landscape page size is untouched");
+        let new = real.elements.last().unwrap();
+        assert!(new.y + new.h <= 1080.0, "its landscape box stays on the landscape page");
+        assert!(real.override_of(new.id).is_some());
+        // the saved file is the full design
+        let text = serde_json::to_string(a.doc_real()).unwrap();
+        let back = Doc::from_json_str(&text).unwrap();
+        assert!(back.portrait.is_some() && back.width == 1920.0);
     }
 }

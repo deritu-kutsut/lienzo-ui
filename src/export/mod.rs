@@ -7,6 +7,9 @@ pub mod ugui;
 pub mod uitk;
 pub mod view;
 
+#[cfg(test)]
+mod ext_tests;
+
 use crate::model::{Doc, Element, Frame, Kind, rect_transform_in, RectTransform};
 use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};
@@ -14,8 +17,21 @@ use std::path::{Path, PathBuf};
 /// Unity editor script (goes in Assets/EditorGUI/Editor/).
 pub const IMPORTER_CS: &str = include_str!("EditorGuiImporter.cs");
 
+/// Runtime helpers written next to the generated scripts when a design uses the safe area / a portrait layout.
+pub const SAFE_AREA_CS: &str = include_str!("LienzoSafeArea.cs");
+pub const ORIENTATION_CS: &str = include_str!("LienzoOrientationLayout.cs");
+
 /// Folder inside the Unity project.
 pub const UNITY_ROOT: &str = "Assets/EditorGUI";
+
+/// Default folder of the generated scripts (`unity.scripts_dir` overrides it).
+pub const DEFAULT_SCRIPTS_DIR: &str = "Assets/EditorGUI/Scripts";
+
+/// Names of the GameObjects the importer generates itself. They start with `__` so they cannot collide
+/// with a name the user chose (the old Spanish names `Borde`, `Texto`, `Fondo del lienzo`, `Tick` could).
+pub const GEN_SAFE_AREA: &str = "__safe_area";
+#[allow(dead_code)] // documented names; the importer uses the same literals
+pub const GEN_NAMES: [&str; 5] = ["__border", "__text", "__tick", "__canvas_background", GEN_SAFE_AREA];
 
 /// ASCII-only version of a name (accents removed).
 pub fn ascii_fold(s: &str) -> String {
@@ -302,8 +318,31 @@ pub fn image_file_name(image: &str) -> String {
     Path::new(image).file_name().map(|s| s.to_string_lossy().to_string()).unwrap_or_else(|| image.to_string())
 }
 
+/// `unity:<asset path>[#sub-sprite]` or a plain path under `Assets/` (or `Packages/`): a picture that already
+/// lives in the Unity project. It is referenced as it is, never copied or overwritten.
+pub fn unity_image_ref(image: &str) -> Option<(String, Option<String>)> {
+    let t = image.trim().replace('\\', "/");
+    let body = t.strip_prefix("unity:").unwrap_or(&t);
+    let (path, sub) = match body.split_once('#') {
+        Some((p, s)) => (p.to_string(), Some(s.to_string()).filter(|s| !s.is_empty())),
+        None => (body.to_string(), None),
+    };
+    let ok = (path.starts_with("Assets/") || path.starts_with("Packages/")) && !path.split('/').any(|p| p == "..") && !path.chars().any(|c| c.is_control());
+    if ok { Some((path, sub)) } else { None }
+}
+
+/// Sub-sprite the element uses: its `sprite`, or the `#name` of a `unity:` reference.
+pub fn element_sprite(e: &Element) -> Option<String> {
+    e.sprite.clone().or_else(|| unity_image_ref(&e.image).and_then(|(_, s)| s))
+}
+
+/// Asset path inside the Unity project of an element's picture: the referenced asset for a `unity:` image,
+/// else the copy that the export writes into `Assets/EditorGUI/Sprites`.
 pub fn image_asset_path(image: &str) -> String {
-    format!("{}/Sprites/{}", UNITY_ROOT, image_file_name(image))
+    match unity_image_ref(image) {
+        Some((p, _)) => p,
+        None => format!("{}/Sprites/{}", UNITY_ROOT, image_file_name(image)),
+    }
 }
 
 /// Fonts used by the design that are not the default one.
@@ -332,10 +371,10 @@ pub fn find_unity_root(dir: &Path) -> Option<PathBuf> {
     None
 }
 
-/// True if some `.cs` under `<project>/Assets` already declares `class {cls}View` (bounded textual scan).
-fn view_class_exists(root: &Path, cls: &str) -> bool {
-    let needle = format!("{}View", cls);
+/// Every `.cs` under `<project>/Assets` (relative paths with `/`) whose text satisfies `pred` (bounded scan).
+fn scan_cs(root: &Path, mut pred: impl FnMut(&str) -> bool) -> Vec<String> {
     let mut stack = vec![root.join("Assets")];
+    let mut found = Vec::new();
     let (mut files, mut dirs) = (0usize, 0usize);
     while let Some(d) = stack.pop() {
         dirs += 1;
@@ -351,20 +390,92 @@ fn view_class_exists(root: &Path, cls: &str) -> bool {
             } else if ft.is_file() && p.extension().is_some_and(|x| x.eq_ignore_ascii_case("cs")) {
                 files += 1;
                 if files > 50_000 {
-                    return false;
+                    return found;
                 }
                 if ent.metadata().map(|m| m.len() > 2_000_000).unwrap_or(true) {
                     continue;
                 }
                 if let Ok(t) = std::fs::read_to_string(&p) {
-                    if declares_class(&t, &needle) {
-                        return true;
+                    if pred(&t) {
+                        if let Ok(r) = p.strip_prefix(root) {
+                            found.push(r.to_string_lossy().replace('\\', "/"));
+                        }
                     }
                 }
             }
         }
     }
-    false
+    found
+}
+
+/// True if some `.cs` under `<project>/Assets` already declares `class {cls}View` (bounded textual scan).
+fn view_class_exists(root: &Path, cls: &str) -> bool {
+    let needle = format!("{}View", cls);
+    !scan_cs(root, |t| declares_class(t, &needle)).is_empty()
+}
+
+/// Project folder (relative, starts with `Assets`) of the `.asmdef` named `assembly`, or of an `.asmref` that
+/// points to it (a folder with an `.asmref` compiles into that assembly too).
+pub fn find_asmdef_folder(root: &Path, assembly: &str) -> Option<String> {
+    let mut stack = vec![root.join("Assets")];
+    let mut dirs = 0usize;
+    let mut via_ref = None;
+    while let Some(d) = stack.pop() {
+        dirs += 1;
+        if dirs > 20_000 {
+            break;
+        }
+        let Ok(rd) = std::fs::read_dir(&d) else { continue };
+        for ent in rd.flatten() {
+            let p = ent.path();
+            let Ok(ft) = ent.file_type() else { continue };
+            if ft.is_dir() {
+                stack.push(p);
+                continue;
+            }
+            let ext = p.extension().and_then(|x| x.to_str()).unwrap_or("").to_ascii_lowercase();
+            if (ext == "asmdef" || ext == "asmref") && ft.is_file() {
+                let Ok(t) = std::fs::read_to_string(&p) else { continue };
+                let Ok(v) = serde_json::from_str::<serde_json::Value>(t.trim_start_matches('\u{feff}')) else { continue };
+                let key = if ext == "asmdef" { "name" } else { "reference" };
+                if v[key].as_str() == Some(assembly) {
+                    let rel = p.parent().and_then(|d| d.strip_prefix(root).ok()).map(|r| r.to_string_lossy().replace('\\', "/"));
+                    if ext == "asmdef" {
+                        return rel;
+                    }
+                    via_ref = via_ref.or(rel);
+                }
+            }
+        }
+    }
+    via_ref
+}
+
+/// Where the generated scripts of `doc` go and a note when the request could not be followed exactly.
+///
+/// * `unity.scripts_dir` (default `Assets/EditorGUI/Scripts`).
+/// * With `unity.assembly`: if an `.asmdef` of that name is found in the project, the scripts must live under its
+///   folder to compile into it: `scripts_dir` is kept when it is already inside that folder, otherwise
+///   `<asmdef folder>/LienzoUI` is used. If no such asmdef exists the scripts stay in `scripts_dir` (Assembly-CSharp).
+pub fn resolve_scripts_dir(doc: &Doc, root: &Path) -> (String, Option<String>) {
+    let want = doc.unity.scripts_dir.clone();
+    if let Some(asm) = &doc.unity.assembly {
+        return match find_asmdef_folder(root, asm) {
+            Some(folder) => {
+                let inside = |w: &str| w == folder || w.starts_with(&format!("{}/", folder));
+                match want {
+                    Some(w) if inside(&w) => (w, None),
+                    Some(w) => (format!("{}/LienzoUI", folder), Some(format!("scripts_dir {} is outside the folder of assembly {} ({}): the scripts were put in {}/LienzoUI", w, asm, folder, folder))),
+                    None => (format!("{}/LienzoUI", folder), None),
+                }
+            }
+            None => (
+                want.unwrap_or_else(|| DEFAULT_SCRIPTS_DIR.to_string()),
+                Some(format!("assembly {} was not found (no .asmdef with that name in Assets): the scripts compile into Assembly-CSharp", asm)),
+            ),
+        };
+    }
+    (want.unwrap_or_else(|| DEFAULT_SCRIPTS_DIR.to_string()), None)
 }
 
 /// `class <name>` as whole words (so `MainMenuViewBase` does not count as `MainMenuView`).
@@ -383,19 +494,34 @@ fn declares_class(text: &str, name: &str) -> bool {
     false
 }
 
-/// Write everything into `<project>/Assets/EditorGUI`. Returns the written paths (relative to the project).
+/// Marker that every generated (overwritable) C# file carries in its first line.
+const GENERATED_MARK: &str = "Generated by Lienzo UI";
+
+/// Write the selected outputs into `<project>/Assets/EditorGUI` (scripts into the resolved scripts folder).
+/// Returns the written paths (relative to the project).
+///
+/// Only what `doc.unity.generate` asks for is written: `prefab` (importer + design JSON + the runtime helpers the
+/// prefab needs), `uitk` (UXML + USS), `imgui` (`*OnGUI.cs`, only when `imgui_enabled()`), `view_scripts`
+/// (`*ViewBase.cs` and the user's `*View.cs` stub). Pictures and fonts are copied for prefab / UI Toolkit.
 pub fn write_unity_package(doc: &Doc, project: &Path) -> Result<Vec<String>, String> {
     let root = find_unity_root(project).ok_or("that folder does not look like a Unity project (it has no Assets folder)")?;
-    let base = root.join(UNITY_ROOT);
+    let gn = doc.unity.generate.clone();
     let cls = class_name(&doc.title);
+    let (scripts, note) = resolve_scripts_dir(doc, &root);
+    if let Some(n) = &note {
+        eprintln!("[Lienzo UI] {}", n);
+    }
     // Images are read before writing anything: if one is missing, the Unity project is not left half-written.
+    // Pictures that already live in the Unity project (`unity:` / `Assets/...`) are referenced, never copied.
     let mut pictures = Vec::new();
     let mut done = HashSet::new();
-    for e in &doc.elements {
-        if !e.image.is_empty() && done.insert(e.image.clone()) {
-            let src = crate::library::resolve_image(&e.image);
-            let b = std::fs::read(&src).map_err(|err| format!("could not read the image {}: {}", src.display(), err))?;
-            pictures.push((image_asset_path(&e.image), b));
+    if gn.prefab || gn.uitk {
+        for e in &doc.elements {
+            if !e.image.is_empty() && unity_image_ref(&e.image).is_none() && done.insert(e.image.clone()) {
+                let src = crate::library::resolve_image(&e.image);
+                let b = std::fs::read(&src).map_err(|err| format!("could not read the image {}: {}", src.display(), err))?;
+                pictures.push((image_asset_path(&e.image), b));
+            }
         }
     }
     let mut written = Vec::new();
@@ -408,33 +534,69 @@ pub fn write_unity_package(doc: &Doc, project: &Path) -> Result<Vec<String>, Str
         written.push(rel);
         Ok(())
     };
-    put(format!("{}/Editor/EditorGuiImporter.cs", UNITY_ROOT), IMPORTER_CS.as_bytes())?;
+    if gn.prefab {
+        put(format!("{}/Editor/EditorGuiImporter.cs", UNITY_ROOT), IMPORTER_CS.as_bytes())?;
+    }
     for (rel, b) in &pictures {
         put(rel.clone(), b)?;
     }
-    // fonts (Unity turns them into TextMeshPro font assets)
-    for name in used_fonts(doc) {
-        if let Some(src) = crate::render::font_path(&name) {
-            let ext = src.extension().and_then(|x| x.to_str()).unwrap_or("ttf").to_lowercase();
-            if let Ok(b) = std::fs::read(&src) {
-                put(format!("{}/Fonts/{}.{}", UNITY_ROOT, name, ext), &b)?;
+    // fonts (Unity turns them into TextMeshPro font assets, unless a TMP asset with that name already exists)
+    if gn.prefab || gn.uitk {
+        for name in used_fonts(doc) {
+            if let Some(src) = crate::render::font_path(&name) {
+                let ext = src.extension().and_then(|x| x.to_str()).unwrap_or("ttf").to_lowercase();
+                if let Ok(b) = std::fs::read(&src) {
+                    put(format!("{}/Fonts/{}.{}", UNITY_ROOT, name, ext), &b)?;
+                }
             }
         }
     }
-    put(format!("{}/UI Toolkit/{}.uss", UNITY_ROOT, cls), uitk::uss(doc).as_bytes())?;
-    put(format!("{}/UI Toolkit/{}.uxml", UNITY_ROOT, cls), uitk::uxml(doc).as_bytes())?;
-    put(format!("{}/Scripts/{}OnGUI.cs", UNITY_ROOT, cls), imgui::script(doc).as_bytes())?;
-    let base_existed = root.join(format!("{}/Scripts/{}ViewBase.cs", UNITY_ROOT, cls)).exists();
-    put(format!("{}/Scripts/{}ViewBase.cs", UNITY_ROOT, cls), view::base_script(doc).as_bytes())?;
-    let user_view = format!("{}/Scripts/{}View.cs", UNITY_ROOT, cls);
-    // The View is user-owned: write the stub only if the user has no `{cls}View` class anywhere in
-    // the project (they may have moved or renamed the file) and the base class was not already exported.
-    if !base_existed && !view_class_exists(&root, &cls) {
-        put(user_view, view::user_script(doc).as_bytes())?;
+    if gn.uitk {
+        put(format!("{}/UI Toolkit/{}.uss", UNITY_ROOT, cls), uitk::uss(doc).as_bytes())?;
+        put(format!("{}/UI Toolkit/{}.uxml", UNITY_ROOT, cls), uitk::uxml(doc).as_bytes())?;
     }
-    // the design last: the importer rebuilds the prefab when this file changes
-    put(format!("{}/Designs/{}.json", UNITY_ROOT, cls), ugui::json(doc, true).as_bytes())?;
-    let _ = base;
+    if gn.imgui_enabled() {
+        put(format!("{}/{}OnGUI.cs", scripts, cls), imgui::script(doc).as_bytes())?;
+    }
+    if gn.view_scripts {
+        // The ViewBase may be left over from an export with another scripts folder: two classes with the same
+        // name would not compile, so a stale generated copy is removed first.
+        let target = format!("{}/{}ViewBase.cs", scripts, cls);
+        let decl = format!("abstract class {}ViewBase", cls);
+        for old in scan_cs(&root, |t| t.contains(&decl) && t.lines().next().is_some_and(|l| l.contains(GENERATED_MARK))) {
+            if old != target {
+                let _ = std::fs::remove_file(root.join(&old));
+                let _ = std::fs::remove_file(root.join(format!("{}.meta", old)));
+            }
+        }
+        let base_existed = root.join(&target).exists();
+        put(target, view::base_script(doc).as_bytes())?;
+        let user_view = format!("{}/{}View.cs", scripts, cls);
+        // The View is user-owned: write the stub only if the user has no `{cls}View` class anywhere in
+        // the project (they may have moved or renamed the file) and the base class was not already exported.
+        if !base_existed && !view_class_exists(&root, &cls) {
+            put(user_view, view::user_script(doc).as_bytes())?;
+        }
+    }
+    if gn.prefab {
+        // Runtime helpers (shared by every design, compiled together with the scripts: the configured
+        // assembly or Assembly-CSharp). Written once; a copy declared elsewhere in the project is respected.
+        let mut helpers: Vec<(&str, &str)> = Vec::new();
+        if doc.canvas.safe_area {
+            helpers.push(("LienzoSafeArea", SAFE_AREA_CS));
+        }
+        if doc.portrait.as_ref().is_some_and(|p| !p.overrides.is_empty()) {
+            helpers.push(("LienzoOrientationLayout", ORIENTATION_CS));
+        }
+        for (name, code) in helpers {
+            let target = format!("{}/Runtime/{}.cs", scripts, name);
+            if root.join(&target).exists() || scan_cs(&root, |t| declares_class(t, name)).is_empty() {
+                put(target, code.as_bytes())?;
+            }
+        }
+        // the design last: the importer rebuilds the prefab when this file changes
+        put(format!("{}/Designs/{}.json", UNITY_ROOT, cls), ugui::json(doc, true).as_bytes())?;
+    }
     Ok(written)
 }
 

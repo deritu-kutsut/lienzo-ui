@@ -850,3 +850,89 @@ Corners must be between 0 and 16.	Углы должны быть от 0 до 16.
 Invalid font name.	Недопустимое название шрифта.
 Align and order	Выровнять и упорядочить
 Align to parent and order	Выровнять по родителю и упорядочить
+Edit the landscape layout	Редактировать горизонтальный макет
+Edit the portrait layout: changes are stored as overrides and the landscape layout is not touched	Редактировать вертикальный макет: изменения сохраняются как исключения, горизонтальный макет не затрагивается
+Overridden in the portrait layout (right-click: Reset to landscape)	Переопределено в вертикальном макете (правый клик: Вернуть к горизонтальному)
+Reset to landscape	Вернуть к горизонтальному
+Portrait view: the reference resolution below is the portrait one.	Вертикальный вид: опорное разрешение ниже — вертикальное.
+Transparent overlay	Прозрачное наложение
+Alpha 0 = transparent overlay: the page shows a checkerboard and no background image is exported to Unity.	Альфа 0 = прозрачное наложение: страница показывает шахматную доску, фоновое изображение в Unity не экспортируется.
+Canvas (Unity)	Canvas (Unity)
+Render mode	Режим рендера
+Screen Space - Overlay	Screen Space - Overlay
+Screen Space - Camera	Screen Space - Camera
+World Space	World Space
+Sort order	Порядок сортировки
+Plane distance	Расстояние до плоскости
+Safe area	Безопасная зона
+Respect notch and rounded corners	Учитывать вырез и скруглённые углы
+Applies the device safe area to the root, so nothing hides under a notch.	Применяет безопасную зону устройства к корню, чтобы ничего не пряталось под вырезом.
+Embed	Встроить
+Embed (no own Canvas)	Встроить (без собственного Canvas)
+Exports a plain RectTransform meant to live under the Canvas of your game: no Canvas or CanvasScaler is created.	Экспортирует простой RectTransform, который живёт под Canvas вашей игры: Canvas и CanvasScaler не создаются.
+Unity export	Экспорт в Unity
+Scripts folder	Папка скриптов
+Invalid folder: it must start with Assets, use / and contain no “..”, no drive and no empty parts.	Недопустимая папка: она должна начинаться с Assets, использовать / и не содержать «..», диска и пустых частей.
+Where the generated scripts go (empty = the default folder).	Куда попадают сгенерированные скрипты (пусто = папка по умолчанию).
+Assembly name	Имя сборки (assembly)
+Assembly Definition of your game (optional)	Assembly Definition вашей игры (необязательно)
+Invalid assembly name: letters, digits, _ . - and it must start with a letter or _.	Недопустимое имя сборки: буквы, цифры, _ . - , начинается с буквы или _.
+Outputs	Выходные данные
+Prefab	Prefab
+UI Toolkit (UXML / USS)	UI Toolkit (UXML / USS)
+IMGUI script	Скрипт IMGUI
+View scripts	Скрипты представления
+Default font (TextMeshPro asset)	Шрифт по умолчанию (ассет TextMeshPro)
+Name of a font asset in your project	Имя ассета шрифта в вашем проекте
+Fallback fonts	Запасные шрифты
+Fallback font asset name	Имя ассета запасного шрифта
+Add	Добавить
+Portrait layout	Вертикальный макет
+No portrait layout yet. Create one to design the same screen for devices held upright; elements start where they are in landscape.	Вертикального макета пока нет. Создайте его, чтобы оформить тот же экран для устройств в вертикальном положении; элементы начинают там, где они в горизонтальном.
+Create portrait layout	Создать вертикальный макет
+Portrait size	Вертикальный размер
+{} element(s) differ from the landscape layout. Use the Landscape / Portrait buttons in the top bar to switch the view.	Элементов, отличающихся от горизонтального макета: {}. Кнопки «Горизонтальный / Вертикальный» в верхней панели переключают вид.
+Remove portrait layout	Удалить вертикальный макет
+Deletes every portrait override and the portrait size	Удаляет все вертикальные исключения и вертикальный размер
+Unity name	Имя в Unity
+Automatic (same as the name)	Автоматически (как имя)
+Exact GameObject name in Unity. Leave it empty to use the name above.	Точное имя GameObject в Unity. Оставьте пустым, чтобы использовать имя выше.
+Invalid Unity name: it must not be blank, contain “/” or control characters, or exceed 128 characters (the name above is used instead).	Недопустимое имя Unity: оно не должно быть пустым, содержать «/» или управляющие символы и быть длиннее 128 символов (используется имя выше).
+A sibling already uses this name: it will be exported as “{}”.	Соседний элемент уже использует это имя: оно будет экспортировано как «{}».
+Exported as “{}”	Экспортируется как «{}»
+Differs from landscape: {}	Отличается от горизонтального: {}
+Image settings (Unity)	Параметры изображения (Unity)
+9-slice	9-slice
+Border of the 9-slice in pixels of the source image (left, bottom, right, top), like Unity's Sprite Editor. The canvas shows the result.	Граница 9-slice в пикселях исходного изображения (слева, снизу, справа, сверху), как в Sprite Editor Unity. Холст показывает результат.
+Clear	Очистить
+Source image: {} × {} px	Исходное изображение: {} × {} px
+Pixels per unit	Пикселей на единицу
+Sprite pixels per unit: 100 keeps the borders at their pixel size, 200 makes them half as big.	Пикселей на единицу спрайта: 100 сохраняет размер границ в пикселях, 200 уменьшает их вдвое.
+Auto	Авто
+Sub-sprite	Подспрайт
+Name inside an atlas (optional)	Имя внутри атласа (необязательно)
+Image mode	Режим изображения
+Automatic	Автоматически
+Preserve aspect	Сохранять пропорции
+Back to the landscape layout	Возврат к горизонтальному макету
+Portrait layout · {} × {}	Вертикальный макет · {} × {}
+Font {} lacks characters: {}	В шрифте {} нет символов: {}
+position	позиция
+size	размер
+rotation	поворот
+anchors	якоря
+visibility	видимость
+font size	размер шрифта
+layout	layout
+Simple	Simple
+Sliced	Sliced
+Tiled	Tiled
+Filled	Filled
+Portrait view: edits are stored as overrides of the landscape layout	Вертикальный вид: изменения сохраняются как исключения горизонтального макета
+Landscape view	Горизонтальный вид
+Import from Unity…	Импорт из Unity…
+Turn a uGUI prefab (.prefab) or a Lienzo UI exported design into an editable design	Преобразует префаб uGUI (.prefab) или дизайн, экспортированный Lienzo UI, в редактируемый дизайн
+Import from Unity	Импорт из Unity
+Imported {} ({} warnings). Save it as a project to keep it.	Импортировано {} (предупреждений: {}). Сохраните как проект, чтобы сохранить результат.
+Could not import: {}	Не удалось импортировать: {}
+{} things could not be mapped exactly:	Не удалось точно преобразовать элементов: {}

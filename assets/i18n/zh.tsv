@@ -850,3 +850,89 @@ Corners must be between 0 and 16.	圆角必须在 0 到 16 之间。
 Invalid font name.	字体名称无效。
 Align and order	对齐与排序
 Align to parent and order	对齐到父级并排序
+Edit the landscape layout	编辑横屏布局
+Edit the portrait layout: changes are stored as overrides and the landscape layout is not touched	编辑竖屏布局：更改以覆盖项形式保存，不会改动横屏布局
+Overridden in the portrait layout (right-click: Reset to landscape)	在竖屏布局中有覆盖（右键：恢复为横屏）
+Reset to landscape	恢复为横屏
+Portrait view: the reference resolution below is the portrait one.	竖屏视图：下方的参考分辨率是竖屏分辨率。
+Transparent overlay	透明叠加层
+Alpha 0 = transparent overlay: the page shows a checkerboard and no background image is exported to Unity.	Alpha 0 = 透明叠加层：页面显示棋盘格，不会向 Unity 导出背景图。
+Canvas (Unity)	Canvas (Unity)
+Render mode	渲染模式
+Screen Space - Overlay	Screen Space - Overlay
+Screen Space - Camera	Screen Space - Camera
+World Space	World Space
+Sort order	排序顺序
+Plane distance	平面距离
+Safe area	安全区域
+Respect notch and rounded corners	避开刘海和圆角
+Applies the device safe area to the root, so nothing hides under a notch.	将设备安全区域应用到根节点，避免内容被刘海遮挡。
+Embed	嵌入
+Embed (no own Canvas)	嵌入（不带自己的 Canvas）
+Exports a plain RectTransform meant to live under the Canvas of your game: no Canvas or CanvasScaler is created.	导出一个普通的 RectTransform，放在游戏的 Canvas 之下：不创建 Canvas 或 CanvasScaler。
+Unity export	导出到 Unity
+Scripts folder	脚本文件夹
+Invalid folder: it must start with Assets, use / and contain no “..”, no drive and no empty parts.	文件夹无效：必须以 Assets 开头，使用 /，且不能包含“..”、盘符或空的部分。
+Where the generated scripts go (empty = the default folder).	生成的脚本存放位置（留空 = 默认文件夹）。
+Assembly name	程序集名称
+Assembly Definition of your game (optional)	你游戏的 Assembly Definition（可选）
+Invalid assembly name: letters, digits, _ . - and it must start with a letter or _.	程序集名称无效：字母、数字、_ . -，且必须以字母或 _ 开头。
+Outputs	输出
+Prefab	Prefab
+UI Toolkit (UXML / USS)	UI Toolkit (UXML / USS)
+IMGUI script	IMGUI 脚本
+View scripts	视图脚本
+Default font (TextMeshPro asset)	默认字体（TextMeshPro 资源）
+Name of a font asset in your project	项目中字体资源的名称
+Fallback fonts	备用字体
+Fallback font asset name	备用字体资源名称
+Add	添加
+Portrait layout	竖屏布局
+No portrait layout yet. Create one to design the same screen for devices held upright; elements start where they are in landscape.	还没有竖屏布局。创建一个，为竖持设备设计同一界面；元素从横屏中的位置开始。
+Create portrait layout	创建竖屏布局
+Portrait size	竖屏尺寸
+{} element(s) differ from the landscape layout. Use the Landscape / Portrait buttons in the top bar to switch the view.	有 {} 个元素与横屏布局不同。使用顶部栏的“横屏 / 竖屏”按钮切换视图。
+Remove portrait layout	移除竖屏布局
+Deletes every portrait override and the portrait size	删除所有竖屏覆盖和竖屏尺寸
+Unity name	Unity 名称
+Automatic (same as the name)	自动（与名称相同）
+Exact GameObject name in Unity. Leave it empty to use the name above.	Unity 中 GameObject 的确切名称。留空则使用上面的名称。
+Invalid Unity name: it must not be blank, contain “/” or control characters, or exceed 128 characters (the name above is used instead).	Unity 名称无效：不能为空，不能包含“/”或控制字符，也不能超过 128 个字符（改用上面的名称）。
+A sibling already uses this name: it will be exported as “{}”.	同级元素已使用此名称：将导出为“{}”。
+Exported as “{}”	导出为“{}”
+Differs from landscape: {}	与横屏不同：{}
+Image settings (Unity)	图像设置 (Unity)
+9-slice	9-slice
+Border of the 9-slice in pixels of the source image (left, bottom, right, top), like Unity's Sprite Editor. The canvas shows the result.	9-slice 边框，单位为源图像像素（左、下、右、上），与 Unity 的 Sprite Editor 相同。画布显示结果。
+Clear	清除
+Source image: {} × {} px	源图像：{} × {} px
+Pixels per unit	每单位像素数
+Sprite pixels per unit: 100 keeps the borders at their pixel size, 200 makes them half as big.	精灵的每单位像素数：100 使边框保持像素大小，200 则缩小一半。
+Auto	自动
+Sub-sprite	子精灵
+Name inside an atlas (optional)	图集内的名称（可选）
+Image mode	图像模式
+Automatic	自动
+Preserve aspect	保持宽高比
+Back to the landscape layout	已回到横屏布局
+Portrait layout · {} × {}	竖屏布局 · {} × {}
+Font {} lacks characters: {}	字体 {} 缺少这些字符：{}
+position	位置
+size	大小
+rotation	旋转
+anchors	锚点
+visibility	可见性
+font size	字号
+layout	布局
+Simple	Simple
+Sliced	Sliced
+Tiled	Tiled
+Filled	Filled
+Portrait view: edits are stored as overrides of the landscape layout	竖屏视图：更改以覆盖项形式保存到横屏布局
+Landscape view	横屏视图
+Import from Unity…	从 Unity 导入…
+Turn a uGUI prefab (.prefab) or a Lienzo UI exported design into an editable design	将 uGUI 预制体（.prefab）或 Lienzo UI 导出的设计转换为可编辑的设计
+Import from Unity	从 Unity 导入
+Imported {} ({} warnings). Save it as a project to keep it.	已导入 {}（{} 条警告）。请另存为项目以保留。
+Could not import: {}	无法导入：{}
+{} things could not be mapped exactly:	有 {} 项无法精确转换：

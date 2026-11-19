@@ -14,6 +14,7 @@
     {
       "active": true,
       "contentHeight": 0.0,
+      "field": "dim",
       "id": 1,
       "image": {
         "alpha": 1.0,
@@ -114,6 +115,7 @@
     {
       "active": true,
       "contentHeight": 0.0,
+      "field": "window",
       "id": 2,
       "image": {
         "alpha": 1.0,
@@ -214,6 +216,7 @@
     {
       "active": true,
       "contentHeight": 0.0,
+      "field": "windowTitle",
       "id": 3,
       "image": {
         "alpha": 1.0,
@@ -314,6 +317,7 @@
     {
       "active": true,
       "contentHeight": 0.0,
+      "field": "message",
       "id": 4,
       "image": {
         "alpha": 1.0,
@@ -414,6 +418,7 @@
     {
       "active": true,
       "contentHeight": 0.0,
+      "field": "buttons",
       "id": 5,
       "image": {
         "alpha": 1.0,
@@ -514,6 +519,7 @@
     {
       "active": true,
       "contentHeight": 0.0,
+      "field": "cancelButton",
       "id": 6,
       "image": {
         "alpha": 1.0,
@@ -614,6 +620,7 @@
     {
       "active": true,
       "contentHeight": 0.0,
+      "field": "saveButton",
       "id": 7,
       "image": {
         "alpha": 1.0,

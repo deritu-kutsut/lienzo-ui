@@ -850,3 +850,89 @@ Corners must be between 0 and 16.	角は 0 から 16 の間にしてください
 Invalid font name.	フォント名が無効です。
 Align and order	整列と並べ替え
 Align to parent and order	親に合わせて整列し、並べ替え
+Edit the landscape layout	横向レイアウトを編集
+Edit the portrait layout: changes are stored as overrides and the landscape layout is not touched	縦向きレイアウトを編集：変更は上書きとして保存され、横向きレイアウトには影響しません
+Overridden in the portrait layout (right-click: Reset to landscape)	縦向きレイアウトで上書き済み（右クリック：横向きに戻す）
+Reset to landscape	横向きに戻す
+Portrait view: the reference resolution below is the portrait one.	縦向きビュー：下の基準解像度は縦向きのものです。
+Transparent overlay	透明オーバーレイ
+Alpha 0 = transparent overlay: the page shows a checkerboard and no background image is exported to Unity.	アルファ 0 = 透明オーバーレイ：ページに市松模様が表示され、背景画像は Unity にエクスポートされません。
+Canvas (Unity)	Canvas (Unity)
+Render mode	レンダーモード
+Screen Space - Overlay	Screen Space - Overlay
+Screen Space - Camera	Screen Space - Camera
+World Space	World Space
+Sort order	ソート順
+Plane distance	プレーン距離
+Safe area	セーフエリア
+Respect notch and rounded corners	ノッチと角丸を考慮する
+Applies the device safe area to the root, so nothing hides under a notch.	端末のセーフエリアをルートに適用し、ノッチの下に隠れないようにします。
+Embed	埋め込み
+Embed (no own Canvas)	埋め込み（独自の Canvas なし）
+Exports a plain RectTransform meant to live under the Canvas of your game: no Canvas or CanvasScaler is created.	ゲームの Canvas の下に置く単純な RectTransform をエクスポートします。Canvas や CanvasScaler は作成されません。
+Unity export	Unity へのエクスポート
+Scripts folder	スクリプトフォルダー
+Invalid folder: it must start with Assets, use / and contain no “..”, no drive and no empty parts.	無効なフォルダー：Assets で始まり、/ を使い、「..」・ドライブ・空の要素を含められません。
+Where the generated scripts go (empty = the default folder).	生成されたスクリプトの保存先（空 = 既定のフォルダー）。
+Assembly name	アセンブリ名
+Assembly Definition of your game (optional)	ゲームの Assembly Definition（任意）
+Invalid assembly name: letters, digits, _ . - and it must start with a letter or _.	無効なアセンブリ名：英字・数字・_ . - が使え、英字か _ で始める必要があります。
+Outputs	出力
+Prefab	Prefab
+UI Toolkit (UXML / USS)	UI Toolkit (UXML / USS)
+IMGUI script	IMGUI スクリプト
+View scripts	ビュースクリプト
+Default font (TextMeshPro asset)	既定のフォント（TextMeshPro アセット）
+Name of a font asset in your project	プロジェクト内のフォントアセット名
+Fallback fonts	フォールバックフォント
+Fallback font asset name	フォールバックフォントのアセット名
+Add	追加
+Portrait layout	縦向きレイアウト
+No portrait layout yet. Create one to design the same screen for devices held upright; elements start where they are in landscape.	縦向きレイアウトはまだありません。作成すると、縦持ちの端末向けに同じ画面を設計できます。要素は横向きでの位置から始まります。
+Create portrait layout	縦向きレイアウトを作成
+Portrait size	縦向きサイズ
+{} element(s) differ from the landscape layout. Use the Landscape / Portrait buttons in the top bar to switch the view.	{} 個の要素が横向きレイアウトと異なります。上部バーの「横向き / 縦向き」ボタンでビューを切り替えます。
+Remove portrait layout	縦向きレイアウトを削除
+Deletes every portrait override and the portrait size	縦向きの上書きと縦向きサイズをすべて削除します
+Unity name	Unity 名
+Automatic (same as the name)	自動（名前と同じ）
+Exact GameObject name in Unity. Leave it empty to use the name above.	Unity での GameObject の正確な名前。空にすると上の名前を使います。
+Invalid Unity name: it must not be blank, contain “/” or control characters, or exceed 128 characters (the name above is used instead).	無効な Unity 名：空白、「/」や制御文字を含むこと、128 文字を超えることはできません（上の名前を使用します）。
+A sibling already uses this name: it will be exported as “{}”.	同じ階層の要素がすでにこの名前を使っています：「{}」としてエクスポートされます。
+Exported as “{}”	「{}」としてエクスポート
+Differs from landscape: {}	横向きと異なる：{}
+Image settings (Unity)	画像設定 (Unity)
+9-slice	9-slice
+Border of the 9-slice in pixels of the source image (left, bottom, right, top), like Unity's Sprite Editor. The canvas shows the result.	元画像のピクセル単位での 9-slice の境界（左、下、右、上）。Unity の Sprite Editor と同じです。キャンバスに結果が表示されます。
+Clear	クリア
+Source image: {} × {} px	元画像：{} × {} px
+Pixels per unit	ユニットあたりのピクセル数
+Sprite pixels per unit: 100 keeps the borders at their pixel size, 200 makes them half as big.	スプライトのユニットあたりピクセル数：100 で境界はピクセルサイズのまま、200 で半分になります。
+Auto	自動
+Sub-sprite	サブスプライト
+Name inside an atlas (optional)	アトラス内の名前（任意）
+Image mode	画像モード
+Automatic	自動
+Preserve aspect	縦横比を保持
+Back to the landscape layout	横向きレイアウトに戻しました
+Portrait layout · {} × {}	縦向きレイアウト · {} × {}
+Font {} lacks characters: {}	フォント {} にはこれらの文字がありません：{}
+position	位置
+size	サイズ
+rotation	回転
+anchors	アンカー
+visibility	可視性
+font size	フォントサイズ
+layout	レイアウト
+Simple	Simple
+Sliced	Sliced
+Tiled	Tiled
+Filled	Filled
+Portrait view: edits are stored as overrides of the landscape layout	縦向きビュー：変更は横向きレイアウトの上書きとして保存されます
+Landscape view	横向きビュー
+Import from Unity…	Unity からインポート…
+Turn a uGUI prefab (.prefab) or a Lienzo UI exported design into an editable design	uGUI プレハブ（.prefab）または Lienzo UI が書き出したデザインを編集可能なデザインに変換します
+Import from Unity	Unity からインポート
+Imported {} ({} warnings). Save it as a project to keep it.	{} をインポートしました（警告 {} 件）。保持するにはプロジェクトとして保存してください。
+Could not import: {}	インポートできませんでした: {}
+{} things could not be mapped exactly:	{} 件を正確に変換できませんでした:

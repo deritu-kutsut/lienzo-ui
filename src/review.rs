@@ -97,8 +97,21 @@ fn is_pressable(e: &Element) -> bool {
     e.interactable && matches!(e.kind, Kind::Button | Kind::Toggle | Kind::InputField | Kind::Dropdown)
 }
 
-/// Reviews the design and returns the problems, errors first.
+/// Reviews the design and returns the problems, errors first. A design with a portrait layout is checked in both
+/// orientations (the portrait ones are marked with "(portrait)" after the element name).
 pub fn review(doc: &Doc) -> Vec<Problem> {
+    let mut out = review_layout(doc, false);
+    if doc.portrait.is_some() {
+        let resolved = doc.resolved_for(crate::docext::Orientation::Portrait);
+        out.extend(review_layout(&resolved, true));
+    }
+    out.sort_by(|a, b| b.level.cmp(&a.level));
+    out
+}
+
+/// The checks of one layout. `portrait`: the resolved portrait design (checks that do not depend on the layout - names,
+/// missing files, fonts - are only run on the landscape one).
+fn review_layout(doc: &Doc, portrait: bool) -> Vec<Problem> {
     let scale = (doc.height.min(doc.width) / 1080.0).max(0.1);
     let mut out = Vec::new();
     let mut names: std::collections::HashMap<&str, usize> = std::collections::HashMap::new();
@@ -147,10 +160,199 @@ pub fn review(doc: &Doc) -> Vec<Problem> {
             p(Level::Error, "Missing image “{}”: it will be exported empty", vec![e.image.clone()]);
         }
     }
-    unity_name_problems(doc, &mut out);
-    out.sort_by(|a, b| b.level.cmp(&a.level));
+    if portrait {
+        for p in out.iter_mut() {
+            p.element = format!("{} (portrait)", p.element);
+        }
+    } else {
+        unity_name_problems(doc, &mut out);
+        font_problems(doc, &mut out, &font_cmap_by_name);
+    }
     out
 }
+
+// ---------------------------------------------------------------- fonts: characters the font lacks
+
+/// The `cmap` table of a font, enough to ask "does this font draw this character?".
+pub struct Cmap {
+    data: Vec<u8>,
+    /// Offsets (inside `data`) of the Unicode subtables of format 4 and 12.
+    subs: Vec<usize>,
+}
+
+fn be16(d: &[u8], i: usize) -> Option<u16> {
+    Some(u16::from_be_bytes(d.get(i..i.checked_add(2)?)?.try_into().ok()?))
+}
+
+fn be32(d: &[u8], i: usize) -> Option<u32> {
+    Some(u32::from_be_bytes(d.get(i..i.checked_add(4)?)?.try_into().ok()?))
+}
+
+/// Largest cmap table accepted (real fonts have well under 1 MB).
+const MAX_CMAP: usize = 8 << 20;
+
+/// Extracts the raw `cmap` table from a TrueType / OpenType file (the first font of a collection).
+pub fn extract_cmap_table(font: &[u8]) -> Option<Vec<u8>> {
+    let mut base = 0usize;
+    if font.get(0..4)? == b"ttcf" {
+        base = be32(font, 12)? as usize;
+    }
+    let tag = font.get(base..base.checked_add(4)?)?;
+    if !(tag == [0, 1, 0, 0] || tag == b"true" || tag == b"OTTO") {
+        return None;
+    }
+    let n = be16(font, base + 4)? as usize;
+    for i in 0..n.min(256) {
+        let rec = base + 12 + i * 16;
+        if font.get(rec..rec + 4)? == b"cmap" {
+            let off = be32(font, rec + 8)? as usize;
+            let len = be32(font, rec + 12)? as usize;
+            if len > MAX_CMAP {
+                return None;
+            }
+            return font.get(off..off.checked_add(len)?).map(|s| s.to_vec());
+        }
+    }
+    None
+}
+
+impl Cmap {
+    /// None when the table has no Unicode subtable this reader understands (formats 4 and 12).
+    pub fn parse(table: Vec<u8>) -> Option<Cmap> {
+        let n = be16(&table, 2)? as usize;
+        let mut subs = Vec::new();
+        for i in 0..n.min(64) {
+            let rec = 4 + i * 8;
+            let (platform, encoding) = (be16(&table, rec)?, be16(&table, rec + 2)?);
+            let off = be32(&table, rec + 4)? as usize;
+            let unicode = platform == 0 || (platform == 3 && (encoding == 1 || encoding == 10));
+            if unicode && matches!(be16(&table, off), Some(4) | Some(12)) {
+                subs.push(off);
+            }
+        }
+        if subs.is_empty() { None } else { Some(Cmap { data: table, subs }) }
+    }
+
+    pub fn from_font(font: &[u8]) -> Option<Cmap> {
+        Cmap::parse(extract_cmap_table(font)?)
+    }
+
+    /// True when the font has a glyph for `c`.
+    pub fn has(&self, c: char) -> bool {
+        self.subs.iter().any(|&s| self.lookup(s, c as u32).unwrap_or(false))
+    }
+
+    fn lookup(&self, s: usize, c: u32) -> Option<bool> {
+        let d = &self.data;
+        match be16(d, s)? {
+            4 => {
+                if c > 0xFFFF {
+                    return Some(false);
+                }
+                let seg_x2 = be16(d, s + 6)? as usize;
+                let (ends, starts, deltas, ranges) = (s + 14, s + 16 + seg_x2, s + 16 + 2 * seg_x2, s + 16 + 3 * seg_x2);
+                for k in 0..seg_x2 / 2 {
+                    let end = be16(d, ends + 2 * k)? as u32;
+                    if end < c {
+                        continue;
+                    }
+                    let start = be16(d, starts + 2 * k)? as u32;
+                    if start > c {
+                        return Some(false);
+                    }
+                    let delta = be16(d, deltas + 2 * k)?;
+                    let ro = be16(d, ranges + 2 * k)? as usize;
+                    let gid = if ro == 0 {
+                        (c as u16).wrapping_add(delta)
+                    } else {
+                        let g = be16(d, ranges + 2 * k + ro + 2 * (c - start) as usize)?;
+                        if g == 0 { 0 } else { g.wrapping_add(delta) }
+                    };
+                    return Some(gid != 0);
+                }
+                Some(false)
+            }
+            12 => {
+                let groups = (be32(d, s + 12)? as usize).min(1 << 20);
+                let (mut lo, mut hi) = (0usize, groups);
+                while lo < hi {
+                    let mid = (lo + hi) / 2;
+                    let g = s + 16 + mid * 12;
+                    let (start, end) = (be32(d, g)?, be32(d, g + 4)?);
+                    if c < start {
+                        hi = mid;
+                    } else if c > end {
+                        lo = mid + 1;
+                    } else {
+                        return Some(be32(d, g + 8)?.wrapping_add(c - start) != 0);
+                    }
+                }
+                Some(false)
+            }
+            _ => None,
+        }
+    }
+}
+
+/// Characters of `text` the font has no glyph for (printable ones only, first occurrence, in order).
+pub fn missing_chars(cmap: &Cmap, text: &str) -> Vec<char> {
+    let mut out: Vec<char> = Vec::new();
+    for c in text.chars() {
+        if c.is_control() || c.is_whitespace() || out.contains(&c) {
+            continue;
+        }
+        if !cmap.has(c) {
+            out.push(c);
+        }
+        if out.len() >= 64 {
+            break;
+        }
+    }
+    out
+}
+
+/// Cmap of a font known to the editor (system or library), cached per file. None when the font is unknown or unreadable.
+fn font_cmap_by_name(name: &str) -> Option<std::sync::Arc<Cmap>> {
+    static CACHE: std::sync::Mutex<Option<std::collections::HashMap<std::path::PathBuf, Option<std::sync::Arc<Cmap>>>>> = std::sync::Mutex::new(None);
+    let path = crate::render::font_path(name)?;
+    let mut g = CACHE.lock().ok()?;
+    let map = g.get_or_insert_with(Default::default);
+    if let Some(c) = map.get(&path) {
+        return c.clone();
+    }
+    let parsed = std::fs::metadata(&path)
+        .ok()
+        .filter(|m| m.len() <= 128 << 20)
+        .and_then(|_| std::fs::read(&path).ok())
+        .and_then(|b| Cmap::from_font(&b))
+        .map(std::sync::Arc::new);
+    map.insert(path, parsed.clone());
+    parsed
+}
+
+/// Text that has a font of its own and uses characters that font lacks (« » — … often). Unknown fonts and the default are skipped.
+fn font_problems(doc: &Doc, out: &mut Vec<Problem>, cmap_of: &dyn Fn(&str) -> Option<std::sync::Arc<Cmap>>) {
+    for e in &doc.elements {
+        if e.font.is_empty() || !e.kind.has_text() || !visible(doc, e) {
+            continue;
+        }
+        let mut text = e.text.clone();
+        for o in &e.options {
+            text.push('\n');
+            text.push_str(o);
+        }
+        if text.trim().is_empty() {
+            continue;
+        }
+        let Some(cmap) = cmap_of(&e.font) else { continue };
+        let missing = missing_chars(&cmap, &text);
+        if !missing.is_empty() {
+            let list: Vec<String> = missing.iter().take(12).map(|c| c.to_string()).collect();
+            out.push(Problem { level: Level::Warning, id: e.id, element: e.name.clone(), template: "Font {} lacks characters: {}", data: vec![e.font.clone(), list.join(" ")] });
+        }
+    }
+}
+
 
 /// Invalid explicit Unity names, and siblings that resolve to the same GameObject name.
 fn unity_name_problems(doc: &Doc, out: &mut Vec<Problem>) {
@@ -264,7 +466,7 @@ impl crate::app::EditorApp {
         if !self.review_open {
             return;
         }
-        let problems = review(&self.doc);
+        let problems = review(self.doc_real());
         let mut open = true;
         let mut choose = None;
         egui::Window::new(t("Review design")).open(&mut open).collapsible(false).default_width(460.0).show(ctx, |ui| {
@@ -298,5 +500,206 @@ impl crate::app::EditorApp {
             self.sel = vec![id];
         }
         self.review_open = open;
+    }
+}
+
+#[cfg(test)]
+mod font_tests {
+    use super::*;
+    use crate::model::{Doc, Element, Kind};
+    use std::sync::Arc;
+
+    fn u16b(v: &mut Vec<u8>, x: u16) {
+        v.extend_from_slice(&x.to_be_bytes());
+    }
+    fn u32b(v: &mut Vec<u8>, x: u32) {
+        v.extend_from_slice(&x.to_be_bytes());
+    }
+
+    /// cmap table with one (3, 1) subtable of format 4 covering the given inclusive ranges (glyph = code point).
+    fn cmap4(ranges: &[(u16, u16)]) -> Vec<u8> {
+        let mut segs: Vec<(u16, u16)> = ranges.to_vec();
+        segs.push((0xFFFF, 0xFFFF));
+        let n = segs.len() as u16;
+        let mut sub = Vec::new();
+        u16b(&mut sub, 4);
+        u16b(&mut sub, 16 + 8 * n); // length
+        u16b(&mut sub, 0);
+        u16b(&mut sub, n * 2);
+        u16b(&mut sub, 0);
+        u16b(&mut sub, 0);
+        u16b(&mut sub, 0);
+        for (_, e) in &segs {
+            u16b(&mut sub, *e);
+        }
+        u16b(&mut sub, 0); // reservedPad
+        for (s, _) in &segs {
+            u16b(&mut sub, *s);
+        }
+        for (i, _) in segs.iter().enumerate() {
+            // the last segment maps 0xFFFF to glyph 0 (delta 1 => 0)
+            u16b(&mut sub, if i + 1 == segs.len() { 1 } else { 0 });
+        }
+        for _ in &segs {
+            u16b(&mut sub, 0);
+        }
+        let mut t = Vec::new();
+        u16b(&mut t, 0);
+        u16b(&mut t, 1);
+        u16b(&mut t, 3);
+        u16b(&mut t, 1);
+        u32b(&mut t, 12);
+        t.extend(sub);
+        t
+    }
+
+    /// cmap table with one (3, 10) subtable of format 12.
+    fn cmap12(groups: &[(u32, u32)]) -> Vec<u8> {
+        let mut sub = Vec::new();
+        u16b(&mut sub, 12);
+        u16b(&mut sub, 0);
+        u32b(&mut sub, 16 + 12 * groups.len() as u32);
+        u32b(&mut sub, 0);
+        u32b(&mut sub, groups.len() as u32);
+        let mut glyph = 1;
+        for (s, e) in groups {
+            u32b(&mut sub, *s);
+            u32b(&mut sub, *e);
+            u32b(&mut sub, glyph);
+            glyph += e - s + 1;
+        }
+        let mut t = Vec::new();
+        u16b(&mut t, 0);
+        u16b(&mut t, 1);
+        u16b(&mut t, 3);
+        u16b(&mut t, 10);
+        u32b(&mut t, 12);
+        t.extend(sub);
+        t
+    }
+
+    /// A minimal sfnt file containing only the cmap table.
+    fn font_with(cmap: &[u8]) -> Vec<u8> {
+        let mut f = Vec::new();
+        u32b(&mut f, 0x0001_0000);
+        u16b(&mut f, 1);
+        f.extend_from_slice(&[0; 6]);
+        f.extend_from_slice(b"cmap");
+        u32b(&mut f, 0);
+        u32b(&mut f, 28);
+        u32b(&mut f, cmap.len() as u32);
+        f.extend_from_slice(cmap);
+        f
+    }
+
+    #[test]
+    fn reads_format_4_and_12_from_a_font_file() {
+        // Latin letters, digits, and "—" (U+2014); no guillemets
+        let f4 = font_with(&cmap4(&[(0x20, 0x7E), (0x2014, 0x2014)]));
+        let c = Cmap::from_font(&f4).expect("cmap parsed");
+        assert!(c.has('A') && c.has('z') && c.has('—'));
+        assert!(!c.has('«') && !c.has('»') && !c.has('…') && !c.has('ñ'));
+        let f12 = font_with(&cmap12(&[(0x41, 0x5A), (0x1F600, 0x1F64F)]));
+        let c = Cmap::from_font(&f12).unwrap();
+        assert!(c.has('Q') && c.has('\u{1F603}'));
+        assert!(!c.has('q') && !c.has('«'));
+        assert_eq!(missing_chars(&c, "AB « C — «"), vec!['«', '—']);
+    }
+
+    #[test]
+    fn garbage_and_truncated_fonts_do_not_panic() {
+        assert!(Cmap::from_font(&[]).is_none());
+        assert!(Cmap::from_font(b"not a font at all").is_none());
+        let good = font_with(&cmap4(&[(0x20, 0x7E)]));
+        for cut in 0..good.len() {
+            if let Some(c) = Cmap::from_font(&good[..cut]) {
+                let _ = c.has('A');
+            }
+        }
+        // a table that claims huge counts
+        let mut bad = good.clone();
+        bad[34] = 0xFF;
+        bad[35] = 0xFF;
+        if let Some(c) = Cmap::from_font(&bad) {
+            let _ = c.has('A');
+            let _ = c.has('«');
+        }
+    }
+
+    #[test]
+    fn warns_about_missing_characters_only_for_known_fonts() {
+        let cmap = Arc::new(Cmap::parse(cmap4(&[(0x20, 0x7E)])).unwrap());
+        let known = {
+            let cmap = cmap.clone();
+            move |name: &str| if name == "TestSans" { Some(cmap.clone()) } else { None }
+        };
+        let mut d = Doc::empty(1920.0, 1080.0);
+        let mut t = Element::new(0, Kind::Text);
+        t.text = "Hola «mundo» — fin".into();
+        t.font = "TestSans".into();
+        d.add(t);
+        let mut other = Element::new(0, Kind::Text);
+        other.text = "«mundo»".into();
+        other.font = "Unknown font".into();
+        d.add(other);
+        let mut default_font = Element::new(0, Kind::Text);
+        default_font.text = "«mundo»".into();
+        d.add(default_font);
+        let mut ok = Element::new(0, Kind::Text);
+        ok.text = "plain ascii".into();
+        ok.font = "TestSans".into();
+        d.add(ok);
+        let mut out = Vec::new();
+        font_problems(&d, &mut out, &known);
+        assert_eq!(out.len(), 1, "{:?}", out.iter().map(describe).collect::<Vec<_>>());
+        assert_eq!(out[0].level, Level::Warning);
+        let text = describe(&out[0]); // translated if another test switched the global language
+        assert!(text.contains("TestSans") && text.contains("« » —"), "{}", text);
+    }
+}
+
+#[cfg(test)]
+mod portrait_tests {
+    use super::*;
+    use crate::docext::ElementOverride;
+    use crate::model::{Doc, Element, Kind};
+
+    #[test]
+    fn portrait_layout_is_reviewed_on_the_resolved_design() {
+        let mut d = Doc::empty(1920.0, 1080.0);
+        let mut b = Element::new(0, Kind::Button);
+        b.name = "Play".into();
+        b.x = 1500.0; // fine in landscape, off the 1080 px wide portrait page
+        b.y = 100.0;
+        b.w = 300.0;
+        b.h = 100.0;
+        let id = d.add(b);
+        assert!(review(&d).is_empty(), "no portrait layout: nothing about portrait");
+        let mut ov = ElementOverride::new(id);
+        ov.w = Some(301.0); // creates the portrait layout (1080 x 1920) without moving the button
+        assert!(d.set_override(ov));
+        let ps = review(&d);
+        let off: Vec<&Problem> = ps.iter().filter(|p| p.template.contains("outside")).collect();
+        assert_eq!(off.len(), 1, "{:?}", ps.iter().map(describe).collect::<Vec<_>>());
+        assert!(off[0].element.contains("(portrait)"));
+        // moving it inside the portrait page fixes the portrait review
+        let mut ov = ElementOverride::new(id);
+        ov.x = Some(300.0);
+        d.set_override(ov);
+        assert!(review(&d).iter().all(|p| !p.template.contains("outside")));
+        // text that is too small in portrait only
+        let mut t = Element::new(0, Kind::Text);
+        t.text = "Small".into();
+        t.text_color = [0, 0, 0, 255];
+        t.font_size = 40.0;
+        t.x = 100.0;
+        t.y = 400.0;
+        let tid = d.add(t);
+        let mut ov = ElementOverride::new(tid);
+        ov.font_size = Some(10.0);
+        d.set_override(ov);
+        let ps = review(&d);
+        assert!(ps.iter().any(|p| p.template.starts_with("{} px text") && p.element.contains("(portrait)")));
+        assert!(!ps.iter().any(|p| p.template.starts_with("{} px text") && !p.element.contains("(portrait)")));
     }
 }

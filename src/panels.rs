@@ -2,6 +2,7 @@
 //! contextual toolbar, Unity-style inspector, status bar, save and export windows.
 
 use crate::app::{Drop, EditorApp, SCREEN_PRESETS, SIZE_PRESETS, Tab};
+use crate::docext::{self, CanvasRenderMode, ImageMode, Orientation};
 use crate::model::{self, Element, Frame, Kind, LayoutMode, Rgba, rect_transform_in};
 use crate::render;
 use crate::theme::{self, ACCENT, ACCENT_SOFT, BORDER, FIELD, HOVER, LINE, MUTED, PANEL, PANEL_DARK, TEXT};
@@ -121,6 +122,10 @@ impl EditorApp {
                         if ui.button(crate::i18n::t("Open project…")).clicked() {
                             ui.close();
                             self.open_project_dialog();
+                        }
+                        if ui.button(crate::i18n::t("Import from Unity…")).on_hover_text(crate::i18n::t("Turn a uGUI prefab (.prefab) or a Lienzo UI exported design into an editable design")).clicked() {
+                            ui.close();
+                            self.import_unity_dialog();
                         }
                         ui.separator();
                         if ui.add(egui::Button::new(crate::i18n::t("Save")).shortcut_text("Ctrl+S")).clicked() {
@@ -278,6 +283,20 @@ impl EditorApp {
                                 self.resize_page(*w, *h);
                                 ui.close();
                             }
+                        }
+                    });
+                    ui.add_space(4.0);
+                    // Landscape / Portrait: which layout is on screen (edits in portrait are stored as overrides)
+                    let portrait = self.orientation() == Orientation::Portrait;
+                    ui.add_enabled_ui(!self.preview, |ui| {
+                        ui.spacing_mut().item_spacing.x = 2.0;
+                        let land = crate::icons::btn("orient_landscape", crate::i18n::t("Landscape")).selected(!portrait);
+                        if ui.add(land).on_hover_text(crate::i18n::t("Edit the landscape layout")).clicked() {
+                            self.set_orientation(Orientation::Landscape);
+                        }
+                        let port = crate::icons::btn("orient_portrait", crate::i18n::t("Portrait")).selected(portrait);
+                        if ui.add(port).on_hover_text(crate::i18n::t("Edit the portrait layout: changes are stored as overrides and the landscape layout is not touched")).clicked() {
+                            self.set_orientation(Orientation::Portrait);
                         }
                     });
                     ui.add_space(4.0);
@@ -1025,6 +1044,10 @@ impl EditorApp {
             if e.mask || e.kind == Kind::ScrollView {
                 badges.push("mask");
             }
+            let overridden = self.is_overridden(id);
+            if overridden {
+                badges.push("override");
+            }
             if self.renaming == Some(id) {
                 let mut name = e.name.clone();
                 let resp_t = ui.put(name_rect, egui::TextEdit::singleline(&mut name).margin(Margin::symmetric(2, 1)));
@@ -1043,7 +1066,10 @@ impl EditorApp {
                 for b in badges {
                     let br = Rect::from_min_size(Pos2::new(bx, r.center().y - 6.0), Vec2::splat(12.0));
                     if br.right() < name_rect.right() {
-                        crate::icons::paint_or(ui, b, br, if b == "bolt" { theme::WARN() } else { MUTED() }, "");
+                        crate::icons::paint_or(ui, b, br, if b == "bolt" { theme::WARN() } else if b == "override" { ACCENT() } else { MUTED() }, if b == "override" { "P" } else { "" });
+                        if b == "override" {
+                            ui.interact(br, ui.scope_id().with(("ovr", id)), Sense::hover()).on_hover_text(crate::i18n::t("Overridden in the portrait layout (right-click: Reset to landscape)"));
+                        }
                     }
                     bx += 15.0;
                 }
@@ -1093,6 +1119,11 @@ impl EditorApp {
                 }
                 if ui.button(crate::i18n::t("Rename")).clicked() {
                     self.renaming = Some(id);
+                    ui.close();
+                }
+                if overridden && ui.add(crate::icons::btn("override", crate::i18n::t("Reset to landscape"))).clicked() {
+                    let ids: Vec<u64> = self.sel.iter().copied().filter(|s| self.is_overridden(*s)).collect();
+                    self.reset_to_landscape(&ids);
                     ui.close();
                 }
                 if ui.add(crate::icons::btn("duplicate", crate::i18n::t("Duplicate"))).clicked() {
@@ -1340,8 +1371,12 @@ impl EditorApp {
     }
 
     fn page_settings(&mut self, ui: &mut egui::Ui) {
+        let portrait_view = self.orientation() == Orientation::Portrait;
         component(ui, "canvas", &crate::i18n::t("Canvas · Canvas Scaler"), true, |ui| {
             hint(ui, &crate::i18n::t("UI Scale Mode: Scale With Screen Size"));
+            if portrait_view {
+                ui.label(RichText::new(crate::i18n::t("Portrait view: the reference resolution below is the portrait one.")).small().color(ACCENT()));
+            }
             egui::Grid::new("page").num_columns(2).spacing([8.0, 6.0]).show(ui, |ui| {
                 let mut w = self.doc.width;
                 let mut h = self.doc.height;
@@ -1358,7 +1393,12 @@ impl EditorApp {
                 ui.add(egui::Slider::new(&mut self.doc.canvas_match, 0.0..=1.0).text(crate::i18n::t("Width / Height")));
                 ui.end_row();
                 ui.label(crate::i18n::t("Background"));
-                rgba_edit(ui, &mut self.doc.background);
+                ui.horizontal(|ui| {
+                    rgba_edit(ui, &mut self.doc.background);
+                    if self.doc.background[3] == 0 {
+                        ui.label(RichText::new(crate::i18n::t("Transparent overlay")).small().color(ACCENT()));
+                    }
+                });
                 ui.end_row();
                 ui.label(crate::i18n::t("Pixel art"));
                 ui.checkbox(&mut self.doc.pixel_art, crate::i18n::t("No smoothing, whole pixels"))
@@ -1377,7 +1417,11 @@ impl EditorApp {
                 self.resize_page(w, h);
             }
             swatch_row(ui, &mut self.doc.background);
+            hint(ui, &crate::i18n::t("Alpha 0 = transparent overlay: the page shows a checkerboard and no background image is exported to Unity."));
         });
+        self.canvas_unity_settings(ui);
+        self.unity_export_settings(ui);
+        self.portrait_settings(ui);
         component(ui, "unity_export", &crate::i18n::t("Unity project"), true, |ui| {
             if self.settings.unity_project.is_empty() {
                 hint(ui, &crate::i18n::t("No project selected yet. “Export to Unity” will ask for the folder (the one containing Assets)."));
@@ -1417,6 +1461,166 @@ impl EditorApp {
                     ui.label(RichText::new(crate::i18n::t(k)).monospace().size(11.0));
                     ui.with_layout(Layout::right_to_left(Align::Center), |ui| ui.label(RichText::new(crate::i18n::t(d)).size(11.0).color(MUTED())));
                 });
+            }
+        });
+    }
+
+    /// Unity Canvas: render mode, sorting order, safe area, embedding.
+    fn canvas_unity_settings(&mut self, ui: &mut egui::Ui) {
+        let t = crate::i18n::t;
+        component(ui, "canvas_unity", &t("Canvas (Unity)"), true, |ui| {
+            let c = &mut self.doc.canvas;
+            egui::Grid::new("canvas_unity_grid").num_columns(2).spacing([8.0, 5.0]).show(ui, |ui| {
+                ui.label(t("Render mode"));
+                let label = |m: CanvasRenderMode| match m {
+                    CanvasRenderMode::ScreenSpaceOverlay => t("Screen Space - Overlay"),
+                    CanvasRenderMode::ScreenSpaceCamera => t("Screen Space - Camera"),
+                    CanvasRenderMode::WorldSpace => t("World Space"),
+                };
+                egui::ComboBox::from_id_salt("render_mode").selected_text(label(c.render_mode)).width(170.0).show_ui(ui, |ui| {
+                    for m in [CanvasRenderMode::ScreenSpaceOverlay, CanvasRenderMode::ScreenSpaceCamera, CanvasRenderMode::WorldSpace] {
+                        ui.selectable_value(&mut c.render_mode, m, label(m));
+                    }
+                });
+                ui.end_row();
+                ui.label(t("Sort order"));
+                ui.add(egui::DragValue::new(&mut c.sort_order).range(docext::SORT_MIN..=docext::SORT_MAX).speed(1.0));
+                ui.end_row();
+                if c.render_mode != CanvasRenderMode::ScreenSpaceOverlay {
+                    ui.label(t("Plane distance"));
+                    ui.add(egui::DragValue::new(&mut c.plane_distance).range(0.01..=100_000.0).speed(0.5));
+                    ui.end_row();
+                }
+                ui.label(t("Safe area"));
+                ui.checkbox(&mut c.safe_area, t("Respect notch and rounded corners")).on_hover_text(t("Applies the device safe area to the root, so nothing hides under a notch."));
+                ui.end_row();
+                ui.label(t("Embed"));
+                ui.checkbox(&mut c.embed, t("Embed (no own Canvas)")).on_hover_text(t("Exports a plain RectTransform meant to live under the Canvas of your game: no Canvas or CanvasScaler is created."));
+                ui.end_row();
+            });
+        });
+    }
+
+    /// Unity export options: scripts folder, assembly, outputs, fonts.
+    fn unity_export_settings(&mut self, ui: &mut egui::Ui) {
+        let t = crate::i18n::t;
+        let red = Color32::from_rgb(235, 80, 90);
+        component(ui, "unity_opts", &t("Unity export"), true, |ui| {
+            // Text is validated before it reaches the design: while it is invalid it lives only in the field.
+            let u = &mut self.doc.unity;
+            let (dir_id, asm_id) = (ui.scope_id().with("unity_scripts_dir_buf"), ui.scope_id().with("unity_assembly_buf"));
+            let mut dir = ui.data(|d| d.get_temp::<String>(dir_id)).unwrap_or_else(|| u.scripts_dir.clone().unwrap_or_default());
+            ui.label(RichText::new(t("Scripts folder")).size(11.5).color(MUTED()));
+            let r = ui.add(egui::TextEdit::singleline(&mut dir).desired_width(f32::INFINITY).char_limit(260).hint_text("Assets/EditorGUI/Scripts"));
+            let dir_ok = dir.is_empty() || docext::valid_scripts_dir(&dir);
+            if r.changed() && dir_ok {
+                u.scripts_dir = if dir.is_empty() { None } else { Some(dir.clone()) };
+            }
+            if r.has_focus() || (!dir_ok && r.changed()) {
+                ui.data_mut(|d| d.insert_temp(dir_id, dir.clone()));
+            } else {
+                ui.data_mut(|d| d.remove::<String>(dir_id));
+            }
+            if !dir_ok {
+                ui.label(RichText::new(t("Invalid folder: it must start with Assets, use / and contain no “..”, no drive and no empty parts.")).small().color(red));
+            } else {
+                hint(ui, &t("Where the generated scripts go (empty = the default folder)."));
+            }
+            let mut asm = ui.data(|d| d.get_temp::<String>(asm_id)).unwrap_or_else(|| u.assembly.clone().unwrap_or_default());
+            ui.add_space(4.0);
+            ui.label(RichText::new(t("Assembly name")).size(11.5).color(MUTED()));
+            let r = ui.add(egui::TextEdit::singleline(&mut asm).desired_width(f32::INFINITY).char_limit(128).hint_text(t("Assembly Definition of your game (optional)")));
+            let asm_ok = asm.is_empty() || docext::valid_assembly(&asm);
+            if r.changed() && asm_ok {
+                u.assembly = if asm.is_empty() { None } else { Some(asm.clone()) };
+            }
+            if r.has_focus() || (!asm_ok && r.changed()) {
+                ui.data_mut(|d| d.insert_temp(asm_id, asm.clone()));
+            } else {
+                ui.data_mut(|d| d.remove::<String>(asm_id));
+            }
+            if !asm_ok {
+                ui.label(RichText::new(t("Invalid assembly name: letters, digits, _ . - and it must start with a letter or _.")).small().color(red));
+            }
+            ui.add_space(6.0);
+            ui.label(RichText::new(t("Outputs")).size(11.5).color(MUTED()));
+            ui.checkbox(&mut u.generate.prefab, t("Prefab"));
+            ui.checkbox(&mut u.generate.uitk, t("UI Toolkit (UXML / USS)"));
+            let mut imgui = u.generate.imgui_enabled();
+            if ui.checkbox(&mut imgui, t("IMGUI script")).changed() {
+                u.generate.imgui = Some(imgui);
+            }
+            ui.checkbox(&mut u.generate.view_scripts, t("View scripts"));
+            ui.add_space(6.0);
+            ui.label(RichText::new(t("Default font (TextMeshPro asset)")).size(11.5).color(MUTED()));
+            let mut font = u.default_font.clone().unwrap_or_default();
+            if ui.add(egui::TextEdit::singleline(&mut font).desired_width(f32::INFINITY).char_limit(128).hint_text(t("Name of a font asset in your project"))).changed() {
+                u.default_font = if font.trim().is_empty() { None } else { Some(font) };
+            }
+            ui.label(RichText::new(t("Fallback fonts")).size(11.5).color(MUTED()));
+            let mut remove = None;
+            for (i, f) in u.fallback_fonts.iter().enumerate() {
+                ui.horizontal(|ui| {
+                    ui.label(RichText::new(f).monospace().size(11.5));
+                    ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
+                        if crate::icons::button(ui, "trash", "x", "Remove").clicked() {
+                            remove = Some(i);
+                        }
+                    });
+                });
+            }
+            if let Some(i) = remove {
+                u.fallback_fonts.remove(i);
+            }
+            if u.fallback_fonts.len() < 16 {
+                let new_id = ui.scope_id().with("unity_fallback_new");
+                let mut new_font = ui.data(|d| d.get_temp::<String>(new_id)).unwrap_or_default();
+                let mut add = false;
+                ui.horizontal(|ui| {
+                    let r = ui.add(egui::TextEdit::singleline(&mut new_font).desired_width(ui.available_width() - 70.0).char_limit(128).hint_text(t("Fallback font asset name")));
+                    add = ui.add_enabled(!new_font.trim().is_empty(), crate::icons::btn("plus", t("Add")).small()).clicked() || (r.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter)) && !new_font.trim().is_empty());
+                });
+                if add {
+                    u.fallback_fonts.push(new_font.trim().to_string());
+                    new_font.clear();
+                }
+                ui.data_mut(|d| d.insert_temp(new_id, new_font));
+            }
+        });
+    }
+
+    /// Portrait layout: create / size / remove (the view toggle is in the header).
+    fn portrait_settings(&mut self, ui: &mut egui::Ui) {
+        let t = crate::i18n::t;
+        let portrait_view = self.orientation() == Orientation::Portrait;
+        let current = self.real_doc().portrait.as_ref().map(|p| (p.width, p.height, p.overrides.len()));
+        component(ui, "portrait_layout", &t("Portrait layout"), current.is_some(), |ui| {
+            match current {
+                None => {
+                    hint(ui, &t("No portrait layout yet. Create one to design the same screen for devices held upright; elements start where they are in landscape."));
+                    if ui.add(crate::icons::btn("orient_portrait", t("Create portrait layout"))).clicked() {
+                        self.create_portrait_layout();
+                    }
+                }
+                Some((w, h, n)) => {
+                    let (mut nw, mut nh) = (w, h);
+                    egui::Grid::new("portrait_size").num_columns(2).spacing([8.0, 5.0]).show(ui, |ui| {
+                        ui.label(t("Portrait size"));
+                        ui.horizontal(|ui| {
+                            ui.add(egui::DragValue::new(&mut nw).range(64.0..=8192.0).suffix(" px"));
+                            ui.label("×");
+                            ui.add(egui::DragValue::new(&mut nh).range(64.0..=8192.0).suffix(" px"));
+                        });
+                        ui.end_row();
+                    });
+                    if (nw.round() != w || nh.round() != h) && nw >= 64.0 && nh >= 64.0 {
+                        self.set_portrait_size(nw.round(), nh.round());
+                    }
+                    hint(ui, &crate::i18n::tf("{} element(s) differ from the landscape layout. Use the Landscape / Portrait buttons in the top bar to switch the view.", &[&n.to_string()]));
+                    if !portrait_view && ui.add(egui::Button::new(t("Remove portrait layout")).small()).on_hover_text(t("Deletes every portrait override and the portrait size")).clicked() {
+                        self.edit_full(|d| d.portrait = None);
+                    }
+                }
             }
         });
     }
@@ -1514,6 +1718,57 @@ impl EditorApp {
             ui.label(RichText::new(e.kind.unity_component()).small().color(MUTED()));
         });
         ui.label(RichText::new(&path).small().monospace().color(MUTED())).on_hover_text(crate::i18n::t("Path inside the Canvas in Unity"));
+
+        // Unity name: exact GameObject name (empty = automatic, from the name above)
+        let collisions = crate::export::unity_name_collisions(&self.doc);
+        let mut unity_name = e.unity_name.clone().unwrap_or_default();
+        ui.horizontal(|ui| {
+            ui.label(RichText::new(crate::i18n::t("Unity name")).size(11.5).color(MUTED()));
+            ui.add(egui::TextEdit::singleline(&mut unity_name).desired_width(ui.available_width()).char_limit(256).hint_text(crate::i18n::t("Automatic (same as the name)")))
+                .on_hover_text(crate::i18n::t("Exact GameObject name in Unity. Leave it empty to use the name above."));
+        });
+        e.unity_name = if unity_name.is_empty() { None } else { Some(unity_name.clone()) };
+        let red = Color32::from_rgb(235, 80, 90);
+        if !unity_name.is_empty() && !docext::valid_unity_name(&unity_name) {
+            ui.label(RichText::new(crate::i18n::t("Invalid Unity name: it must not be blank, contain “/” or control characters, or exceed 128 characters (the name above is used instead).")).small().color(red));
+        } else if collisions.contains(&id) {
+            let used = names.get(&id).cloned().unwrap_or_default();
+            ui.label(RichText::new(crate::i18n::tf("A sibling already uses this name: it will be exported as “{}”.", &[&used])).small().color(red));
+        } else if let Some(n) = names.get(&id) {
+            ui.label(RichText::new(crate::i18n::tf("Exported as “{}”", &[n])).small().color(MUTED()));
+        }
+
+        // portrait view: this element differs from the landscape layout
+        if let Some(ov) = self.portrait_override(id).cloned() {
+            let t = crate::i18n::t;
+            let mut parts: Vec<String> = Vec::new();
+            for (on, name) in [
+                (ov.x.is_some() || ov.y.is_some(), "position"),
+                (ov.w.is_some() || ov.h.is_some(), "size"),
+                (ov.rot.is_some(), "rotation"),
+                (ov.anchor_min.is_some() || ov.anchor_max.is_some() || ov.pivot.is_some(), "anchors"),
+                (ov.visible.is_some(), "visibility"),
+                (ov.font_size.is_some(), "font size"),
+                (ov.layout.is_some(), "layout"),
+            ] {
+                if on {
+                    parts.push(t(name));
+                }
+            }
+            let mut reset = false;
+            egui::Frame::new().fill(ACCENT_SOFT()).corner_radius(4.0).inner_margin(Margin::same(5)).show(ui, |ui| {
+                ui.horizontal_wrapped(|ui| {
+                    ui.label(RichText::new(crate::i18n::tf("Differs from landscape: {}", &[&parts.join(", ")])).small());
+                    if ui.add(crate::icons::btn("override", t("Reset to landscape")).small()).clicked() {
+                        reset = true;
+                    }
+                });
+            });
+            if reset {
+                self.reset_to_landscape(&[id]);
+                return;
+            }
+        }
 
         // RectTransform
         let mut preset_click: Option<([f32; 2], [f32; 2], bool, bool)> = None;
@@ -1666,6 +1921,13 @@ impl EditorApp {
                     ui.end_row();
                 });
                 swatch_row(ui, &mut e.fill);
+            });
+        }
+
+        // Unity image settings: 9-slice, pixels per unit, sprite, image type
+        if matches!(e.kind, Kind::Image | Kind::Panel) && !e.image.is_empty() {
+            component(ui, "unity_image", &crate::i18n::t("Image settings (Unity)"), true, |ui| {
+                unity_image_settings(ui, &mut e);
             });
         }
 
@@ -1967,6 +2229,25 @@ impl EditorApp {
             });
     }
 
+    // ------------------------------------------------------------- import warnings window
+    pub fn import_window(&mut self, ctx: &egui::Context) {
+        if self.import_warnings.is_empty() {
+            return;
+        }
+        let mut open = true;
+        egui::Window::new(crate::i18n::t("Import from Unity")).open(&mut open).collapsible(false).default_width(480.0).anchor(egui::Align2::CENTER_CENTER, [0.0, 0.0]).show(ctx, |ui| {
+            ui.label(crate::i18n::tf("{} things could not be mapped exactly:", &[&self.import_warnings.len().to_string()]));
+            egui::ScrollArea::vertical().max_height(320.0).show(ui, |ui| {
+                for w in &self.import_warnings {
+                    ui.label(RichText::new(format!("• {}", w)).small().color(MUTED()));
+                }
+            });
+        });
+        if !open {
+            self.import_warnings.clear();
+        }
+    }
+
     // ------------------------------------------------------------- save window
     pub fn save_window(&mut self, ctx: &egui::Context) {
         if !self.save_open {
@@ -2086,6 +2367,89 @@ impl EditorApp {
 }
 
 /// 3×3 child alignment picker (Unity TextAnchor).
+/// 9-slice borders (left, bottom, right, top in source pixels), pixels per unit, sub-sprite, image type, preserve aspect.
+fn unity_image_settings(ui: &mut egui::Ui, e: &mut Element) {
+    let t = crate::i18n::t;
+    let dims = render::image_dims(&e.image);
+    let (mw, mh) = dims.map(|(w, h)| (w as f32, h as f32)).unwrap_or((100_000.0, 100_000.0));
+    ui.label(RichText::new(t("9-slice")).strong().size(11.5)).on_hover_text(t("Border of the 9-slice in pixels of the source image (left, bottom, right, top), like Unity's Sprite Editor. The canvas shows the result."));
+    let mut sl = e.slice.unwrap_or([0.0; 4]);
+    let before = sl;
+    egui::Grid::new("slicegrid").num_columns(4).spacing([6.0, 4.0]).show(ui, |ui| {
+        for (row, (a, b)) in [(0usize, 1usize), (2, 3)].into_iter().enumerate() {
+            let _ = row;
+            for i in [a, b] {
+                let (name, max) = [("Left", mw), ("Bottom", mh), ("Right", mw), ("Top", mh)][i];
+                ui.label(RichText::new(t(name)).size(11.5).color(MUTED()));
+                ui.add(egui::DragValue::new(&mut sl[i]).range(0.0..=max).speed(0.5).max_decimals(0));
+            }
+            ui.end_row();
+        }
+    });
+    if sl != before {
+        e.slice = if sl.iter().all(|v| *v == 0.0) { None } else { Some(sl) };
+    }
+    ui.horizontal(|ui| {
+        if ui.add_enabled(e.slice.is_some(), egui::Button::new(t("Clear")).small()).clicked() {
+            e.slice = None;
+        }
+        if let Some((w, h)) = dims {
+            ui.label(RichText::new(crate::i18n::tf("Source image: {} × {} px", &[&w.to_string(), &h.to_string()])).small().color(MUTED()));
+        }
+    });
+    // source picture with the slice lines
+    if let (Some((w, h)), Some(tex)) = (dims, render::texture(ui.ctx(), &e.image)) {
+        let max = Vec2::new(ui.available_width().min(240.0), 110.0);
+        let s = (max.x / w as f32).min(max.y / h as f32);
+        let (r, _) = ui.allocate_exact_size(Vec2::new(w as f32 * s, h as f32 * s), Sense::hover());
+        ui.painter().rect_filled(r, 2.0, FIELD());
+        ui.painter().image(tex.id(), r, Rect::from_min_max(Pos2::ZERO, Pos2::new(1.0, 1.0)), Color32::WHITE);
+        if let Some(sl) = e.slice {
+            let st = Stroke::new(1.0, ACCENT());
+            let x = |v: f32| r.left() + (v / w as f32).clamp(0.0, 1.0) * r.width();
+            let y = |v: f32| r.top() + (v / h as f32).clamp(0.0, 1.0) * r.height();
+            ui.painter().line_segment([Pos2::new(x(sl[0]), r.top()), Pos2::new(x(sl[0]), r.bottom())], st);
+            ui.painter().line_segment([Pos2::new(x(w as f32 - sl[2]), r.top()), Pos2::new(x(w as f32 - sl[2]), r.bottom())], st);
+            ui.painter().line_segment([Pos2::new(r.left(), y(sl[3])), Pos2::new(r.right(), y(sl[3]))], st);
+            ui.painter().line_segment([Pos2::new(r.left(), y(h as f32 - sl[1])), Pos2::new(r.right(), y(h as f32 - sl[1]))], st);
+        }
+    }
+    ui.add_space(4.0);
+    egui::Grid::new("unityimggrid").num_columns(2).spacing([8.0, 5.0]).show(ui, |ui| {
+        ui.label(t("Pixels per unit"));
+        ui.horizontal(|ui| {
+            let mut ppu = e.ppu.unwrap_or(100.0);
+            if ui.add(egui::DragValue::new(&mut ppu).range(0.01..=10_000.0).speed(1.0).max_decimals(2)).on_hover_text(t("Sprite pixels per unit: 100 keeps the borders at their pixel size, 200 makes them half as big.")).changed() {
+                e.ppu = Some(ppu);
+            }
+            if ui.add_enabled(e.ppu.is_some(), egui::Button::new(t("Auto")).small()).clicked() {
+                e.ppu = None;
+            }
+        });
+        ui.end_row();
+        ui.label(t("Sub-sprite"));
+        let mut sprite = e.sprite.clone().unwrap_or_default();
+        ui.add(egui::TextEdit::singleline(&mut sprite).desired_width(150.0).char_limit(256).hint_text(t("Name inside an atlas (optional)")));
+        e.sprite = if sprite.is_empty() { None } else { Some(sprite) };
+        ui.end_row();
+        ui.label(t("Image mode"));
+        let shown = match e.image_mode {
+            Some(m) => t(m.as_str()),
+            None => format!("{} ({})", t("Automatic"), t(e.effective_image_mode().as_str())),
+        };
+        egui::ComboBox::from_id_salt("image_mode").selected_text(shown).width(150.0).show_ui(ui, |ui| {
+            ui.selectable_value(&mut e.image_mode, None, t("Automatic"));
+            for m in [ImageMode::Simple, ImageMode::Sliced, ImageMode::Tiled, ImageMode::Filled] {
+                ui.selectable_value(&mut e.image_mode, Some(m), t(m.as_str()));
+            }
+        });
+        ui.end_row();
+        ui.label(t("Preserve aspect"));
+        ui.checkbox(&mut e.preserve_aspect, "");
+        ui.end_row();
+    });
+}
+
 fn align_grid(ui: &mut egui::Ui, a: &mut u8) {
     egui::Grid::new("align9").spacing([2.0, 2.0]).show(ui, |ui| {
         for row in 0..3u8 {

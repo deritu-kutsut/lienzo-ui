@@ -22,6 +22,8 @@
 - **Ready-made components and HUD text:** pill/outline/close buttons, health and mana bars, cards, badges, slots, timer, coins, damage numbers, combo and subtitles.
 - **Review design:** one click checks text size, contrast (WCAG), touch-target size, off-page elements, duplicate names and missing images before you export.
 - **Test mode (F5):** click through your UI, run small click scripts (Rhai) and preview other screens (phones, 4:3, ultrawide).
+- **Import from Unity:** turn existing uGUI prefabs into editable designs (names, anchors, layouts, sprites and 9-slice kept), see [docs/UNITY_IMPORT.md](docs/UNITY_IMPORT.md).
+- **Portrait and landscape layouts** in the same design, with a runtime switch in Unity.
 - **One-click export to Unity:** a uGUI prefab rebuilt automatically when the design changes, plus UXML/USS, an IMGUI script and typed *View* scripts for your game logic (your code is never overwritten).
 - **Pixel art mode:** nearest-neighbor images and whole-pixel positions in the editor; Canvas *Pixel Perfect* and Point-filtered, uncompressed sprites in Unity.
 - **Plugins:** add commands, exporters and templates with sandboxed Rhai scripts, no recompiling ([guide](docs/PLUGINS.md)).
@@ -111,6 +113,7 @@ Moderation lives in a web panel (also usable by AIs with revocable tokens): [doc
 |---|---|
 | [Beginner tutorial](docs/TUTORIAL_BEGINNERS.md) ([es](docs/TUTORIAL_BEGINNERS.es.md) · [pt](docs/TUTORIAL_BEGINNERS.pt.md) · [fr](docs/TUTORIAL_BEGINNERS.fr.md) · [de](docs/TUTORIAL_BEGINNERS.de.md) · [it](docs/TUTORIAL_BEGINNERS.it.md) · [ru](docs/TUTORIAL_BEGINNERS.ru.md) · [zh](docs/TUTORIAL_BEGINNERS.zh.md) · [ja](docs/TUTORIAL_BEGINNERS.ja.md) · [ko](docs/TUTORIAL_BEGINNERS.ko.md)) | First design and first export |
 | [Pro tutorial](docs/TUTORIAL_PROS.md) ([es](docs/TUTORIAL_PROS.es.md) · [pt](docs/TUTORIAL_PROS.pt.md) · [fr](docs/TUTORIAL_PROS.fr.md) · [de](docs/TUTORIAL_PROS.de.md) · [it](docs/TUTORIAL_PROS.it.md) · [ru](docs/TUTORIAL_PROS.ru.md) · [zh](docs/TUTORIAL_PROS.zh.md) · [ja](docs/TUTORIAL_PROS.ja.md) · [ko](docs/TUTORIAL_PROS.ko.md)) | Export format, anchors, layouts, scripting, Review design, command line |
+| [File format](docs/FORMAT.md) · [Import from Unity](docs/UNITY_IMPORT.md) | The `.editorgui.json` schema, and converting uGUI prefabs |
 | [Extending Lienzo UI](docs/EXTENDING.md) | Adding elements, templates, exporters, tutorial pages |
 | [Plugins](docs/PLUGINS.md) | Writing commands, exporters and templates |
 | [MCP server](docs/MCP.md) | Connect any AI (your own key or a local model) to Lienzo UI, or script it with an AI API |

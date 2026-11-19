@@ -4,6 +4,22 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versio
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-11-19
+
+Bringing existing Unity interfaces in, and exporting them the way a real game needs. Also includes the 1.4.2 security fixes below.
+
+### Added
+- **Import from Unity** (File › Import from Unity…, or `--import-unity <file.prefab>` and `--import-unity-project <dir> --out <dir>`): turns uGUI prefabs and Lienzo UI exported designs into editable designs, keeping the GameObject names, anchors, layout groups, sprites (including sub-sprites), 9-slice borders and pixels per unit. See [docs/UNITY_IMPORT.md](docs/UNITY_IMPORT.md).
+- **Documented file format** ([docs/FORMAT.md](docs/FORMAT.md) and a JSON schema) and `--validate <file>`. Files that lack optional fields such as `next_id` or `canvas_match` now load.
+- **Portrait layout:** a second layout per design (Landscape / Portrait toggle). Edits made in portrait are stored as overrides; the export adds a `LienzoOrientationLayout` component that switches at runtime. The review also checks the portrait layout.
+- **Sprites:** 9-slice borders, pixels per unit, sub-sprite, image mode and preserve aspect per image, drawn as in Unity on the canvas. Existing Unity sprites are referenced (`unity:Assets/...`), never copied or reset.
+- **Unity name** per element: the exact GameObject name, independent of the editor label. Generated children are now `__border`, `__text`…, so they cannot collide with yours.
+- **Canvas options:** render mode, sort order, safe area (`LienzoSafeArea`) and "embed" (no own Canvas) for overlays; a background with alpha 0 exports no background image.
+- **Unity export options:** scripts folder, assembly (scripts are placed next to the asmdef you name), choose which outputs are generated (prefab, UI Toolkit, IMGUI, View scripts; IMGUI is off for new designs).
+- **Fonts:** use the TMP font assets of your project by name, with fallback fonts; the review warns when a font lacks characters such as « » —.
+- Generated View scripts bind elements through serialized references, so renaming elements no longer breaks your code.
+- First export: prefabs are built automatically once the new scripts compile.
+
 ## [1.4.2] - 2026-11-19
 
 Security and stability release.

@@ -1,7 +1,8 @@
 //! uGUI export: a flat JSON (parent = index in the list, never null so Unity's
 //! JsonUtility can read it) consumed by `EditorGuiImporter.cs`.
 
-use super::{class_name, content_height, export_rt, image_asset_path, radius_of, unity_names};
+use super::{class_name, content_height, element_sprite, export_rt, image_asset_path, radius_of, unity_image_ref, unity_names, view};
+use crate::docext::{ElementOverride, Orientation};
 use crate::model::{Doc, Kind, hex};
 use serde_json::json;
 use std::collections::HashMap;
@@ -15,6 +16,7 @@ fn r2(v: f32) -> f64 {
 pub fn json(doc: &Doc, for_project: bool) -> String {
     let names = unity_names(doc);
     let index: HashMap<u64, usize> = doc.elements.iter().enumerate().map(|(i, e)| (e.id, i)).collect();
+    let fields = view::field_names(doc);
     let elements: Vec<_> = doc
         .elements
         .iter()
@@ -23,6 +25,9 @@ pub fn json(doc: &Doc, for_project: bool) -> String {
             let parent = doc.parent_of(e.id).and_then(|p| index.get(&p)).map(|i| *i as i64).unwrap_or(-1);
             let source = if e.image.is_empty() {
                 String::new()
+            } else if let Some((asset, _)) = unity_image_ref(&e.image) {
+                // already in the Unity project: referenced, never copied
+                asset
             } else if for_project {
                 image_asset_path(&e.image)
             } else {
@@ -98,8 +103,11 @@ pub fn json(doc: &Doc, for_project: bool) -> String {
                 if let Some(p) = e.ppu {
                     o.insert("ppu".into(), json!(r2(p)));
                 }
-                if let Some(sp) = &e.sprite {
+                if let Some(sp) = element_sprite(e) {
                     o.insert("sprite".into(), json!(sp));
+                }
+                if let Some(fl) = fields.get(&e.id) {
+                    o.insert("field".into(), json!(fl));
                 }
                 if e.image_mode.is_some() || e.slice.is_some() {
                     o.insert("imageMode".into(), json!(e.effective_image_mode().as_str()));
@@ -116,12 +124,47 @@ pub fn json(doc: &Doc, for_project: bool) -> String {
             "referenceResolution": [doc.width, doc.height],
             "match": r2(doc.canvas_match),
             "pixelArt": doc.pixel_art,
-            "background": hex(doc.background),
         },
         "elements": elements,
     });
+    // A fully transparent page has no canvas background at all (the importer then creates no background image).
+    if doc.has_background() {
+        v["canvas"]["background"] = json!(hex(doc.background));
+    }
     doc_extras(doc, &mut v);
     serde_json::to_string_pretty(&v).unwrap_or_default()
+}
+
+fn layout_json(l: &crate::model::LayoutGroup) -> serde_json::Value {
+    json!({
+        "mode": l.mode.index(),
+        "padding": l.padding.iter().map(|x| r2(*x)).collect::<Vec<_>>(),
+        "spacing": [r2(l.spacing[0]), r2(l.spacing[1])],
+        "cellSize": [r2(l.cell[0]), r2(l.cell[1])],
+        "childAlignment": l.align.min(8),
+        "expandWidth": l.expand_w,
+        "expandHeight": l.expand_h,
+    })
+}
+
+/// RectTransform of an element in the portrait layout, or `None` when the override does not move / resize it.
+/// Computed on the design resolved for portrait (page size, overrides applied), against the parent's portrait box.
+fn portrait_rect(doc: &Doc, ov: &ElementOverride) -> Option<serde_json::Value> {
+    let geometry = ov.x.is_some() || ov.y.is_some() || ov.w.is_some() || ov.h.is_some() || ov.rot.is_some() || ov.anchor_min.is_some() || ov.anchor_max.is_some() || ov.pivot.is_some();
+    if !geometry {
+        return None;
+    }
+    let pd = doc.resolved_for(Orientation::Portrait);
+    let e = pd.get(ov.id)?;
+    let rt = export_rt(&pd, e);
+    Some(json!({
+        "anchorMin": [r2(rt.anchor_min[0]), r2(rt.anchor_min[1])],
+        "anchorMax": [r2(rt.anchor_max[0]), r2(rt.anchor_max[1])],
+        "pivot": [r2(rt.pivot[0]), r2(rt.pivot[1])],
+        "anchoredPosition": [r2(rt.anchored_position[0]), r2(rt.anchored_position[1])],
+        "sizeDelta": [r2(rt.size_delta[0]), r2(rt.size_delta[1])],
+        "rotationZ": r2(rt.rotation_z),
+    }))
 }
 
 /// Canvas / unity / portrait data, written only when the design uses it. The canvas options go inside
@@ -179,19 +222,16 @@ fn doc_extras(doc: &Doc, v: &mut serde_json::Value) {
                     o.insert("visible".into(), json!(vis));
                 }
                 if let Some(l) = &ov.layout {
-                    o.insert(
-                        "layout".into(),
-                        json!({
-                            "mode": l.mode.index(),
-                            "padding": l.padding.iter().map(|x| r2(*x)).collect::<Vec<_>>(),
-                            "spacing": [r2(l.spacing[0]), r2(l.spacing[1])],
-                            "cellSize": [r2(l.cell[0]), r2(l.cell[1])],
-                            "childAlignment": l.align.min(8),
-                            "expandWidth": l.expand_w,
-                            "expandHeight": l.expand_h,
-                        }),
-                    );
+                    o.insert("layout".into(), layout_json(l));
                 }
+                // Real RectTransform values of the portrait state (what Unity needs), next to the raw ones above.
+                if let Some(rect) = portrait_rect(doc, ov) {
+                    o.insert("rect".into(), rect);
+                    o.insert("hasRect".into(), json!(true));
+                }
+                o.insert("hasVisible".into(), json!(ov.visible.is_some()));
+                o.insert("hasFontSize".into(), json!(ov.font_size.is_some()));
+                o.insert("hasLayout".into(), json!(ov.layout.is_some()));
                 serde_json::Value::Object(o)
             })
             .collect();

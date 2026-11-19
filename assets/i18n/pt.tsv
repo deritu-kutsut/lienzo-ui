@@ -850,3 +850,89 @@ Corners must be between 0 and 16.	Os cantos devem estar entre 0 e 16.
 Invalid font name.	Nome de fonte inválido.
 Align and order	Alinhar e ordenar
 Align to parent and order	Alinhar ao pai e ordenar
+Edit the landscape layout	Editar o layout horizontal
+Edit the portrait layout: changes are stored as overrides and the landscape layout is not touched	Editar o layout vertical: as alterações são guardadas como exceções e o layout horizontal não é alterado
+Overridden in the portrait layout (right-click: Reset to landscape)	Com exceções no layout vertical (clique direito: Voltar ao horizontal)
+Reset to landscape	Voltar ao horizontal
+Portrait view: the reference resolution below is the portrait one.	Vista vertical: a resolução de referência abaixo é a vertical.
+Transparent overlay	Sobreposição transparente
+Alpha 0 = transparent overlay: the page shows a checkerboard and no background image is exported to Unity.	Alfa 0 = sobreposição transparente: a página mostra um tabuleiro xadrez e nenhuma imagem de fundo é exportada para o Unity.
+Canvas (Unity)	Canvas (Unity)
+Render mode	Modo de renderização
+Screen Space - Overlay	Screen Space - Overlay
+Screen Space - Camera	Screen Space - Camera
+World Space	World Space
+Sort order	Ordem de camada
+Plane distance	Distância do plano
+Safe area	Área segura
+Respect notch and rounded corners	Respeitar o entalhe e os cantos arredondados
+Applies the device safe area to the root, so nothing hides under a notch.	Aplica a área segura do dispositivo à raiz para que nada fique sob o entalhe.
+Embed	Incorporar
+Embed (no own Canvas)	Incorporar (sem Canvas próprio)
+Exports a plain RectTransform meant to live under the Canvas of your game: no Canvas or CanvasScaler is created.	Exporta um RectTransform simples para ficar sob o Canvas do seu jogo: nenhum Canvas ou CanvasScaler é criado.
+Unity export	Exportação para o Unity
+Scripts folder	Pasta de scripts
+Invalid folder: it must start with Assets, use / and contain no “..”, no drive and no empty parts.	Pasta inválida: deve começar com Assets, usar / e não conter «..», unidade nem partes vazias.
+Where the generated scripts go (empty = the default folder).	Onde vão os scripts gerados (vazio = a pasta padrão).
+Assembly name	Nome do assembly
+Assembly Definition of your game (optional)	Assembly Definition do seu jogo (opcional)
+Invalid assembly name: letters, digits, _ . - and it must start with a letter or _.	Nome de assembly inválido: letras, dígitos, _ . - e deve começar com uma letra ou _.
+Outputs	Saídas
+Prefab	Prefab
+UI Toolkit (UXML / USS)	UI Toolkit (UXML / USS)
+IMGUI script	Script IMGUI
+View scripts	Scripts de vista
+Default font (TextMeshPro asset)	Fonte padrão (asset do TextMeshPro)
+Name of a font asset in your project	Nome de um asset de fonte do seu projeto
+Fallback fonts	Fontes de reserva
+Fallback font asset name	Nome do asset da fonte de reserva
+Add	Adicionar
+Portrait layout	Layout vertical
+No portrait layout yet. Create one to design the same screen for devices held upright; elements start where they are in landscape.	Ainda não há layout vertical. Crie um para desenhar a mesma tela para dispositivos na vertical; os elementos começam onde estão na horizontal.
+Create portrait layout	Criar layout vertical
+Portrait size	Tamanho vertical
+{} element(s) differ from the landscape layout. Use the Landscape / Portrait buttons in the top bar to switch the view.	{} elemento(s) diferem do layout horizontal. Use os botões Horizontal / Vertical da barra superior para trocar de vista.
+Remove portrait layout	Remover layout vertical
+Deletes every portrait override and the portrait size	Apaga todas as exceções verticais e o tamanho vertical
+Unity name	Nome no Unity
+Automatic (same as the name)	Automático (igual ao nome)
+Exact GameObject name in Unity. Leave it empty to use the name above.	Nome exato do GameObject no Unity. Deixe vazio para usar o nome acima.
+Invalid Unity name: it must not be blank, contain “/” or control characters, or exceed 128 characters (the name above is used instead).	Nome do Unity inválido: não pode estar em branco, conter «/» nem caracteres de controle, nem passar de 128 caracteres (usa-se o nome acima).
+A sibling already uses this name: it will be exported as “{}”.	Um irmão já usa este nome: será exportado como «{}».
+Exported as “{}”	Exportado como «{}»
+Differs from landscape: {}	Difere do horizontal: {}
+Image settings (Unity)	Ajustes de imagem (Unity)
+9-slice	9-slice
+Border of the 9-slice in pixels of the source image (left, bottom, right, top), like Unity's Sprite Editor. The canvas shows the result.	Borda do 9-slice em pixels da imagem original (esquerda, baixo, direita, cima), como no Sprite Editor do Unity. A tela mostra o resultado.
+Clear	Limpar
+Source image: {} × {} px	Imagem original: {} × {} px
+Pixels per unit	Pixels por unidade
+Sprite pixels per unit: 100 keeps the borders at their pixel size, 200 makes them half as big.	Pixels por unidade do sprite: 100 mantém as bordas no tamanho em pixels, 200 as reduz à metade.
+Auto	Auto
+Sub-sprite	Sub-sprite
+Name inside an atlas (optional)	Nome dentro de um atlas (opcional)
+Image mode	Modo da imagem
+Automatic	Automático
+Preserve aspect	Manter proporção
+Back to the landscape layout	De volta ao layout horizontal
+Portrait layout · {} × {}	Layout vertical · {} × {}
+Font {} lacks characters: {}	A fonte {} não tem estes caracteres: {}
+position	posição
+size	tamanho
+rotation	rotação
+anchors	âncoras
+visibility	visibilidade
+font size	tamanho da fonte
+layout	layout
+Simple	Simple
+Sliced	Sliced
+Tiled	Tiled
+Filled	Filled
+Portrait view: edits are stored as overrides of the landscape layout	Vista vertical: as alterações são guardadas como exceções do layout horizontal
+Landscape view	Vista horizontal
+Import from Unity…	Importar do Unity…
+Turn a uGUI prefab (.prefab) or a Lienzo UI exported design into an editable design	Transforma um prefab uGUI (.prefab) ou um design exportado pelo Lienzo UI em um design editável
+Import from Unity	Importar do Unity
+Imported {} ({} warnings). Save it as a project to keep it.	{} importado ({} avisos). Salve como projeto para mantê-lo.
+Could not import: {}	Não foi possível importar: {}
+{} things could not be mapped exactly:	{} itens não puderam ser convertidos com exatidão:

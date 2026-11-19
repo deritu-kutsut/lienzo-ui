@@ -14,6 +14,7 @@
     {
       "active": true,
       "contentHeight": 0.0,
+      "field": "inventory",
       "id": 1,
       "image": {
         "alpha": 1.0,
@@ -114,6 +115,7 @@
     {
       "active": true,
       "contentHeight": 0.0,
+      "field": "title",
       "id": 2,
       "image": {
         "alpha": 1.0,
@@ -214,6 +216,7 @@
     {
       "active": true,
       "contentHeight": 0.0,
+      "field": "close",
       "id": 3,
       "image": {
         "alpha": 1.0,
@@ -314,6 +317,7 @@
     {
       "active": true,
       "contentHeight": 0.0,
+      "field": "grid",
       "id": 4,
       "image": {
         "alpha": 1.0,
@@ -414,6 +418,7 @@
     {
       "active": true,
       "contentHeight": 0.0,
+      "field": "cell1",
       "id": 5,
       "image": {
         "alpha": 1.0,
@@ -514,6 +519,7 @@
     {
       "active": true,
       "contentHeight": 0.0,
+      "field": "cell2",
       "id": 6,
       "image": {
         "alpha": 1.0,
@@ -614,6 +620,7 @@
     {
       "active": true,
       "contentHeight": 0.0,
+      "field": "cell3",
       "id": 7,
       "image": {
         "alpha": 1.0,
@@ -714,6 +721,7 @@
     {
       "active": true,
       "contentHeight": 0.0,
+      "field": "cell4",
       "id": 8,
       "image": {
         "alpha": 1.0,
@@ -814,6 +822,7 @@
     {
       "active": true,
       "contentHeight": 0.0,
+      "field": "cell5",
       "id": 9,
       "image": {
         "alpha": 1.0,
@@ -914,6 +923,7 @@
     {
       "active": true,
       "contentHeight": 0.0,
+      "field": "cell6",
       "id": 10,
       "image": {
         "alpha": 1.0,
@@ -1014,6 +1024,7 @@
     {
       "active": true,
       "contentHeight": 0.0,
+      "field": "cell7",
       "id": 11,
       "image": {
         "alpha": 1.0,
@@ -1114,6 +1125,7 @@
     {
       "active": true,
       "contentHeight": 0.0,
+      "field": "cell8",
       "id": 12,
       "image": {
         "alpha": 1.0,
@@ -1214,6 +1226,7 @@
     {
       "active": true,
       "contentHeight": 0.0,
+      "field": "cell9",
       "id": 13,
       "image": {
         "alpha": 1.0,
@@ -1314,6 +1327,7 @@
     {
       "active": true,
       "contentHeight": 0.0,
+      "field": "cell10",
       "id": 14,
       "image": {
         "alpha": 1.0,
@@ -1414,6 +1428,7 @@
     {
       "active": true,
       "contentHeight": 0.0,
+      "field": "cell11",
       "id": 15,
       "image": {
         "alpha": 1.0,
@@ -1514,6 +1529,7 @@
     {
       "active": true,
       "contentHeight": 0.0,
+      "field": "cell12",
       "id": 16,
       "image": {
         "alpha": 1.0,

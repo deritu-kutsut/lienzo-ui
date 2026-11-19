@@ -14,6 +14,7 @@
     {
       "active": true,
       "contentHeight": 0.0,
+      "field": "background",
       "id": 1,
       "image": {
         "alpha": 1.0,
@@ -114,6 +115,7 @@
     {
       "active": true,
       "contentHeight": 0.0,
+      "field": "moon",
       "id": 2,
       "image": {
         "alpha": 1.0,
@@ -214,6 +216,7 @@
     {
       "active": true,
       "contentHeight": 0.0,
+      "field": "header",
       "id": 3,
       "image": {
         "alpha": 1.0,
@@ -314,6 +317,7 @@
     {
       "active": true,
       "contentHeight": 0.0,
+      "field": "title",
       "id": 4,
       "image": {
         "alpha": 1.0,
@@ -414,6 +418,7 @@
     {
       "active": true,
       "contentHeight": 0.0,
+      "field": "subtitle",
       "id": 5,
       "image": {
         "alpha": 1.0,
@@ -514,6 +519,7 @@
     {
       "active": true,
       "contentHeight": 0.0,
+      "field": "menu",
       "id": 6,
       "image": {
         "alpha": 1.0,
@@ -614,6 +620,7 @@
     {
       "active": true,
       "contentHeight": 0.0,
+      "field": "playButton",
       "id": 7,
       "image": {
         "alpha": 1.0,
@@ -714,6 +721,7 @@
     {
       "active": true,
       "contentHeight": 0.0,
+      "field": "optionsButton",
       "id": 8,
       "image": {
         "alpha": 1.0,
@@ -814,6 +822,7 @@
     {
       "active": true,
       "contentHeight": 0.0,
+      "field": "creditsButton",
       "id": 9,
       "image": {
         "alpha": 1.0,
@@ -914,6 +923,7 @@
     {
       "active": true,
       "contentHeight": 0.0,
+      "field": "exitButton",
       "id": 10,
       "image": {
         "alpha": 1.0,
@@ -1014,6 +1024,7 @@
     {
       "active": true,
       "contentHeight": 0.0,
+      "field": "version",
       "id": 11,
       "image": {
         "alpha": 1.0,

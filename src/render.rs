@@ -335,6 +335,94 @@ fn textured_poly(p: &Painter, xf: &Xf, pts: &[[f32; 2]], hw: f32, hh: f32, tex: 
     p.add(Shape::mesh(mesh));
 }
 
+/// Size in pixels of a library picture (cached; the texture itself may be downscaled).
+pub fn image_dims(name: &str) -> Option<(u32, u32)> {
+    static DIMS: std::sync::Mutex<Option<std::collections::HashMap<String, Option<(u32, u32)>>>> = std::sync::Mutex::new(None);
+    let mut g = DIMS.lock().ok()?;
+    let map = g.get_or_insert_with(Default::default);
+    if let Some(d) = map.get(name) {
+        return *d;
+    }
+    let d = crate::library::image_size(&crate::library::resolve_image(name));
+    map.insert(name.to_string(), d);
+    d
+}
+
+/// One piece of a 9-sliced image: destination box (x0, y0, x1, y1) in element-local units measured from the
+/// top-left corner of the element, and the part of the picture it shows (u0, v0, u1, v1; v grows downward).
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Patch {
+    pub dest: [f32; 4],
+    pub uv: [f32; 4],
+}
+
+/// The nine patches Unity's Image (type Sliced) draws. `slice` is [left, bottom, right, top] in source pixels,
+/// `src` the picture size in pixels and `ppu` the sprite's pixels per unit (Unity scales borders by 100 / ppu;
+/// the default sprite is 100). When the box is smaller than the borders, the borders shrink proportionally.
+/// Empty patches are left out.
+pub fn slice_patches(w: f32, h: f32, src: [f32; 2], slice: [f32; 4], ppu: f32) -> Vec<Patch> {
+    let (sw, sh) = (src[0].max(1.0), src[1].max(1.0));
+    let k = 100.0 / ppu.max(0.01);
+    // borders in source pixels, never more than the picture
+    let l = slice[0].clamp(0.0, sw);
+    let r = slice[2].clamp(0.0, sw - l);
+    let b = slice[1].clamp(0.0, sh);
+    let t = slice[3].clamp(0.0, sh - b);
+    let (mut dl, mut dr, mut dt, mut db) = (l * k, r * k, t * k, b * k);
+    if dl + dr > w && dl + dr > 0.0 {
+        let s = w.max(0.0) / (dl + dr);
+        dl *= s;
+        dr *= s;
+    }
+    if dt + db > h && dt + db > 0.0 {
+        let s = h.max(0.0) / (dt + db);
+        dt *= s;
+        db *= s;
+    }
+    let xs = [0.0, dl, (w - dr).max(dl), w.max(dl)];
+    let us = [0.0, l / sw, 1.0 - r / sw, 1.0];
+    let ys = [0.0, dt, (h - db).max(dt), h.max(dt)];
+    let vs = [0.0, t / sh, 1.0 - b / sh, 1.0];
+    let mut out = Vec::with_capacity(9);
+    for j in 0..3 {
+        for i in 0..3 {
+            if xs[i + 1] - xs[i] <= 1e-4 || ys[j + 1] - ys[j] <= 1e-4 {
+                continue;
+            }
+            out.push(Patch { dest: [xs[i], ys[j], xs[i + 1], ys[j + 1]], uv: [us[i], vs[j], us[i + 1], vs[j + 1]] });
+        }
+    }
+    out
+}
+
+/// Box (x0, y0, x1, y1, from the top-left corner) a picture of `src` size takes inside a `w` x `h` box when the
+/// aspect ratio is preserved (Image.preserveAspect): fitted and centred.
+pub fn fit_aspect(w: f32, h: f32, src: [f32; 2]) -> [f32; 4] {
+    if src[0] <= 0.0 || src[1] <= 0.0 || w <= 0.0 || h <= 0.0 {
+        return [0.0, 0.0, w, h];
+    }
+    let s = (w / src[0]).min(h / src[1]);
+    let (iw, ih) = (src[0] * s, src[1] * s);
+    [(w - iw) / 2.0, (h - ih) / 2.0, (w + iw) / 2.0, (h + ih) / 2.0]
+}
+
+/// Draws patches (element-local boxes from the top-left corner) of a texture.
+fn textured_patches(p: &Painter, xf: &Xf, hw: f32, hh: f32, tex: egui::TextureId, opacity: f32, patches: &[Patch]) {
+    let tint = Color32::from_white_alpha((255.0 * opacity.clamp(0.0, 1.0)) as u8);
+    let mut mesh = Mesh::with_texture(tex);
+    for pt in patches {
+        let [x0, y0, x1, y1] = pt.dest;
+        let [u0, v0, u1, v1] = pt.uv;
+        let base = mesh.vertices.len() as u32;
+        for (x, y, u, v) in [(x0, y0, u0, v0), (x1, y0, u1, v0), (x1, y1, u1, v1), (x0, y1, u0, v1)] {
+            mesh.vertices.push(egui::epaint::Vertex { pos: xf.map(x - hw, y - hh), uv: Pos2::new(u, v), color: tint });
+        }
+        mesh.add_triangle(base, base + 1, base + 2);
+        mesh.add_triangle(base, base + 2, base + 3);
+    }
+    p.add(Shape::mesh(mesh));
+}
+
 pub fn text_job(e: &Element, text: &str, scale: f32, wrap: f32, color_override: Option<Color32>) -> LayoutJob {
     let mut job = LayoutJob::default();
     job.wrap.max_width = wrap;
@@ -474,7 +562,19 @@ pub fn paint_element(p: &Painter, e: &Element, v: &View, hide_text: bool) {
         }
         Kind::Image => {
             match (!e.image.is_empty()).then(|| texture(p.ctx(), &e.image)).flatten() {
-                Some(tex) => textured_poly(p, &xf, &body, hw, hh, tex.id(), op),
+                Some(tex) => {
+                    let src = image_dims(&e.image).map(|(w, h)| [w as f32, h as f32]);
+                    let sliced = e.effective_image_mode() == crate::docext::ImageMode::Sliced;
+                    match (src, e.slice) {
+                        // 9-slice: the canvas shows what Unity draws
+                        (Some(src), Some(sl)) if sliced => textured_patches(p, &xf, hw, hh, tex.id(), op, &slice_patches(e.w, e.h, src, sl, e.ppu.unwrap_or(100.0))),
+                        (Some(src), _) if e.preserve_aspect => {
+                            let [x0, y0, x1, y1] = fit_aspect(e.w, e.h, src);
+                            textured_patches(p, &xf, hw, hh, tex.id(), op, &[Patch { dest: [x0, y0, x1, y1], uv: [0.0, 0.0, 1.0, 1.0] }])
+                        }
+                        _ => textured_poly(p, &xf, &body, hw, hh, tex.id(), op),
+                    }
+                }
                 None => gradient_poly(p, &xf, &body, hw, hh, e.fill, e.fill2, op),
             }
             if stroke.width > 0.0 {
@@ -553,4 +653,75 @@ pub fn paint_element_thumb(p: &Painter, e: &Element, rect: egui::Rect) {
     let size = Vec2::new(e.w * zoom, e.h * zoom);
     let origin = rect.center() - size / 2.0;
     paint_element(p, &e, &View { origin, zoom }, false);
+}
+
+/// Checkerboard drawn behind a transparent page (background alpha 0 = transparent overlay).
+pub fn paint_checkerboard(p: &Painter, rect: egui::Rect) {
+    let cell = 12.0;
+    p.rect_filled(rect, 0.0, Color32::from_gray(205));
+    let dark = Color32::from_gray(170);
+    let (cols, rows) = ((rect.width() / cell).ceil() as i32, (rect.height() / cell).ceil() as i32);
+    // bounded: a huge zoom must not create millions of rectangles
+    if cols * rows > 40_000 {
+        return;
+    }
+    for j in 0..rows {
+        for i in 0..cols {
+            if (i + j) % 2 == 0 {
+                continue;
+            }
+            let min = rect.min + Vec2::new(i as f32 * cell, j as f32 * cell);
+            p.rect_filled(egui::Rect::from_min_max(min, (min + Vec2::splat(cell)).min(rect.max)), 0.0, dark);
+        }
+    }
+}
+
+#[cfg(test)]
+mod slice_tests {
+    use super::*;
+
+    fn area(ps: &[Patch]) -> f32 {
+        ps.iter().map(|p| (p.dest[2] - p.dest[0]) * (p.dest[3] - p.dest[1])).sum()
+    }
+
+    #[test]
+    fn nine_patches_cover_the_box_and_the_whole_picture() {
+        let ps = slice_patches(200.0, 100.0, [64.0, 64.0], [16.0, 8.0, 16.0, 8.0], 100.0);
+        assert_eq!(ps.len(), 9);
+        assert!((area(&ps) - 200.0 * 100.0).abs() < 0.01);
+        let uv: f32 = ps.iter().map(|p| (p.uv[2] - p.uv[0]) * (p.uv[3] - p.uv[1])).sum();
+        assert!((uv - 1.0).abs() < 1e-4);
+        // top-left corner: 16 px wide, top border 8 px (border order is left, bottom, right, top)
+        let tl = ps[0];
+        assert_eq!(tl.dest, [0.0, 0.0, 16.0, 8.0]);
+        assert!((tl.uv[2] - 16.0 / 64.0).abs() < 1e-5 && (tl.uv[3] - 8.0 / 64.0).abs() < 1e-5);
+        // bottom-right corner takes the right and bottom borders
+        let br = ps[8];
+        assert_eq!(br.dest, [184.0, 92.0, 200.0, 100.0]);
+        assert!((br.uv[0] - 48.0 / 64.0).abs() < 1e-5 && (br.uv[1] - 56.0 / 64.0).abs() < 1e-5);
+    }
+
+    #[test]
+    fn borders_follow_ppu_and_shrink_when_the_box_is_small() {
+        // ppu 200 halves the borders on the canvas
+        let ps = slice_patches(200.0, 100.0, [64.0, 64.0], [16.0, 16.0, 16.0, 16.0], 200.0);
+        assert_eq!(ps[0].dest, [0.0, 0.0, 8.0, 8.0]);
+        // a box narrower than left + right: borders shrink proportionally, the centre column disappears
+        let ps = slice_patches(20.0, 100.0, [64.0, 64.0], [16.0, 0.0, 16.0, 0.0], 100.0);
+        assert!((area(&ps) - 2000.0).abs() < 0.01);
+        assert!(ps.iter().all(|p| p.dest[2] <= 20.0 + 1e-4));
+        assert_eq!(ps.len(), 2);
+        assert_eq!(ps[0].dest, [0.0, 0.0, 10.0, 100.0]);
+        // no slice borders at all: one patch that is the whole picture
+        let ps = slice_patches(50.0, 40.0, [10.0, 10.0], [0.0; 4], 100.0);
+        assert_eq!(ps.len(), 1);
+        assert_eq!(ps[0].uv, [0.0, 0.0, 1.0, 1.0]);
+    }
+
+    #[test]
+    fn preserve_aspect_fits_and_centres() {
+        let r = fit_aspect(200.0, 100.0, [50.0, 50.0]);
+        assert_eq!(r, [50.0, 0.0, 150.0, 100.0]);
+        assert_eq!(fit_aspect(100.0, 100.0, [0.0, 0.0]), [0.0, 0.0, 100.0, 100.0]);
+    }
 }

@@ -183,7 +183,16 @@ impl EditorApp {
             let a = 10 - i;
             painter.rect_filled(page.expand(i as f32 * 1.5).translate(Vec2::new(0.0, 2.0)), 4.0 + i as f32, Color32::from_black_alpha(a as u8 * 4));
         }
+        // A transparent / translucent page background shows a checkerboard (alpha 0 = overlay without a background image in Unity).
+        if self.doc.background[3] < 255 {
+            render::paint_checkerboard(&painter.with_clip_rect(page.intersect(rect)), page);
+        }
         painter.rect_filled(page, 0.0, render::col(self.doc.background, 1.0));
+        if self.orientation() == crate::docext::Orientation::Portrait {
+            // the portrait page is labelled so it is never mistaken for the landscape one
+            let label = crate::i18n::tf("Portrait layout · {} × {}", &[&self.doc.width.round().to_string(), &self.doc.height.round().to_string()]);
+            painter.text(page.left_top() - Vec2::new(0.0, 6.0), Align2::LEFT_BOTTOM, label, FontId::proportional(12.0), theme::ACCENT());
+        }
         paint_doc(&painter, &self.doc, &v, page.intersect(rect), self.editing);
         // parts outside the page are shown faded while selected
         for e in self.doc.elements.iter().filter(|e| self.sel.contains(&e.id)) {
@@ -679,6 +688,9 @@ impl EditorApp {
         // device bezel
         painter.rect_filled(page.expand(14.0), 18.0, Color32::from_rgb(12, 12, 16));
         painter.rect_stroke(page.expand(14.0), 18.0, Stroke::new(1.0, theme::LINE()), StrokeKind::Inside);
+        if sim.background[3] < 255 {
+            render::paint_checkerboard(&painter.with_clip_rect(page.intersect(rect)), page);
+        }
         painter.rect_filled(page, 0.0, render::col(sim.background, 1.0));
         paint_doc(painter, &sim, &v, page.intersect(rect), None);
 
