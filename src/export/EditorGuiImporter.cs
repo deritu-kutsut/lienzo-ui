@@ -122,6 +122,10 @@ namespace EditorGui
             Selection.activeGameObject = go;
         }
 
+        /// For CI / batchmode: builds the prefabs that are waiting for their View scripts right now (after the scripts compiled), instead of
+        /// waiting for the editor to be idle. Use: -executeMethod EditorGui.EditorGuiImporter.ProcessPendingNow
+        public static void ProcessPendingNow() { EditorGuiPending.ProcessNow(); }
+
         [MenuItem("Tools/Lienzo UI/Regenerate all prefabs")]
         public static void RebuildAll()
         {
@@ -1220,6 +1224,9 @@ namespace EditorGui
         /// the user: only what the design specifies is applied (9-slice border, pixels per unit, Point filter in
         /// pixel-art mode) and everything else is left alone. A texture Lienzo copied itself (marker in userData, or a
         /// brand-new one in Assets/EditorGUI/Sprites) is configured completely.
+        // pixels-per-unit asked for each texture during this domain: two Images that share a texture but ask for different values conflict
+        static readonly Dictionary<string, float> ppuAsked = new Dictionary<string, float>();
+
         static void ConfigureProjectSprite(string path, El e)
         {
             var ti = GetImporter(path);
@@ -1242,6 +1249,12 @@ namespace EditorGui
             if (owned)
             {
                 var ppu = hasPpu ? e.ppu : 100f;
+                if (hasPpu)
+                {
+                    if (ppuAsked.TryGetValue(path, out var prevPpu) && !Mathf.Approximately(prevPpu, ppu))
+                        Warn("ppuconflict:" + path, "[Lienzo UI] Two images share \"" + path + "\" but ask for different pixels per unit (" + prevPpu + " and " + ppu + "): a texture has one value, the last one (" + ppu + ") wins. Use two copies of the picture, or the same value.");
+                    ppuAsked[path] = ppu;
+                }
                 var filter = pixelArt ? FilterMode.Point : FilterMode.Bilinear;
                 if (own == Ownership.Lienzo && Stamped(ti) && ti.textureType == TextureImporterType.Sprite && ti.spriteBorder == border && Mathf.Approximately(ti.spritePixelsPerUnit, ppu) && !ti.mipmapEnabled && ti.filterMode == filter) return;
                 ApplyLienzoDefaults(ti, border, ppu);
@@ -1522,6 +1535,8 @@ namespace EditorGui
             if (!scripts.Any()) return true; // the design has no View scripts
             return EditorGuiImporter.FindViewType(cls) != null;
         }
+
+        internal static void ProcessNow() { Process(); }
 
         static void Process()
         {

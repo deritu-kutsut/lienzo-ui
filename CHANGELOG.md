@@ -31,7 +31,8 @@ Bringing existing Unity interfaces in, and exporting them the way a real game ne
 - **Unity export options:** scripts folder, assembly (scripts are placed next to the asmdef you name), choose which outputs are generated (prefab, UI Toolkit, IMGUI, View scripts; IMGUI is off for new designs).
 - **Fonts:** use the TMP font assets of your project by name, with fallback fonts; the review warns when a font lacks characters such as « » —.
 - Generated View scripts bind elements through serialized references, so renaming elements no longer breaks your code.
-- First export: prefabs are built automatically once the new scripts compile.
+- First export: prefabs are built automatically once the new scripts compile (for CI/batchmode: `-executeMethod EditorGui.EditorGuiImporter.ProcessPendingNow`).
+- Re-exporting an unchanged design no longer touches any file, so Unity does not reimport or recompile anything. Two images that share a texture but ask for different pixels per unit now produce a warning.
 
 ## [1.4.2] - 2026-11-19
 

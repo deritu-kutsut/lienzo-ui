@@ -1102,7 +1102,11 @@ pub fn write_unity_package(doc: &Doc, project: &Path) -> Result<Vec<String>, Str
         if let Some(d) = p.parent() {
             std::fs::create_dir_all(d).map_err(|e| format!("{}: {}", d.display(), e))?;
         }
-        std::fs::write(&p, bytes).map_err(|e| format!("{}: {}", p.display(), e))?;
+        // An export with no changes must not touch a single file: Unity reimports (and recompiles) everything whose timestamp changed.
+        let unchanged = std::fs::metadata(&p).map(|m| m.len() == bytes.len() as u64).unwrap_or(false) && std::fs::read(&p).map(|old| old == bytes).unwrap_or(false);
+        if !unchanged {
+            std::fs::write(&p, bytes).map_err(|e| format!("{}: {}", p.display(), e))?;
+        }
         written.push(rel);
         Ok(())
     };
