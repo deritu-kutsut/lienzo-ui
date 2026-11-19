@@ -984,7 +984,7 @@ impl EditorApp {
             self.upload_images();
         }
         // category chips: «Your images» first, then the built-in pack, then the generated gradients
-        let chip_id = egui::Id::new("images_tab_category");
+        let chip_id = egui::Id::NULL.with("images_tab_category");
         let mut cat: String = ui.ctx().data_mut(|d| d.get_temp::<String>(chip_id)).unwrap_or_else(|| "all".to_string());
         ui.add_space(6.0);
         ui.horizontal_wrapped(|ui| {

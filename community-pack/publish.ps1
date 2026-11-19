@@ -85,7 +85,7 @@ if ($Only -ne "fonts") {
         if ($desc.Length -gt 900) { $desc = $desc.Substring(0, 897) + "..." }
         $labels = $pluginLabels[$dir.Name]
         if (-not $labels) { $labels = "plugin" }
-        $jobs.Add([pscustomobject]@{ Kind = "plugin"; Name = $dir.Name; Path = $dir.FullName; Title = [string]$m.name; Description = $desc; Labels = $labels })
+        $jobs.Add([pscustomobject]@{ Kind = "plugin"; Name = $dir.Name; Path = $dir.FullName; Title = [string]$m.name; Description = $desc; Labels = $labels; License = "mit"; Source = $null })
     }
 }
 
@@ -97,7 +97,7 @@ if ($Only -ne "plugins") {
         $desc = ("{0} by {1}. License: {2} - free for personal and commercial use, including games and apps. Source: {3} - {4}. The license text is bundled with the font." -f $f.family, $f.authors, $f.license, $f.source, $copyright)
         if ($desc.Length -gt 900) { $desc = $desc.Substring(0, 897) + "..." }
         $labels = (@("font") + @($f.labels) + @($f.license_spdx.ToLower())) -join ","
-        $jobs.Add([pscustomobject]@{ Kind = "font"; Name = $f.family; Path = (Join-Path $pack ($f.file -replace "/", "\")); Title = [string]$f.family; Description = $desc; Labels = $labels })
+        $jobs.Add([pscustomobject]@{ Kind = "font"; Name = $f.family; Path = (Join-Path $pack ($f.file -replace "/", "\")); Title = [string]$f.family; Description = $desc; Labels = $labels; License = "ofl"; Source = [string]$f.source })
     }
 }
 
@@ -114,7 +114,8 @@ $ok = 0; $failed = 0; $i = 0
 "== $(Get-Date -Format s) publish $($jobs.Count) items" | Add-Content -Encoding UTF8 $log
 foreach ($j in $jobs) {
     $i++
-    $argList = @("--community-upload", $j.Kind, (Quote-Arg $j.Path), "--title", (Quote-Arg $j.Title), "--description", (Quote-Arg $j.Description), "--labels", (Quote-Arg $j.Labels))
+    $argList = @("--community-upload", $j.Kind, (Quote-Arg $j.Path), "--title", (Quote-Arg $j.Title), "--description", (Quote-Arg $j.Description), "--labels", (Quote-Arg $j.Labels), "--license", $j.License, "--rights")
+    if ($j.Source) { $argList += @("--source", (Quote-Arg $j.Source)) }
     $line = "[{0}/{1}] {2}: {3}" -f $i, $jobs.Count, $j.Kind, $j.Name
     if ($WhatIf) {
         Write-Host $line

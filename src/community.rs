@@ -853,7 +853,7 @@ fn list_cols(cfg: &NetCfg, base: &str, cache: &std::path::Path, session: Option<
     };
     match try_request(cfg, base, "GET", &q, session, None, None, &[], 2 << 20) {
         Ok(r) if (200..300).contains(&r.state) => {
-            let mut items: Vec<Item> = r.json()?;
+            let items: Vec<Item> = r.json()?;
             let items = sanitize_items(items, with_18);
             if let Some(k) = &key {
                 net::catalog_store(cache, k, &items, now());

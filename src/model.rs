@@ -1707,7 +1707,13 @@ fn template_at(index: usize, width: f32, height: f32) -> Doc {
                 anchor(e, [0.0, 0.0], [1.0, 0.0]);
                 e.pivot = [0.5, 0.0];
             });
-            put(&mut d, Some(top), Kind::Text, "Points", [w - 440.0, 50.0, 400.0, 60.0], |e| {
+            // Dark backing so the yellow score keeps a readable contrast over the bright sky (WCAG 3:1).
+            let points_frame = put(&mut d, Some(top), Kind::Panel, "Points frame", [w - 500.0, 40.0, 460.0, 90.0], |e| {
+                e.fill = [10, 10, 20, 160];
+                anchor(e, [1.0, 1.0], [1.0, 1.0]);
+                e.pivot = [1.0, 1.0];
+            });
+            put(&mut d, Some(points_frame), Kind::Text, "Points", [w - 440.0, 50.0, 400.0, 60.0], |e| {
                 e.text = "12 450".into();
                 e.font_size = 52.0;
                 e.bold = true;
@@ -1830,7 +1836,7 @@ fn template_at(index: usize, width: f32, height: f32) -> Doc {
                     anchor(e, [0.0, 1.0], [1.0, 1.0]);
                 });
             }
-            put(&mut d, Some(list), Kind::Toggle, "Fullscreen", [180.0, 590.0, 500.0, 50.0], |e| {
+            put(&mut d, Some(list), Kind::Toggle, "Fullscreen", [180.0, 585.0, 500.0, 70.0], |e| {
                 e.text = "Fullscreen".into();
                 e.font_size = 34.0;
                 anchor(e, [0.0, 1.0], [0.0, 1.0]);
