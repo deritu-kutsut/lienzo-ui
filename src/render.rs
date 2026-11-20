@@ -125,6 +125,9 @@ struct FontState {
     backup: Option<String>,
     /// Interface font chosen in the theme ("" = the default one).
     interface: String,
+    /// Community fonts registered only to preview them (not selectable): loaded by egui / waiting for the next frame.
+    previews: Vec<String>,
+    previews_pending: Vec<String>,
 }
 
 /// File of a font family known to the editor (system or library), for exporting to Unity.
@@ -169,7 +172,7 @@ pub fn load_system_fonts(ctx: &egui::Context) {
     }
     ctx.set_fonts(defs.clone());
     if let Ok(mut g) = FONTS.lock() {
-        *g = Some(FontState { defs, available: found, pending: Vec::new(), paths, backup: None, interface: String::new() });
+        *g = Some(FontState { defs, available: found, pending: Vec::new(), paths, backup: None, interface: String::new(), previews: Vec::new(), previews_pending: Vec::new() });
     }
 }
 
@@ -259,12 +262,35 @@ pub fn add_font(ctx: &egui::Context, name: &str, bytes: Vec<u8>, path: std::path
     }
 }
 
+/// Registers a font only to preview it (community): it is not added to the selectable fonts nor saved anywhere.
+/// Usable with `preview_family` from the next frame (egui swaps fonts at the start of a frame).
+pub fn preview_font(ctx: &egui::Context, key: &str, bytes: Vec<u8>) {
+    if let Ok(mut g) = FONTS.lock() {
+        if let Some(s) = g.as_mut() {
+            if s.previews.iter().chain(s.previews_pending.iter()).any(|f| f == key) {
+                return;
+            }
+            register(&mut s.defs, key, bytes);
+            s.previews_pending.push(key.to_string());
+            ctx.set_fonts(s.defs.clone());
+        }
+    }
+}
+
+/// The family of a preview font, once egui has loaded it (None while it is still waiting: painting it earlier would panic).
+pub fn preview_family(key: &str) -> Option<egui::FontFamily> {
+    let ready = FONTS.lock().ok().and_then(|g| g.as_ref().map(|s| s.previews.iter().any(|f| f == key)))?;
+    ready.then(|| egui::FontFamily::Name(key.into()))
+}
+
 /// Call at the start of each frame: fonts added last frame are now loaded.
 pub fn promote_pending_fonts() {
     if let Ok(mut g) = FONTS.lock() {
         if let Some(s) = g.as_mut() {
             let p: Vec<String> = s.pending.drain(..).collect();
             s.available.extend(p);
+            let v: Vec<String> = s.previews_pending.drain(..).collect();
+            s.previews.extend(v);
         }
     }
 }

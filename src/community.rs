@@ -140,6 +140,10 @@ enum Message {
     Downloaded { item: Item, bytes: Result<Vec<u8>, String> },
     Uploaded(Result<String, String>),
     Reported(Result<(), String>),
+    /// Font downloaded only to preview it (nothing is installed, no download is counted).
+    PreviewFont { id: String, bytes: Result<Vec<u8>, String> },
+    PreviewPlugin { id: String, info: Result<PluginInfo, String> },
+    Translated { id: String, result: Result<String, String> },
     Claimed(Result<(), String>),
     /// Terms state of the account (None inside = the server could not tell).
     Terms(TermsInfo),
@@ -221,6 +225,38 @@ struct ClaimForm {
     contact: String,
 }
 
+/// What a font or plugin card shows under its "Preview" button (by content id).
+enum Preview {
+    Loading,
+    /// Key of the family registered only for the preview.
+    Font(String),
+    Plugin(Box<PluginInfo>),
+    Failed(String),
+}
+
+/// What a plugin does, read from its package without installing it.
+pub struct PluginInfo {
+    name: String,
+    version: String,
+    author: String,
+    description: String,
+    /// (name, description)
+    commands: Vec<(String, String)>,
+    exporters: Vec<String>,
+    /// (path, bytes)
+    files: Vec<(String, usize)>,
+    /// (path, script), cut to a readable size.
+    code: Vec<(String, String)>,
+}
+
+/// Translation of a description (by content id).
+enum Translation {
+    Loading,
+    /// `show`: the translation is on screen (false = the original is).
+    Done { text: String, show: bool },
+    Failed(String),
+}
+
 pub struct Community {
     tx: Sender<Message>,
     rx: Receiver<Message>,
@@ -270,6 +306,9 @@ pub struct Community {
     previous: std::collections::HashMap<&'static str, egui::TextureHandle>,
     /// The list on screen comes from the local cache (age in seconds): the server could not be reached.
     offline_age: Option<u64>,
+    /// Open previews of fonts and plugins, and translated descriptions.
+    previews: std::collections::HashMap<String, Preview>,
+    translations: std::collections::HashMap<String, Translation>,
 }
 
 impl Community {
@@ -328,6 +367,8 @@ impl Community {
             open_upload: false,
             previous: Default::default(),
             offline_age: None,
+            previews: Default::default(),
+            translations: Default::default(),
         }
     }
 }
@@ -1222,6 +1263,133 @@ fn upload_content(s: &Session, kind: &str, title: &str, description: &str, label
     })
 }
 
+// ───────────────────────────── preview and translation ─────────────────────────────
+
+fn manifest_text(m: &serde_json::Value, new: &str, old: &str) -> String {
+    crate::plugins::manifest_key(m, new, old).and_then(|v| v.as_str()).map(|s| display_clean(s, false)).unwrap_or_default()
+}
+
+fn entry_text(x: &serde_json::Value, new: &str, old: &str) -> String {
+    x.get(new).or_else(|| x.get(old)).and_then(|v| v.as_str()).map(|s| display_clean(s, false)).unwrap_or_default()
+}
+
+/// Reads what a plugin does without installing it (the package already passed the same validation as an install).
+fn plugin_info(bytes: &[u8]) -> Result<PluginInfo, String> {
+    let p = val::read_package(bytes)?;
+    let m = &p.manifest;
+    let list = |new: &str, old: &str| crate::plugins::manifest_key(m, new, old).and_then(|v| v.as_array()).cloned().unwrap_or_default();
+    let commands = list("commands", "comandos").iter().map(|x| (entry_text(x, "name", "nombre"), entry_text(x, "description", "descripcion"))).filter(|(n, _)| !n.is_empty()).take(30).collect();
+    let exporters = list("exporters", "exportadores").iter().map(|x| format!("{} (.{})", entry_text(x, "name", "nombre"), entry_text(x, "extension", "extension"))).take(30).collect();
+    let files = p.files.iter().map(|(k, v)| (display_clean(k, false), v.len())).collect();
+    let code = p.files.iter().filter(|(k, _)| !k.eq_ignore_ascii_case("plugin.json")).map(|(k, v)| (display_clean(k, false), display_clean(v, true).chars().take(6000).collect())).collect();
+    Ok(PluginInfo { name: manifest_text(m, "name", "nombre"), version: manifest_text(m, "version", "version"), author: manifest_text(m, "author", "autor"), description: manifest_text(m, "description", "descripcion"), commands, exporters, files, code })
+}
+
+const TRANSLATE_URL: &str = "https://api.mymemory.translated.net/get";
+/// The free service accepts about 500 bytes per request.
+const TRANSLATE_CHUNK: usize = 450;
+
+/// Language code the translation service expects.
+fn translate_target(code: &str) -> &str {
+    match code {
+        "zh" => "zh-CN",
+        c => c,
+    }
+}
+
+/// Cuts a text into pieces of at most `max` bytes, at sentence or line ends when it can (a URL is never cut at its dots).
+fn split_for_translation(text: &str, max: usize) -> Vec<String> {
+    let mut pieces: Vec<String> = Vec::new();
+    let mut cur = String::new();
+    let mut it = text.chars().peekable();
+    while let Some(c) = it.next() {
+        cur.push(c);
+        let end = c == '\n' || (matches!(c, '.' | '!' | '?' | '。' | '！' | '？') && it.peek().is_none_or(|n| n.is_whitespace()));
+        if end {
+            pieces.push(std::mem::take(&mut cur));
+        }
+    }
+    if !cur.is_empty() {
+        pieces.push(cur);
+    }
+    fn push(out: &mut Vec<String>, p: &str, max: usize) {
+        match out.last_mut() {
+            Some(l) if l.len() + p.len() <= max => l.push_str(p),
+            _ => out.push(p.to_string()),
+        }
+    }
+    let mut out: Vec<String> = Vec::new();
+    for p in pieces {
+        let mut rest = p.as_str();
+        while rest.len() > max {
+            let mut cut = max;
+            while !rest.is_char_boundary(cut) {
+                cut -= 1;
+            }
+            let (a, b) = rest.split_at(cut);
+            push(&mut out, a, max);
+            rest = b;
+        }
+        push(&mut out, rest, max);
+    }
+    out
+}
+
+fn decode_entities(s: &str) -> String {
+    s.replace("&#39;", "'").replace("&quot;", "\"").replace("&lt;", "<").replace("&gt;", ">").replace("&amp;", "&")
+}
+
+/// Text of a MyMemory answer, or a readable error (daily limit, same language, failure).
+fn parse_translation(body: &str) -> Result<String, String> {
+    let failed = || t("Could not translate right now. Try again later.");
+    let v: serde_json::Value = serde_json::from_str(body).map_err(|_| failed())?;
+    let text = v["responseData"]["translatedText"].as_str().unwrap_or("");
+    let status = v["responseStatus"].as_i64().or_else(|| v["responseStatus"].as_str().and_then(|s| s.parse().ok())).unwrap_or(0);
+    let up = text.to_uppercase();
+    if up.contains("DISTINCT LANGUAGES") {
+        return Err(t("The text is already in your language."));
+    }
+    if up.contains("MYMEMORY WARNING") || status == 429 {
+        return Err(t("The free translation limit was reached. Try again later."));
+    }
+    if status != 200 || text.is_empty() {
+        return Err(failed());
+    }
+    Ok(decode_entities(text))
+}
+
+/// Translates a description to the interface language with the free MyMemory service (only when the user asks).
+fn translate_text(text: &str, to: &str) -> Result<String, String> {
+    let text: String = text.chars().take(2000).collect();
+    let chunks = split_for_translation(&text, TRANSLATE_CHUNK);
+    if chunks.len() > 8 {
+        return Err(t("The text is too long to translate."));
+    }
+    let agent = agent(&NetCfg::default(), Duration::from_secs(20));
+    let pair = encode(&format!("Autodetect|{}", translate_target(to)));
+    let mut out = String::new();
+    for c in &chunks {
+        let core = c.trim_end();
+        if core.is_empty() {
+            out.push_str(c);
+            continue;
+        }
+        let url = format!("{}?q={}&langpair={}", TRANSLATE_URL, encode(core), pair);
+        let mut res = agent.get(&url).call().map_err(|e| net::classify(&e).msg)?;
+        if !res.status().is_success() {
+            return Err(t("Could not translate right now. Try again later."));
+        }
+        let body = res.body_mut().with_config().limit(1 << 16).read_to_vec().map_err(|_| t("Could not translate right now. Try again later."))?;
+        out.push_str(&parse_translation(&String::from_utf8_lossy(&body))?);
+        out.push_str(&c[core.len()..]);
+    }
+    let out: String = display_clean(&out, true).chars().take(2500).collect();
+    if out.trim() == text.trim() {
+        return Err(t("The text is already in your language."));
+    }
+    Ok(out)
+}
+
 // ───────────────────────────── installation (UI thread) ─────────────────────────────
 
 fn write_temp(name: &str, bytes: &[u8]) -> Result<PathBuf, String> {
@@ -1346,6 +1514,59 @@ impl EditorApp {
         });
     }
 
+    /// A background task that does not block the other buttons (previews, translations). `fail` is what the UI is told on a panic.
+    fn community_spawn(&self, ctx: &egui::Context, work: impl FnOnce() -> Message + Send + 'static, fail: impl FnOnce() -> Message + Send + 'static) {
+        let tx = self.community.tx.clone();
+        let ctx = ctx.clone();
+        std::thread::spawn(move || {
+            let m = std::panic::catch_unwind(std::panic::AssertUnwindSafe(work)).unwrap_or_else(|_| fail());
+            let _ = tx.send(m);
+            ctx.request_repaint();
+        });
+    }
+
+    /// Opens or closes the preview of a font or plugin card. Nothing is installed and no download is counted.
+    fn community_toggle_preview(&mut self, ctx: &egui::Context, it: &Item) {
+        if self.community.previews.remove(&it.id).is_some() {
+            return;
+        }
+        let key = format!("preview-{}", it.id);
+        if it.kind == "font" && crate::render::preview_family(&key).is_some() {
+            self.community.previews.insert(it.id.clone(), Preview::Font(key)); // already downloaded in this session
+            return;
+        }
+        self.community.previews.insert(it.id.clone(), Preview::Loading);
+        let (item, id, id2) = (it.clone(), it.id.clone(), it.id.clone());
+        let font = it.kind == "font";
+        self.community_spawn(
+            ctx,
+            move || {
+                let bytes = download(&item, None); // without a session: it is not recorded as a download
+                if font {
+                    Message::PreviewFont { id, bytes }
+                } else {
+                    Message::PreviewPlugin { id, info: bytes.and_then(|b| plugin_info(&b)) }
+                }
+            },
+            move || if font { Message::PreviewFont { id: id2, bytes: Err(t("Could not load the preview.")) } } else { Message::PreviewPlugin { id: id2, info: Err(t("Could not load the preview.")) } },
+        );
+    }
+
+    /// Translates the description of a card (or switches between the translation and the original).
+    fn community_toggle_translation(&mut self, ctx: &egui::Context, it: &Item) {
+        match self.community.translations.get_mut(&it.id) {
+            Some(Translation::Done { show, .. }) => {
+                *show = !*show;
+                return;
+            }
+            Some(Translation::Loading) => return,
+            _ => {}
+        }
+        self.community.translations.insert(it.id.clone(), Translation::Loading);
+        let (id, id2, text, to) = (it.id.clone(), it.id.clone(), it.description.clone(), crate::i18n::code().to_string());
+        self.community_spawn(ctx, move || Message::Translated { result: translate_text(&text, &to), id }, move || Message::Translated { id: id2, result: Err(t("Could not translate right now. Try again later.")) });
+    }
+
     fn community_load_list(&mut self, ctx: &egui::Context) {
         let (s, f, b) = (self.community.session.clone(), self.community.filter, self.community.search.clone());
         let with_18 = self.community.profile.as_ref().map(|p| p.show_18).unwrap_or(false) && s.is_some();
@@ -1434,6 +1655,37 @@ impl EditorApp {
                         }
                         Err(e) => self.community.state = e,
                     }
+                }
+                Message::PreviewFont { id, bytes } => {
+                    if !self.community.previews.contains_key(&id) {
+                        continue; // it was closed while loading
+                    }
+                    let r = match bytes {
+                        Ok(b) => {
+                            let key = format!("preview-{}", id);
+                            crate::render::preview_font(ctx, &key, b);
+                            Preview::Font(key)
+                        }
+                        Err(e) => Preview::Failed(e),
+                    };
+                    self.community.previews.insert(id, r);
+                }
+                Message::PreviewPlugin { id, info } => {
+                    if !self.community.previews.contains_key(&id) {
+                        continue;
+                    }
+                    let r = match info {
+                        Ok(i) => Preview::Plugin(Box::new(i)),
+                        Err(e) => Preview::Failed(e),
+                    };
+                    self.community.previews.insert(id, r);
+                }
+                Message::Translated { id, result } => {
+                    let r = match result {
+                        Ok(text) => Translation::Done { text, show: true },
+                        Err(e) => Translation::Failed(e),
+                    };
+                    self.community.translations.insert(id, r);
                 }
                 Message::Downloaded { item, bytes } => {
                     self.community.busy = self.community.busy.saturating_sub(1);
@@ -2120,6 +2372,35 @@ mod tests {
     }
 
     #[test]
+    fn plugin_preview_reads_the_package_without_installing() {
+        let c = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("plugins/snap-to-grid");
+        let info = plugin_info(&pack_plugin(&c).unwrap()).unwrap();
+        assert!(!info.name.is_empty() && !info.commands.is_empty() && !info.code.is_empty());
+        assert!(plugin_info(b"{}").is_err());
+    }
+
+    #[test]
+    fn translation_answers_are_read_and_errors_are_readable() {
+        let ok = r#"{"responseData":{"translatedText":"Hola &#39;mundo&#39;"},"responseStatus":200}"#;
+        assert_eq!(parse_translation(ok).unwrap(), "Hola 'mundo'");
+        let quota = r#"{"responseData":{"translatedText":"MYMEMORY WARNING: YOU USED ALL AVAILABLE FREE TRANSLATIONS FOR TODAY."},"responseStatus":"429"}"#;
+        assert!(parse_translation(quota).is_err());
+        let same = r#"{"responseData":{"translatedText":"PLEASE SELECT TWO DISTINCT LANGUAGES"},"responseStatus":"403"}"#;
+        assert!(parse_translation(same).is_err());
+        assert!(parse_translation("no es json").is_err());
+        assert_eq!((translate_target("zh"), translate_target("es")), ("zh-CN", "es"));
+    }
+
+    #[test]
+    fn long_texts_are_cut_in_pieces_that_rebuild_the_original() {
+        let text = format!("{} See https://github.com/google/fonts. {}\nLast line.", "Word ".repeat(120), "ñandú ".repeat(120));
+        let parts = split_for_translation(&text, TRANSLATE_CHUNK);
+        assert!(parts.len() > 1 && parts.iter().all(|p| p.len() <= TRANSLATE_CHUNK));
+        assert_eq!(parts.concat(), text);
+        assert!(parts.iter().all(|p| !p.ends_with("github.") && !p.ends_with("github")), "a URL was cut: {:?}", parts);
+    }
+
+    #[test]
     fn cli_accepts_english_and_old_spanish_names() {
         assert_eq!((cli_kind("image"), cli_kind("imagen"), cli_kind("font"), cli_kind("fuente")), ("image", "image", "font", "font"));
         assert_eq!((cli_kind("template"), cli_kind("plantilla"), cli_kind("element"), cli_kind("theme"), cli_kind("plugin")), ("template", "template", "element", "theme", "plugin"));
@@ -2439,6 +2720,43 @@ pub fn review_cli(args: &[String]) -> i32 {
 // ───────────────────────────── cards, images and creator profiles ─────────────────────────────
 
 /// X-style labeled field: a box with the small label on top and the text below.
+/// What a plugin does and its code, read-only (nothing is installed).
+fn community_plugin_preview(ui: &mut egui::Ui, id: &str, info: &PluginInfo) {
+    ui.label(RichText::new(format!("{} {}", info.name, info.version).trim()).strong());
+    if !info.author.is_empty() {
+        ui.label(RichText::new(format!("{} {}", t("by"), info.author)).small().color(MUTED()));
+    }
+    if !info.description.is_empty() {
+        ui.label(RichText::new(&info.description).small());
+    }
+    if !info.commands.is_empty() {
+        ui.label(RichText::new(t("Commands")).small().strong());
+        for (n, d) in &info.commands {
+            ui.label(RichText::new(if d.is_empty() { format!("• {}", n) } else { format!("• {} — {}", n, d) }).small());
+        }
+    }
+    if !info.exporters.is_empty() {
+        ui.label(RichText::new(t("Exporters")).small().strong());
+        for e in &info.exporters {
+            ui.label(RichText::new(format!("• {}", e)).small());
+        }
+    }
+    egui::CollapsingHeader::new(RichText::new(format!("{} ({})", t("Files"), info.files.len())).small()).id_salt(("plugin-files", id)).show(ui, |ui| {
+        for (path, n) in &info.files {
+            ui.label(RichText::new(format!("{} · {} B", path, n)).small().color(MUTED()));
+        }
+    });
+    for (path, code) in &info.code {
+        egui::CollapsingHeader::new(RichText::new(format!("{}: {}", t("Code (read-only)"), path)).small()).id_salt(("plugin-code", id, path)).show(ui, |ui| {
+            egui::ScrollArea::vertical().max_height(160.0).id_salt(("plugin-scroll", id, path)).show(ui, |ui| {
+                let mut text: &str = code;
+                ui.add(egui::TextEdit::multiline(&mut text).code_editor().desired_width(f32::INFINITY));
+            });
+        });
+    }
+    ui.label(RichText::new(t("Preview only: the plugin is not installed.")).small().color(MUTED()));
+}
+
 fn field_x(ui: &mut egui::Ui, label: &str, text: &mut String, rows: usize, track: &str) {
     egui::Frame::new().stroke(egui::Stroke::new(1.0, crate::theme::LINE())).corner_radius(5.0).inner_margin(egui::Margin::symmetric(10, 6)).show(ui, |ui| {
         ui.set_width(ui.available_width());
@@ -2816,7 +3134,26 @@ impl EditorApp {
                 });
             });
             if !it.description.is_empty() {
-                ui.label(RichText::new(&it.description).small());
+                let shown = match self.community.translations.get(&it.id) {
+                    Some(Translation::Done { text, show: true }) => text.clone(),
+                    _ => it.description.clone(),
+                };
+                ui.label(RichText::new(shown).small());
+                match self.community.translations.get(&it.id) {
+                    Some(Translation::Done { show: true, .. }) => {
+                        ui.label(RichText::new(t("Automatic translation (MyMemory). It may contain mistakes.")).small().italics().color(MUTED()));
+                    }
+                    Some(Translation::Failed(e)) => {
+                        ui.label(RichText::new(e).small().color(WARN()));
+                    }
+                    Some(Translation::Loading) => {
+                        ui.horizontal(|ui| {
+                            ui.spinner();
+                            ui.label(RichText::new(t("Translating…")).small().color(MUTED()));
+                        });
+                    }
+                    _ => {}
+                }
             }
             let license = it.license.as_deref().and_then(net::license_label);
             let source = it.source_url.as_deref().filter(|u| net::valid_source_url(u));
@@ -2853,7 +3190,7 @@ impl EditorApp {
                     }
                 });
             }
-            ui.horizontal(|ui| {
+            ui.horizontal_wrapped(|ui| {
                 if ui.add_enabled(self.community.busy == 0, egui::Button::new(RichText::new(t("Install")).color(ACCENT()))).clicked() {
                     self.community.state = t("Downloading and verifying…");
                     let item = it.clone();
@@ -2871,10 +3208,52 @@ impl EditorApp {
                 if r.on_hover_text(if signed_in { t("Give or remove a heart") } else { t("Sign in to give hearts and follow creators.") }).clicked() {
                     self.community_heart(ctx, it.id.clone());
                 }
+                if matches!(it.kind.as_str(), "font" | "plugin") {
+                    let open = self.community.previews.contains_key(&it.id);
+                    let hint = if it.kind == "font" { t("See how this font looks. Nothing is installed.") } else { t("See what this plugin does and read its code. Nothing is installed.") };
+                    if ui.small_button(if open { t("Hide preview") } else { t("Preview") }).on_hover_text(hint).clicked() {
+                        self.community_toggle_preview(ctx, it);
+                    }
+                }
+                if !it.description.is_empty() {
+                    let (label, enabled) = match self.community.translations.get(&it.id) {
+                        Some(Translation::Loading) => (t("Translating…"), false),
+                        Some(Translation::Done { show: true, .. }) => (t("Show original"), true),
+                        _ => (t("Translate"), true),
+                    };
+                    if ui.add_enabled(enabled, egui::Button::new(label).small()).on_hover_text(t("Translates the description to your language with the free MyMemory service. Only this text is sent, and only when you press the button.")).clicked() {
+                        self.community_toggle_translation(ctx, it);
+                    }
+                }
                 if signed_in && ui.small_button(t("Report")).clicked() {
                     self.community.report = Some(it.id.clone());
                 }
             });
+            match self.community.previews.get(&it.id) {
+                Some(Preview::Loading) => {
+                    ui.horizontal(|ui| {
+                        ui.spinner();
+                        ui.label(RichText::new(t("Downloading and verifying…")).small().color(MUTED()));
+                    });
+                }
+                Some(Preview::Failed(e)) => {
+                    ui.label(RichText::new(e).small().color(WARN()));
+                }
+                Some(Preview::Font(key)) => match crate::render::preview_family(key) {
+                    Some(fam) => {
+                        ui.label(RichText::new("Aa Bb Cc Dd Ee 0123456789").font(egui::FontId::new(28.0, fam.clone())));
+                        ui.label(RichText::new("The quick brown fox jumps over the lazy dog").font(egui::FontId::new(16.0, fam.clone())));
+                        ui.label(RichText::new(&it.title).font(egui::FontId::new(20.0, fam)));
+                        ui.label(RichText::new(t("Preview only: the font is not installed.")).small().color(MUTED()));
+                    }
+                    None => {
+                        ui.spinner();
+                        ctx.request_repaint(); // egui loads the font at the start of the next frame
+                    }
+                },
+                Some(Preview::Plugin(info)) => community_plugin_preview(ui, &it.id, info),
+                None => {}
+            }
             if self.community.report.as_deref() == Some(it.id.as_str()) {
                 ui.label(RichText::new(t("What is wrong with it?")).small());
                 ui.horizontal_wrapped(|ui| {

@@ -566,6 +566,16 @@ fn main() -> eframe::Result<()> {
                 let track = if args.iter().any(|a| a == "--pro") { tutorial::Track::Pro } else { tutorial::Track::Beginner };
                 app.open_tutorial(track);
             }
+            // --page 1080x1920 : page size used by --template (screenshots, checking templates in portrait)
+            if let Some(spec) = arg_after(&args, "--page") {
+                let wh: Vec<f32> = spec.split('x').filter_map(|v| v.trim().parse().ok()).collect();
+                if let [w, h] = wh[..] {
+                    if (64.0..=8192.0).contains(&w) && (64.0..=8192.0).contains(&h) {
+                        app.doc.width = w;
+                        app.doc.height = h;
+                    }
+                }
+            }
             if let Some(path) = arg_after(&args, "--open") {
                 app.project_path = path.clone();
                 app.open_project();

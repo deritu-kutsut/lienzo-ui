@@ -1084,3 +1084,10 @@ Many issues: “Fix all” applies up to {} fixes per click, press it again for 
 Fixed {} issue(s); {} more are left, press Fix all again (Ctrl+Z undoes)	{} 件の問題を修正しました。残り {} 件、もう一度「すべて修正」を押してください（Ctrl+Z で元に戻せます）
 Error {}	エラー {}
 Something went wrong in a background task. Try again.	バックグラウンドの処理で問題が発生しました。もう一度お試しください。
+Hide preview	プレビューを隠す
+Translate	翻訳
+Show original	原文を表示
+Translating…	翻訳中…
+Commands	コマンド
+Exporters	エクスポーター
+Files	ファイル

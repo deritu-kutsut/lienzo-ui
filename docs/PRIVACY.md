@@ -37,6 +37,7 @@ To run the Community (sign-in, profiles, catalog, downloads), to moderate conten
 
 - **Hosting provider.** A managed platform provides the database, file storage, sign-in and server functions. It processes the data above on our behalf.
 - **Sign-in providers.** GitHub or Google authenticate you. They have their own privacy policies; they tell us only that you signed in and give us an account id.
+- **Optional translation of descriptions.** The "Translate" button on a Community card sends **only that description text** to the free MyMemory translation service (api.mymemory.translated.net), and only when you press it. Nothing is sent otherwise; no account data is included. Their own privacy policy applies.
 - **Automatic moderation and malware scanning.** To keep the catalog safe, uploaded files (for malware scanning) and text (titles, descriptions, tags, text inside designs, public names and bios, and images for adult-content checks) are sent to **third-party scanning and moderation services**. They receive the content, **not your email or account identifier**. They may keep a copy of scanned files or their fingerprints under their own terms.
 - **Authorities.** We may disclose data if the law requires it, or to protect people from serious harm.
 

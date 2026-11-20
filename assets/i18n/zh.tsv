@@ -1084,3 +1084,10 @@ Many issues: “Fix all” applies up to {} fixes per click, press it again for 
 Fixed {} issue(s); {} more are left, press Fix all again (Ctrl+Z undoes)	已修复 {} 个问题；还剩 {} 个，请再次点击“修复全部”（Ctrl+Z 可撤销）
 Error {}	错误 {}
 Something went wrong in a background task. Try again.	后台任务出了点问题，请重试。
+Hide preview	隐藏预览
+Translate	翻译
+Show original	显示原文
+Translating…	正在翻译…
+Commands	命令
+Exporters	导出器
+Files	文件

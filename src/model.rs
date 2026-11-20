@@ -1577,11 +1577,13 @@ fn anchor(e: &mut Element, min: [f32; 2], max: [f32; 2]) {
     e.anchor_max = max;
 }
 
-/// Templates are designed for 1920×1080: on smaller pages they are built at a
+/// Templates are designed for 1920×1080 (or 1080×1920 on a portrait page): on smaller pages they are built at a
 /// scale that fits (same page proportion) and then shrunk uniformly.
 pub fn template(index: usize, width: f32, height: f32) -> Doc {
     let (width, height) = (width.max(1.0), height.max(1.0));
-    let k = (1920.0 / width).max(1080.0 / height).max(1.0);
+    // A portrait page is built at 1080 wide (the phone reference), not at 1920 wide and shrunk: that left everything tiny.
+    let (ref_w, ref_h) = if height > width { (1080.0, 1920.0) } else { (1920.0, 1080.0) };
+    let k = (ref_w / width).max(ref_h / height).max(1.0);
     let mut d = template_at(index, width * k, height * k);
     if k > 1.0 {
         let f = 1.0 / k;
@@ -1609,6 +1611,9 @@ pub fn template(index: usize, width: f32, height: f32) -> Doc {
 fn template_at(index: usize, width: f32, height: f32) -> Doc {
     let mut d = Doc::empty(width, height);
     let (w, h) = (width, height);
+    // Portrait pages are 1080 wide: wide blocks (titles, bars, grids) use the page width instead of their landscape size.
+    let portrait = h > w;
+    let cw = (w - 120.0).min(1200.0);
     match index {
         0 => {
             d.title = "Main menu".into();
@@ -1620,7 +1625,8 @@ fn template_at(index: usize, width: f32, height: f32) -> Doc {
                 e.raycast = false;
                 anchor(e, [0.0, 0.0], [1.0, 1.0]);
             });
-            put(&mut d, None, Kind::Ellipse, "Moon", [w * 0.72, h * 0.12, 260.0, 260.0], |e| {
+            let moon = if portrait { [w - 230.0, 30.0, 180.0, 180.0] } else { [w * 0.72, h * 0.12, 260.0, 260.0] };
+            put(&mut d, None, Kind::Ellipse, "Moon", moon, |e| {
                 e.fill = [255, 214, 120, 200];
                 e.raycast = false;
                 anchor(e, [1.0, 1.0], [1.0, 1.0]);
@@ -1823,30 +1829,34 @@ fn template_at(index: usize, width: f32, height: f32) -> Doc {
                 anchor(e, [0.0, 0.0], [1.0, 1.0]);
             });
             let rows = ["Music volume", "Effects volume", "Brightness"];
+            // Portrait: each slider goes under its label (side by side it would not fit in 1080 px).
+            let step = if portrait { 150.0 } else { 110.0 };
             for (i, r) in rows.iter().enumerate() {
-                let y = 250.0 + i as f32 * 110.0;
+                let y = 250.0 + i as f32 * step;
                 put(&mut d, Some(list), Kind::Text, r, [180.0, y, 500.0, 50.0], |e| {
                     e.text = r.to_string();
                     e.font_size = 34.0;
                     e.align = 0;
                     anchor(e, [0.0, 1.0], [0.0, 1.0]);
                 });
-                put(&mut d, Some(list), Kind::Slider, &format!("Slider {}", r), [720.0, y + 5.0, 600.0, 40.0], |e| {
+                let slider = if portrait { [180.0, y + 62.0, w - 360.0, 40.0] } else { [720.0, y + 5.0, 600.0, 40.0] };
+                put(&mut d, Some(list), Kind::Slider, &format!("Slider {}", r), slider, |e| {
                     e.value = 0.3 + 0.2 * i as f32;
                     anchor(e, [0.0, 1.0], [1.0, 1.0]);
                 });
             }
-            put(&mut d, Some(list), Kind::Toggle, "Fullscreen", [180.0, 585.0, 500.0, 70.0], |e| {
+            let (ty, qrect, ny) = if portrait { (700.0, [180.0, 800.0, 420.0, 70.0], 920.0) } else { (585.0, [720.0, 580.0, 420.0, 70.0], 690.0) };
+            put(&mut d, Some(list), Kind::Toggle, "Fullscreen", [180.0, ty, 500.0, 70.0], |e| {
                 e.text = "Fullscreen".into();
                 e.font_size = 34.0;
                 anchor(e, [0.0, 1.0], [0.0, 1.0]);
             });
-            put(&mut d, Some(list), Kind::Dropdown, "Quality", [720.0, 580.0, 420.0, 70.0], |e| {
+            put(&mut d, Some(list), Kind::Dropdown, "Quality", qrect, |e| {
                 e.options = vec!["Low".into(), "Medium".into(), "High".into(), "Ultra".into()];
                 e.value = 2.0;
                 anchor(e, [0.0, 1.0], [0.0, 1.0]);
             });
-            put(&mut d, Some(list), Kind::InputField, "Player name", [180.0, 690.0, 600.0, 76.0], |e| {
+            put(&mut d, Some(list), Kind::InputField, "Player name", [180.0, ny, if portrait { w - 360.0 } else { 600.0 }, 76.0], |e| {
                 e.text = "Player name".into();
                 anchor(e, [0.0, 1.0], [0.0, 1.0]);
             });
@@ -1959,7 +1969,7 @@ fn template_at(index: usize, width: f32, height: f32) -> Doc {
                 e.raycast = false;
                 anchor(e, [0.0, 0.0], [1.0, 1.0]);
             });
-            put(&mut d, None, Kind::Text, "Title", [w / 2.0 - 600.0, h * 0.14, 1200.0, 150.0], |e| {
+            put(&mut d, None, Kind::Text, "Title", [w / 2.0 - cw / 2.0, h * 0.14, cw, 150.0], |e| {
                 e.text = "GAME OVER".into();
                 e.font_size = 120.0;
                 e.bold = true;
@@ -2029,7 +2039,8 @@ fn template_at(index: usize, width: f32, height: f32) -> Doc {
                 anchor(e, [1.0, 1.0], [1.0, 1.0]);
                 e.pivot = [1.0, 1.0];
             });
-            let grid = put(&mut d, None, Kind::Empty, "Levels", [w / 2.0 - 640.0, 200.0, 1280.0, h - 380.0], |e| {
+            let gw = (w - 80.0).min(1280.0);
+            let grid = put(&mut d, None, Kind::Empty, "Levels", [w / 2.0 - gw / 2.0, 200.0, gw, h - 380.0], |e| {
                 anchor(e, [0.5, 0.0], [0.5, 1.0]);
                 e.layout.mode = LayoutMode::Grid;
                 e.layout.cell = [200.0, 200.0];
@@ -2069,38 +2080,43 @@ fn template_at(index: usize, width: f32, height: f32) -> Doc {
                 e.raycast = false;
                 anchor(e, [0.0, 0.0], [1.0, 1.0]);
             });
-            put(&mut d, None, Kind::Text, "Level name", [w / 2.0 - 600.0, h * 0.3, 1200.0, 110.0], |e| {
+            put(&mut d, None, Kind::Text, "Level name", [w / 2.0 - cw / 2.0, h * 0.3, cw, 110.0], |e| {
                 e.text = "The Crystal Caves".into();
                 e.font_size = 84.0;
                 e.bold = true;
                 e.text_color = [255, 255, 255, 255];
             });
-            put(&mut d, None, Kind::Text, "Tip", [w / 2.0 - 650.0, h * 0.3 + 130.0, 1300.0, 60.0], |e| {
+            put(&mut d, None, Kind::Text, "Tip", [w / 2.0 - (cw + 100.0).min(w - 40.0) / 2.0, h * 0.3 + 130.0, (cw + 100.0).min(w - 40.0), 60.0], |e| {
                 e.text = "Tip: hold the jump button to reach higher.".into();
                 e.font_size = 32.0;
                 e.italic = true;
                 e.text_color = [190, 200, 230, 255];
             });
-            put(&mut d, None, Kind::Slider, "Loading bar", [w / 2.0 - 600.0, h - 220.0, 1200.0, 30.0], |e| {
+            put(&mut d, None, Kind::Slider, "Loading bar", [w / 2.0 - cw / 2.0, h - 220.0, cw, 30.0], |e| {
                 e.fill = [0, 196, 204, 255];
                 e.fill2 = [40, 44, 64, 255];
                 e.value = 0.64;
                 e.interactable = false;
                 anchor(e, [0.5, 0.0], [0.5, 0.0]);
             });
-            put(&mut d, None, Kind::Text, "Percentage", [w / 2.0 - 600.0, h - 170.0, 1200.0, 50.0], |e| {
+            put(&mut d, None, Kind::Text, "Percentage", [w / 2.0 - cw / 2.0, h - 170.0, cw, 50.0], |e| {
                 e.text = "Loading... 64 %".into();
                 e.font_size = 30.0;
                 e.align = 2;
                 e.text_color = [200, 210, 240, 255];
                 anchor(e, [0.5, 0.0], [0.5, 0.0]);
             });
-            put(&mut d, None, Kind::Ellipse, "Indicator", [w - 150.0, h - 150.0, 80.0, 80.0], |e| {
+            let spinner = if portrait { [w / 2.0 - 40.0, h - 340.0, 80.0, 80.0] } else { [w - 150.0, h - 150.0, 80.0, 80.0] };
+            put(&mut d, None, Kind::Ellipse, "Indicator", spinner, |e| {
                 e.fill = [0, 0, 0, 0];
                 e.stroke = [0, 196, 204, 255];
                 e.stroke_w = 8.0;
                 e.raycast = false;
-                anchor(e, [1.0, 0.0], [1.0, 0.0]);
+                if portrait {
+                    anchor(e, [0.5, 0.0], [0.5, 0.0]);
+                } else {
+                    anchor(e, [1.0, 0.0], [1.0, 0.0]);
+                }
             });
         }
         10 => {
@@ -2199,7 +2215,7 @@ fn template_at(index: usize, width: f32, height: f32) -> Doc {
         12 => {
             d.title = "Character select".into();
             d.background = [16, 18, 30, 255];
-            put(&mut d, None, Kind::Text, "Title", [w / 2.0 - 600.0, 50.0, 1200.0, 100.0], |e| {
+            put(&mut d, None, Kind::Text, "Title", [w / 2.0 - cw / 2.0, 50.0, cw, 100.0], |e| {
                 e.text = "Choose your character".into();
                 e.font_size = 72.0;
                 e.bold = true;
@@ -2207,11 +2223,20 @@ fn template_at(index: usize, width: f32, height: f32) -> Doc {
                 anchor(e, [0.5, 1.0], [0.5, 1.0]);
                 e.pivot = [0.5, 1.0];
             });
-            let row = put(&mut d, None, Kind::Empty, "Personajes", [w / 2.0 - 820.0, 190.0, 1640.0, 620.0], |e| {
+            // Portrait: the four cards go in a 2 x 2 grid (four in a row do not fit in 1080 px).
+            let row_rect = if portrait { [w / 2.0 - 410.0, 200.0, 820.0, 1280.0] } else { [w / 2.0 - 820.0, 190.0, 1640.0, 620.0] };
+            let row = put(&mut d, None, Kind::Empty, "Personajes", row_rect, |e| {
                 anchor(e, [0.5, 0.5], [0.5, 0.5]);
-                e.layout.mode = LayoutMode::Horizontal;
-                e.layout.spacing = [40.0, 0.0];
-                e.layout.align = 4;
+                if portrait {
+                    e.layout.mode = LayoutMode::Grid;
+                    e.layout.cell = [370.0, 600.0];
+                    e.layout.spacing = [40.0, 40.0];
+                    e.layout.align = 1;
+                } else {
+                    e.layout.mode = LayoutMode::Horizontal;
+                    e.layout.spacing = [40.0, 0.0];
+                    e.layout.align = 4;
+                }
             });
             let chars = [("Warrior", [235, 70, 90, 255], "High strength"), ("Mage", [124, 92, 255, 255], "High magic"), ("Archer", [70, 190, 120, 255], "High precision"), ("Rogue", [225, 95, 30, 255], "High stealth")];
             for (i, (n, c, stat)) in chars.iter().enumerate() {
@@ -2245,7 +2270,7 @@ fn template_at(index: usize, width: f32, height: f32) -> Doc {
                 });
             }
             put(&mut d, None, Kind::Button, "Confirm button", [w / 2.0 - 220.0, h - 190.0, 440.0, 100.0], |e| {
-                e.text = "Confirmar".into();
+                e.text = "Confirm".into();
                 e.fill = [225, 95, 30, 255];
                 e.radius = 50.0;
                 e.shadow.on = true;
@@ -2272,7 +2297,8 @@ fn template_at(index: usize, width: f32, height: f32) -> Doc {
                 e.pivot = [0.5, 0.0];
             });
             for (i, (id, x, y, s)) in [("tree", 0.58, 0.33, 384.0), ("tree", 0.80, 0.30, 384.0), ("bush", 0.70, 0.67, 192.0), ("rock", 0.90, 0.69, 192.0), ("flower", 0.52, 0.72, 192.0), ("mushroom", 0.10, 0.70, 192.0)].iter().enumerate() {
-                px(&mut d, None, &format!("Scenery {}", i + 1), &format!("px_{}", id), [w * x, h * y, *s, *s], |e| e.raycast = false);
+                let sx = if portrait { (w * x).min(w - s - 10.0) } else { w * x };
+                px(&mut d, None, &format!("Scenery {}", i + 1), &format!("px_{}", id), [sx, h * y, *s, *s], |e| e.raycast = false);
             }
             // top-left: hearts, health and mana in a stone frame
             let hud = px(&mut d, None, "Status panel", "px_panel_stone", [40.0, 40.0, 560.0, 270.0], |e| {
@@ -2305,16 +2331,17 @@ fn template_at(index: usize, width: f32, height: f32) -> Doc {
                 e.text_color = [255, 240, 170, 255];
             });
             // top-centre: dialogue
-            let dlg = px(&mut d, None, "Dialog box", "px_dialog", [w / 2.0 - 400.0, 40.0, 800.0, 170.0], |e| {
+            let (dx, dy, dw) = if portrait { (40.0, 340.0, w - 80.0) } else { (w / 2.0 - 400.0, 40.0, 800.0) };
+            let dlg = px(&mut d, None, "Dialog box", "px_dialog", [dx, dy, dw, 170.0], |e| {
                 anchor(e, [0.5, 1.0], [0.5, 1.0]);
                 e.pivot = [0.5, 1.0];
             });
-            put(&mut d, Some(dlg), Kind::Panel, "Dialog plate", [w / 2.0 - 372.0, 60.0, 744.0, 112.0], |e| {
+            put(&mut d, Some(dlg), Kind::Panel, "Dialog plate", [dx + 28.0, dy + 20.0, dw - 56.0, 112.0], |e| {
                 e.fill = [51, 60, 87, 255];
                 e.radius = 0.0;
                 e.raycast = false;
             });
-            put(&mut d, Some(dlg), Kind::Text, "Dialog text", [w / 2.0 - 360.0, 66.0, 720.0, 100.0], |e| {
+            put(&mut d, Some(dlg), Kind::Text, "Dialog text", [dx + 40.0, dy + 26.0, dw - 80.0, 100.0], |e| {
                 e.text = "Hero: The forest is quiet... too quiet.".into();
                 e.font_size = 34.0;
                 e.text_color = [255, 255, 255, 255];
@@ -2342,7 +2369,8 @@ fn template_at(index: usize, width: f32, height: f32) -> Doc {
                 e.raycast = false;
                 anchor(e, [0.0, 0.0], [1.0, 1.0]);
             });
-            for (i, (x, y)) in [(0.08, 0.10), (0.22, 0.28), (0.35, 0.08), (0.62, 0.12), (0.80, 0.26), (0.92, 0.08)].iter().enumerate() {
+            let stars: &[(f32, f32)] = if portrait { &[(0.08, 0.03), (0.22, 0.24), (0.80, 0.03), (0.62, 0.26), (0.92, 0.20), (0.40, 0.30)] } else { &[(0.08, 0.10), (0.22, 0.28), (0.35, 0.08), (0.62, 0.12), (0.80, 0.26), (0.92, 0.08)] };
+            for (i, (x, y)) in stars.iter().enumerate() {
                 px(&mut d, None, &format!("Star {}", i + 1), "px_star", [w * x, h * y, 64.0, 64.0], |e| e.raycast = false);
             }
             put(&mut d, None, Kind::Panel, "Ground", [0.0, h - 220.0, w, 220.0], |e| {
@@ -2352,10 +2380,16 @@ fn template_at(index: usize, width: f32, height: f32) -> Doc {
                 anchor(e, [0.0, 0.0], [1.0, 0.0]);
                 e.pivot = [0.5, 0.0];
             });
-            for (i, (id, x, y, s)) in [("tree", 0.03, 0.50, 384.0), ("tree", 0.80, 0.52, 384.0), ("bush", 0.20, 0.78, 192.0), ("bush", 0.72, 0.80, 192.0), ("torch", 0.30, 0.58, 192.0), ("torch", 0.64, 0.58, 192.0)].iter().enumerate() {
-                px(&mut d, None, &format!("Scenery {}", i + 1), &format!("px_{}", id), [w * x, h * y, *s, *s], |e| e.raycast = false);
+            let scenery: &[(&str, f32, f32, f32)] = if portrait {
+                &[("tree", 0.0, 0.64, 384.0), ("tree", 0.70, 0.64, 384.0), ("bush", 0.36, 0.83, 192.0), ("bush", 0.58, 0.85, 192.0), ("torch", 0.08, 0.56, 192.0), ("torch", 0.74, 0.56, 192.0)]
+            } else {
+                &[("tree", 0.03, 0.50, 384.0), ("tree", 0.80, 0.52, 384.0), ("bush", 0.20, 0.78, 192.0), ("bush", 0.72, 0.80, 192.0), ("torch", 0.30, 0.58, 192.0), ("torch", 0.64, 0.58, 192.0)]
+            };
+            for (i, (id, x, y, s)) in scenery.iter().enumerate() {
+                let sx = if portrait { (w * x).min(w - s - 10.0) } else { w * x };
+                px(&mut d, None, &format!("Scenery {}", i + 1), &format!("px_{}", id), [sx, h * y, *s, *s], |e| e.raycast = false);
             }
-            put(&mut d, None, Kind::Text, "Title", [w / 2.0 - 600.0, h * 0.08, 1200.0, 140.0], |e| {
+            put(&mut d, None, Kind::Text, "Title", [w / 2.0 - cw / 2.0, h * 0.08, cw, 140.0], |e| {
                 e.text = "PIXEL QUEST".into();
                 e.font_size = 120.0;
                 e.bold = true;

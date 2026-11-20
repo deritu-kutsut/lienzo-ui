@@ -1084,3 +1084,10 @@ Many issues: “Fix all” applies up to {} fixes per click, press it again for 
 Fixed {} issue(s); {} more are left, press Fix all again (Ctrl+Z undoes)	{}개 문제를 수정했습니다. {}개가 남았으니 ‘모두 수정’을 다시 눌러 주세요(Ctrl+Z로 취소)
 Error {}	오류 {}
 Something went wrong in a background task. Try again.	백그라운드 작업에서 문제가 발생했습니다. 다시 시도하세요.
+Hide preview	미리보기 숨기기
+Translate	번역
+Show original	원문 보기
+Translating…	번역 중…
+Commands	명령
+Exporters	내보내기
+Files	파일

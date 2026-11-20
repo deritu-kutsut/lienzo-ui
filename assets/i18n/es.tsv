@@ -1094,3 +1094,22 @@ Many issues: “Fix all” applies up to {} fixes per click, press it again for 
 Fixed {} issue(s); {} more are left, press Fix all again (Ctrl+Z undoes)	Se corrigieron {} problema(s); quedan {} más, vuelve a pulsar Corregir todos (Ctrl+Z deshace)
 Error {}	Error {}
 Something went wrong in a background task. Try again.	Algo salió mal en una tarea en segundo plano. Inténtalo de nuevo.
+Hide preview	Ocultar vista previa
+Translate	Traducir
+Show original	Ver original
+Translating…	Traduciendo…
+Commands	Comandos
+Exporters	Exportadores
+Files	Archivos
+Automatic translation (MyMemory). It may contain mistakes.	Traducción automática (MyMemory). Puede contener errores.
+The text is already in your language.	El texto ya está en tu idioma.
+The free translation limit was reached. Try again later.	Se alcanzó el límite gratuito de traducciones. Inténtalo más tarde.
+Could not translate right now. Try again later.	No se pudo traducir ahora. Inténtalo más tarde.
+The text is too long to translate.	El texto es demasiado largo para traducirlo.
+Could not load the preview.	No se pudo cargar la vista previa.
+See how this font looks. Nothing is installed.	Mira cómo se ve esta fuente. No se instala nada.
+See what this plugin does and read its code. Nothing is installed.	Mira qué hace este plugin y lee su código. No se instala nada.
+Translates the description to your language with the free MyMemory service. Only this text is sent, and only when you press the button.	Traduce la descripción a tu idioma con el servicio gratuito MyMemory. Solo se envía este texto, y solo cuando pulsas el botón.
+Preview only: the font is not installed.	Solo vista previa: la fuente no está instalada.
+Preview only: the plugin is not installed.	Solo vista previa: el plugin no está instalado.
+Code (read-only)	Código (solo lectura)

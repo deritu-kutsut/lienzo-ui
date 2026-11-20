@@ -1084,3 +1084,10 @@ Many issues: “Fix all” applies up to {} fixes per click, press it again for 
 Fixed {} issue(s); {} more are left, press Fix all again (Ctrl+Z undoes)	Исправлено проблем: {}; осталось ещё {}, нажмите «Исправить все» снова (Ctrl+Z отменяет)
 Error {}	Ошибка {}
 Something went wrong in a background task. Try again.	В фоновой задаче что-то пошло не так. Повторите попытку.
+Hide preview	Скрыть предпросмотр
+Translate	Перевести
+Show original	Показать оригинал
+Translating…	Перевод…
+Commands	Команды
+Exporters	Экспортеры
+Files	Файлы

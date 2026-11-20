@@ -29,10 +29,27 @@
 - **Plugins:** add commands, exporters and templates with sandboxed Rhai scripts, no recompiling ([guide](docs/PLUGINS.md)).
 - **Accessibility:** interface in English, Spanish, Portuguese, French, German, Italian, Russian, Chinese, Japanese or Korean, UI scale up to 200 %, high contrast and reduced motion.
 - **In-app tutorial** for beginners and professionals: it opens on first launch, then the editor opens; reopen it with the **Tutorial** button or F1.
-- **Community:** browse, install and share plugins, images, fonts, templates, elements and themes, with creator profiles, follow and hearts, moderation and 18+ filter ([how it works](#community)).
+- **Community:** browse, install and share plugins, images, fonts, templates, elements and themes, with creator profiles, follow and hearts, moderation and 18+ filter. Preview a font or a plugin (and read its code) before installing, and translate any description with one click ([how it works](#community)).
 - **Themes:** change the colours, corners and font of the whole app.
-- **Command line** for automation: `--templates`, `--template N`, `--open`, `--save`, `--export`, `--review`, `--screenshot`, `--test`. The old Spanish flags (`--abrir`, `--exportar`…) still work.
+- **Command line** for automation: `--templates`, `--template N`, `--open`, `--save`, `--export`, `--review`, `--screenshot`, `--test`, `--page WxH`. The old Spanish flags (`--abrir`, `--exportar`…) still work.
 - **MCP server for any AI** (`mcp/`): Claude, Cursor, VS Code or any MCP client can create and edit designs, export them to Unity and take screenshots.
+
+## What's new
+
+**Next release (already in the repository)**
+- **Community: preview before you install.** Fonts show sample text drawn with the font; plugins show their commands, exporters, files and code (read-only). Nothing is installed.
+- **Community: Translate button** on every description (free MyMemory service, only when you press it; the note "automatic translation" is always shown, and *Show original* goes back).
+- **Templates in Portrait fixed:** a portrait page (for example 1080 × 1920) now builds every template at phone size. Settings, Game over, Level select, Loading screen, Character select (2 × 2 cards) and the pixel templates fit without overlaps.
+
+**1.6**
+- **Built-in content pack:** 108 images that ship inside the app (backgrounds, frames, nine-slice buttons, icons and 55 pixel-art pieces).
+- **15 templates**, including a pixel-art RPG HUD and a pixel main menu.
+- **Autosave and crash recovery**, review **quick fixes** («Fix all safe issues») and an undo budget so huge designs stay safe.
+- **Community:** 14 new plugins and 18 free fonts, offline mode, and terms, licences and copyright reports for what you share.
+
+**1.5 and earlier:** import existing uGUI prefabs from Unity, portrait and landscape layouts in one design, sprite 9-slice and pixels-per-unit, 10 interface languages, and an MCP server for any AI.
+
+Full list in the [changelog](CHANGELOG.md).
 
 ## New in 1.3
 

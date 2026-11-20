@@ -4,6 +4,15 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versio
 
 ## [Unreleased]
 
+### Added
+- **Community: Preview button on fonts and plugins.** A font shows sample text drawn with it; a plugin shows its commands, exporters, files and its code (read-only). Nothing is installed and no download is counted.
+- **Community: Translate button** on every description. It uses the free MyMemory service only when pressed, shows a note that it is automatic, and "Show original" goes back. Documented in `docs/PRIVACY.md`.
+- `--page WxH` (with `--template`): page size for screenshots and checks.
+
+### Fixed
+- **Templates in Portrait:** a portrait page (for example 1080 × 1920) is now built at 1080 wide instead of 1920 wide and shrunk, which left every template tiny. Settings, Game over, Level select, Loading screen, Character select (2 × 2 cards) and both pixel templates now fit the page without overlaps; the PC layout is unchanged.
+- Character select: the button said "Confirmar" in every language; it now says "Confirm".
+
 ## [1.6.3] - 2026-11-19
 
 Small command-line fix.
