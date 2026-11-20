@@ -1031,6 +1031,35 @@ fn norm_rel(p: &str) -> String {
     p.replace('\\', "/").trim_matches('/').to_lowercase()
 }
 
+/// What an export does (or, in a dry run, would do) with one file of the Unity project.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Change {
+    /// The file does not exist yet.
+    New,
+    /// It exists and its content differs.
+    Changed,
+    /// It exists with the same content (an export does not touch it).
+    Unchanged,
+    /// A generated copy left in another folder that is removed.
+    Removed,
+}
+
+impl Change {
+    pub fn label(self) -> &'static str {
+        match self {
+            Change::New => "new",
+            Change::Changed => "update",
+            Change::Unchanged => "same",
+            Change::Removed => "remove",
+        }
+    }
+}
+
+/// Write the selected outputs into the Unity project. Returns the written paths (relative to the project).
+pub fn write_unity_package(doc: &Doc, project: &Path) -> Result<Vec<String>, String> {
+    write_unity_package_plan(doc, project, false).map(|plan| plan.into_iter().filter(|(_, c)| *c != Change::Removed).map(|(rel, _)| rel).collect())
+}
+
 /// Write the selected outputs into `<project>/Assets/EditorGUI` (scripts into the resolved scripts folder).
 /// Returns the written paths (relative to the project).
 ///
@@ -1040,7 +1069,10 @@ fn norm_rel(p: &str) -> String {
 ///
 /// A generated C# file is only overwritten when its first line carries the generated marker; a file without it is
 /// the user's own and is skipped with a warning. The ViewBase is updated where it already lives in the project.
-pub fn write_unity_package(doc: &Doc, project: &Path) -> Result<Vec<String>, String> {
+///
+/// With `dry_run` nothing is written, created or removed: the result says what each file would be (new, updated, the
+/// same, removed), with exactly the same rules (a user's own C# file is still skipped, a missing image still fails).
+pub fn write_unity_package_plan(doc: &Doc, project: &Path, dry_run: bool) -> Result<Vec<(String, Change)>, String> {
     // A stretched child of a parent that was shrunk below its margins keeps a negative size in the editor model (so growing the parent
     // restores the margins); Unity must never see it.
     if doc.elements.iter().any(|e| e.w < 0.0 || e.h < 0.0) {
@@ -1049,7 +1081,7 @@ pub fn write_unity_package(doc: &Doc, project: &Path) -> Result<Vec<String>, Str
             e.w = e.w.max(0.0);
             e.h = e.h.max(0.0);
         }
-        return write_unity_package(&d, project);
+        return write_unity_package_plan(&d, project, dry_run);
     }
     let root = find_unity_root(project).ok_or("that folder does not look like a Unity project (it has no Assets folder)")?;
     let gn = doc.unity.generate.clone();
@@ -1096,18 +1128,28 @@ pub fn write_unity_package(doc: &Doc, project: &Path) -> Result<Vec<String>, Str
             }
         }
     }
-    let mut written = Vec::new();
+    let mut plan: Vec<(String, Change)> = Vec::new();
+    let mut removed: Vec<String> = Vec::new();
     let mut put = |rel: String, bytes: &[u8]| -> Result<(), String> {
         let p = root.join(&rel);
-        if let Some(d) = p.parent() {
-            std::fs::create_dir_all(d).map_err(|e| format!("{}: {}", d.display(), e))?;
-        }
         // An export with no changes must not touch a single file: Unity reimports (and recompiles) everything whose timestamp changed.
         let unchanged = std::fs::metadata(&p).map(|m| m.len() == bytes.len() as u64).unwrap_or(false) && std::fs::read(&p).map(|old| old == bytes).unwrap_or(false);
-        if !unchanged {
-            std::fs::write(&p, bytes).map_err(|e| format!("{}: {}", p.display(), e))?;
+        let change = if unchanged {
+            Change::Unchanged
+        } else if p.exists() {
+            Change::Changed
+        } else {
+            Change::New
+        };
+        if !dry_run {
+            if let Some(d) = p.parent() {
+                std::fs::create_dir_all(d).map_err(|e| format!("{}: {}", d.display(), e))?;
+            }
+            if !unchanged {
+                std::fs::write(&p, bytes).map_err(|e| format!("{}: {}", p.display(), e))?;
+            }
         }
-        written.push(rel);
+        plan.push((rel, change));
         Ok(())
     };
     // generated C# files: never overwrite a file that does not carry the generated marker
@@ -1160,8 +1202,11 @@ pub fn write_unity_package(doc: &Doc, project: &Path) -> Result<Vec<String>, Str
             let ongui = format!("{}OnGUI", cls);
             for old in cs.scan(|t| declares_class(t, &ongui) && has_generated_mark(t)) {
                 if norm_rel(&old) != norm_rel(&target) {
-                    let _ = std::fs::remove_file(root.join(&old));
-                    let _ = std::fs::remove_file(root.join(format!("{}.meta", old)));
+                    if !dry_run {
+                        let _ = std::fs::remove_file(root.join(&old));
+                        let _ = std::fs::remove_file(root.join(format!("{}.meta", old)));
+                    }
+                    removed.push(old.clone());
                     cs.forget(&old);
                 }
             }
@@ -1206,8 +1251,11 @@ pub fn write_unity_package(doc: &Doc, project: &Path) -> Result<Vec<String>, Str
             put(dest.clone(), base_code.as_bytes())?;
             for old in &leftovers {
                 if norm_rel(old) != norm_rel(&dest) {
-                    let _ = std::fs::remove_file(root.join(old));
-                    let _ = std::fs::remove_file(root.join(format!("{}.meta", old)));
+                    if !dry_run {
+                        let _ = std::fs::remove_file(root.join(old));
+                        let _ = std::fs::remove_file(root.join(format!("{}.meta", old)));
+                    }
+                    removed.push(old.clone());
                     cs.forget(old);
                 }
             }
@@ -1238,7 +1286,8 @@ pub fn write_unity_package(doc: &Doc, project: &Path) -> Result<Vec<String>, Str
         // the design last: the importer rebuilds the prefab when this file changes
         put(format!("{}/Designs/{}.json", UNITY_ROOT, cls), ugui::json(doc, true).as_bytes())?;
     }
-    Ok(written)
+    plan.extend(removed.into_iter().map(|rel| (rel, Change::Removed)));
+    Ok(plan)
 }
 
 #[cfg(test)]

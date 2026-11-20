@@ -36,7 +36,8 @@
 
 ## What's new
 
-**1.7.1**
+**1.7.2**
+- **Export preview (`dry_run`):** the MCP tool `export_unity` takes `dry_run: true` (and the command line `--export <project> --dry-run`) to list every file that would be created, updated or removed in your Unity project, without writing anything.
 - **Community: preview before you install.** Fonts show sample text drawn with the font; plugins show their commands, exporters, files and code (read-only). Nothing is installed.
 - **Community: Translate button** on every description, and on what a plugin preview shows (free MyMemory service, only when you press it; the note "automatic translation" is always shown, and *Show original* goes back).
 - **Portrait view of every template:** the Portrait button now shows a layout designed for phones (1080 × 1920): Level select with 4 buttons per row, Character select in 2 × 2, the pixel HUD and menu rearranged, nothing cut off or overlapping. Building a template on a portrait page also fits now.

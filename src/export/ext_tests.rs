@@ -88,6 +88,32 @@ fn unity_image_references_are_not_copied() {
 }
 
 #[test]
+fn dry_run_lists_the_files_without_touching_the_project() {
+    let d = model::template(3, 1920.0, 1080.0);
+    let dir = project("dryrun");
+    let before = std::fs::read_dir(&dir).unwrap().count();
+    let plan = write_unity_package_plan(&d, &dir, true).unwrap();
+    assert!(plan.len() > 3 && plan.iter().all(|(_, c)| *c == Change::New), "{plan:?}");
+    assert!(plan.iter().any(|(f, _)| f.ends_with(".json")) && plan.iter().any(|(f, _)| f.ends_with("EditorGuiImporter.cs")));
+    assert!(!dir.join("Assets/EditorGUI").exists(), "a dry run must not create anything");
+    assert_eq!(std::fs::read_dir(&dir).unwrap().count(), before);
+    // a real export writes exactly what the plan said; a second dry run then reports the same / unchanged files
+    let written = write_unity_package(&d, &dir).unwrap();
+    assert_eq!(written, plan.iter().map(|(f, _)| f.clone()).collect::<Vec<_>>());
+    let again = write_unity_package_plan(&d, &dir, true).unwrap();
+    assert!(again.iter().all(|(_, c)| *c == Change::Unchanged), "{again:?}");
+    // a changed design is reported as an update and still nothing is written
+    let mut d2 = d.clone();
+    d2.elements[0].name = "Other name".into();
+    let json = dir.join(&plan.iter().find(|(f, _)| f.ends_with(&format!("{}.json", class_name(&d.title)))).unwrap().0);
+    let before_json = std::fs::read(&json).unwrap();
+    let changed = write_unity_package_plan(&d2, &dir, true).unwrap();
+    assert!(changed.iter().any(|(_, c)| *c == Change::Changed), "{changed:?}");
+    assert_eq!(std::fs::read(&json).unwrap(), before_json);
+    assert_eq!(Change::New.label(), "new");
+}
+
+#[test]
 fn uss_slice_only_when_sliced() {
     let mut d = Doc::empty(1920.0, 1080.0);
     let mut e = Element::new(0, Kind::Image);

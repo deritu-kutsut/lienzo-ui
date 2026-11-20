@@ -1,6 +1,6 @@
 [package]
 name = "lienzo_ui"
-version = "1.7.1"
+version = "1.7.2"
 edition = "2024"
 description = "Lienzo UI: a visual editor for game interfaces that exports to Unity (uGUI, UI Toolkit, IMGUI)"
 license = "MIT"

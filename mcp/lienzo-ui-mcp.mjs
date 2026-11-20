@@ -472,9 +472,10 @@ const TOOLS = [
   },
   {
     name: "export_unity",
-    description: "Exports the design to a Unity project (the folder that contains Assets). Writes to Assets/EditorGUI: design, importer, UXML/USS, IMGUI script and views. Unity creates the prefab when you return to its window.",
-    inputSchema: { type: "object", properties: { file: { type: "string" }, unity_project: { type: "string" } }, required: ["file", "unity_project"] },
-    run: async ({ file, unity_project }) => {
+    description: "Exports the design to a Unity project (the folder that contains Assets). Writes to Assets/EditorGUI: design, importer, UXML/USS, IMGUI script and views. Unity creates the prefab when you return to its window. With dry_run: true nothing is written; it lists each file that would be created, updated, left the same or removed, so you can review it first.",
+    inputSchema: { type: "object", properties: { file: { type: "string" }, unity_project: { type: "string" }, dry_run: { type: "boolean", description: "List what would be written without writing anything." } }, required: ["file", "unity_project"] },
+    run: async ({ file, unity_project, dry_run }) => {
+      if (dry_run !== undefined && typeof dry_run !== "boolean") throw new Error("'dry_run' must be true or false.");
       const { abs } = load(file);
       if (typeof unity_project !== "string" || !unity_project.trim() || unity_project.includes("\0"))
         throw new Error("'unity_project' must be the folder of a Unity project (with an Assets folder).");
@@ -483,9 +484,10 @@ const TOOLS = [
       const project = path.resolve(unity_project);
       if (!fs.existsSync(path.join(project, "Assets")))
         throw new Error("'unity_project' must be the folder of a Unity project (with an Assets folder).");
-      const r = await runApp(["--open", abs, "--export", project]);
-      if (r.timedOut) throw new Error("The app did not answer in time: the export may be incomplete.");
+      const r = await runApp(["--open", abs, "--export", project, ...(dry_run ? ["--dry-run"] : [])]);
+      if (r.timedOut) throw new Error(dry_run ? "The app did not answer in time." : "The app did not answer in time: the export may be incomplete.");
       if (r.code !== 0) throw new Error(r.err || "Could not export.");
+      if (dry_run) return "Dry run: nothing was written. Each line is <new|update|same|remove> and the path, relative to the Unity project:\n" + r.out;
       return "Files written:\n" + r.out;
     },
   },

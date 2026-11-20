@@ -4,6 +4,13 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versio
 
 ## [Unreleased]
 
+## [1.7.2] - 2026-11-20
+
+Export preview: see what an export would write before it writes anything.
+
+### Added
+- **Export preview (`dry_run`):** the MCP tool `export_unity` takes `dry_run: true`, and the command line takes `--export <project> --dry-run`. Nothing is written, created or removed: each file is listed as `new`, `update`, `same` or `remove`, with the same rules as a real export (your own C# files are still skipped, a missing image still fails). Meant for reviewing what an AI client would write into the Unity project before it does.
+
 ## [1.7.1] - 2026-11-20
 
 Portrait layouts for every template, and Translate also covers the plugin preview.

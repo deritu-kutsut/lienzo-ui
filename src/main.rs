@@ -221,7 +221,7 @@ fn headless(args: &[String]) -> Option<i32> {
         println!("  --open <file> | --template <n>     choose the design for the options below");
         println!("  --review                           review the design (legibility, contrast, touch size)");
         println!("  --save <file>                      save the design as a project");
-        println!("  --export <Unity project>           export the design to Unity");
+        println!("  --export <Unity project>           export the design to Unity (add --dry-run to list what it would write, without writing)");
         println!("  --import-unity <file>              import a Unity prefab or Designs/*.json");
         println!("  --import-unity-project <p> --out <folder>   convert every UI prefab of a project");
         println!("  --version, --help                  these messages");
@@ -317,8 +317,11 @@ fn headless(args: &[String]) -> Option<i32> {
         }
     }
     if let Some(dest) = export {
-        match export::write_unity_package(&doc, std::path::Path::new(dest)) {
-            Ok(files) => files.iter().for_each(|f| println!("{}", f)),
+        let dry_run = args.iter().any(|a| a == "--dry-run");
+        match export::write_unity_package_plan(&doc, std::path::Path::new(dest), dry_run) {
+            // --dry-run: "<new|update|same|remove><TAB><path>" per file, and nothing is written
+            Ok(plan) if dry_run => plan.iter().for_each(|(f, c)| println!("{}\t{}", c.label(), f)),
+            Ok(plan) => plan.iter().filter(|(_, c)| *c != export::Change::Removed).for_each(|(f, _)| println!("{}", f)),
             Err(e) => {
                 eprintln!("Could not export: {}", e);
                 return Some(1);
@@ -338,6 +341,14 @@ const VALUE_FLAGS: &[(&str, &str)] = &[
 
 /// The usage message when a flag that needs a value has none (or `--template` is not a number); None when the line is fine.
 fn cli_usage_error(args: &[String]) -> Option<String> {
+    if args.iter().any(|a| a == "--dry-run") {
+        if !args.iter().any(|a| a == "--export") {
+            return Some("Usage: --dry-run goes with --export <Unity project folder>".into());
+        }
+        if args.iter().any(|a| a == "--save") {
+            return Some("--dry-run writes nothing: do not combine it with --save".into());
+        }
+    }
     for (flag, usage) in VALUE_FLAGS {
         if let Some(i) = args.iter().position(|a| a == flag) {
             let v = args.get(i + 1).filter(|v| !v.starts_with("--"));

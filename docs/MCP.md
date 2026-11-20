@@ -26,7 +26,7 @@
 | `duplicate_element` | Copies an element with its children (to add buttons or checkboxes with the same style). |
 | `delete_element` | Deletes an element and its children. |
 | `screenshot` | PNG of the design open in the editor. |
-| `export_unity` | Exports to a Unity project (writes to `Assets/EditorGUI`). |
+| `export_unity` | Exports to a Unity project (writes to `Assets/EditorGUI`). With `dry_run: true` it only lists what it would write. |
 
 Parameters (all tools take `file`, the design name without folders; `.editorgui.json` is optional):
 
@@ -38,7 +38,7 @@ Parameters (all tools take `file`, the design name without folders; `.editorgui.
 | `add_element` | `file`, `type`, `name`, `x`, `y`, `w`, `h`, optional `parent` (name or id), `text`, `image`, `color` |
 | `duplicate_element` | `file`, `element`, `new_name`, optional `dx`, `dy`, `text` |
 | `delete_element` | `file`, `element` |
-| `export_unity` | `file`, `unity_project` (the folder that contains `Assets`; a relative path is resolved first and the app receives the absolute one; network (UNC) paths are refused) |
+| `export_unity` | `file`, `unity_project` (the folder that contains `Assets`; a relative path is resolved first and the app receives the absolute one; network (UNC) paths are refused), optional `dry_run` (boolean: write nothing and list each file as `new`, `update`, `same` or `remove`, so a person can review the export before it happens; from the command line: `--export <project> --dry-run`) |
 
 Values are checked with the same types and ranges everywhere (`x`, `y` within ±1,000,000; `w`, `h` greater than 0; `opacity` 0-1…): texts must be text (never converted from numbers), `parent` and `element` are a name or an id, `dx` and `dy` finite numbers. An `image` must be an absolute path to an existing PNG/JPG; UNC paths (`\\server\share`) are refused. If the app does not answer in time, `review_design`, `screenshot`, `create_design` and `export_unity` return an error instead of an empty result. `create_design` validates its arguments (including the title) before starting the app or creating the file.
 
