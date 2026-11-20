@@ -144,6 +144,8 @@ enum Message {
     PreviewFont { id: String, bytes: Result<Vec<u8>, String> },
     PreviewPlugin { id: String, info: Result<PluginInfo, String> },
     Translated { id: String, result: Result<String, String> },
+    /// Translation of what a plugin preview shows (its description and commands).
+    PreviewTranslated { id: String, lines: Result<Vec<String>, String> },
     Claimed(Result<(), String>),
     /// Terms state of the account (None inside = the server could not tell).
     Terms(TermsInfo),
@@ -257,6 +259,13 @@ enum Translation {
     Failed(String),
 }
 
+/// Translation of the texts inside a plugin preview (by content id).
+enum PreviewTr {
+    Loading,
+    Done(Vec<String>),
+    Failed,
+}
+
 pub struct Community {
     tx: Sender<Message>,
     rx: Receiver<Message>,
@@ -309,6 +318,7 @@ pub struct Community {
     /// Open previews of fonts and plugins, and translated descriptions.
     previews: std::collections::HashMap<String, Preview>,
     translations: std::collections::HashMap<String, Translation>,
+    preview_tr: std::collections::HashMap<String, PreviewTr>,
 }
 
 impl Community {
@@ -369,6 +379,7 @@ impl Community {
             offline_age: None,
             previews: Default::default(),
             translations: Default::default(),
+            preview_tr: Default::default(),
         }
     }
 }
@@ -1390,6 +1401,33 @@ fn translate_text(text: &str, to: &str) -> Result<String, String> {
     Ok(out)
 }
 
+/// Commands of a plugin preview whose text is translated (the rest keep their original text).
+const PREVIEW_TR_COMMANDS: usize = 12;
+
+/// The texts of a plugin preview that the Translate button translates: the description, then "name — description" per command.
+fn plugin_preview_texts(info: &PluginInfo) -> Vec<String> {
+    let mut v = vec![info.description.clone()];
+    v.extend(info.commands.iter().take(PREVIEW_TR_COMMANDS).map(|(n, d)| if d.is_empty() { n.clone() } else { format!("{} — {}", n, d) }));
+    v
+}
+
+/// Translates several short texts. A text that is already in the language stays as it is; any other error stops.
+fn translate_lines(texts: &[String], to: &str) -> Result<Vec<String>, String> {
+    let same = t("The text is already in your language.");
+    texts
+        .iter()
+        .map(|x| {
+            if x.trim().is_empty() {
+                return Ok(String::new());
+            }
+            match translate_text(x, to) {
+                Err(e) if e == same => Ok(x.clone()),
+                other => other,
+            }
+        })
+        .collect()
+}
+
 // ───────────────────────────── installation (UI thread) ─────────────────────────────
 
 fn write_temp(name: &str, bytes: &[u8]) -> Result<PathBuf, String> {
@@ -1557,6 +1595,9 @@ impl EditorApp {
         match self.community.translations.get_mut(&it.id) {
             Some(Translation::Done { show, .. }) => {
                 *show = !*show;
+                if *show && matches!(self.community.preview_tr.get(&it.id), Some(PreviewTr::Failed)) {
+                    self.community.preview_tr.remove(&it.id); // tried again with the preview open
+                }
                 return;
             }
             Some(Translation::Loading) => return,
@@ -1679,6 +1720,13 @@ impl EditorApp {
                         Err(e) => Preview::Failed(e),
                     };
                     self.community.previews.insert(id, r);
+                }
+                Message::PreviewTranslated { id, lines } => {
+                    let r = match lines {
+                        Ok(l) => PreviewTr::Done(l),
+                        Err(_) => PreviewTr::Failed,
+                    };
+                    self.community.preview_tr.insert(id, r);
                 }
                 Message::Translated { id, result } => {
                     let r = match result {
@@ -2392,6 +2440,16 @@ mod tests {
     }
 
     #[test]
+    fn plugin_preview_texts_are_description_then_commands() {
+        let c = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("plugins/snap-to-grid");
+        let info = plugin_info(&pack_plugin(&c).unwrap()).unwrap();
+        let v = plugin_preview_texts(&info);
+        assert_eq!(v.len(), 1 + info.commands.len().min(PREVIEW_TR_COMMANDS));
+        assert_eq!(v[0], info.description);
+        assert!(translate_lines(&[String::new()], "es").unwrap() == vec![String::new()], "empty texts need no request");
+    }
+
+    #[test]
     fn long_texts_are_cut_in_pieces_that_rebuild_the_original() {
         let text = format!("{} See https://github.com/google/fonts. {}\nLast line.", "Word ".repeat(120), "ñandú ".repeat(120));
         let parts = split_for_translation(&text, TRANSLATE_CHUNK);
@@ -2721,18 +2779,22 @@ pub fn review_cli(args: &[String]) -> i32 {
 
 /// X-style labeled field: a box with the small label on top and the text below.
 /// What a plugin does and its code, read-only (nothing is installed).
-fn community_plugin_preview(ui: &mut egui::Ui, id: &str, info: &PluginInfo) {
+fn community_plugin_preview(ui: &mut egui::Ui, id: &str, info: &PluginInfo, tr: Option<&[String]>) {
     ui.label(RichText::new(format!("{} {}", info.name, info.version).trim()).strong());
     if !info.author.is_empty() {
         ui.label(RichText::new(format!("{} {}", t("by"), info.author)).small().color(MUTED()));
     }
     if !info.description.is_empty() {
-        ui.label(RichText::new(&info.description).small());
+        let text = tr.and_then(|l| l.first()).filter(|x| !x.is_empty()).unwrap_or(&info.description);
+        ui.label(RichText::new(text).small());
     }
     if !info.commands.is_empty() {
         ui.label(RichText::new(t("Commands")).small().strong());
-        for (n, d) in &info.commands {
-            ui.label(RichText::new(if d.is_empty() { format!("• {}", n) } else { format!("• {} — {}", n, d) }).small());
+        for (i, (n, d)) in info.commands.iter().enumerate() {
+            let own = if d.is_empty() { n.clone() } else { format!("{} — {}", n, d) };
+            // translated lines are 1-based (0 is the description); only the first commands were sent
+            let text = tr.and_then(|l| l.get(i + 1)).filter(|x| !x.is_empty()).cloned().unwrap_or(own);
+            ui.label(RichText::new(format!("• {}", text)).small());
         }
     }
     if !info.exporters.is_empty() {
@@ -3229,6 +3291,16 @@ impl EditorApp {
                     self.community.report = Some(it.id.clone());
                 }
             });
+            // The translation also covers what the plugin preview shows (description and commands).
+            let translated = matches!(self.community.translations.get(&it.id), Some(Translation::Done { show: true, .. }));
+            if translated && !self.community.preview_tr.contains_key(&it.id) {
+                if let Some(Preview::Plugin(info)) = self.community.previews.get(&it.id) {
+                    let texts = plugin_preview_texts(info);
+                    let (id, id2, to) = (it.id.clone(), it.id.clone(), crate::i18n::code().to_string());
+                    self.community.preview_tr.insert(it.id.clone(), PreviewTr::Loading);
+                    self.community_spawn(ctx, move || Message::PreviewTranslated { lines: translate_lines(&texts, &to), id }, move || Message::PreviewTranslated { id: id2, lines: Err(String::new()) });
+                }
+            }
             match self.community.previews.get(&it.id) {
                 Some(Preview::Loading) => {
                     ui.horizontal(|ui| {
@@ -3251,7 +3323,19 @@ impl EditorApp {
                         ctx.request_repaint(); // egui loads the font at the start of the next frame
                     }
                 },
-                Some(Preview::Plugin(info)) => community_plugin_preview(ui, &it.id, info),
+                Some(Preview::Plugin(info)) => {
+                    let tr = match self.community.preview_tr.get(&it.id) {
+                        Some(PreviewTr::Done(l)) if translated => Some(l.as_slice()),
+                        _ => None,
+                    };
+                    if translated && matches!(self.community.preview_tr.get(&it.id), Some(PreviewTr::Loading)) {
+                        ui.horizontal(|ui| {
+                            ui.spinner();
+                            ui.label(RichText::new(t("Translating…")).small().color(MUTED()));
+                        });
+                    }
+                    community_plugin_preview(ui, &it.id, info, tr);
+                }
                 None => {}
             }
             if self.community.report.as_deref() == Some(it.id.as_str()) {

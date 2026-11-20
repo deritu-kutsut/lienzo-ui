@@ -1035,7 +1035,7 @@ impl EditorApp {
     pub fn load_template(&mut self, i: usize) {
         self.set_preview(false);
         self.leave_portrait();
-        let mut d = model::template(i, self.doc.width, self.doc.height);
+        let mut d = model::template_with_portrait(i, self.doc.width, self.doc.height);
         lock_backgrounds(&mut d);
         self.doc = d;
         self.unbind_design();

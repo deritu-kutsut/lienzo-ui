@@ -584,6 +584,10 @@ fn main() -> eframe::Result<()> {
                     app.load_template(t);
                 }
             }
+            // --portrait : open the design in the Portrait view (screenshots)
+            if args.iter().any(|a| a == "--portrait") {
+                app.set_orientation(crate::docext::Orientation::Portrait);
+            }
             let cli_project = arg_after(&args, "--open").cloned();
             app.recovery_startup(cli_project.as_deref());
             Ok(Box::new(app))

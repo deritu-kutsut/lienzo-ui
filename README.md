@@ -36,10 +36,10 @@
 
 ## What's new
 
-**1.7**
+**1.7.1**
 - **Community: preview before you install.** Fonts show sample text drawn with the font; plugins show their commands, exporters, files and code (read-only). Nothing is installed.
-- **Community: Translate button** on every description (free MyMemory service, only when you press it; the note "automatic translation" is always shown, and *Show original* goes back).
-- **Templates in Portrait fixed:** a portrait page (for example 1080 × 1920) now builds every template at phone size. Settings, Game over, Level select, Loading screen, Character select (2 × 2 cards) and the pixel templates fit without overlaps.
+- **Community: Translate button** on every description, and on what a plugin preview shows (free MyMemory service, only when you press it; the note "automatic translation" is always shown, and *Show original* goes back).
+- **Portrait view of every template:** the Portrait button now shows a layout designed for phones (1080 × 1920): Level select with 4 buttons per row, Character select in 2 × 2, the pixel HUD and menu rearranged, nothing cut off or overlapping. Building a template on a portrait page also fits now.
 
 **1.6**
 - **Built-in content pack:** 108 images that ship inside the app (backgrounds, frames, nine-slice buttons, icons and 55 pixel-art pieces).

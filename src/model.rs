@@ -1608,6 +1608,49 @@ pub fn template(index: usize, width: f32, height: f32) -> Doc {
     d
 }
 
+/// A template for the editor: the landscape design plus its own portrait layout (phone, 1080 x 1920), so the
+/// Portrait button shows a layout that was designed for it instead of the landscape one squeezed into a tall page.
+/// The portrait layout is stored as overrides of the elements that differ from the landscape layout.
+pub fn template_with_portrait(index: usize, width: f32, height: f32) -> Doc {
+    let mut d = template(index, width, height);
+    if index == blank_template() || height > width {
+        return d;
+    }
+    let target = template(index, 1080.0, 1920.0);
+    if target.elements.len() != d.elements.len() {
+        return d;
+    }
+    d.portrait = Some(crate::docext::PortraitLayout { width: 1080.0, height: 1920.0, overrides: Vec::new() });
+    let base = d.resolved_for(crate::docext::Orientation::Portrait); // what Unity would show without overrides
+    let near = |a: f32, b: f32| (a - b).abs() < 0.5;
+    let near2 = |a: [f32; 2], b: [f32; 2]| near(a[0], b[0]) && near(a[1], b[1]);
+    let mut overrides = Vec::new();
+    for (b, p) in base.elements.iter().zip(target.elements.iter()) {
+        if b.id != p.id {
+            continue;
+        }
+        let mut o = crate::docext::ElementOverride::new(p.id);
+        (!near(b.x, p.x)).then(|| o.x = Some(p.x));
+        (!near(b.y, p.y)).then(|| o.y = Some(p.y));
+        (!near(b.w, p.w)).then(|| o.w = Some(p.w));
+        (!near(b.h, p.h)).then(|| o.h = Some(p.h));
+        (!near(b.rot, p.rot)).then(|| o.rot = Some(p.rot));
+        (!near2(b.anchor_min, p.anchor_min)).then(|| o.anchor_min = Some(p.anchor_min));
+        (!near2(b.anchor_max, p.anchor_max)).then(|| o.anchor_max = Some(p.anchor_max));
+        (!near2(b.pivot, p.pivot)).then(|| o.pivot = Some(p.pivot));
+        (b.visible != p.visible).then(|| o.visible = Some(p.visible));
+        (!near(b.font_size, p.font_size)).then(|| o.font_size = Some(p.font_size));
+        (b.layout != p.layout).then(|| o.layout = Some(p.layout.clone()));
+        if !o.is_empty() {
+            overrides.push(o);
+        }
+    }
+    if let Some(p) = d.portrait.as_mut() {
+        p.overrides = overrides;
+    }
+    d
+}
+
 fn template_at(index: usize, width: f32, height: f32) -> Doc {
     let mut d = Doc::empty(width, height);
     let (w, h) = (width, height);
@@ -2739,6 +2782,28 @@ mod sanitize_extra_tests {
 #[cfg(test)]
 mod template_tests {
     use super::*;
+
+    #[test]
+    fn templates_carry_their_own_portrait_layout() {
+        for i in 0..TEMPLATES.len() {
+            let d = template_with_portrait(i, 1920.0, 1080.0);
+            if i == blank_template() {
+                assert!(d.portrait.is_none());
+                continue;
+            }
+            let p = d.portrait.as_ref().expect("portrait layout");
+            assert_eq!((p.width, p.height), (1080.0, 1920.0));
+            // the portrait view shows what the portrait build of the template has, and nothing goes off the page
+            let shown = d.resolved_for(crate::docext::Orientation::Portrait);
+            let built = template(i, 1080.0, 1920.0);
+            for (a, b) in shown.elements.iter().zip(built.elements.iter()) {
+                assert!((a.x - b.x).abs() < 1.0 && (a.y - b.y).abs() < 1.0 && (a.w - b.w).abs() < 1.0 && (a.h - b.h).abs() < 1.0, "{} “{}”: {:?} vs {:?}", TEMPLATES[i], a.name, [a.x, a.y, a.w, a.h], [b.x, b.y, b.w, b.h]);
+            }
+            // the landscape layout is untouched
+            let land = template(i, 1920.0, 1080.0);
+            assert_eq!(d.elements.iter().map(|e| (e.id, e.x as i32, e.y as i32, e.w as i32, e.h as i32)).collect::<Vec<_>>(), land.elements.iter().map(|e| (e.id, e.x as i32, e.y as i32, e.w as i32, e.h as i32)).collect::<Vec<_>>());
+        }
+    }
 
     #[test]
     fn every_template_is_sane_at_several_resolutions() {
