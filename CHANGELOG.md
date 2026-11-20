@@ -4,6 +4,10 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versio
 
 ## [Unreleased]
 
+## [1.7.0] - 2026-11-20
+
+Preview and translate in the Community, and templates that fit Portrait pages.
+
 ### Added
 - **Community: Preview button on fonts and plugins.** A font shows sample text drawn with it; a plugin shows its commands, exporters, files and its code (read-only). Nothing is installed and no download is counted.
 - **Community: Translate button** on every description. It uses the free MyMemory service only when pressed, shows a note that it is automatic, and "Show original" goes back. Documented in `docs/PRIVACY.md`.

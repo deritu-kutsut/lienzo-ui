@@ -36,7 +36,7 @@
 
 ## What's new
 
-**Next release (already in the repository)**
+**1.7**
 - **Community: preview before you install.** Fonts show sample text drawn with the font; plugins show their commands, exporters, files and code (read-only). Nothing is installed.
 - **Community: Translate button** on every description (free MyMemory service, only when you press it; the note "automatic translation" is always shown, and *Show original* goes back).
 - **Templates in Portrait fixed:** a portrait page (for example 1080 × 1920) now builds every template at phone size. Settings, Game over, Level select, Loading screen, Character select (2 × 2 cards) and the pixel templates fit without overlaps.
