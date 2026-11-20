@@ -80,6 +80,8 @@ Los móviles suelen usarse en vertical. Lienzo UI guarda un segundo diseño para
 - En la vista vertical, lo que muevas o redimensiones solo cambia el diseño vertical. Clic derecho en un elemento › «Volver a horizontal» deshace un cambio.
 - La exportación lleva los dos diseños: en Unity el prefab pasa solo al vertical cuando la pantalla es más alta que ancha.
 
+Cada plantilla ya trae su propio diseño vertical: aplica una plantilla y pulsa Retrato para verla pensada para móviles (1080 × 1920).
+
 ## Importar desde Unity
 
 ¿Ya tienes una interfaz en Unity? Tráela a Lienzo UI:
@@ -106,6 +108,8 @@ La pestaña Comunidad de la barra izquierda es un catálogo compartido de plugin
 - Al crear tu perfil aceptas las reglas: nada de malware, odio, plagio ni contenido +18 sin marcar. El texto completo está en docs/TERMS.md y docs/COMMUNITY_GUIDELINES.md.
 - El contenido +18 está oculto salvo que inicies sesión y actives «Mostrar contenido +18».
 - Todo lo que se comparte se revisa antes de publicarse, y puedes reportar lo que incumpla las reglas.
+
+En fuentes y plugins, pulsa Vista previa para ver un texto de ejemplo, o para leer qué hace un plugin y su código, antes de instalar; no se instala nada. Pulsa Traducir para leer cualquier descripción en tu idioma. Usa un servicio gratuito en línea, solo cuando lo pulsas, y «Ver original» vuelve atrás.
 
 ## Siguientes pasos
 

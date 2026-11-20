@@ -82,6 +82,8 @@ Phones are often held upright. Lienzo UI keeps a second layout for that, without
 - In Portrait view, whatever you move or resize changes only the portrait layout. Right-click an element › “Reset to landscape” to undo one change.
 - The export carries both layouts: in Unity the prefab switches to the vertical one by itself when the screen is taller than it is wide.
 
+Every template already comes with its own portrait layout: apply a template, then press Portrait to see it laid out for phones (1080 × 1920).
+
 ## Import from Unity
 
 Already have an interface in Unity? Bring it into Lienzo UI:
@@ -108,6 +110,8 @@ The Community tab in the left bar is a shared catalog of plugins, images, fonts,
 - When you create your profile you accept the rules: no malware, hate, plagiarism or unmarked 18+ content. The full text is in docs/TERMS.md and docs/COMMUNITY_GUIDELINES.md.
 - 18+ content is hidden unless you sign in and turn on “Show 18+ content”.
 - Everything shared is reviewed before it is published, and you can report anything that breaks the rules.
+
+On fonts and plugins, press Preview to see sample text, or to read what a plugin does and its code, before installing; nothing is installed. Press Translate to read any description in your language. It uses a free online service, only when you press it, and “Show original” goes back.
 
 ## Next steps
 

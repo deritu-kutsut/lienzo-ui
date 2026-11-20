@@ -213,6 +213,9 @@ function descendants(doc, id) {
 
 // ---------- tools ----------
 
+/** Said to every AI client (initialize instructions, lienzo_info and the export_unity description): the export has no confirmation in the editor. */
+const EXPORT_SAFETY = "export_unity writes straight into Assets/EditorGUI of the Unity project, with no prompt in the editor. Always call it with dry_run: true first, show the person the list of files and ask for their confirmation, and only then export for real.";
+
 const TOOLS = [
   {
     name: "lienzo_info",
@@ -221,7 +224,8 @@ const TOOLS = [
     run: () => [
       `Lienzo UI v${VERSION} (MCP server). Visual editor for game interfaces that exports to Unity.`,
       `Designs folder: ${DESIGNS}`,
-      "Workflow: list_templates → create_design → read_design → modify/duplicate/delete elements → review_design → screenshot → export_unity.",
+      "Workflow: list_templates → create_design → read_design → modify/duplicate/delete elements → review_design → screenshot → export_unity with dry_run: true (show the list to the person) → export_unity.",
+      "Safety: " + EXPORT_SAFETY,
       "Coordinates are in pixels of the reference resolution (normally 1920×1080), origin at the top left.",
       "Element types: Panel, Ellipse, Image, Text, Button, Toggle, Slider, InputField, Dropdown, ScrollView, Empty.",
       "In Unity: the design appears as a prefab in Assets/EditorGUI/Prefabs (uGUI + TextMeshPro), plus UXML/USS (UI Toolkit) and an OnGUI script (IMGUI).",
@@ -472,7 +476,7 @@ const TOOLS = [
   },
   {
     name: "export_unity",
-    description: "Exports the design to a Unity project (the folder that contains Assets). Writes to Assets/EditorGUI: design, importer, UXML/USS, IMGUI script and views. Unity creates the prefab when you return to its window. With dry_run: true nothing is written; it lists each file that would be created, updated, left the same or removed, so you can review it first.",
+    description: "Exports the design to a Unity project (the folder that contains Assets). Writes to Assets/EditorGUI: design, importer, UXML/USS, IMGUI script and views. Unity creates the prefab when you return to its window. IMPORTANT: it writes directly, with no confirmation in the editor (your approval is the MCP client's tool approval). Call it with dry_run: true first: nothing is written and it lists each file that would be created, updated, left the same or removed; show that list to the person, ask for their confirmation, then call it again without dry_run.",
     inputSchema: { type: "object", properties: { file: { type: "string" }, unity_project: { type: "string" }, dry_run: { type: "boolean", description: "List what would be written without writing anything." } }, required: ["file", "unity_project"] },
     run: async ({ file, unity_project, dry_run }) => {
       if (dry_run !== undefined && typeof dry_run !== "boolean") throw new Error("'dry_run' must be true or false.");
@@ -487,8 +491,8 @@ const TOOLS = [
       const r = await runApp(["--open", abs, "--export", project, ...(dry_run ? ["--dry-run"] : [])]);
       if (r.timedOut) throw new Error(dry_run ? "The app did not answer in time." : "The app did not answer in time: the export may be incomplete.");
       if (r.code !== 0) throw new Error(r.err || "Could not export.");
-      if (dry_run) return "Dry run: nothing was written. Each line is <new|update|same|remove> and the path, relative to the Unity project:\n" + r.out;
-      return "Files written:\n" + r.out;
+      if (dry_run) return "Dry run: nothing was written. Each line is <new|update|same|remove> and the path, relative to the Unity project:\n" + r.out + "\n\nShow this list to the person and ask for their confirmation. To export for real, call export_unity again without dry_run.";
+      return "Files written:\n" + r.out + "\n\nTip: call export_unity with dry_run: true first next time to preview what it writes.";
     },
   },
 ];
@@ -523,7 +527,7 @@ async function handle(m) {
           protocolVersion: PROTOCOL_VERSIONS.includes(params.protocolVersion) ? params.protocolVersion : PROTOCOL_VERSIONS[0],
           capabilities: { tools: { listChanged: false } },
           serverInfo: { name: "lienzo-ui", version: VERSION },
-          instructions: "Lienzo UI server (interface editor for Unity). Start with lienzo_info.",
+          instructions: "Lienzo UI server (interface editor for Unity). Start with lienzo_info. Safety: " + EXPORT_SAFETY,
         });
       case "notifications/initialized":
       case "notifications/cancelled":

@@ -22,7 +22,7 @@
     },
     {
       "title": "竖屏",
-      "text": "手机经常竖着拿。Lienzo UI 为此另存一套布局，不会改动原来的那套：\n\n• 用顶部栏的「风景」/「头像」按钮切换视图（即横屏/竖屏）。\n• 不选中任何元素，在检查器中打开「竖屏布局」，点击「创建竖屏布局」。元素一开始位于它们在横屏中的位置。\n• 在竖屏视图中，你移动或缩放的内容只会改变竖屏布局。右键点击元素 ›「恢复为横屏」可撤销某一处修改。\n• 导出时会包含两套布局：当屏幕高度大于宽度时，Unity 中的 prefab 会自动切换到竖屏布局。"
+      "text": "手机经常竖着拿。Lienzo UI 为此另存一套布局，不会改动原来的那套：\n\n• 用顶部栏的「风景」/「头像」按钮切换视图（即横屏/竖屏）。\n• 不选中任何元素，在检查器中打开「竖屏布局」，点击「创建竖屏布局」。元素一开始位于它们在横屏中的位置。\n• 在竖屏视图中，你移动或缩放的内容只会改变竖屏布局。右键点击元素 ›「恢复为横屏」可撤销某一处修改。\n• 导出时会包含两套布局：当屏幕高度大于宽度时，Unity 中的 prefab 会自动切换到竖屏布局。\n\n每个模板都自带竖屏布局：应用一个模板，再点击「头像」按钮（即竖屏），就能看到为手机设计的版面（1080 × 1920）。"
     },
     {
       "title": "测试并导出到 Unity",
@@ -38,7 +38,7 @@
     },
     {
       "title": "社区",
-      "text": "左侧栏的「社区」标签页是一个共享目录，收录插件、图片、字体、模板、元素和主题：\n\n• 浏览和安装不需要账号：搜索后点击「安装」即可。\n• 要上传、举报或点赞，需要用 GitHub 或 Google 登录并选择一个公开名称。没有密码：应用只保存这个名称。\n• 创建个人资料时你需要接受规则：禁止恶意软件、仇恨内容、抄袭，以及未标注的 18+ 内容。完整内容见 docs/TERMS.md 和 docs/COMMUNITY_GUIDELINES.md。\n• 18+ 内容默认隐藏，登录并开启「显示 18+ 内容」后才会显示。\n• 所有共享内容在发布前都会经过审核，你也可以举报违反规则的内容。"
+      "text": "左侧栏的「社区」标签页是一个共享目录，收录插件、图片、字体、模板、元素和主题：\n\n• 浏览和安装不需要账号：搜索后点击「安装」即可。\n• 要上传、举报或点赞，需要用 GitHub 或 Google 登录并选择一个公开名称。没有密码：应用只保存这个名称。\n• 创建个人资料时你需要接受规则：禁止恶意软件、仇恨内容、抄袭，以及未标注的 18+ 内容。完整内容见 docs/TERMS.md 和 docs/COMMUNITY_GUIDELINES.md。\n• 18+ 内容默认隐藏，登录并开启「显示 18+ 内容」后才会显示。\n• 所有共享内容在发布前都会经过审核，你也可以举报违反规则的内容。\n\n对于字体和插件，安装前点击「预览」可以看到示例文字，或查看插件的功能和代码；不会安装任何内容。点击「翻译」可以用你的语言阅读任何描述。它只在你点击时使用免费的在线服务，点击「显示原文」可返回原文。"
     }
   ],
   "pro": [
@@ -52,7 +52,7 @@
     },
     {
       "title": "竖屏布局详解",
-      "text": "竖屏布局是同一个设计的第二个视图（docs/FORMAT.md › PortraitLayout）：\n\n• 它有自己的参考分辨率，即「竖屏尺寸」（默认 1080 × 1920）。\n• 没有覆盖设置的元素保留其横屏 RectTransform，并按竖屏页面重新计算：全屏背景会拉伸，右侧锚定的元素跟随右边缘。\n• 只有你在竖屏视图中修改的内容才会保存，形式是覆盖设置（位置、大小、旋转、锚点、可见性、字号、布局）。右键 ›「恢复为横屏」可移除其中一项。\n• 导出：JSON 包含这些覆盖设置，生成的 LienzoOrientationLayout 脚本会在 Screen.width < Screen.height 时应用它们，尺寸变化时会再次应用。\n• 「移除竖屏布局」会删除所有覆盖设置。"
+      "text": "竖屏布局是同一个设计的第二个视图（docs/FORMAT.md › PortraitLayout）：\n\n• 它有自己的参考分辨率，即「竖屏尺寸」（默认 1080 × 1920）。\n• 没有覆盖设置的元素保留其横屏 RectTransform，并按竖屏页面重新计算：全屏背景会拉伸，右侧锚定的元素跟随右边缘。\n• 只有你在竖屏视图中修改的内容才会保存，形式是覆盖设置（位置、大小、旋转、锚点、可见性、字号、布局）。右键 ›「恢复为横屏」可移除其中一项。\n• 导出：JSON 包含这些覆盖设置，生成的 LienzoOrientationLayout 脚本会在 Screen.width < Screen.height 时应用它们，尺寸变化时会再次应用。\n• 「移除竖屏布局」会删除所有覆盖设置。\n\n模板自带已做好的竖屏布局，以横屏布局的覆盖项形式保存，所以竖屏视图一开始就是为手机设计的版面。"
     },
     {
       "title": "布局、分组和列表",
@@ -76,11 +76,11 @@
     },
     {
       "title": "命令行与自动化",
-      "text": "lienzo-ui --templates                         列出所有模板\nlienzo-ui --template 0 --save menu.editorgui.json\nlienzo-ui --open menu.editorgui.json --review        检查设计（有错误时返回代码 1）\nlienzo-ui --open menu.editorgui.json --export <Unity 项目>\nlienzo-ui --open menu.editorgui.json --screenshot capture.png\nlienzo-ui --test 1080x2400                    以该屏幕尺寸在「测试」中打开\n\n使用 --export、--save 和 --review 时不会打开窗口：适合脚本、CI 和 MCP 服务器。"
+      "text": "lienzo-ui --templates                         列出所有模板\nlienzo-ui --template 0 --save menu.editorgui.json\nlienzo-ui --open menu.editorgui.json --review        检查设计（有错误时返回代码 1）\nlienzo-ui --open menu.editorgui.json --export <Unity 项目>\nlienzo-ui --open menu.editorgui.json --screenshot capture.png\nlienzo-ui --test 1080x2400                    以该屏幕尺寸在「测试」中打开\n\n使用 --export、--save 和 --review 时不会打开窗口：适合脚本、CI 和 MCP 服务器。\n\n在 --export 后加上 --dry-run，会把每个文件列为 new、update、same 或 remove，而不写入任何内容。"
     },
     {
       "title": "MCP 服务器与参与贡献",
-      "text": "mcp/ 文件夹里有一个无依赖的 MCP 服务器（Node 18+）：任何兼容的 AI（Claude、Cursor、VS Code…）都可以列出模板、创建和编辑设计、导出到 Unity 并截图。\n\nLienzo UI 是开源软件（MIT）。代码使用 Rust 和 egui：src/model.rs（数据）、src/canvas.rs（画布）、src/panels.rs（面板）、src/export/（Unity）。\n\n阅读 docs/EXTENDING.md 了解如何添加元素、模板或导出器，阅读 CONTRIBUTING.md 了解如何提交修改。"
+      "text": "mcp/ 文件夹里有一个无依赖的 MCP 服务器（Node 18+）：任何兼容的 AI（Claude、Cursor、VS Code…）都可以列出模板、创建和编辑设计、导出到 Unity 并截图。\n\nexport_unity 会直接写入 AI 所指定项目的 Assets/EditorGUI，编辑器中不会弹出任何提示：批准由你的 MCP 客户端的工具批准来完成。请先让 AI 用 dry_run: true 调用它，查看列表，然后再真正导出。\n\nLienzo UI 是开源软件（MIT）。代码使用 Rust 和 egui：src/model.rs（数据）、src/canvas.rs（画布）、src/panels.rs（面板）、src/export/（Unity）。\n\n阅读 docs/EXTENDING.md 了解如何添加元素、模板或导出器，阅读 CONTRIBUTING.md 了解如何提交修改。"
     },
     {
       "title": "像素艺术",
@@ -92,7 +92,7 @@
     },
     {
       "title": "社区：插件、字体与规则",
-      "text": "在「社区」标签页中，点击「安装」即可一键添加共享内容：插件、字体、图片、模板、元素和主题。\n\n• 社区插件会放进名为 community-<名称>-<哈希> 的文件夹。它会先写入临时文件夹，所以被中断的安装不会留下半个插件。安装后会出现在「插件」标签页。\n• 它的脚本同样是 Rhai 脚本：在沙箱中运行，不能访问文件和网络，并且对运算次数、时间和内存有限制（docs/PLUGINS.md）。\n• 安装的字体会加入「文字」标签页，并随设计一起导出到 Unity。\n• 下载内容会与公布的 SHA-256 指纹比对；不一致则不会安装。\n• 要发布内容，需要登录（GitHub 或 Google）、选择公开名称并接受规则。所有内容都会先经过审核，18+ 内容必须标注。参见 docs/TERMS.md、docs/COMMUNITY_GUIDELINES.md 和 docs/PRIVACY.md。"
+      "text": "在「社区」标签页中，点击「安装」即可一键添加共享内容：插件、字体、图片、模板、元素和主题。\n\n• 社区插件会放进名为 community-<名称>-<哈希> 的文件夹。它会先写入临时文件夹，所以被中断的安装不会留下半个插件。安装后会出现在「插件」标签页。\n• 它的脚本同样是 Rhai 脚本：在沙箱中运行，不能访问文件和网络，并且对运算次数、时间和内存有限制（docs/PLUGINS.md）。\n• 安装的字体会加入「文字」标签页，并随设计一起导出到 Unity。\n• 下载内容会与公布的 SHA-256 指纹比对；不一致则不会安装。\n• 要发布内容，需要登录（GitHub 或 Google）、选择公开名称并接受规则。所有内容都会先经过审核，18+ 内容必须标注。参见 docs/TERMS.md、docs/COMMUNITY_GUIDELINES.md 和 docs/PRIVACY.md。\n\n安装前，「预览」会用示例文字显示字体，或显示插件的命令、导出器、文件和源代码（只读）；不会安装任何内容，也不会计入下载次数。「翻译」只会在你点击时把该描述发送给免费的 MyMemory 服务（docs/PRIVACY.md）。"
     },
     {
       "title": "自动保存、恢复与撤销",

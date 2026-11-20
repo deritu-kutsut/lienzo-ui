@@ -76,6 +76,10 @@ lienzo-ui --no-tutorial                                 # no lo abre
 
 `--save`, `--export` y `--review` no abren ventana: sirven para scripts, CI y el [servidor MCP](MCP.md) (herramienta `review_design`).
 
+Añade --dry-run a --export para listar cada archivo como new, update, same o remove sin escribir nada.
+
+export_unity escribe directamente en Assets/EditorGUI del proyecto que indique la IA, sin ningún aviso en el editor: la aprobación es la de herramientas de tu cliente MCP. Pide a la IA que lo llame antes con dry_run: true, lee la lista y después exporta de verdad.
+
 ## Código fuente
 
 Rust + [egui](https://github.com/emilk/egui):
@@ -103,6 +107,8 @@ El diseño vertical es una segunda vista del mismo diseño (docs/FORMAT.md › P
 - Solo se guarda lo que cambias en la vista vertical, como excepciones (posición, tamaño, rotación, anclajes, visibilidad, tamaño de fuente, layout). Clic derecho › «Volver a horizontal» quita una.
 - Exportación: el JSON lleva las excepciones y el script generado LienzoOrientationLayout las aplica cuando Screen.width < Screen.height, y de nuevo si cambia el tamaño.
 - «Quitar diseño vertical» borra todas las excepciones.
+
+Las plantillas traen un diseño vertical ya incorporado, guardado como excepciones del horizontal, así que Retrato muestra desde el principio un diseño pensado para móviles.
 
 ## 9-slice y el paquete incluido
 
@@ -146,6 +152,8 @@ En la pestaña Comunidad, Instalar añade contenido compartido con un clic: plug
 - Una fuente instalada se añade a la pestaña Texto y se exporta a Unity con el diseño.
 - Las descargas se comprueban con la huella SHA-256 publicada; si no coincide, no se instala nada.
 - Para publicar inicias sesión (GitHub o Google), eliges un nombre público y aceptas las reglas. Todo se revisa antes y el contenido +18 debe marcarse. Ver docs/TERMS.md, docs/COMMUNITY_GUIDELINES.md y docs/PRIVACY.md.
+
+Vista previa muestra una fuente con texto de ejemplo, o los comandos, exportadores, archivos y el código fuente de un plugin (solo lectura), antes de instalar; no se instala nada ni se cuenta una descarga. Traducir envía solo esa descripción al servicio gratuito MyMemory cuando lo pulsas (docs/PRIVACY.md).
 
 ## Autoguardado, recuperación y deshacer
 

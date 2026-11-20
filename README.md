@@ -36,7 +36,8 @@
 
 ## What's new
 
-**1.7.2**
+**1.7.3**
+- **MCP safety notice:** the MCP server now tells every AI that `export_unity` writes straight into your Unity project and asks it to dry-run first, show you the list and wait for your confirmation (see [Safe exports](docs/MCP.md#safe-exports-read-this-before-connecting-an-ai)). Both tutorials (in the app and in `docs/`, 10 languages) cover everything new.
 - **Export preview (`dry_run`):** the MCP tool `export_unity` takes `dry_run: true` (and the command line `--export <project> --dry-run`) to list every file that would be created, updated or removed in your Unity project, without writing anything.
 - **Community: preview before you install.** Fonts show sample text drawn with the font; plugins show their commands, exporters, files and code (read-only). Nothing is installed.
 - **Community: Translate button** on every description, and on what a plugin preview shows (free MyMemory service, only when you press it; the note "automatic translation" is always shown, and *Show original* goes back).

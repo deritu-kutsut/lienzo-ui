@@ -76,6 +76,10 @@ lienzo-ui --no-tutorial                                 # ne l'ouvre pas
 
 `--save`, `--export` et `--review` n'ouvrent pas de fenêtre : utilisez-les pour des scripts, la CI et le [serveur MCP](MCP.md) (outil `review_design`).
 
+Ajoute --dry-run à --export pour lister chaque fichier comme new, update, same ou remove sans rien écrire.
+
+export_unity écrit directement dans Assets/EditorGUI du projet que l’IA indique, sans aucune confirmation dans l’éditeur : l’approbation est celle des outils de ton client MCP. Demande à l’IA de l’appeler d’abord avec dry_run: true, lis la liste, puis exporte pour de bon.
+
 ## Code source
 
 Rust + [egui](https://github.com/emilk/egui) :
@@ -103,6 +107,8 @@ La mise en page portrait est une seconde vue du même design (docs/FORMAT.md ›
 - Seul ce que tu modifies en vue portrait est enregistré, sous forme d'exceptions (position, taille, rotation, ancres, visibilité, taille de police, layout). Clic droit › « Revenir au paysage » en supprime une.
 - Export : le JSON contient les exceptions et le script généré LienzoOrientationLayout les applique quand Screen.width < Screen.height, puis de nouveau si la taille change.
 - « Supprimer la mise en page portrait » efface toutes les exceptions.
+
+Les modèles sont livrés avec une mise en page verticale déjà intégrée, stockée sous forme d’exceptions de l’horizontale : Portrait montre donc dès le départ une mise en page pensée pour les téléphones.
 
 ## 9-slice et pack intégré
 
@@ -146,6 +152,8 @@ Dans l'onglet Communauté, Installer ajoute du contenu partagé en un clic : plu
 - Une police installée est ajoutée à l'onglet Texte et exportée vers Unity avec le design.
 - Les téléchargements sont vérifiés avec l'empreinte SHA-256 publiée ; si elle ne correspond pas, rien n'est installé.
 - Pour publier, tu te connectes (GitHub ou Google), tu choisis un nom public et tu acceptes les règles. Tout est vérifié avant, et le contenu +18 doit être signalé. Voir docs/TERMS.md, docs/COMMUNITY_GUIDELINES.md et docs/PRIVACY.md.
+
+Aperçu montre une police avec un texte d’exemple, ou les commandes, exporteurs, fichiers et le code source d’un plugin (lecture seule), avant d’installer ; rien n’est installé et aucun téléchargement n’est compté. Traduire envoie seulement cette description au service gratuit MyMemory quand tu appuies (docs/PRIVACY.md).
 
 ## Enregistrement automatique, récupération et annulation
 

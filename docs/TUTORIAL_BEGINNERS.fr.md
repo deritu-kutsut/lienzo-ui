@@ -82,6 +82,8 @@ Les téléphones sont souvent tenus à la verticale. Lienzo UI garde une seconde
 - En vue portrait, ce que tu déplaces ou redimensionnes ne modifie que la mise en page portrait. Clic droit sur un élément › « Revenir au paysage » annule une modification.
 - L'export contient les deux mises en page : dans Unity, le prefab passe tout seul à la version verticale quand l'écran est plus haut que large.
 
+Chaque modèle arrive déjà avec sa propre mise en page verticale : applique un modèle puis appuie sur Portrait pour le voir pensé pour les téléphones (1080 × 1920).
+
 ## Importer depuis Unity
 
 Tu as déjà une interface dans Unity ? Amène-la dans Lienzo UI :
@@ -108,6 +110,8 @@ L'onglet Communauté de la barre de gauche est un catalogue partagé de plugins,
 - En créant ton profil, tu acceptes les règles : pas de malware, de haine, de plagiat ni de contenu +18 non signalé. Le texte complet se trouve dans docs/TERMS.md et docs/COMMUNITY_GUIDELINES.md.
 - Le contenu +18 est masqué, sauf si tu te connectes et actives « Afficher le contenu +18 ».
 - Tout ce qui est partagé est vérifié avant publication, et tu peux signaler ce qui enfreint les règles.
+
+Sur les polices et les plugins, appuie sur Aperçu pour voir un texte d’exemple, ou pour lire ce que fait un plugin et son code, avant d’installer ; rien n’est installé. Appuie sur Traduire pour lire n’importe quelle description dans ta langue. Cela utilise un service en ligne gratuit, seulement quand tu appuies, et « Voir l’original » revient en arrière.
 
 ## Étapes suivantes
 

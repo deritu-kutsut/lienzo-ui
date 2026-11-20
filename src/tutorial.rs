@@ -61,7 +61,7 @@ Si prefieres empezar de cero, elige «En blanco» o Archivo › Nuevo diseño en
     },
     Page {
         title: "Pantallas verticales",
-        text: "Los móviles suelen usarse en vertical. Lienzo UI guarda un segundo diseño para eso, sin tocar el primero:\n\n• Cambia de vista con los botones Paisaje / Retrato de la barra superior.\n• Sin nada seleccionado, abre «Diseño vertical» en el Inspector y pulsa «Crear diseño vertical». Los elementos empiezan donde están en horizontal.\n• En la vista vertical, lo que muevas o redimensiones solo cambia el diseño vertical. Clic derecho en un elemento › «Volver a horizontal» deshace un cambio.\n• La exportación lleva los dos diseños: en Unity el prefab pasa solo al vertical cuando la pantalla es más alta que ancha.",
+        text: "Los móviles suelen usarse en vertical. Lienzo UI guarda un segundo diseño para eso, sin tocar el primero:\n\n• Cambia de vista con los botones Paisaje / Retrato de la barra superior.\n• Sin nada seleccionado, abre «Diseño vertical» en el Inspector y pulsa «Crear diseño vertical». Los elementos empiezan donde están en horizontal.\n• En la vista vertical, lo que muevas o redimensiones solo cambia el diseño vertical. Clic derecho en un elemento › «Volver a horizontal» deshace un cambio.\n• La exportación lleva los dos diseños: en Unity el prefab pasa solo al vertical cuando la pantalla es más alta que ancha.\n\nCada plantilla ya trae su propio diseño vertical: aplica una plantilla y pulsa Retrato para verla pensada para móviles (1080 × 1920).",
     },
     Page {
         title: "Probar y exportar a Unity",
@@ -81,7 +81,7 @@ En Unity, al volver a la ventana, el diseño aparece como prefab en Assets/Edito
     },
     Page {
         title: "Comunidad",
-        text: "La pestaña Comunidad de la barra izquierda es un catálogo compartido de plugins, imágenes, fuentes, plantillas, elementos y temas:\n\n• Explorar e instalar no necesita cuenta: busca y pulsa Instalar.\n• Para subir, reportar o dar corazones inicias sesión con GitHub o Google y eliges un nombre público. Sin contraseñas: la app solo guarda ese nombre.\n• Al crear tu perfil aceptas las reglas: nada de malware, odio, plagio ni contenido +18 sin marcar. El texto completo está en docs/TERMS.md y docs/COMMUNITY_GUIDELINES.md.\n• El contenido +18 está oculto salvo que inicies sesión y actives «Mostrar contenido +18».\n• Todo lo que se comparte se revisa antes de publicarse, y puedes reportar lo que incumpla las reglas.",
+        text: "La pestaña Comunidad de la barra izquierda es un catálogo compartido de plugins, imágenes, fuentes, plantillas, elementos y temas:\n\n• Explorar e instalar no necesita cuenta: busca y pulsa Instalar.\n• Para subir, reportar o dar corazones inicias sesión con GitHub o Google y eliges un nombre público. Sin contraseñas: la app solo guarda ese nombre.\n• Al crear tu perfil aceptas las reglas: nada de malware, odio, plagio ni contenido +18 sin marcar. El texto completo está en docs/TERMS.md y docs/COMMUNITY_GUIDELINES.md.\n• El contenido +18 está oculto salvo que inicies sesión y actives «Mostrar contenido +18».\n• Todo lo que se comparte se revisa antes de publicarse, y puedes reportar lo que incumpla las reglas.\n\nEn fuentes y plugins, pulsa Vista previa para ver un texto de ejemplo, o para leer qué hace un plugin y su código, antes de instalar; no se instala nada. Pulsa Traducir para leer cualquier descripción en tu idioma. Usa un servicio gratuito en línea, solo cuando lo pulsas, y «Ver original» vuelve atrás.",
     },
 ];
 
@@ -104,7 +104,7 @@ Usa Probar (F5) con varias pantallas para comprobarlo antes de exportar.",
     },
     Page {
         title: "Diseño vertical al detalle",
-        text: "El diseño vertical es una segunda vista del mismo diseño (docs/FORMAT.md › PortraitLayout):\n\n• Tiene su propia resolución de referencia, «Tamaño vertical» (1080 × 1920 por defecto).\n• Los elementos sin excepción conservan su RectTransform horizontal y se reevalúan contra la página vertical: un fondo a pantalla completa se estira, los anclados a la derecha siguen el borde derecho.\n• Solo se guarda lo que cambias en la vista vertical, como excepciones (posición, tamaño, rotación, anclajes, visibilidad, tamaño de fuente, layout). Clic derecho › «Volver a horizontal» quita una.\n• Exportación: el JSON lleva las excepciones y el script generado LienzoOrientationLayout las aplica cuando Screen.width < Screen.height, y de nuevo si cambia el tamaño.\n• «Quitar diseño vertical» borra todas las excepciones.",
+        text: "El diseño vertical es una segunda vista del mismo diseño (docs/FORMAT.md › PortraitLayout):\n\n• Tiene su propia resolución de referencia, «Tamaño vertical» (1080 × 1920 por defecto).\n• Los elementos sin excepción conservan su RectTransform horizontal y se reevalúan contra la página vertical: un fondo a pantalla completa se estira, los anclados a la derecha siguen el borde derecho.\n• Solo se guarda lo que cambias en la vista vertical, como excepciones (posición, tamaño, rotación, anclajes, visibilidad, tamaño de fuente, layout). Clic derecho › «Volver a horizontal» quita una.\n• Exportación: el JSON lleva las excepciones y el script generado LienzoOrientationLayout las aplica cuando Screen.width < Screen.height, y de nuevo si cambia el tamaño.\n• «Quitar diseño vertical» borra todas las excepciones.\n\nLas plantillas traen un diseño vertical ya incorporado, guardado como excepciones del horizontal, así que Retrato muestra desde el principio un diseño pensado para móviles.",
     },
     Page {
         title: "Layouts, grupos y listas",
@@ -137,11 +137,11 @@ lienzo-ui --open menu.editorgui.json --review         revisa el diseño (código
 lienzo-ui --open menu.editorgui.json --export <proyecto Unity>\n\
 lienzo-ui --open menu.editorgui.json --screenshot capture.png\n\
 lienzo-ui --test   1080x2400                    abre en Probar con esa pantalla\n\n\
-Con --export, --save y --review no se abre ventana: sirve para scripts, CI y el servidor MCP.",
+Con --export, --save y --review no se abre ventana: sirve para scripts, CI y el servidor MCP.\n\nAñade --dry-run a --export para listar cada archivo como new, update, same o remove sin escribir nada.",
     },
     Page {
         title: "Servidor MCP y contribuir",
-        text: "La carpeta mcp/ trae un servidor MCP sin dependencias (Node 18+): cualquier IA compatible (Claude, Cursor, VS Code…) puede listar plantillas, crear y editar diseños, exportarlos a Unity y sacar capturas.\n\n\
+        text: "La carpeta mcp/ trae un servidor MCP sin dependencias (Node 18+): cualquier IA compatible (Claude, Cursor, VS Code…) puede listar plantillas, crear y editar diseños, exportarlos a Unity y sacar capturas.\n\nexport_unity escribe directamente en Assets/EditorGUI del proyecto que indique la IA, sin ningún aviso en el editor: la aprobación es la de herramientas de tu cliente MCP. Pide a la IA que lo llame antes con dry_run: true, lee la lista y después exporta de verdad.\n\n\
 Lienzo UI es de código abierto (MIT). El código está en Rust con egui: src/model.rs (datos), src/canvas.rs (lienzo), src/panels.rs (paneles), src/export/ (Unity).\n\n\
 Lee docs/EXTENDING.md para añadir elementos, plantillas o exportadores, y CONTRIBUTING.md para enviar cambios.",
     },
@@ -163,7 +163,7 @@ Los scripts corren aislados, sin acceso a archivos ni red. «Abrir carpeta» lle
     },
     Page {
         title: "Comunidad: plugins, fuentes y normas",
-        text: "En la pestaña Comunidad, Instalar añade contenido compartido con un clic: plugins, fuentes, imágenes, plantillas, elementos y temas.\n\n• Un plugin de la comunidad va a una carpeta llamada community-<nombre>-<hash>. Se escribe primero en una carpeta temporal, así que una instalación interrumpida nunca deja un plugin a medias. Aparece en la pestaña Plugins.\n• Sus scripts son los mismos Rhai: aislados, sin acceso a archivos ni red y con límites de operaciones, tiempo y memoria (docs/PLUGINS.md).\n• Una fuente instalada se añade a la pestaña Texto y se exporta a Unity con el diseño.\n• Las descargas se comprueban con la huella SHA-256 publicada; si no coincide, no se instala nada.\n• Para publicar inicias sesión (GitHub o Google), eliges un nombre público y aceptas las reglas. Todo se revisa antes y el contenido +18 debe marcarse. Ver docs/TERMS.md, docs/COMMUNITY_GUIDELINES.md y docs/PRIVACY.md.",
+        text: "En la pestaña Comunidad, Instalar añade contenido compartido con un clic: plugins, fuentes, imágenes, plantillas, elementos y temas.\n\n• Un plugin de la comunidad va a una carpeta llamada community-<nombre>-<hash>. Se escribe primero en una carpeta temporal, así que una instalación interrumpida nunca deja un plugin a medias. Aparece en la pestaña Plugins.\n• Sus scripts son los mismos Rhai: aislados, sin acceso a archivos ni red y con límites de operaciones, tiempo y memoria (docs/PLUGINS.md).\n• Una fuente instalada se añade a la pestaña Texto y se exporta a Unity con el diseño.\n• Las descargas se comprueban con la huella SHA-256 publicada; si no coincide, no se instala nada.\n• Para publicar inicias sesión (GitHub o Google), eliges un nombre público y aceptas las reglas. Todo se revisa antes y el contenido +18 debe marcarse. Ver docs/TERMS.md, docs/COMMUNITY_GUIDELINES.md y docs/PRIVACY.md.\n\nVista previa muestra una fuente con texto de ejemplo, o los comandos, exportadores, archivos y el código fuente de un plugin (solo lectura), antes de instalar; no se instala nada ni se cuenta una descarga. Traducir envía solo esa descripción al servicio gratuito MyMemory cuando lo pulsas (docs/PRIVACY.md).",
     },
     Page {
         title: "Autoguardado, recuperación y deshacer",
@@ -215,7 +215,7 @@ To start from scratch, choose “Blank” or File › New blank design.",
     },
     Page {
         title: "Vertical (portrait) screens",
-        text: "Phones are often held upright. Lienzo UI keeps a second layout for that, without touching the first one:\n\n• Switch the view with the Landscape / Portrait buttons in the top bar.\n• With nothing selected, open “Portrait layout” in the Inspector and press “Create portrait layout”. Elements start where they are in landscape.\n• In Portrait view, whatever you move or resize changes only the portrait layout. Right-click an element › “Reset to landscape” to undo one change.\n• The export carries both layouts: in Unity the prefab switches to the vertical one by itself when the screen is taller than it is wide.",
+        text: "Phones are often held upright. Lienzo UI keeps a second layout for that, without touching the first one:\n\n• Switch the view with the Landscape / Portrait buttons in the top bar.\n• With nothing selected, open “Portrait layout” in the Inspector and press “Create portrait layout”. Elements start where they are in landscape.\n• In Portrait view, whatever you move or resize changes only the portrait layout. Right-click an element › “Reset to landscape” to undo one change.\n• The export carries both layouts: in Unity the prefab switches to the vertical one by itself when the screen is taller than it is wide.\n\nEvery template already comes with its own portrait layout: apply a template, then press Portrait to see it laid out for phones (1080 × 1920).",
     },
     Page {
         title: "Test and export to Unity",
@@ -235,7 +235,7 @@ Back in Unity, when you return to the window, the design appears as a prefab in 
     },
     Page {
         title: "Community",
-        text: "The Community tab in the left bar is a shared catalog of plugins, images, fonts, templates, elements and themes:\n\n• Browsing and installing needs no account: search and press Install.\n• To upload, report or give hearts you sign in with GitHub or Google and choose a public name. No passwords: the app only keeps that name.\n• When you create your profile you accept the rules: no malware, hate, plagiarism or unmarked 18+ content. The full text is in docs/TERMS.md and docs/COMMUNITY_GUIDELINES.md.\n• 18+ content is hidden unless you sign in and turn on “Show 18+ content”.\n• Everything shared is reviewed before it is published, and you can report anything that breaks the rules.",
+        text: "The Community tab in the left bar is a shared catalog of plugins, images, fonts, templates, elements and themes:\n\n• Browsing and installing needs no account: search and press Install.\n• To upload, report or give hearts you sign in with GitHub or Google and choose a public name. No passwords: the app only keeps that name.\n• When you create your profile you accept the rules: no malware, hate, plagiarism or unmarked 18+ content. The full text is in docs/TERMS.md and docs/COMMUNITY_GUIDELINES.md.\n• 18+ content is hidden unless you sign in and turn on “Show 18+ content”.\n• Everything shared is reviewed before it is published, and you can report anything that breaks the rules.\n\nOn fonts and plugins, press Preview to see sample text, or to read what a plugin does and its code, before installing; nothing is installed. Press Translate to read any description in your language. It uses a free online service, only when you press it, and “Show original” goes back.",
     },
 ];
 
@@ -258,7 +258,7 @@ Use Test (F5) with several screens before exporting.",
     },
     Page {
         title: "Portrait layout in detail",
-        text: "The portrait layout is a second view of the same design (docs/FORMAT.md › PortraitLayout):\n\n• It has its own reference resolution, “Portrait size” (1080 × 1920 by default).\n• Elements without an override keep their landscape RectTransform and are re-evaluated against the portrait page: a full-page background stretches, right-anchored elements follow the right edge.\n• Only what you change in Portrait view is stored, as overrides (position, size, rotation, anchors, visibility, font size, layout). Right-click › “Reset to landscape” removes one.\n• Export: the JSON carries the overrides and the generated LienzoOrientationLayout script applies them when Screen.width < Screen.height, and again when the size changes.\n• “Remove portrait layout” deletes every override.",
+        text: "The portrait layout is a second view of the same design (docs/FORMAT.md › PortraitLayout):\n\n• It has its own reference resolution, “Portrait size” (1080 × 1920 by default).\n• Elements without an override keep their landscape RectTransform and are re-evaluated against the portrait page: a full-page background stretches, right-anchored elements follow the right edge.\n• Only what you change in Portrait view is stored, as overrides (position, size, rotation, anchors, visibility, font size, layout). Right-click › “Reset to landscape” removes one.\n• Export: the JSON carries the overrides and the generated LienzoOrientationLayout script applies them when Screen.width < Screen.height, and again when the size changes.\n• “Remove portrait layout” deletes every override.\n\nTemplates ship with a portrait layout already built in, stored as overrides of the landscape one, so Portrait shows a layout designed for phones from the start.",
     },
     Page {
         title: "Layouts, groups and lists",
@@ -291,11 +291,11 @@ lienzo-ui --open menu.editorgui.json --review         reviews the design (exit c
 lienzo-ui --open menu.editorgui.json --export <Unity project>\n\
 lienzo-ui --open menu.editorgui.json --screenshot capture.png\n\
 lienzo-ui --test   1080x2400                    opens in Test mode with that screen\n\n\
-With --export, --save and --review no window opens: use them for scripts, CI and the MCP server.",
+With --export, --save and --review no window opens: use them for scripts, CI and the MCP server.\n\nAdd --dry-run to --export to list each file as new, update, same or remove without writing anything.",
     },
     Page {
         title: "MCP server and contributing",
-        text: "The mcp/ folder ships a dependency-free MCP server (Node 18+): any compatible AI (Claude, Cursor, VS Code…) can list templates, create and edit designs, export them to Unity and take screenshots.\n\n\
+        text: "The mcp/ folder ships a dependency-free MCP server (Node 18+): any compatible AI (Claude, Cursor, VS Code…) can list templates, create and edit designs, export them to Unity and take screenshots.\n\nexport_unity writes straight into Assets/EditorGUI of the project the AI names, with no prompt in the editor: the approval is your MCP client’s tool approval. Ask the AI to call it with dry_run: true first, read the list, and then export for real.\n\n\
 Lienzo UI is open source (MIT). The code is Rust with egui: src/model.rs (data), src/canvas.rs (canvas), src/panels.rs (panels), src/export/ (Unity).\n\n\
 Read docs/EXTENDING.md to add elements, templates or exporters, and CONTRIBUTING.md to send changes.",
     },
@@ -317,7 +317,7 @@ Scripts run sandboxed, without file or network access. “Open folder” takes y
     },
     Page {
         title: "Community: plugins, fonts and rules",
-        text: "In the Community tab, Install adds shared content with one click: plugins, fonts, images, templates, elements and themes.\n\n• A community plugin goes to a folder named community-<name>-<hash>. It is written to a temporary folder first, so an interrupted install never leaves half a plugin. It shows up in the Plugins tab.\n• Its scripts are the same Rhai scripts: sandboxed, with no file or network access and limits on operations, time and memory (docs/PLUGINS.md).\n• An installed font is added to the Text tab and exported to Unity with the design.\n• Downloads are checked against the published SHA-256 fingerprint; if it does not match, nothing is installed.\n• To publish you sign in (GitHub or Google), choose a public name and accept the rules. Everything is reviewed first and 18+ content must be marked. See docs/TERMS.md, docs/COMMUNITY_GUIDELINES.md and docs/PRIVACY.md.",
+        text: "In the Community tab, Install adds shared content with one click: plugins, fonts, images, templates, elements and themes.\n\n• A community plugin goes to a folder named community-<name>-<hash>. It is written to a temporary folder first, so an interrupted install never leaves half a plugin. It shows up in the Plugins tab.\n• Its scripts are the same Rhai scripts: sandboxed, with no file or network access and limits on operations, time and memory (docs/PLUGINS.md).\n• An installed font is added to the Text tab and exported to Unity with the design.\n• Downloads are checked against the published SHA-256 fingerprint; if it does not match, nothing is installed.\n• To publish you sign in (GitHub or Google), choose a public name and accept the rules. Everything is reviewed first and 18+ content must be marked. See docs/TERMS.md, docs/COMMUNITY_GUIDELINES.md and docs/PRIVACY.md.\n\nPreview shows a font with sample text, or a plugin’s commands, exporters, files and source code (read-only), before you install; nothing is installed and no download is counted. Translate sends only that description to the free MyMemory service when you press it (docs/PRIVACY.md).",
     },
     Page {
         title: "Autosave, recovery and undo",

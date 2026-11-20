@@ -76,6 +76,10 @@ lienzo-ui --no-tutorial                                 # non lo apre
 
 `--save`, `--export` e `--review` non aprono una finestra: usali per script, CI e il [server MCP](MCP.md) (strumento `review_design`).
 
+Aggiungi --dry-run a --export per elencare ogni file come new, update, same o remove senza scrivere nulla.
+
+export_unity scrive direttamente in Assets/EditorGUI del progetto indicato dall’IA, senza alcuna richiesta nell’editor: l’approvazione è quella degli strumenti del tuo client MCP. Chiedi all’IA di chiamarlo prima con dry_run: true, leggi l’elenco e poi esporta davvero.
+
 ## Codice sorgente
 
 Rust + [egui](https://github.com/emilk/egui):
@@ -103,6 +107,8 @@ Il layout verticale è una seconda vista dello stesso design (docs/FORMAT.md ›
 - Viene salvato solo ciò che modifichi nella vista verticale, come eccezioni (posizione, dimensione, rotazione, ancoraggi, visibilità, dimensione del carattere, layout). Clic destro › «Torna a orizzontale» ne rimuove una.
 - Esportazione: il JSON contiene le eccezioni e lo script generato LienzoOrientationLayout le applica quando Screen.width < Screen.height, e di nuovo quando la dimensione cambia.
 - «Rimuovi layout verticale» elimina tutte le eccezioni.
+
+I modelli includono già un layout verticale, salvato come eccezioni di quello orizzontale, quindi Ritratto mostra fin dall’inizio un layout pensato per gli smartphone.
 
 ## 9-slice e pacchetto incluso
 
@@ -146,6 +152,8 @@ Nella scheda Community, Installa aggiunge contenuti condivisi con un clic: plugi
 - Un font installato viene aggiunto alla scheda Testo ed esportato in Unity con il design.
 - I download vengono verificati con l'impronta SHA-256 pubblicata; se non corrisponde, non si installa nulla.
 - Per pubblicare accedi (GitHub o Google), scegli un nome pubblico e accetti le regole. Tutto viene controllato prima e i contenuti +18 vanno segnalati. Vedi docs/TERMS.md, docs/COMMUNITY_GUIDELINES.md e docs/PRIVACY.md.
+
+Anteprima mostra un font con un testo di esempio, o i comandi, gli esportatori, i file e il codice sorgente di un plugin (sola lettura), prima di installare; non viene installato nulla e nessun download viene contato. Traduci invia solo quella descrizione al servizio gratuito MyMemory quando lo premi (docs/PRIVACY.md).
 
 ## Salvataggio automatico, recupero e annulla
 

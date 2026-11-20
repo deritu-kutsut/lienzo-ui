@@ -76,6 +76,10 @@ lienzo-ui --no-tutorial                                 # 튜토리얼을 열지
 
 `--save`, `--export`, `--review`는 창을 열지 않습니다. 스크립트, CI 및 [MCP 서버](MCP.md)(`review_design` 도구)에서 사용하세요.
 
+--export에 --dry-run을 붙이면 아무것도 쓰지 않고 각 파일을 new, update, same, remove로 나열합니다.
+
+export_unity는 AI가 지정한 프로젝트의 Assets/EditorGUI에 직접 기록하며, 편집기에는 확인 창이 뜨지 않습니다. 승인은 MCP 클라이언트의 도구 승인으로 이루어집니다. AI에게 먼저 dry_run: true로 호출하게 하고, 목록을 확인한 뒤 실제로 내보내세요.
+
 ## 소스 코드
 
 Rust + [egui](https://github.com/emilk/egui):
@@ -103,6 +107,8 @@ Rust + [egui](https://github.com/emilk/egui):
 - 세로 보기에서 바꾼 내용만 재정의로 저장됩니다(위치, 크기, 회전, 앵커, 표시 여부, 글꼴 크기, 레이아웃). 마우스 오른쪽 버튼 ›「가로로 되돌리기」로 하나를 제거할 수 있습니다.
 - 내보내기: JSON에 재정의가 들어 있고, 생성된 LienzoOrientationLayout 스크립트가 Screen.width < Screen.height일 때 이를 적용하며 크기가 바뀌면 다시 적용합니다.
 - 「세로 레이아웃 제거」는 모든 재정의를 삭제합니다.
+
+템플릿에는 세로 레이아웃이 이미 들어 있으며 가로 레이아웃의 덮어쓰기로 저장되므로, 세로 보기는 처음부터 휴대폰에 맞춘 레이아웃을 보여 줍니다.
 
 ## 9-slice와 기본 제공 팩
 
@@ -146,6 +152,8 @@ Rust + [egui](https://github.com/emilk/egui):
 - 설치한 글꼴은 텍스트 탭에 추가되고 디자인과 함께 Unity로 내보내집니다.
 - 다운로드는 공개된 SHA-256 지문과 대조하며, 일치하지 않으면 아무것도 설치하지 않습니다.
 - 게시하려면 로그인(GitHub 또는 Google)하고, 공개 이름을 정하고, 규칙에 동의해야 합니다. 모든 것이 먼저 검토되며 +18 콘텐츠는 표시해야 합니다. docs/TERMS.md, docs/COMMUNITY_GUIDELINES.md, docs/PRIVACY.md를 참고하세요.
+
+설치하기 전에 「미리보기」로 글꼴의 예시 텍스트, 또는 플러그인의 명령, 내보내기, 파일, 소스 코드(읽기 전용)를 볼 수 있습니다. 아무것도 설치되지 않고 다운로드로 집계되지도 않습니다. 「번역」은 누를 때만 그 설명을 무료 MyMemory 서비스로 보냅니다(docs/PRIVACY.md).
 
 ## 자동 저장, 복구, 실행 취소
 

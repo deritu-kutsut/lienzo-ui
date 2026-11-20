@@ -82,6 +82,8 @@ Celulares costumam ser usados na vertical. O Lienzo UI guarda um segundo layout 
 - Na visualização vertical, o que você mover ou redimensionar altera só o layout vertical. Clique direito em um elemento › “Voltar ao horizontal” desfaz uma alteração.
 - A exportação leva os dois layouts: no Unity o prefab muda sozinho para o vertical quando a tela é mais alta do que larga.
 
+Cada modelo já vem com o próprio layout vertical: aplique um modelo e pressione Retrato para vê-lo pensado para celulares (1080 × 1920).
+
 ## Importar do Unity
 
 Já tem uma interface no Unity? Traga-a para o Lienzo UI:
@@ -108,6 +110,8 @@ A aba Comunidade na barra à esquerda é um catálogo compartilhado de plugins, 
 - Ao criar seu perfil você aceita as regras: nada de malware, ódio, plágio nem conteúdo +18 sem marcação. O texto completo está em docs/TERMS.md e docs/COMMUNITY_GUIDELINES.md.
 - O conteúdo +18 fica oculto, a menos que você entre na conta e ative “Mostrar conteúdo +18”.
 - Tudo o que é compartilhado é revisado antes de ser publicado, e você pode denunciar o que violar as regras.
+
+Em fontes e plugins, pressione Prévia para ver um texto de exemplo, ou para ler o que um plugin faz e o seu código, antes de instalar; nada é instalado. Pressione Traduzir para ler qualquer descrição no seu idioma. Ele usa um serviço online gratuito, só quando você pressiona, e «Ver original» volta ao texto original.
 
 ## Próximos passos
 

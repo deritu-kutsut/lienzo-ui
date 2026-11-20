@@ -76,6 +76,10 @@ lienzo-ui --no-tutorial                                 # öffnet es nicht
 
 `--save`, `--export` und `--review` öffnen kein Fenster: Verwende sie für Skripte, CI und den [MCP-Server](MCP.md) (Werkzeug `review_design`).
 
+Hänge --dry-run an --export an, um jede Datei als new, update, same oder remove aufzulisten, ohne etwas zu schreiben.
+
+export_unity schreibt direkt nach Assets/EditorGUI des Projekts, das die KI nennt, ohne Rückfrage im Editor: Die Freigabe ist die Werkzeugfreigabe deines MCP-Clients. Lass die KI es zuerst mit dry_run: true aufrufen, lies die Liste und exportiere dann wirklich.
+
 ## Quellcode
 
 Rust + [egui](https://github.com/emilk/egui):
@@ -103,6 +107,8 @@ Das Hochformat-Layout ist eine zweite Ansicht desselben Entwurfs (docs/FORMAT.md
 - Gespeichert wird nur, was du in der Hochformat-Ansicht änderst, als Overrides (Position, Größe, Rotation, Anker, Sichtbarkeit, Schriftgröße, Layout). Rechtsklick › „Auf Querformat zurücksetzen“ entfernt einen.
 - Export: Das JSON enthält die Overrides, und das erzeugte Skript LienzoOrientationLayout wendet sie an, wenn Screen.width < Screen.height ist, und erneut bei Größenänderung.
 - „Hochformat-Layout entfernen“ löscht alle Overrides.
+
+Vorlagen bringen ein fertiges Hochformat-Layout mit, gespeichert als Abweichungen vom Querformat, sodass Porträt von Anfang an ein für Smartphones gestaltetes Layout zeigt.
 
 ## 9-Slice und das mitgelieferte Paket
 
@@ -146,6 +152,8 @@ Im Tab Community fügt Installieren geteilte Inhalte mit einem Klick hinzu: Plug
 - Eine installierte Schrift erscheint im Tab Text und wird mit dem Entwurf nach Unity exportiert.
 - Downloads werden mit dem veröffentlichten SHA-256-Fingerabdruck geprüft; stimmt er nicht, wird nichts installiert.
 - Zum Veröffentlichen meldest du dich an (GitHub oder Google), wählst einen öffentlichen Namen und akzeptierst die Regeln. Alles wird vorher geprüft, und Inhalte ab 18 müssen gekennzeichnet sein. Siehe docs/TERMS.md, docs/COMMUNITY_GUIDELINES.md und docs/PRIVACY.md.
+
+Vorschau zeigt eine Schrift mit Beispieltext oder die Befehle, Exporter, Dateien und den Quellcode eines Plugins (nur lesen), bevor du installierst; es wird nichts installiert und kein Download gezählt. Übersetzen sendet nur diese Beschreibung an den kostenlosen Dienst MyMemory, wenn du darauf drückst (docs/PRIVACY.md).
 
 ## Automatisch speichern, Wiederherstellung und Rückgängig
 

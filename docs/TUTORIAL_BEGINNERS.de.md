@@ -82,6 +82,8 @@ Smartphones hält man oft hochkant. Lienzo UI führt dafür ein zweites Layout, 
 - In der Hochformat-Ansicht ändert alles, was du verschiebst oder skalierst, nur das Hochformat-Layout. Rechtsklick auf ein Element › „Auf Querformat zurücksetzen“ macht eine Änderung rückgängig.
 - Der Export enthält beide Layouts: In Unity wechselt das Prefab von selbst zum Hochformat, wenn der Bildschirm höher als breit ist.
 
+Jede Vorlage bringt bereits ein eigenes Hochformat-Layout mit: Wende eine Vorlage an und drücke Porträt, um sie für Smartphones ausgelegt zu sehen (1080 × 1920).
+
 ## Aus Unity importieren
 
 Du hast schon eine Oberfläche in Unity? Hole sie in Lienzo UI:
@@ -108,6 +110,8 @@ Der Tab Community in der linken Leiste ist ein gemeinsamer Katalog mit Plugins, 
 - Beim Anlegen deines Profils akzeptierst du die Regeln: keine Malware, kein Hass, kein Plagiat und keine nicht gekennzeichneten Inhalte ab 18. Den vollständigen Text findest du in docs/TERMS.md und docs/COMMUNITY_GUIDELINES.md.
 - Inhalte ab 18 sind ausgeblendet, außer du meldest dich an und aktivierst „Inhalte ab 18 anzeigen“.
 - Alles Geteilte wird vor der Veröffentlichung geprüft, und du kannst melden, was gegen die Regeln verstößt.
+
+Drücke bei Schriften und Plugins auf Vorschau, um einen Beispieltext zu sehen oder vor der Installation zu lesen, was ein Plugin macht und wie sein Code aussieht; es wird nichts installiert. Drücke auf Übersetzen, um jede Beschreibung in deiner Sprache zu lesen. Dabei wird ein kostenloser Online-Dienst genutzt, nur wenn du darauf drückst, und „Original anzeigen“ führt zurück.
 
 ## Nächste Schritte
 

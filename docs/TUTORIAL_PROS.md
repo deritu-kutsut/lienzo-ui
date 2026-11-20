@@ -76,6 +76,10 @@ lienzo-ui --no-tutorial                                 # does not open it
 
 `--save`, `--export` and `--review` do not open a window: use them for scripts, CI and the [MCP server](MCP.md) (`review_design` tool).
 
+Add --dry-run to --export to list each file as new, update, same or remove without writing anything.
+
+export_unity writes straight into Assets/EditorGUI of the project the AI names, with no prompt in the editor: the approval is your MCP client’s tool approval. Ask the AI to call it with dry_run: true first, read the list, and then export for real.
+
 ## Source code
 
 Rust + [egui](https://github.com/emilk/egui):
@@ -103,6 +107,8 @@ The portrait layout is a second view of the same design (docs/FORMAT.md › Port
 - Only what you change in Portrait view is stored, as overrides (position, size, rotation, anchors, visibility, font size, layout). Right-click › “Reset to landscape” removes one.
 - Export: the JSON carries the overrides and the generated LienzoOrientationLayout script applies them when Screen.width < Screen.height, and again when the size changes.
 - “Remove portrait layout” deletes every override.
+
+Templates ship with a portrait layout already built in, stored as overrides of the landscape one, so Portrait shows a layout designed for phones from the start.
 
 ## 9-slice and the built-in pack
 
@@ -146,6 +152,8 @@ In the Community tab, Install adds shared content with one click: plugins, fonts
 - An installed font is added to the Text tab and exported to Unity with the design.
 - Downloads are checked against the published SHA-256 fingerprint; if it does not match, nothing is installed.
 - To publish you sign in (GitHub or Google), choose a public name and accept the rules. Everything is reviewed first and 18+ content must be marked. See docs/TERMS.md, docs/COMMUNITY_GUIDELINES.md and docs/PRIVACY.md.
+
+Preview shows a font with sample text, or a plugin’s commands, exporters, files and source code (read-only), before you install; nothing is installed and no download is counted. Translate sends only that description to the free MyMemory service when you press it (docs/PRIVACY.md).
 
 ## Autosave, recovery and undo
 

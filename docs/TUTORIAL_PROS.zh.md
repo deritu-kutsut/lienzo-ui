@@ -76,6 +76,10 @@ lienzo-ui --no-tutorial                                 # 不打开教程
 
 `--save`、`--export` 和 `--review` 不会打开窗口：适合用于脚本、CI 和 [MCP 服务器](MCP.md)（`review_design` 工具）。
 
+在 --export 后加上 --dry-run，会把每个文件列为 new、update、same 或 remove，而不写入任何内容。
+
+export_unity 会直接写入 AI 所指定项目的 Assets/EditorGUI，编辑器中不会弹出任何提示：批准由你的 MCP 客户端的工具批准来完成。请先让 AI 用 dry_run: true 调用它，查看列表，然后再真正导出。
+
 ## 源代码
 
 Rust + [egui](https://github.com/emilk/egui)：
@@ -103,6 +107,8 @@ Rust + [egui](https://github.com/emilk/egui)：
 - 只有你在竖屏视图中修改的内容才会保存，形式是覆盖设置（位置、大小、旋转、锚点、可见性、字号、布局）。右键 ›「恢复为横屏」可移除其中一项。
 - 导出：JSON 包含这些覆盖设置，生成的 LienzoOrientationLayout 脚本会在 Screen.width < Screen.height 时应用它们，尺寸变化时会再次应用。
 - 「移除竖屏布局」会删除所有覆盖设置。
+
+模板自带已做好的竖屏布局，以横屏布局的覆盖项形式保存，所以竖屏视图一开始就是为手机设计的版面。
 
 ## 9-slice 与内置素材包
 
@@ -146,6 +152,8 @@ Rust + [egui](https://github.com/emilk/egui)：
 - 安装的字体会加入「文字」标签页，并随设计一起导出到 Unity。
 - 下载内容会与公布的 SHA-256 指纹比对；不一致则不会安装。
 - 要发布内容，需要登录（GitHub 或 Google）、选择公开名称并接受规则。所有内容都会先经过审核，18+ 内容必须标注。参见 docs/TERMS.md、docs/COMMUNITY_GUIDELINES.md 和 docs/PRIVACY.md。
+
+安装前，「预览」会用示例文字显示字体，或显示插件的命令、导出器、文件和源代码（只读）；不会安装任何内容，也不会计入下载次数。「翻译」只会在你点击时把该描述发送给免费的 MyMemory 服务（docs/PRIVACY.md）。
 
 ## 自动保存、恢复与撤销
 
