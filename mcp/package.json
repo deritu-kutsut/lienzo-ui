@@ -1,0 +1,13 @@
+{
+  "name": "lienzo-ui-mcp",
+  "version": "1.7.3",
+  "description": "MCP server for Lienzo UI: create and edit Unity interface designs, review them, take screenshots and export to Unity (dry_run first).",
+  "type": "module",
+  "bin": { "lienzo-ui-mcp": "lienzo-ui-mcp.mjs" },
+  "files": ["lienzo-ui-mcp.mjs", "README.md"],
+  "engines": { "node": ">=18" },
+  "license": "MIT",
+  "repository": { "type": "git", "url": "git+https://github.com/deritu-kutsut/lienzo-ui.git", "directory": "mcp" },
+  "homepage": "https://github.com/deritu-kutsut/lienzo-ui/blob/main/docs/MCP.md",
+  "keywords": ["mcp", "unity", "ui", "model-context-protocol", "lienzo-ui"]
+}
