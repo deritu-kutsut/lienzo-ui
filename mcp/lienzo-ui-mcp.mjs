@@ -17,9 +17,13 @@
 import { spawn } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
+import os from "node:os";
 import { fileURLToPath } from "node:url";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+/** True when running from the npm package (script at the package root, not in a repository's or release's mcp/ folder): ROOT is then
+ *  node_modules, so nothing is looked up or written there (an update would wipe it and another package could plant files in it). */
+const FROM_NPM = path.basename(path.dirname(fileURLToPath(import.meta.url))) !== "mcp";
 /** Version of the server = version of the app: Cargo.toml in the repository, or mcp/package.json inside the release package. */
 function readVersion() {
   const here = path.dirname(fileURLToPath(import.meta.url));
@@ -37,10 +41,11 @@ const VERSION = readVersion();
 /** Protocol versions this server understands, newest first (initialize answers with the client's when it is one of them). */
 const PROTOCOL_VERSIONS = ["2025-06-18", "2025-03-26", "2024-11-05"];
 const isObject = (v) => v !== null && typeof v === "object" && !Array.isArray(v);
-/** Designs folder: LIENZO_DESIGNS, else the legacy LIENZO_DISENOS, else <repo>/designs (or an old <repo>/disenos if that is what exists). */
+/** Designs folder: LIENZO_DESIGNS, else the legacy LIENZO_DISENOS, else <repo>/designs (or an old <repo>/disenos if that is what exists); from the npm package, ~/LienzoUI/designs. */
 function designsFolder() {
   const env = process.env.LIENZO_DESIGNS || process.env.LIENZO_DISENOS;
   if (env) return path.resolve(env);
+  if (FROM_NPM) return path.join(os.homedir(), "LienzoUI", "designs");
   const fresh = path.join(ROOT, "designs"), legacy = path.join(ROOT, "disenos");
   return fs.existsSync(fresh) || !fs.existsSync(legacy) ? fresh : legacy;
 }
@@ -84,14 +89,11 @@ function normalizeArgs(args) {
 
 function appBinary() {
   const exe = process.platform === "win32" ? "lienzo-ui.exe" : "lienzo-ui";
-  const candidates = [
-    process.env.LIENZO_UI,
-    path.join(ROOT, "lienzo-ui.exe"),
-    path.join(ROOT, "target", "release", exe),
-    path.join(ROOT, "target", "debug", exe),
-  ].filter(Boolean);
+  const candidates = FROM_NPM
+    ? [process.env.LIENZO_UI].filter(Boolean)
+    : [process.env.LIENZO_UI, path.join(ROOT, "lienzo-ui.exe"), path.join(ROOT, "target", "release", exe), path.join(ROOT, "target", "debug", exe)].filter(Boolean);
   const found = candidates.find((c) => fs.existsSync(c));
-  if (!found) throw new Error("lienzo-ui not found. Build it with \"cargo build --release\" or set LIENZO_UI to the path of the executable.");
+  if (!found) throw new Error("lienzo-ui not found. Build it with \"cargo build --release\" or set LIENZO_UI to the path of the executable (download it from https://deritu.itch.io/lienzo-ui).");
   return found;
 }
 

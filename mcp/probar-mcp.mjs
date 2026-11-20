@@ -313,6 +313,36 @@ if (process.argv[2]) {
   fs.copyFileSync(path.join(DESIGNS, "Shop.editorgui.json"), path.join(ROOT, "designs", "shop.editorgui.json"));
 }
 
+// ---- npm package layout: the script sits at the package root (no mcp/ folder), inside node_modules ----
+{
+  const sandbox = fs.mkdtempSync(path.join(os.tmpdir(), "lienzo-npm-"));
+  const pkg = path.join(sandbox, "node_modules", "lienzo-ui-mcp");
+  fs.mkdirSync(pkg, { recursive: true });
+  fs.copyFileSync(SERVER, path.join(pkg, "lienzo-ui-mcp.mjs"));
+  fs.writeFileSync(path.join(pkg, "package.json"), JSON.stringify({ name: "lienzo-ui-mcp", version: "9.9.9", type: "module" }));
+  // a planted executable next to node_modules must never be picked up
+  fs.writeFileSync(path.join(sandbox, "node_modules", "lienzo-ui.exe"), "not the app");
+  const home = path.join(sandbox, "home");
+  fs.mkdirSync(home);
+  const npmSrv = spawn(process.execPath, [path.join(pkg, "lienzo-ui-mcp.mjs")], { stdio: ["pipe", "pipe", "inherit"], cwd: sandbox, env: { ...process.env, LIENZO_DESIGNS: "", LIENZO_DISENOS: "", LIENZO_UI: "", HOME: home, USERPROFILE: home } });
+  const waiting = new Map();
+  readline.createInterface({ input: npmSrv.stdout }).on("line", (l) => { const m = JSON.parse(l); waiting.get(m.id)?.(m); waiting.delete(m.id); });
+  let nid = 1;
+  const ask = (method, params) => new Promise((done) => { const id = nid++; waiting.set(id, done); npmSrv.stdin.write(JSON.stringify({ jsonrpc: "2.0", id, method, params }) + "\n"); });
+  const init = await ask("initialize", { protocolVersion: "2025-06-18", capabilities: {}, clientInfo: { name: "t", version: "1" } });
+  ok("npm layout: serverInfo.version comes from the package.json", init.result?.serverInfo?.version === "9.9.9");
+  const info = text(await ask("tools/call", { name: "lienzo_info", arguments: {} }));
+  ok("npm layout: designs go to ~/LienzoUI/designs, not into node_modules", info.includes(path.join(home, "LienzoUI", "designs")) && !info.includes("node_modules"), info.slice(0, 300));
+  const shot = await ask("tools/call", { name: "list_templates", arguments: {} });
+  const made = await ask("tools/call", { name: "create_design", arguments: { file: "X", template: 0 } });
+  ok("npm layout: a planted lienzo-ui.exe in node_modules is ignored", isError(made) && /LIENZO_UI/.test(text(made)), text(made).slice(0, 200));
+  ok("npm layout: nothing was written under node_modules", !fs.existsSync(path.join(sandbox, "node_modules", "designs")));
+  const closed = new Promise((r) => npmSrv.once("exit", r));
+  npmSrv.kill();
+  await closed;
+  try { fs.rmSync(sandbox, { recursive: true, force: true }); } catch { /* Windows may keep the folder busy for a moment */ }
+}
+
 srv.kill();
 fs.rmSync(DESIGNS, { recursive: true, force: true });
 console.log(`\n${total - failures}/${total} checks passed`);

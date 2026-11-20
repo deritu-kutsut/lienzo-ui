@@ -4,6 +4,9 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versio
 
 ## [Unreleased]
 
+### Security
+- **npm package (`lienzo-ui-mcp`):** when run from node_modules it no longer looks for `lienzo-ui.exe` or `target/` next to node_modules (a planted file could have been run as the app) and saves designs in `~/LienzoUI/designs` instead of inside node_modules, where an update would delete them. The app path now comes only from `LIENZO_UI`. Four new checks cover this layout.
+
 ## [1.7.3] - 2026-11-20
 
 The MCP server tells every AI that the export writes directly and to dry-run first, and both tutorials cover what is new.
