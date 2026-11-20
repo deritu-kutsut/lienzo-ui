@@ -36,6 +36,9 @@
 
 ## What's new
 
+**1.7.4**
+- **MCP on npm:** `npx -y lienzo-ui-mcp` (set `LIENZO_UI` to the app). Security fix: the npm package no longer runs a `lienzo-ui.exe` found next to `node_modules`, and keeps your designs in `~/LienzoUI/designs`. Upgrade from 1.7.3.
+
 **1.7.3**
 - **MCP safety notice:** the MCP server now tells every AI that `export_unity` writes straight into your Unity project and asks it to dry-run first, show you the list and wait for your confirmation (see [Safe exports](docs/MCP.md#safe-exports-read-this-before-connecting-an-ai)). Both tutorials (in the app and in `docs/`, 10 languages) cover everything new.
 - **Export preview (`dry_run`):** the MCP tool `export_unity` takes `dry_run: true` (and the command line `--export <project> --dry-run`) to list every file that would be created, updated or removed in your Unity project, without writing anything.
