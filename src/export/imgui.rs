@@ -203,7 +203,7 @@ impl<'a> Gen<'a> {
                 let ph = self.style(&e, None);
                 let i = self.nstyle;
                 self.nstyle += 1;
-                let _ = writeln!(self.styles, "        st[{}] = Field({}, TextAnchor.{});", i, (e.font_size.round() as i32).max(1), anchor(&e));
+                let _ = writeln!(self.styles, "        st[{}] = Field({}, TextAnchor.{}, {});", i, (e.font_size.round() as i32).max(1), anchor(&e), color(e.text_color, op));
                 let b = &mut self.body;
                 let _ = writeln!(b, "{}if (string.IsNullOrEmpty(input{n}) && GUI.GetNameOfFocusedControl() != \"in{n}\") GUI.Label({inset}, {}, st[{ph}]);", p2, cs_str(&e.text));
                 let _ = writeln!(b, "{}GUI.SetNextControlName(\"in{n}\");", p2);
@@ -346,12 +346,12 @@ public class {cls} : MonoBehaviour
         return s;
     }}
 
-    GUIStyle Field(int size, TextAnchor a)
+    GUIStyle Field(int size, TextAnchor a, Color c)
     {{
         var s = new GUIStyle(GUI.skin.textField) {{ fontSize = size, alignment = a, wordWrap = false, richText = false, padding = new RectOffset(0, 0, 0, 0), margin = new RectOffset(0, 0, 0, 0) }};
         if (font != null) s.font = font;
         s.normal.background = s.hover.background = s.focused.background = s.active.background = null;
-        s.normal.textColor = s.hover.textColor = s.focused.textColor = s.active.textColor = new Color(0.1f, 0.1f, 0.13f, 1f);
+        s.normal.textColor = s.hover.textColor = s.focused.textColor = s.active.textColor = c;
         return s;
     }}
 
@@ -419,5 +419,18 @@ mod tests {
         }
         let s = script(&model::template(3, 1920.0, 1080.0));
         assert!(s.contains("GUI.HorizontalSlider") && s.contains("GUI.TextField") && s.contains("GUI.BeginScrollView") && s.contains("GUI.Toggle"));
+    }
+
+    // An input field's typed text uses the design's text colour (it used to be a fixed near-black,
+    // unreadable on dark fields).
+    #[test]
+    fn input_field_text_uses_design_colour() {
+        let mut d = model::template(5, 1920.0, 1080.0);
+        let mut e = model::Element::new(0, model::Kind::InputField);
+        e.text_color = [255, 255, 255, 255];
+        d.add(e);
+        let s = script(&d);
+        assert!(s.contains("= Field(") && s.contains(", new Color(1f, 1f, 1f, 1f));"), "{}", s);
+        assert!(!s.contains("new Color(0.1f, 0.1f, 0.13f, 1f)"));
     }
 }

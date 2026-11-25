@@ -36,6 +36,9 @@
 
 ## What's new
 
+**1.7.5**
+- **IMGUI export:** the text typed in input fields now uses the design's text colour (it was always near-black, unreadable on dark fields).
+
 **1.7.4**
 - **MCP on npm:** `npx -y lienzo-ui-mcp` (set `LIENZO_UI` to the app). Security fix: the npm package no longer runs a `lienzo-ui.exe` found next to `node_modules`, and keeps your designs in `~/LienzoUI/designs`. Upgrade from 1.7.3.
 
