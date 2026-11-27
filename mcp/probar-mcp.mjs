@@ -119,7 +119,7 @@ ok("huge list rejected", isError(await call("modify_element", { file: "Shop", el
 ok("element does not exist", isError(await call("modify_element", { file: "Shop", element: "Nothing", changes: { text: "x" } })));
 ok("duplicate name", isError(await call("duplicate_element", { file: "Shop", element: "Close", new_name: "Buy" })));
 ok("create over an existing one", isError(await call("create_design", { file: "Shop", template: 0 })));
-ok("template does not exist", isError(await call("create_design", { file: "Other", template: 99 })));
+ok("template does not exist", isError(await call("create_design", { file: "Other", template: 999 })));
 ok("export to a folder without Assets", isError(await call("export_unity", { file: "Shop", unity_project: os.tmpdir() })));
 ok("unknown tool", !!(await call("no_such_tool", {})).error);
 
