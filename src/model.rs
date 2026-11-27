@@ -1518,8 +1518,9 @@ pub fn hex(c: Rgba) -> String {
 // Templates (starting layouts for game UIs)
 // ---------------------------------------------------------------------------
 
-/// The numbers are stable (the command line and the MCP use them): new ones are added at the end.
-pub const TEMPLATES: &[&str] = &[
+/// The hand-made templates. The numbers are stable (the command line and the MCP use them): new ones are added at
+/// the end of the gallery (`crate::gallery`), whose templates come after these ones.
+pub const BUILTIN_TEMPLATES: &[&str] = &[
     "Main menu",
     "Game HUD",
     "Dialog window",
@@ -1536,6 +1537,18 @@ pub const TEMPLATES: &[&str] = &[
     "Pixel RPG HUD",
     "Pixel main menu",
 ];
+
+/// Names of every template: the hand-made ones, then the gallery.
+pub static TEMPLATES: std::sync::LazyLock<Vec<&'static str>> =
+    std::sync::LazyLock::new(|| BUILTIN_TEMPLATES.iter().copied().chain((0..crate::gallery::count()).map(crate::gallery::name)).collect());
+
+/// Name of template `i` in the interface language.
+pub fn template_label(i: usize) -> String {
+    match i.checked_sub(BUILTIN_TEMPLATES.len()) {
+        Some(g) => crate::gallery::label(g),
+        None => crate::i18n::t(BUILTIN_TEMPLATES[i]),
+    }
+}
 
 pub fn blank_template() -> usize {
     5
@@ -1652,6 +1665,9 @@ pub fn template_with_portrait(index: usize, width: f32, height: f32) -> Doc {
 }
 
 fn template_at(index: usize, width: f32, height: f32) -> Doc {
+    if let Some(g) = index.checked_sub(BUILTIN_TEMPLATES.len()) {
+        return crate::gallery::build(g, width, height);
+    }
     let mut d = Doc::empty(width, height);
     let (w, h) = (width, height);
     // Portrait pages are 1080 wide: wide blocks (titles, bars, grids) use the page width instead of their landscape size.

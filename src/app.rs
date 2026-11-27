@@ -144,7 +144,7 @@ pub struct EditorApp {
     pub template_name: String,
     pub element_name: String,
     /// Thumbnails of the built-in templates for the current page size (generated once).
-    pub template_thumbs: Option<((f32, f32), Vec<model::Doc>)>,
+    pub template_thumbs: Option<((f32, f32), Vec<Option<model::Doc>>)>,
     /// Hierarchy drag & drop.
     pub tree_drag: Option<u64>,
     pub tutorial: Option<crate::tutorial::Tutorial>,
@@ -1042,7 +1042,7 @@ impl EditorApp {
         self.sel.clear();
         self.editing = None;
         self.fit_pending = true;
-        self.status = crate::i18n::tf("Template applied: {} (Ctrl+Z to undo)", &[&model::TEMPLATES[i].to_string()]);
+        self.status = crate::i18n::tf("Template applied: {} (Ctrl+Z to undo)", &[&model::template_label(i)]);
     }
 
     /// The open design is no longer a project file: a template, a recovered or an imported design. Save asks for a new

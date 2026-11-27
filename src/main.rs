@@ -13,6 +13,7 @@ mod recovery;
 mod model;
 mod pack;
 mod presets;
+mod gallery;
 mod panels;
 mod render;
 mod script;
