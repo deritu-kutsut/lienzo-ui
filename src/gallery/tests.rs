@@ -108,5 +108,7 @@ fn dump_gallery() {
             items.push(serde_json::json!({ "index": base + i, "name": name(i), "doc": d }));
         }
     }
-    std::fs::write(&out, format!("window.GALLERY = {};", serde_json::to_string(&items).unwrap())).unwrap();
+    let pack: std::collections::BTreeMap<String, String> = crate::pack::items().iter().map(|i| (crate::pack::library_name(i), i.file.clone())).collect();
+    std::fs::write(&out, format!("window.GALLERY = {};
+window.PACK = {};", serde_json::to_string(&items).unwrap(), serde_json::to_string(&pack).unwrap())).unwrap();
 }

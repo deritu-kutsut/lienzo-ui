@@ -116,19 +116,70 @@ pub fn of_type(ty: &str) -> Vec<usize> {
 }
 
 /// Builds gallery template `i` on a page of `width` × `height` (already at least the reference size, see `model::template`).
+/// On a portrait page the 1920-wide description would be shrunk to 56 % and look lost in the tall page, so it is built
+/// at the largest scale that still fits: every element inside the page, no new overlaps between the page's direct
+/// children (corner widgets that would collide keep the small scale).
 pub fn build(i: usize, width: f32, height: f32) -> Doc {
+    let base = (width / 1920.0).min(height / 1080.0);
+    let first = build_at(i, width, height, base);
+    if height <= width {
+        return first;
+    }
+    let before = overlaps(&first);
+    for m in [1.9f32, 1.75, 1.6, 1.45, 1.3, 1.2, 1.1, 1.0] {
+        if base * m > 1.15 {
+            continue;
+        }
+        let d = build_at(i, width, height, base * m);
+        if fits(&d) && overlaps(&d).is_subset(&before) {
+            return d;
+        }
+    }
+    first
+}
+
+fn build_at(i: usize, width: f32, height: f32, s: f32) -> Doc {
     let e = &ENTRIES[i];
     let mut d = Doc::empty(width, height);
     d.title = name(i).to_string();
     let t = e.style.theme();
     d.background = t.bg;
     {
-        let mut g = G { d: &mut d, s: (width / 1920.0).min(height / 1080.0), t, names: std::collections::HashMap::new() };
+        let mut g = G { d: &mut d, s, t, style: e.style, art_n: 0, names: std::collections::HashMap::new() };
         (e.build)(&mut g);
     }
     d.normalize();
     d.apply_layouts();
     d
+}
+
+/// Every element inside the page and inside its parent.
+fn fits(d: &Doc) -> bool {
+    d.elements.iter().all(|e| {
+        let page = e.x >= -1.0 && e.y >= -1.0 && e.x + e.w <= d.width + 1.0 && e.y + e.h <= d.height + 1.0;
+        let parent = e.parent.and_then(|p| d.get(p)).is_none_or(|p| e.x >= p.x - 2.0 && e.y >= p.y - 2.0 && e.x + e.w <= p.x + p.w + 2.0 && e.y + e.h <= p.y + p.h + 2.0);
+        page && parent
+    })
+}
+
+/// Pairs (by position in the list) of overlapping direct children of the page, leaving out backdrops (full-bleed
+/// pictures, scenes, veils).
+fn overlaps(d: &Doc) -> std::collections::HashSet<(usize, usize)> {
+    let roots: Vec<(usize, &Element)> = d
+        .elements
+        .iter()
+        .enumerate()
+        .filter(|(_, e)| e.parent.is_none() && !(e.w >= d.width * 0.9 && e.h >= d.height * 0.9) && !e.name.starts_with("Ground"))
+        .collect();
+    let mut out = std::collections::HashSet::new();
+    for (a, (i, x)) in roots.iter().enumerate() {
+        for (j, y) in roots.iter().skip(a + 1) {
+            if x.x + 2.0 < y.x + y.w && y.x + 2.0 < x.x + x.w && x.y + 2.0 < y.y + y.h && y.y + 2.0 < x.y + x.h {
+                out.insert((*i, *j));
+            }
+        }
+    }
+    out
 }
 
 // ---------------------------------------------------------------------------------------------------------------
@@ -203,6 +254,43 @@ impl Style {
             Style::Elegant => "Elegant",
             Style::Nature => "Nature",
             Style::Pastel => "Pastel",
+        }
+    }
+
+    /// Short lowercase id (used in the names of the style's pictures in the asset pack).
+    pub fn slug(self) -> &'static str {
+        match self {
+            Style::Fantasy => "fantasy",
+            Style::SciFi => "scifi",
+            Style::Minimal => "minimal",
+            Style::Cartoon => "cartoon",
+            Style::Neon => "neon",
+            Style::Military => "military",
+            Style::Horror => "horror",
+            Style::Sports => "sports",
+            Style::Retro => "retro",
+            Style::Elegant => "elegant",
+            Style::Nature => "nature",
+            Style::Pastel => "pastel",
+        }
+    }
+
+    /// The made-up game each style belongs to: (title, tagline, studio). Templates of a style share it, so every
+    /// screen of the same style looks like part of the same game.
+    pub fn game(self) -> (&'static str, &'static str, &'static str) {
+        match self {
+            Style::Fantasy => ("KINGDOM OF EMBERS", "A tale of ash and crowns", "Cinderhall Games"),
+            Style::SciFi => ("STARFALL", "Frontier Protocol", "Orbitworks"),
+            Style::Minimal => ("QUIET HOURS", "A short story about a long night", "Paper Moth Studio"),
+            Style::Cartoon => ("SKYHOP KINGDOM", "Captain Whiskers sets sail", "Jellybean Works"),
+            Style::Neon => ("NEON CITADEL", "The city never logs off", "Afterglow Interactive"),
+            Style::Military => ("IRON TIDE", "Operation Gray Dawn", "Ridgeback Studios"),
+            Style::Horror => ("DREAD HOLLOW", "Some doors should stay shut", "Candlewick Games"),
+            Style::Sports => ("APEX LEAGUE", "Race to the final", "Fieldhouse Games"),
+            Style::Retro => ("COSMIC CADET", "Insert coin to save the galaxy", "Pixel Orchard"),
+            Style::Elegant => ("GILDED COURT", "Every invitation has a price", "Maison Verve"),
+            Style::Nature => ("WILDROOT", "Grow the forest back", "Mossbank Games"),
+            Style::Pastel => ("PETAL PARADE", "A cozy garden adventure", "Marshmallow Lane"),
         }
     }
 
@@ -410,8 +498,22 @@ pub struct G<'a> {
     /// Reference → page scale.
     pub s: f32,
     pub t: Theme,
+    pub style: Style,
+    art_n: usize,
     names: std::collections::HashMap<String, usize>,
 }
+
+/// Words in an icon's name that pick a picture of the asset pack.
+const PACK_ICONS: &[(&str, &str)] = &[
+    ("heart", "icon_heart"), ("health", "icon_heart"), ("mana", "icon_mana"), ("coin", "icon_coin"), ("gold", "icon_coin"), ("money", "icon_coin"),
+    ("gem", "icon_gem"), ("crystal", "icon_gem"), ("star", "icon_star"), ("key", "icon_key"), ("sword", "icon_sword"), ("attack", "icon_sword"),
+    ("shield", "icon_shield"), ("armor", "icon_shield"), ("potion", "icon_potion"), ("scroll", "icon_scroll"), ("quest", "icon_scroll"),
+    ("bomb", "icon_bomb"), ("grenade", "icon_bomb"), ("crown", "icon_crown"), ("lock", "icon_lock"), ("clock", "icon_clock"), ("timer", "icon_clock"),
+    ("map", "icon_map"), ("chest", "icon_chest"), ("loot", "icon_chest"), ("reward", "icon_chest"), ("energy", "icon_bolt"), ("bolt", "icon_bolt"),
+    ("fire", "icon_fire"), ("ice", "icon_ice"), ("hammer", "icon_hammer"), ("craft", "icon_hammer"), ("axe", "icon_axe"), ("bow", "icon_bow"),
+    ("staff", "icon_staff"), ("ring", "icon_ring"), ("book", "icon_book"), ("codex", "icon_book"), ("trophy", "icon_trophy"), ("rank", "icon_trophy"),
+    ("medal", "icon_medal"), ("achievement", "icon_medal"),
+];
 
 /// Text alignment for [`G::txt`].
 pub const LEFT: u8 = 0;
@@ -549,7 +651,20 @@ impl G<'_> {
         })
     }
 
-    /// Gradient placeholder for artwork (portraits, key art, item pictures, map tiles…).
+    /// The made-up game of this template's style (title in capitals).
+    pub fn game(&self) -> &'static str {
+        self.style.game().0
+    }
+    pub fn tagline(&self) -> &'static str {
+        self.style.game().1
+    }
+    pub fn studio(&self) -> &'static str {
+        self.style.game().2
+    }
+
+    /// Artwork (key art, portraits, item pictures, map tiles…): one of the style's generated illustrations of the
+    /// asset pack when its proportions fit (wide key art, or a portrait / object for squarish boxes); a gradient
+    /// placeholder otherwise. Names with «portrait», «hero», «avatar» and the like get the character picture.
     pub fn art(&mut self, p: N, pos: Pos, name: &str) -> N {
         let (a, b) = (self.t.accent2, self.t.bg2);
         self.art_c(p, pos, name, a, b)
@@ -557,11 +672,31 @@ impl G<'_> {
 
     pub fn art_c(&mut self, p: N, pos: Pos, name: &str, c1: Rgba, c2: Rgba) -> N {
         let r = self.t.radius * self.s;
+        let slug = self.style.slug();
+        let lower = name.to_lowercase();
+        let person = ["portrait", "hero", "avatar", "character", "face", "member", "unit", "banner art", "player"].iter().any(|k| lower.contains(k));
+        // pictures of items alternate between the style's item and character pictures so a grid is not one repeated image
+        self.art_n += 1;
+        let alt = self.art_n % 2 == 0;
         self.el(p, pos, Kind::Image, name, |e| {
             e.fill = c1;
             e.fill2 = c2;
             e.radius = r;
             e.raycast = false;
+            let ratio = e.w / e.h.max(1.0);
+            let kind = if (1.3..=2.4).contains(&ratio) {
+                Some("wide")
+            } else if (0.62..1.3).contains(&ratio) {
+                Some(if person || alt { "portrait" } else { "object" })
+            } else {
+                None
+            };
+            if let Some(k) = kind {
+                if let Some(it) = crate::pack::item(&format!("art_{}_{}", slug, k)).or_else(|| crate::pack::item(&format!("art_{}_object", slug))) {
+                    e.image = crate::pack::library_name(it);
+                    e.radius = 0.0;
+                }
+            }
         })
     }
 
@@ -622,11 +757,20 @@ impl G<'_> {
         })
     }
 
-    /// Circle with a short label inside (icon stand-in): accent fill, `on_accent` text. Use ASCII glyphs.
+    /// Icon: a picture of the asset pack when the name says what it is («Coin icon», «Key», «Reward chest»…),
+    /// otherwise a circle with a short label inside (accent fill, `on_accent` text). Use ASCII glyphs.
     pub fn icon(&mut self, p: N, pos: Pos, name: &str, glyph: &str) -> N {
         let t = self.t;
         let s = self.s;
         let size = pos.ys[1].min(pos.xs[1]).max(20.0);
+        let lower = name.to_lowercase();
+        let found = PACK_ICONS.iter().find(|(k, _)| lower.contains(k)).and_then(|(_, id)| crate::pack::item(id));
+        if let Some(it) = found {
+            return self.el(p, pos, Kind::Image, name, |e| {
+                e.image = crate::pack::library_name(it);
+                e.raycast = false;
+            });
+        }
         self.el(p, pos, Kind::Ellipse, name, |e| {
             e.fill = t.accent;
             e.text = glyph.to_string();

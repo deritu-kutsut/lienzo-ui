@@ -61,8 +61,9 @@ fn title_centered(g: &mut G) {
     g.background();
     g.art(p, cc(0.0, -120.0, 1500.0, 520.0), "Key art");
     let logo = g.panel(p, tc(0.0, 90.0, 980.0, 220.0), "Logo plate");
-    g.heading(logo, fill(20.0, 20.0, 20.0, 70.0), "Game title", "KINGDOM OF EMBERS", 84.0);
-    g.txt(logo, bottom(18.0, 44.0, 20.0, 20.0), "Tagline", "A tale of ash and crowns", 30.0, g.t.muted, CENTER, false);
+    let (game, tag) = (g.game(), g.tagline());
+    g.heading(logo, fill(20.0, 20.0, 20.0, 70.0), "Game title", game, 84.0);
+    g.txt(logo, bottom(18.0, 44.0, 20.0, 20.0), "Tagline", tag, 30.0, g.t.muted, CENTER, false);
     let menu = g.vbox(p, cc(0.0, 230.0, 460.0, 420.0), "Main menu", 18.0);
     for (i, l) in ["Continue", "New game", "Options", "Quit"].iter().enumerate() {
         if i == 0 {
@@ -74,7 +75,7 @@ fn title_centered(g: &mut G) {
     let ver = g.panel(p, br(30.0, 30.0, 240.0, 56.0), "Version plate");
     g.txt(ver, full(), "Version", "v1.0.0", 24.0, g.t.muted, CENTER, false);
     let cr = g.panel(p, bl(30.0, 30.0, 460.0, 56.0), "Copyright plate");
-    g.txt(cr, full(), "Copyright", "(c) 2026 Your Studio", 24.0, g.t.muted, CENTER, false);
+    g.txt(cr, full(), "Copyright", &format!("(c) 2026 {}", g.studio()), 24.0, g.t.muted, CENTER, false);
 }
 
 /// Key art fills the right side; the menu sits in a dark column on the left (modern console layout).
@@ -83,8 +84,9 @@ fn title_side(g: &mut G) {
     g.background();
     g.art(p, fill(560.0, 0.0, 0.0, 0.0), "Key art");
     let col = g.panel(p, left(0.0, 640.0, 0.0, 0.0), "Menu column");
-    g.txt(col, tl(70.0, 110.0, 520.0, 110.0), "Game title", "STARFALL", 96.0, g.t.accent, LEFT, true);
-    g.note(col, tl(74.0, 225.0, 520.0, 44.0), "Subtitle", "Frontier Protocol", 32.0);
+    let (game, tag) = (g.game(), g.tagline());
+    g.txt(col, tl(70.0, 110.0, 520.0, 110.0), "Game title", game, 96.0, g.t.accent, LEFT, true);
+    g.note(col, tl(74.0, 225.0, 520.0, 44.0), "Subtitle", tag, 32.0);
     g.rect(col, tl(74.0, 290.0, 120.0, 6.0), "Accent line", g.t.accent, 0.0);
     let menu = g.vbox_fill(col, tl(60.0, 360.0, 500.0, 460.0), "Main menu", 14.0);
     for (i, l) in ["Resume mission", "New campaign", "Multiplayer", "Settings", "Exit to desktop"].iter().enumerate() {
@@ -102,11 +104,12 @@ fn title_press_start(g: &mut G) {
     let p = g.page();
     g.background();
     g.circle(p, cc(0.0, -90.0, 520.0, 520.0), "Emblem", alpha(g.t.accent, 60));
-    g.bg_title(p, cc(0.0, -110.0, 1400.0, 150.0), "Game title", "QUIET HOURS", 120.0);
-    g.bg_label(p, cc(0.0, -10.0, 1000.0, 50.0), "Subtitle", "a short story about a long night", 32.0, CENTER);
+    let (game, tag) = (g.game(), g.tagline());
+    g.bg_title(p, cc(0.0, -110.0, 1400.0, 150.0), "Game title", game, 120.0);
+    g.bg_label(p, cc(0.0, -10.0, 1000.0, 50.0), "Subtitle", tag, 32.0, CENTER);
     let prompt = g.panel(p, cc(0.0, 230.0, 560.0, 90.0), "Prompt plate");
     g.heading(prompt, full(), "Press start", "Press any button", 36.0);
-    g.bg_label(p, bottom(40.0, 40.0, 100.0, 100.0), "Legal", "(c) 2026 Your Studio. All rights reserved.", 22.0, CENTER);
+    g.bg_label(p, bottom(40.0, 40.0, 100.0, 100.0), "Legal", &format!("(c) 2026 {}. All rights reserved.", g.studio()), 22.0, CENTER);
 }
 
 /// Row of key/label pairs («A Select  B Back»), shared by several templates.
@@ -364,7 +367,8 @@ fn credits_roll(g: &mut G) {
     let p = g.page();
     g.background();
     let col = g.vbox(p, vmid(0.0, 1000.0, 60.0, 140.0), "Credits column", 10.0);
-    g.bg_title(col, sz(1000.0, 110.0), "Game title", "THE LAST LANTERN", 72.0);
+    let game = g.game();
+    g.bg_title(col, sz(1000.0, 110.0), "Game title", game, 72.0);
     for (role, names) in [("Directed by", "Ada Morrow"), ("Design", "Ilya Brandt   Sora Vance"), ("Art", "Noor Haddad   Pim Okafor"), ("Music", "The Velvet Quartet"), ("Programming", "Lee Castell   Mara Dunn"), ("Special thanks", "Our families and every player")] {
         g.txt(col, sz(1000.0, 44.0), &format!("{} role", role), role, 28.0, g.t.accent, CENTER, false);
         g.bg_title(col, sz(1000.0, 60.0), &format!("{} names", role), names, 40.0);
@@ -377,7 +381,8 @@ fn credits_roll(g: &mut G) {
 fn credits_teams(g: &mut G) {
     let p = g.page();
     g.background();
-    g.bg_title(p, tc(0.0, 50.0, 1200.0, 100.0), "Screen title", "Made with love by", 64.0);
+    let studio = format!("Made with love by {}", g.studio());
+    g.bg_title(p, tc(0.0, 50.0, 1600.0, 100.0), "Screen title", &studio, 64.0);
     let grid = g.grid(p, tc(0.0, 190.0, 1760.0, 780.0), "Team cards", 860.0, 240.0, 30.0);
     for (team, people) in [("Game design", "Rosa Pike, Theo Lark, June Abara"), ("Art & animation", "Kip Moreno, Ines Fold, Bo Yuen"), ("Sound", "Wade Sterling, Lulu Park"), ("Code", "Ari Novak, Dee Santos, Max Rune"), ("QA", "The Bug Hunters"), ("Community", "Every player who said hi")] {
         let c = g.card(grid, sz(860.0, 240.0), &format!("{} card", team));
