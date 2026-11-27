@@ -43,7 +43,7 @@ Al terminar este tutorial se abre el editor. Puedes volver aquí cuando quieras 
     },
     Page {
         title: "Empieza con una plantilla",
-        text: "Abre Plantillas en la barra izquierda y elige una de las 15: menú principal, HUD, pausa, fin de partida, selección de nivel, inventario, diálogo de personaje, clasificación… Dos de ellas tienen estilo pixel art: HUD RPG pixel art y Menú principal pixel art.\n\n\
+        text: "Abre Plantillas en la barra izquierda y elige una de las 15: menú principal, HUD, pausa, fin de partida, selección de nivel, inventario, diálogo de personaje, clasificación… Dos de ellas tienen estilo pixel art: HUD RPG pixel art y Menú principal pixel art. Además de esas clásicas, la galería agrupa 312 más por tipo de pantalla (título y menús, estados de juego, estadísticas, información, metajuego, HUD, controles), con tres estilos de cada una (327 en total).\n\n\
 Es la forma más rápida de ver cómo se construye una interfaz completa. Todo lo que trae se puede cambiar.\n\n\
 Si prefieres empezar de cero, elige «En blanco» o Archivo › Nuevo diseño en blanco.",
     },
@@ -197,7 +197,7 @@ When you finish this tutorial the editor opens. Come back any time with the “T
     },
     Page {
         title: "Start from a template",
-        text: "Open Templates in the left bar and pick one of the 15: main menu, HUD, pause, game over, level select, inventory, character dialogue, leaderboard… Two of them are in pixel art style: Pixel RPG HUD and Pixel main menu.\n\n\
+        text: "Open Templates in the left bar and pick one of the 15: main menu, HUD, pause, game over, level select, inventory, character dialogue, leaderboard… Two of them are in pixel art style: Pixel RPG HUD and Pixel main menu. Besides those classics, the gallery groups 312 more by kind of screen (title and menus, game states, stats, information, meta-game, HUD, controls), three styles for each (327 in all).\n\n\
 It is the fastest way to see how a complete interface is built. Everything in it can be changed.\n\n\
 To start from scratch, choose “Blank” or File › New blank design.",
     },

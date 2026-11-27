@@ -21,6 +21,15 @@ Bullets and numbering are generated automatically. Also add the page to each `as
 2. In `template(index, width, height)`, add an arm to the `match` that builds the design with `put(&mut doc, parent, Kind::..., "Name", [x, y, w, h], |e| { ... })` and the anchors with `anchor(e, min, max)`. Copy an existing template as a starting point.
 3. Check: `lienzo-ui --template N --screenshot test.png` and export to a Unity project.
 
+## Add a gallery template
+
+The gallery (`src/gallery/`) holds three templates for each kind of game screen listed in `SECTIONS` (`mod.rs`); each group of screens has its own file (`title.rs`, `states.rs`, `stats.rs`, `info.rs`, `meta.rs`, `hud.rs`, `controls.rs`).
+
+1. Write a function `fn my_layout(g: &mut G)` in the file of its group and add an `Entry { ty, style, build }` to that file's `entries()`. Add new ones at the end of the last file's list so the numbers of the existing templates do not change (the command line and the MCP use them).
+2. Lay it out with the builder `G`: positions are RectTransform-like in the 1920 × 1080 reference (`tl/tr/bl/br/tc/bc/cl/cr/cc` pinned to an anchor, `top/bottom/left/right/hmid/vmid/fill/full` stretched, `sz(w, h)` for children of `vbox/hbox/grid`), so the same description works on every page size and in portrait. Colours come from the style (`g.t`): put text on panels, cards or buttons, or use `bg_title/bg_label` straight on `g.background()`.
+3. A new kind of screen goes in `SECTIONS` with exactly three templates in three different styles; translate its name (and any new section or group) in every `assets/i18n/*.tsv`.
+4. `cargo test gallery` checks the catalog, the contrast of the styles and of every template, and that every element stays inside its parent at 1920 × 1080 and 1080 × 1920. Update the template count in the tutorial page and the README.
+
 ## Add an element type
 
 1. `src/model.rs`: a new variant in `enum Kind` and its default values where elements are created.

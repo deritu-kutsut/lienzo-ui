@@ -457,26 +457,73 @@ impl EditorApp {
         ui.add_space(6.0);
         let (w, h) = (self.doc.width, self.doc.height);
         let mut chosen = None;
-        if self.template_thumbs.as_ref().is_none_or(|(size, _)| *size != (w, h)) {
-            self.template_thumbs = Some(((w, h), (0..model::TEMPLATES.len()).map(|i| model::template(i, w, h)).collect()));
+        let n = model::TEMPLATES.len();
+        // Thumbnails are built the first time their block is open (there are hundreds) and kept for this page size.
+        if self.template_thumbs.as_ref().is_none_or(|(size, v)| *size != (w, h) || v.len() != n) {
+            self.template_thumbs = Some(((w, h), (0..n).map(|_| None).collect()));
         }
-        let thumbs = self.template_thumbs.take();
-        ui.horizontal_wrapped(|ui| {
-            ui.spacing_mut().item_spacing = Vec2::new(8.0, 8.0);
-            for i in model::template_order() {
-                let name = model::TEMPLATES[i];
-                let shown = crate::i18n::t(name);
-                if !self.matches(name) && !self.matches(&shown) {
-                    continue;
+        let Some((_, mut thumbs)) = self.template_thumbs.take() else { return };
+        let searching = !self.search.trim().is_empty();
+        let mut tile_of = |ui: &mut egui::Ui, i: usize, caption: &str| {
+            let doc = thumbs[i].get_or_insert_with(|| model::template(i, w, h));
+            if tile(ui, Vec2::new(128.0, 82.0), caption, |p, r| render::paint_doc_thumb(p, doc, r.expand(6.0))).clicked() {
+                chosen = Some(i);
+            }
+        };
+        let classic: Vec<usize> = model::template_order().filter(|&i| i < model::BUILTIN_TEMPLATES.len()).filter(|&i| self.matches(model::TEMPLATES[i])).collect();
+        if !classic.is_empty() {
+            egui::CollapsingHeader::new(RichText::new(format!("{} ({})", crate::i18n::t("Classic templates"), classic.len())).strong()).id_salt("tpl_classic").default_open(false).open(searching.then_some(true)).show(ui, |ui| {
+                ui.horizontal_wrapped(|ui| {
+                    ui.spacing_mut().item_spacing = Vec2::new(8.0, 8.0);
+                    for &i in &classic {
+                        tile_of(ui, i, &model::template_label(i));
+                    }
+                });
+            });
+        }
+        let base = model::BUILTIN_TEMPLATES.len();
+        for group in crate::gallery::groups() {
+            // (section, [(type, [template indices that match the search])])
+            let mut shown: Vec<(&str, Vec<(&str, Vec<usize>)>)> = Vec::new();
+            for sec in crate::gallery::SECTIONS.iter().filter(|s| s.group == group) {
+                let head = self.matches(group) || self.matches(sec.name);
+                let mut types = Vec::new();
+                for ty in sec.types {
+                    let idx: Vec<usize> = crate::gallery::of_type(ty)
+                        .into_iter()
+                        .filter(|&g| head || self.matches(ty) || self.matches(crate::gallery::name(g)) || self.matches(crate::gallery::entry(g).style.name()))
+                        .map(|g| base + g)
+                        .collect();
+                    if !idx.is_empty() {
+                        types.push((*ty, idx));
+                    }
                 }
-                let Some(doc) = thumbs.as_ref().and_then(|(_, v)| v.get(i)) else { continue };
-                let resp = tile(ui, Vec2::new(128.0, 82.0), &shown, |p, r| render::paint_doc_thumb(p, doc, r.expand(6.0)));
-                if resp.clicked() {
-                    chosen = Some(i);
+                if !types.is_empty() {
+                    shown.push((sec.name, types));
                 }
             }
-        });
-        self.template_thumbs = thumbs;
+            if shown.is_empty() {
+                continue;
+            }
+            let count: usize = shown.iter().flat_map(|(_, t)| t.iter()).map(|(_, v)| v.len()).sum();
+            let title = format!("{} ({})", crate::i18n::t(group), count);
+            egui::CollapsingHeader::new(RichText::new(title).strong()).id_salt(("tpl_group", group)).default_open(false).open(searching.then_some(true)).show(ui, |ui| {
+                for (sec, types) in &shown {
+                    ui.add_space(4.0);
+                    ui.label(RichText::new(crate::i18n::t(sec).to_uppercase()).size(10.5).color(MUTED()));
+                    for (ty, idx) in types {
+                        ui.label(RichText::new(crate::i18n::t(ty)).size(12.0).color(TEXT()));
+                        ui.horizontal_wrapped(|ui| {
+                            ui.spacing_mut().item_spacing = Vec2::new(8.0, 8.0);
+                            for &i in idx {
+                                tile_of(ui, i, &crate::i18n::t(crate::gallery::entry(i - base).style.name()));
+                            }
+                        });
+                    }
+                }
+            });
+        }
+        self.template_thumbs = Some(((w, h), thumbs));
         if let Some(i) = chosen {
             self.guard(crate::app::Pending::Template(i));
         }

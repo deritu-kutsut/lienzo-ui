@@ -10,7 +10,7 @@
     },
     {
       "title": "Comece com um modelo",
-      "text": "Abra Modelos na barra à esquerda e escolha um dos 15: menu principal, HUD, pausa, fim de jogo, seleção de fase, inventário, diálogo de personagem, classificação… Duas delas têm estilo pixel art: HUD de RPG pixel art e Menu principal pixel art.\n\nÉ a forma mais rápida de ver como uma interface completa é construída. Tudo o que vem nele pode ser alterado.\n\nSe preferir começar do zero, escolha «Em branco» ou Arquivo › Novo design em branco."
+      "text": "Abra Modelos na barra à esquerda e escolha um dos 15: menu principal, HUD, pausa, fim de jogo, seleção de fase, inventário, diálogo de personagem, classificação… Duas delas têm estilo pixel art: HUD de RPG pixel art e Menu principal pixel art. Além desses clássicos, a galeria agrupa mais 312 por tipo de tela (título e menus, estados de jogo, estatísticas, informações, metajogo, HUD, controles), em três estilos cada (327 no total).\n\nÉ a forma mais rápida de ver como uma interface completa é construída. Tudo o que vem nele pode ser alterado.\n\nSe preferir começar do zero, escolha «Em branco» ou Arquivo › Novo design em branco."
     },
     {
       "title": "Adicionar e editar elementos",

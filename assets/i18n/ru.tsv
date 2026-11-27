@@ -1091,3 +1091,142 @@ Translating…	Перевод…
 Commands	Команды
 Exporters	Экспортеры
 Files	Файлы
+# Template gallery
+Title & system menus	Титул и системные меню
+Title screen	Титульный экран
+Mode select	Выбор режима
+Game difficulty	Сложность
+Load / save	Загрузка / сохранение
+Settings menu	Меню настроек
+Settings options	Параметры настроек
+Button layout	Раскладка кнопок
+Modals & overlays	Окна и оверлеи
+Cutscene & story	Катсцена и сюжет
+Dialogue & speech	Диалог и речь
+Guided tutorial	Пошаговое обучение
+Modal & popup	Модальное окно
+Character intro	Представление персонажа
+Feature unlocked	Функция открыта
+Game states	Состояния игры
+Pre-game	Перед игрой
+Character select screen	Экран выбора персонажа
+Stage / level select	Выбор уровня
+Game setup	Настройка матча
+Pre-game lobby	Лобби перед игрой
+Mid-game	Во время игры
+Stage intro	Вступление уровня
+Pause screen	Экран паузы
+Change class / party	Смена класса / отряда
+Mission accept	Принятие задания
+Loot selection	Выбор добычи
+Game end	Конец игры
+Failure & game over	Поражение и конец игры
+Level complete	Уровень пройден
+Results screen	Экран результатов
+Rewards & experience	Награды и опыт
+Leaderboards & ranking	Таблицы лидеров и рейтинг
+Post-game menu	Меню после игры
+Stats & resources	Характеристики и ресурсы
+Stats	Характеристики
+Player menu	Меню игрока
+Unlocked units	Открытые юниты
+Team summary	Сводка отряда
+Overview & stats	Обзор и характеристики
+Ability list	Список способностей
+Maintenance & management	Обслуживание и управление
+Resource management	Управление ресурсами
+Inventory grid	Сетка инвентаря
+Equipping	Снаряжение
+Buying & trading	Покупка и обмен
+Change skin or accessory	Смена облика или аксессуара
+Character customization	Настройка персонажа
+Sub-equip & tweak	Модули и настройка
+World customization	Настройка мира
+Upgrades & unlocks	Улучшения и открытия
+Upgrading & ranking up	Улучшение и повышение ранга
+Unlockable upgrades	Открываемые улучшения
+Crafting	Крафт
+Choose boon / upgrade	Выбор дара / улучшения
+Information	Информация
+Knowledge	Знания
+Codex & journal	Кодекс и дневник
+Tutorials & guides	Обучение и руководства
+Logs & history	Журналы и история
+Progress	Прогресс
+Area map	Карта местности
+Missions & quests	Задания и квесты
+Challenges & achievements	Испытания и достижения
+Profile & game totals	Профиль и общая статистика
+Collection	Коллекция
+Collection & extras hub	Коллекция и бонусы
+Collectables menu	Меню коллекционных предметов
+Gallery menu	Меню галереи
+Collectable viewer	Просмотр предметов коллекции
+Sound & music player	Звуковой и музыкальный плеер
+Meta-game	Метаигра
+Service & social	Сервис и общение
+News & notifications	Новости и уведомления
+Profile customization	Настройка профиля
+Friends & players	Друзья и игроки
+Chat & communication	Чат и общение
+Online play	Сетевая игра
+Content creation	Создание контента
+Photo mode	Фоторежим
+Level editor	Редактор уровней
+Decals & liveries	Наклейки и раскраски
+Content discovery	Поиск контента
+Monetisation	Монетизация
+Premium store	Премиум-магазин
+Offers & bundles	Предложения и наборы
+Currency store	Магазин валюты
+Daily rewards	Ежедневные награды
+Season pass & events	Сезонный пропуск и события
+Gacha & crates	Гача и ящики
+Upcoming unlocks	Ближайшие открытия
+Player vitals	Показатели игрока
+Equipped items & abilities	Снаряжение и способности
+Collection counters	Счётчики сбора
+Rank & position	Ранг и позиция
+Enemy health & damage	Здоровье и урон врагов
+HUD messages	Сообщения HUD
+Info & notifications	Информация и уведомления
+Area / level name	Название зоны / уровня
+Loot & XP log	Журнал добычи и опыта
+Scoring & combos	Очки и комбо
+Goal & navigation	Цель и навигация
+Clock & timer	Часы и таймер
+Objectives & goals	Задачи и цели
+Waypoints & markers	Путевые точки и маркеры
+Compass bar	Полоса компаса
+Gameplay & controls	Геймплей и управление
+Overlay menus	Оверлейные меню
+Item & ability wheel	Колесо предметов и способностей
+Selection & targeting	Выбор и наведение
+Object placement	Размещение объектов
+Chat shortcuts & emotes	Быстрый чат и эмоции
+Controls	Управление
+Button prompts	Подсказки кнопок
+Weapon pickup prompt	Подсказка подбора оружия
+Quick time event	Быстрое событие (QTE)
+Controls reference	Справка по управлению
+Item & ability buttons	Кнопки предметов и способностей
+Mobile controls	Мобильное управление
+Misc	Разное
+Spectral vision	Особое зрение
+Weapon reticles	Прицелы оружия
+Object / NPC info	Сведения об объекте / NPC
+Minigame	Мини-игра
+Hacking & lockpicking	Взлом и отмычки
+Fantasy	Фэнтези
+Sci-fi	Научная фантастика
+Minimal	Минимализм
+Cartoon	Мультяшный
+Military	Военный
+Horror	Хоррор
+Sports	Спорт
+Retro	Ретро
+Elegant	Элегантный
+Nature	Природа
+Pastel	Пастель
+Classic templates	Классические шаблоны
+Illustrations	Иллюстрации

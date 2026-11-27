@@ -17,7 +17,7 @@ include!(concat!(env!("OUT_DIR"), "/pack_table.rs"));
 const MANIFEST: &str = include_str!("../assets/pack/manifest.json");
 
 /// (category id, English label). The order is the order of the chips in the Images tab.
-pub const CATEGORIES: &[(&str, &str)] = &[("backgrounds", "Backgrounds"), ("frames", "Frames"), ("buttons", "Buttons"), ("icons", "Icons"), ("pixel", "Pixel art")];
+pub const CATEGORIES: &[(&str, &str)] = &[("backgrounds", "Backgrounds"), ("frames", "Frames"), ("buttons", "Buttons"), ("icons", "Icons"), ("pixel", "Pixel art"), ("art", "Illustrations")];
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct PackItem {
@@ -349,7 +349,15 @@ mod tests {
             let b = bytes(&it.id).unwrap_or_else(|| panic!("{} is not embedded", it.id));
             let img = image::load_from_memory(b).unwrap_or_else(|e| panic!("{} does not decode: {}", it.file, e));
             assert_eq!(pixel_size(it), Some((img.width(), img.height())));
-            if let Some((w, h, ext)) = spec(&it.category) {
+            if it.category == "art" {
+                // generated illustrations: wide key art (1280 x 720) or square pictures (512 x 512), always JPEG
+                assert!(matches!((img.width(), img.height()), (1280, 720) | (512, 512)), "{}: wrong size", it.id);
+                // pictures with a transparent background (`_cut`) are PNG, the rest JPEG
+                assert_eq!(ext_of(&it.file), if it.id.ends_with("_cut") { "png" } else { "jpg" }, "{}: wrong format", it.id);
+                if it.id.ends_with("_cut") {
+                    assert!(img.color().has_alpha() && img.to_rgba8().pixels().any(|p| p[3] == 0), "{}: no transparency", it.id);
+                }
+            } else if let Some((w, h, ext)) = spec(&it.category) {
                 assert_eq!((img.width(), img.height()), (w, h), "{}: wrong size", it.id);
                 assert_eq!(ext_of(&it.file), ext, "{}: wrong format", it.id);
             } else {
