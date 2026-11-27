@@ -677,7 +677,7 @@ impl G<'_> {
         let person = ["portrait", "hero", "avatar", "character", "face", "member", "unit", "banner art", "player"].iter().any(|k| lower.contains(k));
         // pictures of items alternate between the style's item and character pictures so a grid is not one repeated image
         self.art_n += 1;
-        let alt = self.art_n % 3;
+        let alt = self.art_n % 4;
         self.el(p, pos, Kind::Image, name, |e| {
             e.fill = c1;
             e.fill2 = c2;
@@ -687,7 +687,7 @@ impl G<'_> {
             let kind = if (1.3..=2.4).contains(&ratio) {
                 Some("wide")
             } else if (0.62..1.3).contains(&ratio) {
-                Some(if person { "portrait" } else { ["object", "object2", "portrait"][alt] })
+                Some(if person { "portrait" } else { ["cut", "object", "cut", "object2"][alt] })
             } else {
                 None
             };

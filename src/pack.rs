@@ -352,7 +352,11 @@ mod tests {
             if it.category == "art" {
                 // generated illustrations: wide key art (1280 x 720) or square pictures (512 x 512), always JPEG
                 assert!(matches!((img.width(), img.height()), (1280, 720) | (512, 512)), "{}: wrong size", it.id);
-                assert_eq!(ext_of(&it.file), "jpg", "{}: wrong format", it.id);
+                // pictures with a transparent background (`_cut`) are PNG, the rest JPEG
+                assert_eq!(ext_of(&it.file), if it.id.ends_with("_cut") { "png" } else { "jpg" }, "{}: wrong format", it.id);
+                if it.id.ends_with("_cut") {
+                    assert!(img.color().has_alpha() && img.to_rgba8().pixels().any(|p| p[3] == 0), "{}: no transparency", it.id);
+                }
             } else if let Some((w, h, ext)) = spec(&it.category) {
                 assert_eq!((img.width(), img.height()), (w, h), "{}: wrong size", it.id);
                 assert_eq!(ext_of(&it.file), ext, "{}: wrong format", it.id);
