@@ -36,6 +36,9 @@
 
 ## What's new
 
+**1.8.0**
+- **312 new templates** (327 in all): three layouts, in three different styles, for each of 104 kinds of game screen (title and menus, game states, stats, information, meta-game, HUD, controls), grouped in the Templates tab. They come with 60 new illustrations (key art, characters, items, some with transparent background), work in portrait too, and each style belongs to its own made-up game.
+
 **1.7.5**
 - **IMGUI export:** the text typed in input fields now uses the design's text colour (it was always near-black, unreadable on dark fields).
 

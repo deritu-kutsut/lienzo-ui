@@ -1,6 +1,6 @@
 {
   "name": "lienzo-ui-mcp",
-  "version": "1.7.5",
+  "version": "1.8.0",
   "description": "MCP server for Lienzo UI: create and edit Unity interface designs, review them, take screenshots and export to Unity (dry_run first).",
   "type": "module",
   "bin": { "lienzo-ui-mcp": "lienzo-ui-mcp.mjs" },
