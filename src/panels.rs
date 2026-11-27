@@ -472,7 +472,7 @@ impl EditorApp {
         };
         let classic: Vec<usize> = model::template_order().filter(|&i| i < model::BUILTIN_TEMPLATES.len()).filter(|&i| self.matches(model::TEMPLATES[i])).collect();
         if !classic.is_empty() {
-            egui::CollapsingHeader::new(RichText::new(crate::i18n::t("Classic templates")).strong()).id_salt("tpl_classic").default_open(true).open(searching.then_some(true)).show(ui, |ui| {
+            egui::CollapsingHeader::new(RichText::new(format!("{} ({})", crate::i18n::t("Classic templates"), classic.len())).strong()).id_salt("tpl_classic").default_open(false).open(searching.then_some(true)).show(ui, |ui| {
                 ui.horizontal_wrapped(|ui| {
                     ui.spacing_mut().item_spacing = Vec2::new(8.0, 8.0);
                     for &i in &classic {
