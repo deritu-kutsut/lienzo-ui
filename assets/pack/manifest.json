@@ -2511,5 +2511,185 @@
    "horror"
   ],
   "pixel": false
+ },
+ {
+  "id": "art_fantasy_object2",
+  "category": "art",
+  "name": "Fantasy item 2",
+  "file": "art/fantasy_object2.jpg",
+  "tags": [
+   "item",
+   "object",
+   "prop",
+   "illustration",
+   "fantasy",
+   "fantasy"
+  ],
+  "pixel": false
+ },
+ {
+  "id": "art_scifi_object2",
+  "category": "art",
+  "name": "Sci-fi item 2",
+  "file": "art/scifi_object2.jpg",
+  "tags": [
+   "item",
+   "object",
+   "prop",
+   "illustration",
+   "scifi",
+   "sci-fi"
+  ],
+  "pixel": false
+ },
+ {
+  "id": "art_minimal_object2",
+  "category": "art",
+  "name": "Minimal item 2",
+  "file": "art/minimal_object2.jpg",
+  "tags": [
+   "item",
+   "object",
+   "prop",
+   "illustration",
+   "minimal",
+   "minimal"
+  ],
+  "pixel": false
+ },
+ {
+  "id": "art_cartoon_object2",
+  "category": "art",
+  "name": "Cartoon item 2",
+  "file": "art/cartoon_object2.jpg",
+  "tags": [
+   "item",
+   "object",
+   "prop",
+   "illustration",
+   "cartoon",
+   "cartoon"
+  ],
+  "pixel": false
+ },
+ {
+  "id": "art_neon_object2",
+  "category": "art",
+  "name": "Neon item 2",
+  "file": "art/neon_object2.jpg",
+  "tags": [
+   "item",
+   "object",
+   "prop",
+   "illustration",
+   "neon",
+   "neon"
+  ],
+  "pixel": false
+ },
+ {
+  "id": "art_military_object2",
+  "category": "art",
+  "name": "Military item 2",
+  "file": "art/military_object2.jpg",
+  "tags": [
+   "item",
+   "object",
+   "prop",
+   "illustration",
+   "military",
+   "military"
+  ],
+  "pixel": false
+ },
+ {
+  "id": "art_elegant_object2",
+  "category": "art",
+  "name": "Elegant item 2",
+  "file": "art/elegant_object2.jpg",
+  "tags": [
+   "item",
+   "object",
+   "prop",
+   "illustration",
+   "elegant",
+   "elegant"
+  ],
+  "pixel": false
+ },
+ {
+  "id": "art_nature_object2",
+  "category": "art",
+  "name": "Nature item 2",
+  "file": "art/nature_object2.jpg",
+  "tags": [
+   "item",
+   "object",
+   "prop",
+   "illustration",
+   "nature",
+   "nature"
+  ],
+  "pixel": false
+ },
+ {
+  "id": "art_pastel_object2",
+  "category": "art",
+  "name": "Pastel item 2",
+  "file": "art/pastel_object2.jpg",
+  "tags": [
+   "item",
+   "object",
+   "prop",
+   "illustration",
+   "pastel",
+   "pastel"
+  ],
+  "pixel": false
+ },
+ {
+  "id": "art_horror_object2",
+  "category": "art",
+  "name": "Horror item 2",
+  "file": "art/horror_object2.jpg",
+  "tags": [
+   "item",
+   "object",
+   "prop",
+   "illustration",
+   "horror",
+   "horror"
+  ],
+  "pixel": false
+ },
+ {
+  "id": "art_sports_object2",
+  "category": "art",
+  "name": "Sports item 2",
+  "file": "art/sports_object2.jpg",
+  "tags": [
+   "item",
+   "object",
+   "prop",
+   "illustration",
+   "sports",
+   "sports"
+  ],
+  "pixel": false
+ },
+ {
+  "id": "art_retro_object2",
+  "category": "art",
+  "name": "Retro item 2",
+  "file": "art/retro_object2.jpg",
+  "tags": [
+   "item",
+   "object",
+   "prop",
+   "illustration",
+   "retro",
+   "retro"
+  ],
+  "pixel": false
  }
 ]
