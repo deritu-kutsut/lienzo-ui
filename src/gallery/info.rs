@@ -116,7 +116,7 @@ fn codex_book(g: &mut G) {
     g.heading_l(b1, tl(18.0, 16.0, 620.0, 32.0), "Found heading", "Found on the way", 26.0);
     g.note(b1, tl(18.0, 60.0, 620.0, 28.0), "Found entry 1", "A torn map of the valley", 24.0);
     g.note(b1, tl(18.0, 96.0, 620.0, 28.0), "Found entry 2", "A brass key, unmarked", 24.0);
-    let page_nav = g.hbox(left_page, bl(0.0, 24.0, 360.0, 60.0), "Page navigation", 12.0);
+    let page_nav = g.hbox(left_page, bl(0.0, 24.0, 360.0, 64.0), "Page navigation", 12.0);
     g.button2(page_nav, sz(170.0, 60.0), "Previous page button", "< Page 6");
     g.button2(page_nav, sz(170.0, 60.0), "Next page button", "Page 8 >");
 
@@ -189,7 +189,7 @@ fn tutorial_video(g: &mut G) {
     g.background();
     let left_panel = g.panel(p, left(24.0, 420.0, 24.0, 24.0), "Topic panel");
     g.heading_l(left_panel, tl(20.0, 20.0, 380.0, 36.0), "Topic heading", "Topics", 28.0);
-    let topics = g.vbox_fill(left_panel, tl(12.0, 70.0, 396.0, 490.0), "Topic list", 8.0);
+    let topics = g.vbox_fill(left_panel, tl(12.0, 70.0, 396.0, 490.0), "Topic list", 6.0);
     for n in ["Moving", "Combat basics", "Inventory", "Crafting", "Stealth", "Maps", "Trading"].iter() {
         g.menu_item(topics, sz(396.0, 62.0), &format!("Topic {}", n), n, *n == "Combat basics");
     }
@@ -897,7 +897,7 @@ fn hub_list(g: &mut G) {
     for (n, on) in extras.iter() {
         g.menu_item(list, sz(352.0, 92.0), &format!("Extra item {}", n), n, *on);
     }
-    let foot = g.vbox_fill(side, bl(14.0, 14.0, 352.0, 110.0), "Extra footer", 10.0);
+    let foot = g.vbox_fill(side, bl(14.0, 14.0, 352.0, 114.0), "Extra footer", 10.0);
     g.note(foot, sz(352.0, 40.0), "Footer note", "Progress saved locally", 22.0);
     g.button2(foot, sz(352.0, 60.0), "Back button", "Back");
 
@@ -983,7 +983,7 @@ fn collect_list(g: &mut G) {
     g.background();
     let head = g.panel(p, top(30.0, 96.0, 30.0, 30.0), "Header panel");
     g.heading_l(head, tl(24.0, 26.0, 600.0, 40.0), "Screen title", "CURIOS", 34.0);
-    let chips = g.hbox(head, tr(24.0, 18.0, 1060.0, 60.0), "Filter chips", 12.0);
+    let chips = g.hbox(head, tr(24.0, 16.0, 1060.0, 64.0), "Filter chips", 12.0);
     for (i, n) in ["All", "Charms", "Letters", "Maps", "Masks"].iter().enumerate() {
         if i == 0 {
             g.button(chips, sz(200.0, 60.0), &format!("Chip {} button", n), n);
@@ -1068,7 +1068,7 @@ fn gallery_grid(g: &mut G) {
     let head = g.panel(p, top(30.0, 110.0, 30.0, 30.0), "Header panel");
     g.heading_l(head, tl(28.0, 22.0, 700.0, 44.0), "Screen title", "Picture gallery", 38.0);
     g.note(head, tl(28.0, 70.0, 700.0, 28.0), "Header note", "24 of 60 pictures unlocked", 24.0);
-    let chapters = g.hbox(head, tr(28.0, 32.0, 900.0, 60.0), "Chapter filter", 12.0);
+    let chapters = g.hbox(head, tr(28.0, 30.0, 900.0, 64.0), "Chapter filter", 12.0);
     for (i, n) in ["All", "Chapter I", "Chapter II", "Extras"].iter().enumerate() {
         if i == 0 {
             g.button(chapters, sz(210.0, 60.0), &format!("Chapter {} button", n), n);
@@ -1238,7 +1238,7 @@ fn music_list(g: &mut G) {
     let head = g.panel(p, top(30.0, 100.0, 30.0, 30.0), "Header panel");
     g.heading_l(head, tl(28.0, 24.0, 700.0, 42.0), "Screen title", "SOUNDTRACK", 36.0);
     g.note(head, tl(28.0, 70.0, 700.0, 28.0), "Header note", "12 tracks unlocked", 24.0);
-    let head_btns = g.hbox(head, tr(28.0, 30.0, 700.0, 60.0), "Header buttons", 12.0);
+    let head_btns = g.hbox(head, tr(28.0, 28.0, 700.0, 64.0), "Header buttons", 12.0);
     g.button2(head_btns, sz(220.0, 60.0), "Shuffle button", "Shuffle");
     g.button2(head_btns, sz(220.0, 60.0), "Repeat button", "Repeat");
 
@@ -1283,7 +1283,7 @@ fn music_jukebox(g: &mut G) {
     g.button2(row1, sz(150.0, 80.0), "Jukebox prev button", "<");
     g.button(row1, sz(300.0, 80.0), "Jukebox play button", "Play");
     g.button2(row1, sz(150.0, 80.0), "Jukebox next button", ">");
-    let row2 = g.hbox(metal, bl(20.0, 20.0, 692.0, 60.0), "Jukebox extras", 14.0);
+    let row2 = g.hbox(metal, bl(20.0, 18.0, 692.0, 64.0), "Jukebox extras", 14.0);
     g.toggle(row2, sz(220.0, 60.0), "Jukebox loop toggle", "Loop", true);
     g.slider(row2, sz(300.0, 60.0), "Jukebox volume", 0.6);
 

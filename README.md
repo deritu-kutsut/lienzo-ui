@@ -36,6 +36,10 @@
 
 ## What's new
 
+**1.8.2**
+- **Accessible gallery:** every template meets the review's minimums at 1920 × 1080 (controls at least 64 px tall, text at least 18 px).
+- Fewer dependencies (Wayland window decorations off; Windows build unchanged).
+
 **1.8.1**
 - **Undo / Redo keep your zoom** (Ctrl+Z / Ctrl+Y no longer re-fit the view).
 - **Locked elements can be selected with a click** when nothing else is under the cursor, so you can unlock them.

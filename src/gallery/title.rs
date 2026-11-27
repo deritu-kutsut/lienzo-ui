@@ -664,9 +664,9 @@ fn dialogue_novel(g: &mut G) {
     let tag = g.card(bx, tl(40.0, -0.0, 280.0, 64.0), "Name tag");
     g.heading(tag, full(), "Speaker name", "Hana", 34.0);
     g.label(bx, tl(40.0, 90.0, 1600.0, 140.0), "Dialogue text", "Hey... do you remember the summer festival? You promised you would come back.", 38.0);
-    let opts = g.hbox(bx, tr(30.0, 14.0, 420.0, 50.0), "Text options", 12.0);
+    let opts = g.hbox(bx, tr(30.0, 10.0, 420.0, 64.0), "Text options", 12.0);
     for o in ["Log", "Auto", "Skip"] {
-        g.button2(opts, sz(130.0, 50.0), &format!("{} button", o), o);
+        g.button2(opts, sz(130.0, 64.0), &format!("{} button", o), o);
     }
 }
 

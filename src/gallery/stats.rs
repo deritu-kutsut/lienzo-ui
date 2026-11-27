@@ -1740,7 +1740,7 @@ fn world_rules_palette(g: &mut G) {
     header_bar(g, "WORLD SETTINGS", "Seed: 482-OAK-991");
     let left_p = g.panel(p, left(50.0, 860.0, 126.0, 44.0), "World rules panel");
     g.heading_l(left_p, tl(28.0, 24.0, 480.0, 42.0), "Rules heading", "Environment Rules", 30.0);
-    let toggles = g.vbox(left_p, tl(28.0, 82.0, 804.0, 360.0), "Rule toggles", 14.0);
+    let toggles = g.vbox(left_p, tl(28.0, 82.0, 804.0, 360.0), "Rule toggles", 8.0);
     for (label, on) in [
         ("Dynamic Day / Night Cycle", true),
         ("Seasonal Weather & Storms", true),
@@ -1748,8 +1748,8 @@ fn world_rules_palette(g: &mut G) {
         ("Morning Valley Fog", false),
         ("Resource Regrowth", true),
     ] {
-        let r = g.card(toggles, sz(804.0, 60.0), "Toggle row");
-        g.toggle(r, cl(20.0, 0.0, 760.0, 52.0), &format!("{} toggle", label), label, on);
+        let r = g.card(toggles, sz(804.0, 64.0), "Toggle row");
+        g.toggle(r, cl(20.0, 0.0, 760.0, 64.0), &format!("{} toggle", label), label, on);
     }
     g.heading_l(left_p, tl(28.0, 466.0, 480.0, 40.0), "Palette heading", "Biome Color Palette", 30.0);
     let pals = g.hbox(left_p, tl(28.0, 522.0, 804.0, 130.0), "Biome palettes", 18.0);

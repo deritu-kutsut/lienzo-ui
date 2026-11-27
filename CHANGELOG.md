@@ -2,6 +2,16 @@
 
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow [SemVer](https://semver.org/).
 
+## [1.8.2] - 2026-11-28
+
+Accessibility pass on the template gallery and a smaller dependency tree.
+
+### Fixed
+- **Gallery templates meet the review's text and touch minimums at 1920 × 1080.** Buttons, toggles, input fields and drop-downs are at least 64 px tall, and badges, key prompts and icon glyphs use at least 18 px text. 73 templates had "hard to read" or "hard to tap" warnings; now none do. Ten containers in eight templates were adjusted so the taller controls still fit at every resolution. New test `gallery_templates_meet_text_and_touch_minimums`.
+
+### Changed
+- **Fewer dependencies:** the Linux Wayland window decorations of `eframe` are turned off (the Windows build is unchanged), which removes the unmaintained `ttf-parser` crate and 44 other packages from the lock file.
+
 ## [1.8.1] - 2026-11-27
 
 Editor fixes (undo and zoom, locked elements, rotation) and a dependency security update.

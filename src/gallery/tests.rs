@@ -112,3 +112,22 @@ fn dump_gallery() {
     std::fs::write(&out, format!("window.GALLERY = {};
 window.PACK = {};", serde_json::to_string(&items).unwrap(), serde_json::to_string(&pack).unwrap())).unwrap();
 }
+
+/// Every gallery template, at 1920 × 1080: text at least the review's minimum size and every control the player taps
+/// at least the recommended touch size (no "hard to read" / "hard to tap" warnings).
+#[test]
+fn gallery_templates_meet_text_and_touch_minimums() {
+    let base = crate::model::BUILTIN_TEMPLATES.len();
+    let mut failures = Vec::new();
+    for i in 0..count() {
+        let d = crate::model::template(base + i, 1920.0, 1080.0);
+        for p in review(&d) {
+            if p.template.contains("hard to read") || p.template.contains("hard to tap") {
+                failures.push(format!("{} · {}: {:?}", name(i), p.element, p.data));
+            }
+        }
+    }
+    assert!(failures.is_empty(), "{} problems:
+{}", failures.len(), failures.join("
+"));
+}

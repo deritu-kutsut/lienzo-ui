@@ -1,6 +1,6 @@
 [package]
 name = "lienzo_ui"
-version = "1.8.1"
+version = "1.8.2"
 edition = "2024"
 description = "Lienzo UI: a visual editor for game interfaces that exports to Unity (uGUI, UI Toolkit, IMGUI)"
 license = "MIT"
@@ -14,7 +14,7 @@ path = "src/main.rs"
 
 [dependencies]
 base64 = "0.22"
-eframe = "0.37.0"
+eframe = { version = "0.37.0", default-features = false, features = ["accesskit", "clipboard", "default_fonts", "links", "system_fonts", "wgpu", "wayland", "x11"] }
 egui_extras = { version = "0.37", default-features = false, features = ["svg"] }
 getrandom = "0.3"
 image = { version = "0.25.10", default-features = false, features = ["png", "jpeg", "bmp", "gif", "webp"] }

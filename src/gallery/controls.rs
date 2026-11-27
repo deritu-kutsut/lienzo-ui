@@ -207,7 +207,7 @@ fn place_build_bar(g: &mut G) {
     }
     g.art(field, tl(124.0, 124.0, 232.0, 232.0), "Ghost building");
     let bar = g.panel(p, bottom(30.0, 250.0, 200.0, 200.0), "Build bar");
-    let cats = g.vbox_fill(bar, cl(24.0, 0.0, 220.0, 210.0), "Categories", 10.0);
+    let cats = g.vbox_fill(bar, cl(24.0, 0.0, 220.0, 210.0), "Categories", 8.0);
     for (i, c) in ["Farm", "Homes", "Decor"].iter().enumerate() {
         g.menu_item(cats, sz(220.0, 62.0), &format!("{} tab", c), c, i == 0);
     }

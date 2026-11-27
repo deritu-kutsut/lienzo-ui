@@ -521,6 +521,11 @@ pub const LEFT: u8 = 0;
 pub const CENTER: u8 = 1;
 pub const RIGHT: u8 = 2;
 
+/// Smallest text, in reference pixels (the review's recommended minimum at 1080 p).
+pub const MIN_TEXT: f32 = 18.0;
+/// Smallest height of a control the player taps, in reference pixels (the review's recommended touch size).
+pub const MIN_TOUCH: f32 = 64.0;
+
 /// Darker or lighter copy of a colour (`k` < 1 darkens, > 1 lightens towards white).
 pub fn shade(c: Rgba, k: f32) -> Rgba {
     let f = |v: u8| if k <= 1.0 { (v as f32 * k).round().clamp(0.0, 255.0) as u8 } else { (v as f32 + (255.0 - v as f32) * (k - 1.0)).round().clamp(0.0, 255.0) as u8 };
@@ -548,6 +553,12 @@ impl G<'_> {
     /// page pixels: multiply by `g.s` (or use the helpers, which already do).
     pub fn el(&mut self, p: N, pos: Pos, kind: Kind, name: &str, f: impl FnOnce(&mut Element)) -> N {
         let s = self.s;
+        let mut pos = pos;
+        // Controls the player taps are at least MIN_TOUCH tall (the review's recommended touch size), unless their
+        // height is stretched between two anchors (then the parent decides it).
+        if matches!(kind, Kind::Button | Kind::Toggle | Kind::InputField | Kind::Dropdown) && (pos.auto || (pos.amin[1] - pos.amax[1]).abs() < 1e-6) {
+            pos.ys[1] = pos.ys[1].max(MIN_TOUCH);
+        }
         let [px, py, pw, ph] = p.r;
         let mut e = Element::new(0, kind);
         e.name = self.unique(name);
@@ -806,7 +817,7 @@ impl G<'_> {
             e.text = glyph.to_string();
             e.text_color = t.on_accent;
             e.bold = true;
-            e.font_size = (size * 0.45 * s).max(8.0);
+            e.font_size = ((size * 0.45).max(MIN_TEXT) * s).max(8.0);
             e.raycast = false;
         })
     }
@@ -822,7 +833,7 @@ impl G<'_> {
             e.text = text.to_string();
             e.text_color = t.on_accent;
             e.bold = true;
-            e.font_size = ((h * 0.5).clamp(14.0, 30.0) * s).max(8.0);
+            e.font_size = ((h * 0.5).clamp(MIN_TEXT, 30.0) * s).max(8.0);
             e.raycast = false;
         })
     }
@@ -867,7 +878,7 @@ impl G<'_> {
             e.text_color = t.panel2;
             e.text_color[3] = 255;
             e.bold = true;
-            e.font_size = ((h * 0.5).max(14.0) * s).max(8.0);
+            e.font_size = ((h * 0.5).max(MIN_TEXT) * s).max(8.0);
             e.raycast = false;
         })
     }
