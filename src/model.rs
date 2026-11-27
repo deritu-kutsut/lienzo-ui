@@ -1661,6 +1661,35 @@ pub fn template_with_portrait(index: usize, width: f32, height: f32) -> Doc {
     if let Some(p) = d.portrait.as_mut() {
         p.overrides = overrides;
     }
+    // An element that matched the target without an override still follows its parent, whose override can move it
+    // away: repeat with the parent's overrides in place until the portrait view is the portrait build (one pass per
+    // level of the hierarchy at most).
+    for _ in 0..32 {
+        let shown = d.resolved_for(crate::docext::Orientation::Portrait);
+        let mut fixed = false;
+        for (s, t) in shown.elements.iter().zip(target.elements.iter()) {
+            if s.id != t.id || (near(s.x, t.x) && near(s.y, t.y) && near(s.w, t.w) && near(s.h, t.h)) {
+                continue;
+            }
+            let Some(p) = d.portrait.as_mut() else { break };
+            let k = match p.overrides.iter().position(|o| o.id == t.id) {
+                Some(k) => k,
+                None => {
+                    p.overrides.push(crate::docext::ElementOverride::new(t.id));
+                    p.overrides.len() - 1
+                }
+            };
+            let o = &mut p.overrides[k];
+            o.x = Some(t.x);
+            o.y = Some(t.y);
+            o.w = Some(t.w);
+            o.h = Some(t.h);
+            fixed = true;
+        }
+        if !fixed {
+            break;
+        }
+    }
     d
 }
 

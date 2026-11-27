@@ -43,7 +43,7 @@ Al terminar este tutorial se abre el editor. Puedes volver aquí cuando quieras 
     },
     Page {
         title: "Empieza con una plantilla",
-        text: "Abre Plantillas en la barra izquierda y elige una de las 15: menú principal, HUD, pausa, fin de partida, selección de nivel, inventario, diálogo de personaje, clasificación… Dos de ellas tienen estilo pixel art: HUD RPG pixel art y Menú principal pixel art.\n\n\
+        text: "Abre Plantillas en la barra izquierda y elige una de las 15: menú principal, HUD, pausa, fin de partida, selección de nivel, inventario, diálogo de personaje, clasificación… Dos de ellas tienen estilo pixel art: HUD RPG pixel art y Menú principal pixel art. Además de esas clásicas, la galería agrupa 312 más por tipo de pantalla (título y menús, estados de juego, estadísticas, información, metajuego, HUD, controles), con tres estilos de cada una (327 en total).\n\n\
 Es la forma más rápida de ver cómo se construye una interfaz completa. Todo lo que trae se puede cambiar.\n\n\
 Si prefieres empezar de cero, elige «En blanco» o Archivo › Nuevo diseño en blanco.",
     },
@@ -83,7 +83,7 @@ En Unity, al volver a la ventana, el diseño aparece como prefab en Assets/Edito
         title: "Comunidad",
         text: "La pestaña Comunidad de la barra izquierda es un catálogo compartido de plugins, imágenes, fuentes, plantillas, elementos y temas:\n\n• Explorar e instalar no necesita cuenta: busca y pulsa Instalar.\n• Para subir, reportar o dar corazones inicias sesión con GitHub o Google y eliges un nombre público. Sin contraseñas: la app solo guarda ese nombre.\n• Al crear tu perfil aceptas las reglas: nada de malware, odio, plagio ni contenido +18 sin marcar. El texto completo está en docs/TERMS.md y docs/COMMUNITY_GUIDELINES.md.\n• El contenido +18 está oculto salvo que inicies sesión y actives «Mostrar contenido +18».\n• Todo lo que se comparte se revisa antes de publicarse, y puedes reportar lo que incumpla las reglas.\n\nEn fuentes y plugins, pulsa Vista previa para ver un texto de ejemplo, o para leer qué hace un plugin y su código, antes de instalar; no se instala nada. Pulsa Traducir para leer cualquier descripción en tu idioma. Usa un servicio gratuito en línea, solo cuando lo pulsas, y «Ver original» vuelve atrás.",
     },
-]; Además de esas clásicas, la galería agrupa 312 más por tipo de pantalla (título y menús, estados de juego, estadísticas, información, metajuego, HUD, controles), con tres estilos de cada una (327 en total).
+];
 
 pub const PRO_ES: &[Page] = &[
     Page {
@@ -197,7 +197,7 @@ When you finish this tutorial the editor opens. Come back any time with the “T
     },
     Page {
         title: "Start from a template",
-        text: "Open Templates in the left bar and pick one of the 15: main menu, HUD, pause, game over, level select, inventory, character dialogue, leaderboard… Two of them are in pixel art style: Pixel RPG HUD and Pixel main menu.\n\n\
+        text: "Open Templates in the left bar and pick one of the 15: main menu, HUD, pause, game over, level select, inventory, character dialogue, leaderboard… Two of them are in pixel art style: Pixel RPG HUD and Pixel main menu. Besides those classics, the gallery groups 312 more by kind of screen (title and menus, game states, stats, information, meta-game, HUD, controls), three styles for each (327 in all).\n\n\
 It is the fastest way to see how a complete interface is built. Everything in it can be changed.\n\n\
 To start from scratch, choose “Blank” or File › New blank design.",
     },
@@ -237,7 +237,7 @@ Back in Unity, when you return to the window, the design appears as a prefab in 
         title: "Community",
         text: "The Community tab in the left bar is a shared catalog of plugins, images, fonts, templates, elements and themes:\n\n• Browsing and installing needs no account: search and press Install.\n• To upload, report or give hearts you sign in with GitHub or Google and choose a public name. No passwords: the app only keeps that name.\n• When you create your profile you accept the rules: no malware, hate, plagiarism or unmarked 18+ content. The full text is in docs/TERMS.md and docs/COMMUNITY_GUIDELINES.md.\n• 18+ content is hidden unless you sign in and turn on “Show 18+ content”.\n• Everything shared is reviewed before it is published, and you can report anything that breaks the rules.\n\nOn fonts and plugins, press Preview to see sample text, or to read what a plugin does and its code, before installing; nothing is installed. Press Translate to read any description in your language. It uses a free online service, only when you press it, and “Show original” goes back.",
     },
-]; Besides those classics, the gallery groups 312 more by kind of screen (title and menus, game states, stats, information, meta-game, HUD, controls), three styles for each (327 in all).
+];
 
 pub const PRO: &[Page] = &[
     Page {

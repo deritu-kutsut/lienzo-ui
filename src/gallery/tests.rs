@@ -62,8 +62,21 @@ fn gallery_templates_are_clean() {
                 failures.push(format!("{} · {}: {} {:?}", name(i), p.element, p.template, p.data));
             }
         }
-        for (w, h) in [(1920.0, 1080.0), (1080.0, 1920.0)] {
+        // the portrait layout stored with the template shows the portrait build of the template
+        let shown = d.resolved_for(crate::docext::Orientation::Portrait);
+        let built = crate::model::template(base + i, 1080.0, 1920.0);
+        for (a, b) in shown.elements.iter().zip(built.elements.iter()) {
+            if (a.x - b.x).abs() >= 1.0 || (a.y - b.y).abs() >= 1.0 || (a.w - b.w).abs() >= 1.0 || (a.h - b.h).abs() >= 1.0 {
+                failures.push(format!("{} (portrait view): «{}» {:?} vs {:?}", name(i), a.name, [a.x, a.y, a.w, a.h], [b.x, b.y, b.w, b.h]));
+            }
+        }
+        for (w, h) in [(1920.0, 1080.0), (1080.0, 1920.0), (1280.0, 720.0), (800.0, 600.0), (2560.0, 1440.0)] {
             let d = crate::model::template(base + i, w, h);
+            for e in &d.elements {
+                if e.x < -1.0 || e.y < -1.0 || e.x + e.w > w + 1.0 || e.y + e.h > h + 1.0 {
+                    failures.push(format!("{} @{}x{}: «{}» outside the page {:?}", name(i), w, h, e.name, [e.x, e.y, e.w, e.h]));
+                }
+            }
             assert!(d.elements.len() >= 6, "{}: only {} elements", name(i), d.elements.len());
             for e in &d.elements {
                 let Some(p) = e.parent.and_then(|p| d.get(p)) else { continue };

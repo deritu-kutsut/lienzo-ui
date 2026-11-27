@@ -888,7 +888,12 @@ impl G<'_> {
     pub fn grid(&mut self, p: N, pos: Pos, name: &str, cw: f32, ch: f32, spacing: f32) -> N {
         let s = self.s;
         let n = self.group(p, pos, name, LayoutMode::Grid, spacing, 0);
-        self.edit(n, |e| e.layout.cell = [cw * s, ch * s]);
+        // A hair less spacing than asked: a grid whose cells exactly fill its width must not lose a column to
+        // rounding when the template is scaled down for a small page.
+        self.edit(n, |e| {
+            e.layout.cell = [cw * s, ch * s];
+            e.layout.spacing[0] = (spacing * s - 0.05).max(0.0);
+        });
         n
     }
     /// Inner padding of a layout group (left, right, top, bottom), reference pixels.
