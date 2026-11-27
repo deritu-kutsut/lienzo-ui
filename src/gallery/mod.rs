@@ -10,6 +10,7 @@
 use crate::model::{Doc, Element, Kind, LayoutMode, Rgba};
 
 mod controls;
+mod controls_b;
 mod hud;
 mod info;
 mod meta;
@@ -80,6 +81,7 @@ fn all_entries() -> Vec<Entry> {
     v.extend(meta::entries());
     v.extend(hud::entries());
     v.extend(controls::entries());
+    v.extend(controls_b::entries());
     v
 }
 
