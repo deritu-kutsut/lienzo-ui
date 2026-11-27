@@ -36,6 +36,11 @@
 
 ## What's new
 
+**1.8.1**
+- **Undo / Redo keep your zoom** (Ctrl+Z / Ctrl+Y no longer re-fit the view).
+- **Locked elements can be selected with a click** when nothing else is under the cursor, so you can unlock them.
+- Rotating an element that is not a container no longer drags its children; `url` updated to 2.5.9 (security).
+
 **1.8.0**
 - **312 new templates** (327 in all): three layouts, in three different styles, for each of 104 kinds of game screen (title and menus, game states, stats, information, meta-game, HUD, controls), grouped in the Templates tab. They come with 60 new illustrations (key art, characters, items, some with transparent background), work in portrait too, and each style belongs to its own made-up game.
 
