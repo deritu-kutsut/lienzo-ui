@@ -10,7 +10,7 @@
     },
     {
       "title": "Mit einer Vorlage beginnen",
-      "text": "Öffne Vorlagen in der linken Leiste und wähle eine der 15: Hauptmenü, HUD, Pausenmenü, Spielende, Levelauswahl, Inventar, Charakterdialog, Rangliste… Zwei davon sind im Pixel-Art-Stil: Pixel-RPG-HUD und Pixel-Hauptmenü.\n\nSo siehst du am schnellsten, wie eine komplette Oberfläche aufgebaut ist. Alles darin lässt sich ändern.\n\nWenn du lieber bei null anfangen willst, wähle „Leer“ oder Datei › Neuer leerer Entwurf."
+      "text": "Öffne Vorlagen in der linken Leiste und wähle eine der 15: Hauptmenü, HUD, Pausenmenü, Spielende, Levelauswahl, Inventar, Charakterdialog, Rangliste… Zwei davon sind im Pixel-Art-Stil: Pixel-RPG-HUD und Pixel-Hauptmenü. Neben diesen Klassikern ordnet die Galerie 312 weitere nach Bildschirmart (Titel und Menüs, Spielzustände, Werte, Informationen, Metaspiel, HUD, Steuerung), jeweils in drei Stilen (insgesamt 327).\n\nSo siehst du am schnellsten, wie eine komplette Oberfläche aufgebaut ist. Alles darin lässt sich ändern.\n\nWenn du lieber bei null anfangen willst, wähle „Leer“ oder Datei › Neuer leerer Entwurf."
     },
     {
       "title": "Elemente hinzufügen und bearbeiten",

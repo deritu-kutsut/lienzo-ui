@@ -37,7 +37,7 @@ fn styles_keep_their_contrast_pairs() {
             ("muted/panel", t.muted, over(t.panel, t.bg), 4.5),
             ("text/panel2", t.text, over(t.panel2, t.bg), 4.5),
             ("muted/panel2", t.muted, over(t.panel2, t.bg), 4.5),
-            ("on_accent/accent", t.on_accent, t.accent, 3.0),
+            ("on_accent/accent", t.on_accent, t.accent, 4.5),
             ("bg_text/bg", t.bg_text, t.bg, 4.5),
             ("bg_text/bg2", t.bg_text, t.bg2, 4.5),
             ("text/accent-free key cap", t.panel2, t.text, 4.5),

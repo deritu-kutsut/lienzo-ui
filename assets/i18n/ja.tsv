@@ -1091,3 +1091,141 @@ Translating…	翻訳中…
 Commands	コマンド
 Exporters	エクスポーター
 Files	ファイル
+# Template gallery
+Title & system menus	タイトルとシステムメニュー
+Title screen	タイトル画面
+Mode select	モード選択
+Game difficulty	難易度
+Load / save	ロード / セーブ
+Settings menu	設定メニュー
+Settings options	設定項目
+Button layout	ボタン配置
+Modals & overlays	モーダルとオーバーレイ
+Cutscene & story	カットシーンとストーリー
+Dialogue & speech	会話とセリフ
+Guided tutorial	ガイド付きチュートリアル
+Modal & popup	モーダルとポップアップ
+Character intro	キャラクター紹介
+Feature unlocked	機能解放
+Game states	ゲームの状態
+Pre-game	ゲーム開始前
+Character select screen	キャラクター選択画面
+Stage / level select	ステージ選択
+Game setup	ゲーム設定
+Pre-game lobby	ゲーム前ロビー
+Mid-game	ゲーム中
+Stage intro	ステージ開始
+Pause screen	ポーズ画面
+Change class / party	クラス / パーティ変更
+Mission accept	ミッション受注
+Loot selection	戦利品の選択
+Game end	ゲーム終了
+Failure & game over	失敗とゲームオーバー
+Level complete	ステージクリア
+Results screen	リザルト画面
+Rewards & experience	報酬と経験値
+Leaderboards & ranking	リーダーボードとランキング
+Post-game menu	ゲーム後メニュー
+Stats & resources	ステータスとリソース
+Stats	ステータス
+Player menu	プレイヤーメニュー
+Unlocked units	解放済みユニット
+Team summary	チーム概要
+Overview & stats	概要とステータス
+Ability list	アビリティ一覧
+Maintenance & management	メンテナンスと管理
+Resource management	リソース管理
+Inventory grid	インベントリグリッド
+Equipping	装備
+Buying & trading	売買とトレード
+Change skin or accessory	スキン / アクセサリー変更
+Character customization	キャラクタークリエイト
+Sub-equip & tweak	サブ装備と調整
+World customization	ワールドカスタマイズ
+Upgrades & unlocks	強化と解放
+Upgrading & ranking up	強化とランクアップ
+Unlockable upgrades	解放できる強化
+Crafting	クラフト
+Choose boon / upgrade	恩恵 / 強化を選ぶ
+Information	情報
+Knowledge	知識
+Codex & journal	コーデックスと日誌
+Tutorials & guides	チュートリアルとガイド
+Logs & history	ログと履歴
+Progress	進行状況
+Area map	エリアマップ
+Missions & quests	ミッションとクエスト
+Challenges & achievements	チャレンジと実績
+Profile & game totals	プロフィールと通算記録
+Collection	コレクション
+Collection & extras hub	コレクションとおまけ
+Collectables menu	収集アイテムメニュー
+Gallery menu	ギャラリーメニュー
+Collectable viewer	収集アイテムビューア
+Sound & music player	サウンド＆ミュージックプレイヤー
+Meta-game	メタゲーム
+Service & social	サービスとソーシャル
+News & notifications	ニュースと通知
+Profile customization	プロフィールのカスタマイズ
+Friends & players	フレンドとプレイヤー
+Chat & communication	チャットとコミュニケーション
+Online play	オンラインプレイ
+Content creation	コンテンツ制作
+Photo mode	フォトモード
+Level editor	レベルエディター
+Decals & liveries	デカールとカラーリング
+Content discovery	コンテンツを探す
+Monetisation	マネタイズ
+Premium store	プレミアムストア
+Offers & bundles	セールとバンドル
+Currency store	通貨ショップ
+Daily rewards	デイリー報酬
+Season pass & events	シーズンパスとイベント
+Gacha & crates	ガチャと宝箱
+Upcoming unlocks	今後の解放
+Player vitals	プレイヤーのステータス
+Equipped items & abilities	装備中のアイテムとアビリティ
+Collection counters	収集カウンター
+Rank & position	順位とランク
+Enemy health & damage	敵の体力とダメージ
+HUD messages	HUDメッセージ
+Info & notifications	情報と通知
+Area / level name	エリア / ステージ名
+Loot & XP log	戦利品とEXPのログ
+Scoring & combos	スコアとコンボ
+Goal & navigation	目標とナビゲーション
+Clock & timer	時計とタイマー
+Objectives & goals	目的と目標
+Waypoints & markers	ウェイポイントとマーカー
+Compass bar	コンパスバー
+Gameplay & controls	ゲームプレイと操作
+Overlay menus	オーバーレイメニュー
+Item & ability wheel	アイテムとアビリティのホイール
+Selection & targeting	選択とターゲット
+Object placement	オブジェクトの配置
+Chat shortcuts & emotes	チャットショートカットとエモート
+Controls	操作
+Button prompts	ボタンガイド
+Weapon pickup prompt	武器拾得プロンプト
+Quick time event	クイックタイムイベント
+Controls reference	操作一覧
+Item & ability buttons	アイテムとアビリティのボタン
+Mobile controls	モバイル操作
+Misc	その他
+Spectral vision	特殊視覚
+Weapon reticles	武器のレティクル
+Object / NPC info	オブジェクト / NPC情報
+Minigame	ミニゲーム
+Hacking & lockpicking	ハッキングとピッキング
+Fantasy	ファンタジー
+Sci-fi	SF
+Minimal	ミニマル
+Cartoon	カートゥーン
+Military	ミリタリー
+Horror	ホラー
+Sports	スポーツ
+Retro	レトロ
+Elegant	エレガント
+Nature	ナチュラル
+Pastel	パステル
+Classic templates	クラシックテンプレート

@@ -1113,3 +1113,141 @@ Translates the description to your language with the free MyMemory service. Only
 Preview only: the font is not installed.	Solo vista previa: la fuente no está instalada.
 Preview only: the plugin is not installed.	Solo vista previa: el plugin no está instalado.
 Code (read-only)	Código (solo lectura)
+# Template gallery
+Title & system menus	Título y menús del sistema
+Title screen	Pantalla de título
+Mode select	Selección de modo
+Game difficulty	Dificultad
+Load / save	Cargar / guardar
+Settings menu	Menú de ajustes
+Settings options	Opciones de ajustes
+Button layout	Esquema de botones
+Modals & overlays	Ventanas y superposiciones
+Cutscene & story	Cinemática e historia
+Dialogue & speech	Diálogo y conversación
+Guided tutorial	Tutorial guiado
+Modal & popup	Ventana emergente
+Character intro	Presentación de personaje
+Feature unlocked	Función desbloqueada
+Game states	Estados de juego
+Pre-game	Antes de jugar
+Character select screen	Pantalla de selección de personaje
+Stage / level select	Selección de nivel
+Game setup	Configuración de partida
+Pre-game lobby	Sala previa
+Mid-game	Durante la partida
+Stage intro	Presentación de nivel
+Pause screen	Pantalla de pausa
+Change class / party	Cambiar clase / grupo
+Mission accept	Aceptar misión
+Loot selection	Selección de botín
+Game end	Fin de partida
+Failure & game over	Derrota y fin del juego
+Level complete	Nivel completado
+Results screen	Pantalla de resultados
+Rewards & experience	Recompensas y experiencia
+Leaderboards & ranking	Clasificaciones y rangos
+Post-game menu	Menú posterior a la partida
+Stats & resources	Estadísticas y recursos
+Stats	Estadísticas
+Player menu	Menú del jugador
+Unlocked units	Unidades desbloqueadas
+Team summary	Resumen del equipo
+Overview & stats	Resumen y estadísticas
+Ability list	Lista de habilidades
+Maintenance & management	Mantenimiento y gestión
+Resource management	Gestión de recursos
+Inventory grid	Inventario en cuadrícula
+Equipping	Equipar
+Buying & trading	Compra e intercambio
+Change skin or accessory	Cambiar aspecto o accesorio
+Character customization	Personalización de personaje
+Sub-equip & tweak	Accesorios y ajustes
+World customization	Personalización del mundo
+Upgrades & unlocks	Mejoras y desbloqueos
+Upgrading & ranking up	Mejorar y subir de rango
+Unlockable upgrades	Mejoras desbloqueables
+Crafting	Fabricación
+Choose boon / upgrade	Elegir bendición / mejora
+Information	Información
+Knowledge	Conocimiento
+Codex & journal	Códice y diario
+Tutorials & guides	Tutoriales y guías
+Logs & history	Registros e historial
+Progress	Progreso
+Area map	Mapa de zona
+Missions & quests	Misiones y encargos
+Challenges & achievements	Desafíos y logros
+Profile & game totals	Perfil y totales de juego
+Collection	Colección
+Collection & extras hub	Centro de colección y extras
+Collectables menu	Menú de coleccionables
+Gallery menu	Menú de galería
+Collectable viewer	Visor de coleccionables
+Sound & music player	Reproductor de sonido y música
+Meta-game	Metajuego
+Service & social	Servicio y social
+News & notifications	Noticias y avisos
+Profile customization	Personalización de perfil
+Friends & players	Amigos y jugadores
+Chat & communication	Chat y comunicación
+Online play	Juego en línea
+Content creation	Creación de contenido
+Photo mode	Modo foto
+Level editor	Editor de niveles
+Decals & liveries	Calcomanías y diseños
+Content discovery	Descubrir contenido
+Monetisation	Monetización
+Premium store	Tienda premium
+Offers & bundles	Ofertas y paquetes
+Currency store	Tienda de moneda
+Daily rewards	Recompensas diarias
+Season pass & events	Pase de temporada y eventos
+Gacha & crates	Gacha y cajas
+Upcoming unlocks	Próximos desbloqueos
+Player vitals	Signos vitales del jugador
+Equipped items & abilities	Objetos y habilidades equipados
+Collection counters	Contadores de colección
+Rank & position	Rango y posición
+Enemy health & damage	Salud y daño de enemigos
+HUD messages	Mensajes del HUD
+Info & notifications	Información y avisos
+Area / level name	Nombre de zona / nivel
+Loot & XP log	Registro de botín y XP
+Scoring & combos	Puntuación y combos
+Goal & navigation	Objetivo y navegación
+Clock & timer	Reloj y temporizador
+Objectives & goals	Objetivos y metas
+Waypoints & markers	Puntos de ruta y marcadores
+Compass bar	Barra de brújula
+Gameplay & controls	Jugabilidad y controles
+Overlay menus	Menús superpuestos
+Item & ability wheel	Rueda de objetos y habilidades
+Selection & targeting	Selección y apuntado
+Object placement	Colocación de objetos
+Chat shortcuts & emotes	Atajos de chat y gestos
+Controls	Controles
+Button prompts	Indicaciones de botones
+Weapon pickup prompt	Aviso de recoger arma
+Quick time event	Evento de reacción rápida
+Controls reference	Referencia de controles
+Item & ability buttons	Botones de objetos y habilidades
+Mobile controls	Controles táctiles
+Misc	Varios
+Spectral vision	Visión espectral
+Weapon reticles	Retículas de arma
+Object / NPC info	Información de objeto / PNJ
+Minigame	Minijuego
+Hacking & lockpicking	Hackeo y ganzúas
+Fantasy	Fantasía
+Sci-fi	Ciencia ficción
+Minimal	Minimalista
+Cartoon	Caricatura
+Military	Militar
+Horror	Terror
+Sports	Deportes
+Retro	Retro
+Elegant	Elegante
+Nature	Naturaleza
+Pastel	Pastel
+Classic templates	Plantillas clásicas

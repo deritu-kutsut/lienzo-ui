@@ -1091,3 +1091,141 @@ Translating…	번역 중…
 Commands	명령
 Exporters	내보내기
 Files	파일
+# Template gallery
+Title & system menus	타이틀 및 시스템 메뉴
+Title screen	타이틀 화면
+Mode select	모드 선택
+Game difficulty	난이도
+Load / save	불러오기 / 저장
+Settings menu	설정 메뉴
+Settings options	설정 옵션
+Button layout	버튼 배치
+Modals & overlays	모달 및 오버레이
+Cutscene & story	컷신 및 스토리
+Dialogue & speech	대화 및 대사
+Guided tutorial	가이드 튜토리얼
+Modal & popup	모달 및 팝업
+Character intro	캐릭터 소개
+Feature unlocked	기능 해금
+Game states	게임 상태
+Pre-game	게임 시작 전
+Character select screen	캐릭터 선택 화면
+Stage / level select	스테이지 선택
+Game setup	게임 설정
+Pre-game lobby	게임 전 로비
+Mid-game	게임 진행 중
+Stage intro	스테이지 인트로
+Pause screen	일시정지 화면
+Change class / party	클래스 / 파티 변경
+Mission accept	미션 수락
+Loot selection	전리품 선택
+Game end	게임 종료
+Failure & game over	실패 및 게임 오버
+Level complete	레벨 완료
+Results screen	결과 화면
+Rewards & experience	보상 및 경험치
+Leaderboards & ranking	리더보드 및 랭킹
+Post-game menu	게임 후 메뉴
+Stats & resources	스탯 및 자원
+Stats	스탯
+Player menu	플레이어 메뉴
+Unlocked units	해금된 유닛
+Team summary	팀 요약
+Overview & stats	개요 및 스탯
+Ability list	능력 목록
+Maintenance & management	정비 및 관리
+Resource management	자원 관리
+Inventory grid	인벤토리 그리드
+Equipping	장착
+Buying & trading	구매 및 거래
+Change skin or accessory	스킨 / 액세서리 변경
+Character customization	캐릭터 커스터마이징
+Sub-equip & tweak	부착물 및 튜닝
+World customization	월드 커스터마이징
+Upgrades & unlocks	업그레이드 및 해금
+Upgrading & ranking up	강화 및 랭크 업
+Unlockable upgrades	해금 가능한 업그레이드
+Crafting	제작
+Choose boon / upgrade	축복 / 강화 선택
+Information	정보
+Knowledge	지식
+Codex & journal	코덱스 및 일지
+Tutorials & guides	튜토리얼 및 가이드
+Logs & history	로그 및 기록
+Progress	진행
+Area map	지역 지도
+Missions & quests	미션 및 퀘스트
+Challenges & achievements	도전 과제 및 업적
+Profile & game totals	프로필 및 누적 기록
+Collection	컬렉션
+Collection & extras hub	컬렉션 및 부가 요소
+Collectables menu	수집품 메뉴
+Gallery menu	갤러리 메뉴
+Collectable viewer	수집품 뷰어
+Sound & music player	사운드 및 음악 플레이어
+Meta-game	메타 게임
+Service & social	서비스 및 소셜
+News & notifications	뉴스 및 알림
+Profile customization	프로필 커스터마이징
+Friends & players	친구 및 플레이어
+Chat & communication	채팅 및 커뮤니케이션
+Online play	온라인 플레이
+Content creation	콘텐츠 제작
+Photo mode	사진 모드
+Level editor	레벨 에디터
+Decals & liveries	데칼 및 도색
+Content discovery	콘텐츠 탐색
+Monetisation	수익화
+Premium store	프리미엄 상점
+Offers & bundles	특가 및 번들
+Currency store	재화 상점
+Daily rewards	일일 보상
+Season pass & events	시즌 패스 및 이벤트
+Gacha & crates	가챠 및 상자
+Upcoming unlocks	다가오는 해금
+Player vitals	플레이어 상태
+Equipped items & abilities	장착 아이템 및 능력
+Collection counters	수집 카운터
+Rank & position	순위 및 위치
+Enemy health & damage	적 체력 및 피해
+HUD messages	HUD 메시지
+Info & notifications	정보 및 알림
+Area / level name	지역 / 레벨 이름
+Loot & XP log	전리품 및 XP 로그
+Scoring & combos	점수 및 콤보
+Goal & navigation	목표 및 내비게이션
+Clock & timer	시계 및 타이머
+Objectives & goals	목표 및 과제
+Waypoints & markers	웨이포인트 및 마커
+Compass bar	나침반 바
+Gameplay & controls	게임플레이 및 조작
+Overlay menus	오버레이 메뉴
+Item & ability wheel	아이템 및 능력 휠
+Selection & targeting	선택 및 타기팅
+Object placement	오브젝트 배치
+Chat shortcuts & emotes	채팅 단축키 및 감정 표현
+Controls	조작
+Button prompts	버튼 안내
+Weapon pickup prompt	무기 줍기 안내
+Quick time event	퀵 타임 이벤트
+Controls reference	조작 안내
+Item & ability buttons	아이템 및 능력 버튼
+Mobile controls	모바일 조작
+Misc	기타
+Spectral vision	특수 시야
+Weapon reticles	무기 조준선
+Object / NPC info	오브젝트 / NPC 정보
+Minigame	미니게임
+Hacking & lockpicking	해킹 및 자물쇠 따기
+Fantasy	판타지
+Sci-fi	SF
+Minimal	미니멀
+Cartoon	카툰
+Military	밀리터리
+Horror	호러
+Sports	스포츠
+Retro	레트로
+Elegant	우아함
+Nature	자연
+Pastel	파스텔
+Classic templates	클래식 템플릿

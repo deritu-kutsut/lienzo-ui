@@ -2,6 +2,13 @@
 
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow [SemVer](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+- **Template gallery: 312 new templates.** Three layouts, each in a different style, for each of 104 kinds of game screen, grouped like common game UI references: title and system menus (title screen, mode select, difficulty, load/save, loading, credits, settings, button layout, cutscenes, dialogue, tutorials, popups, character intro, feature unlocked), game states (character and level select, setup, lobby, stage intro, pause, party, missions, loot, game over, level complete, results, rewards, leaderboards, post-game), stats and resources (player menu, units, team, stats, abilities, management, inventory, equipping, trading, skins, character creation, tweaks, world customization, upgrades, crafting, boons), information (codex, guides, logs, maps, quests, achievements, profile, collections, gallery, viewer, music player), meta-game (news, profile, friends, chat, online play, photo mode, level editor, liveries, content discovery, stores, bundles, daily rewards, season pass, gacha, upcoming unlocks), HUD (vitals, equipped items, counters, rank, enemy health, notifications, area name, loot log, combos, timers, objectives, waypoints, minimap, compass) and gameplay and controls (wheels, targeting, placement, emotes, button prompts, pickups, quick time events, controls reference, ability buttons, mobile controls, spectral vision, reticles, NPC info, minigames, hacking). Twelve styles: Fantasy, Sci-fi, Minimal, Cartoon, Neon, Military, Horror, Sports, Retro, Elegant, Nature and Pastel.
+- **Templates tab:** the classic templates come first; the gallery is grouped in collapsible blocks by kind of screen, and the search box finds templates by screen, style or group in any language. Thumbnails are built when their block is opened.
+- Every gallery template keeps every element inside its parent at 1920 × 1080 and in portrait (1080 × 1920), and its texts meet the WCAG contrast of the review; new tests check the catalog, the styles and each template.
+
 ## [1.7.5] - 2026-11-25
 
 IMGUI export fix: the text typed in input fields uses the design's colour.

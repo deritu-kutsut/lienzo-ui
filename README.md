@@ -18,7 +18,7 @@
 - **Design-tool editing:** drag elements onto the canvas, resize and rotate with handles, smart guides, multi-selection, groups, layers, undo/redo, copy/paste.
 - **Real Unity concepts:** RectTransform anchors and pivots, Canvas Scaler (reference resolution and match), Horizontal/Vertical/Grid layout groups, ScrollView, masks.
 - **11 element types:** panel, ellipse, image, text, button, toggle, slider, input field, dropdown, scroll view and empty.
-- **15 templates:** main menu, game HUD, dialog window, settings, inventory, pause menu, game over, level select, loading screen, character dialogue, leaderboard, character select, a pixel RPG HUD, a pixel main menu, or start blank. Save your own templates and elements.
+- **327 templates:** 15 classics (main menu, game HUD, dialog window, settings, inventory, pause menu, game over, level select, loading screen, character dialogue, leaderboard, character select, a pixel RPG HUD, a pixel main menu, or start blank) plus a gallery of 312 more: three layouts, in three different styles, for each of 104 kinds of game screen (title and system menus, game states, stats and resources, information, meta-game, HUD, gameplay and controls). Save your own templates and elements.
 - **Ready-made components and HUD text:** pill/outline/close buttons, health and mana bars, cards, badges, slots, timer, coins, damage numbers, combo and subtitles.
 - **Review design:** one click checks text size, contrast (WCAG), touch-target size, off-page elements, duplicate names and missing images before you export.
 - **Test mode (F5):** click through your UI, run small click scripts (Rhai) and preview other screens (phones, 4:3, ultrawide).
@@ -51,7 +51,7 @@
 
 **1.6**
 - **Built-in content pack:** 108 images that ship inside the app (backgrounds, frames, nine-slice buttons, icons and 55 pixel-art pieces).
-- **15 templates**, including a pixel-art RPG HUD and a pixel main menu.
+- **327 templates**: 15 classics (including a pixel-art RPG HUD and a pixel main menu) and a gallery of 312 grouped by kind of game screen.
 - **Autosave and crash recovery**, review **quick fixes** («Fix all safe issues») and an undo budget so huge designs stay safe.
 - **Community:** 14 new plugins and 18 free fonts, offline mode, and terms, licences and copyright reports for what you share.
 

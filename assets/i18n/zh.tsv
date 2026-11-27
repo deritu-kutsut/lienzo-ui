@@ -1091,3 +1091,141 @@ Translating…	正在翻译…
 Commands	命令
 Exporters	导出器
 Files	文件
+# Template gallery
+Title & system menus	标题与系统菜单
+Title screen	标题画面
+Mode select	模式选择
+Game difficulty	游戏难度
+Load / save	读取 / 存档
+Settings menu	设置菜单
+Settings options	设置选项
+Button layout	按键布局
+Modals & overlays	弹窗与叠加层
+Cutscene & story	过场与剧情
+Dialogue & speech	对话与台词
+Guided tutorial	引导教程
+Modal & popup	模态框与弹窗
+Character intro	角色登场
+Feature unlocked	功能解锁
+Game states	游戏状态
+Pre-game	开局前
+Character select screen	角色选择画面
+Stage / level select	关卡选择
+Game setup	游戏设置
+Pre-game lobby	开局大厅
+Mid-game	游戏中
+Stage intro	关卡开场
+Pause screen	暂停画面
+Change class / party	更换职业 / 队伍
+Mission accept	接受任务
+Loot selection	战利品选择
+Game end	游戏结束
+Failure & game over	失败与游戏结束
+Level complete	关卡完成
+Results screen	结算画面
+Rewards & experience	奖励与经验
+Leaderboards & ranking	排行榜与排名
+Post-game menu	赛后菜单
+Stats & resources	属性与资源
+Stats	属性
+Player menu	玩家菜单
+Unlocked units	已解锁单位
+Team summary	队伍概览
+Overview & stats	概览与属性
+Ability list	技能列表
+Maintenance & management	维护与管理
+Resource management	资源管理
+Inventory grid	背包网格
+Equipping	装备
+Buying & trading	购买与交易
+Change skin or accessory	更换外观或饰品
+Character customization	角色自定义
+Sub-equip & tweak	配件与调校
+World customization	世界自定义
+Upgrades & unlocks	升级与解锁
+Upgrading & ranking up	强化与升阶
+Unlockable upgrades	可解锁升级
+Crafting	制作
+Choose boon / upgrade	选择恩赐 / 强化
+Information	信息
+Knowledge	知识
+Codex & journal	图鉴与日志
+Tutorials & guides	教程与指南
+Logs & history	记录与历史
+Progress	进度
+Area map	区域地图
+Missions & quests	任务与委托
+Challenges & achievements	挑战与成就
+Profile & game totals	档案与游戏总计
+Collection	收藏
+Collection & extras hub	收藏与特典中心
+Collectables menu	收集品菜单
+Gallery menu	画廊菜单
+Collectable viewer	收集品查看器
+Sound & music player	音效与音乐播放器
+Meta-game	元游戏
+Service & social	服务与社交
+News & notifications	新闻与通知
+Profile customization	个人资料自定义
+Friends & players	好友与玩家
+Chat & communication	聊天与通讯
+Online play	在线游戏
+Content creation	内容创作
+Photo mode	拍照模式
+Level editor	关卡编辑器
+Decals & liveries	贴花与涂装
+Content discovery	内容发现
+Monetisation	商业化
+Premium store	高级商店
+Offers & bundles	优惠与礼包
+Currency store	货币商店
+Daily rewards	每日奖励
+Season pass & events	季票与活动
+Gacha & crates	抽卡与宝箱
+Upcoming unlocks	即将解锁
+Player vitals	玩家状态
+Equipped items & abilities	已装备物品与技能
+Collection counters	收集计数
+Rank & position	排名与名次
+Enemy health & damage	敌人血量与伤害
+HUD messages	HUD 消息
+Info & notifications	信息与通知
+Area / level name	区域 / 关卡名称
+Loot & XP log	战利品与经验记录
+Scoring & combos	得分与连击
+Goal & navigation	目标与导航
+Clock & timer	时钟与计时器
+Objectives & goals	目标
+Waypoints & markers	路径点与标记
+Compass bar	罗盘条
+Gameplay & controls	玩法与操作
+Overlay menus	叠加菜单
+Item & ability wheel	物品与技能轮盘
+Selection & targeting	选择与瞄准
+Object placement	物体放置
+Chat shortcuts & emotes	快捷聊天与表情
+Controls	操作
+Button prompts	按键提示
+Weapon pickup prompt	拾取武器提示
+Quick time event	快速反应事件
+Controls reference	操作说明
+Item & ability buttons	物品与技能按钮
+Mobile controls	移动端操作
+Misc	其他
+Spectral vision	灵视
+Weapon reticles	武器准星
+Object / NPC info	物体 / NPC 信息
+Minigame	小游戏
+Hacking & lockpicking	黑客与开锁
+Fantasy	奇幻
+Sci-fi	科幻
+Minimal	极简
+Cartoon	卡通
+Military	军事
+Horror	恐怖
+Sports	体育
+Retro	复古
+Elegant	优雅
+Nature	自然
+Pastel	粉彩
+Classic templates	经典模板

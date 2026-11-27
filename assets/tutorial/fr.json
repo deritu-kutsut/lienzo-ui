@@ -10,7 +10,7 @@
     },
     {
       "title": "Commence avec un modèle",
-      "text": "Ouvre Modèles dans la barre de gauche et choisis l'un des 15 : menu principal, HUD, menu pause, fin de partie, sélection de niveau, inventaire, dialogue de personnage, classement… Deux d'entre eux sont en pixel art : ATH de RPG pixel art et Menu principal pixel art.\n\nC'est le moyen le plus rapide de voir comment se construit une interface complète. Tout ce qu'il contient peut être modifié.\n\nSi tu préfères partir de zéro, choisis « Vierge » ou Fichier › Nouveau design vierge."
+      "text": "Ouvre Modèles dans la barre de gauche et choisis l'un des 15 : menu principal, HUD, menu pause, fin de partie, sélection de niveau, inventaire, dialogue de personnage, classement… Deux d'entre eux sont en pixel art : ATH de RPG pixel art et Menu principal pixel art. En plus de ces classiques, la galerie en range 312 autres par type d'écran (titre et menus, états de jeu, stats, informations, méta-jeu, ATH, commandes), en trois styles chacun (327 au total).\n\nC'est le moyen le plus rapide de voir comment se construit une interface complète. Tout ce qu'il contient peut être modifié.\n\nSi tu préfères partir de zéro, choisis « Vierge » ou Fichier › Nouveau design vierge."
     },
     {
       "title": "Ajouter et modifier des éléments",
