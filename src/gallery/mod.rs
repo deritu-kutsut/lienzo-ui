@@ -145,7 +145,7 @@ fn build_at(i: usize, width: f32, height: f32, s: f32) -> Doc {
     let t = e.style.theme();
     d.background = t.bg;
     {
-        let mut g = G { d: &mut d, s, t, style: e.style, art_n: 0, names: std::collections::HashMap::new() };
+        let mut g = G { d: &mut d, s, t, style: e.style, art_n: 0, slot_n: 0, names: std::collections::HashMap::new() };
         (e.build)(&mut g);
     }
     d.normalize();
@@ -500,6 +500,7 @@ pub struct G<'a> {
     pub t: Theme,
     pub style: Style,
     art_n: usize,
+    slot_n: usize,
     names: std::collections::HashMap<String, usize>,
 }
 
@@ -616,29 +617,58 @@ impl G<'_> {
 
     // ---- backgrounds ------------------------------------------------------------------------------------------
 
-    /// Full-page gradient in the style's background colours (put it first).
+    /// The style's key art for a landscape page (None on a tall page, where the 16:9 picture would be stretched).
+    fn key_art(&self) -> Option<&'static crate::pack::PackItem> {
+        let r = self.d.width / self.d.height.max(1.0);
+        if (1.3..=2.4).contains(&r) { crate::pack::item(&format!("art_{}_wide", self.style.slug())) } else { None }
+    }
+
+    /// Full-page background (put it first): the style's key art under a tint of the background colour so the text
+    /// on it stays readable, or the gradient in the style's background colours on a tall page.
     pub fn background(&mut self) -> N {
         let (a, b) = (self.t.bg, self.t.bg2);
         let p = self.page();
-        self.el(p, full(), Kind::Image, "Background", |e| {
+        let art = self.key_art();
+        let n = self.el(p, full(), Kind::Image, "Background", |e| {
             e.fill = a;
             e.fill2 = b;
             e.raycast = false;
-        })
+            if let Some(it) = art {
+                e.image = crate::pack::library_name(it);
+            }
+        });
+        // always added (hidden without art) so a landscape page and a portrait page have the same elements
+        self.el(p, full(), Kind::Panel, "Background tint", |e| {
+            e.fill = alpha(a, 205);
+            e.raycast = false;
+            e.visible = art.is_some();
+        });
+        n
     }
 
-    /// Fake game scene for HUD templates: sky and ground. Never put text straight on it: use a panel behind text.
+    /// Fake game scene for HUD templates: the style's key art (sky and ground on a tall page). Never put text straight
+    /// on it: use a panel behind text.
     pub fn scene(&mut self) -> N {
         let t = self.t;
         let p = self.page();
+        let art = self.key_art();
         let sky = self.el(p, full(), Kind::Image, "Scene (preview)", |e| {
             e.fill = t.sky;
             e.fill2 = t.sky2;
             e.raycast = false;
+            if let Some(it) = art {
+                e.image = crate::pack::library_name(it);
+            }
+        });
+        self.el(p, full(), Kind::Panel, "Scene tint", |e| {
+            e.fill = [0, 0, 0, 55];
+            e.raycast = false;
+            e.visible = art.is_some();
         });
         self.el(p, bottom(0.0, 360.0, 0.0, 0.0), Kind::Panel, "Ground (preview)", |e| {
             e.fill = t.ground;
             e.raycast = false;
+            e.visible = art.is_none();
         });
         sky
     }
@@ -801,12 +831,28 @@ impl G<'_> {
     pub fn slot(&mut self, p: N, pos: Pos, name: &str) -> N {
         let t = self.t;
         let s = self.s;
-        self.el(p, pos, Kind::Panel, name, |e| {
+        let slot = self.el(p, pos, Kind::Panel, name, |e| {
             e.fill = shade(t.panel2, 0.8);
             e.radius = (t.radius * 0.6) * s;
             e.stroke = t.line;
             e.stroke_w = (t.stroke * 0.75).max(1.0) * s;
-        })
+        });
+        // every other slot holds an item: the style's own picture or one of the pack's icons
+        self.slot_n += 1;
+        let [_, _, w, h] = slot.r;
+        if self.slot_n % 2 == 1 && w >= 56.0 * s && h >= 56.0 * s && (0.7..1.4).contains(&(w / h.max(1.0))) {
+            const ICONS: &[&str] = &["icon_sword", "icon_potion", "icon_shield", "icon_key", "icon_scroll", "icon_gem", "icon_bow", "icon_ring", "icon_book", "icon_bomb", "icon_hammer", "icon_star"];
+            let own = crate::pack::item(&format!("art_{}_cut", self.style.slug()));
+            let pick = if self.slot_n % 6 == 1 { own } else { crate::pack::item(ICONS[(self.slot_n / 2) % ICONS.len()]) };
+            if let Some(it) = pick {
+                self.el(slot, cc(0.0, 0.0, (w / s) * 0.72, (h / s) * 0.72), Kind::Image, &format!("{} item", name), |e| {
+                    e.image = crate::pack::library_name(it);
+                    e.radius = 0.0;
+                    e.raycast = false;
+                });
+            }
+        }
+        slot
     }
 
     /// Controller / keyboard key prompt («A», «E», «Esc»…): a small key cap with the label.
