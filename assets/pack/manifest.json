@@ -2496,5 +2496,20 @@
    "pastel"
   ],
   "pixel": false
+ },
+ {
+  "id": "art_horror_portrait",
+  "category": "art",
+  "name": "Horror character",
+  "file": "art/horror_portrait.jpg",
+  "tags": [
+   "portrait",
+   "character",
+   "avatar",
+   "hero",
+   "horror",
+   "horror"
+  ],
+  "pixel": false
  }
 ]
