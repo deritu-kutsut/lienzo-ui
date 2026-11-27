@@ -142,13 +142,13 @@ fn codex_grid(g: &mut G) {
     g.badge(head, tr(404.0, 30.0, 96.0, 36.0), "Discovery badge", "31%");
 
     let grid_panel = g.panel(p, left(24.0, 1120.0, 136.0, 24.0), "Grid panel");
-    let grid = g.grid(grid_panel, tl(20.0, 20.0, 1080.0, 672.0), "Creature grid", 196.0, 196.0, 16.0);
+    let grid = g.grid(grid_panel, tl(20.0, 20.0, 1080.0, 750.0), "Creature grid", 196.0, 176.0, 14.0);
     for i in 0..20u8 {
-        let c = g.card(grid, sz(196.0, 196.0), &format!("Creature card {}", i + 1));
-        g.rect(c, tl(8.0, 8.0, 180.0, 180.0), "Creature picture", [90u8.saturating_add(i * 8), 130u8.saturating_add(i * 6), 80u8.saturating_add(i * 4), 255], 0.0);
+        let c = g.card(grid, sz(196.0, 176.0), &format!("Creature card {}", i + 1));
+        g.rect(c, tl(8.0, 8.0, 180.0, 160.0), "Creature picture", [90u8.saturating_add(i * 8), 130u8.saturating_add(i * 6), 80u8.saturating_add(i * 4), 255], 0.0);
         if i >= 5 {
             g.rect(c, full(), "Locked veil", alpha(g.t.panel, 170), 0.0);
-            g.icon(c, tl(58.0, 58.0, 80.0, 80.0), "Locked icon", "?");
+            g.icon(c, cc(0.0, -8.0, 72.0, 72.0), "Locked icon", "?");
         }
         g.badge(c, bl(8.0, 8.0, 92.0, 28.0), "Creature number", if i < 5 { "FOUND" } else { "NEW" });
     }
@@ -156,7 +156,7 @@ fn codex_grid(g: &mut G) {
     g.button2(nav, sz(190.0, 70.0), "Previous page button", "< Previous");
     g.note(nav, sz(160.0, 70.0), "Page label", "Page 1 / 4", 28.0);
     g.button2(nav, sz(190.0, 70.0), "Next page button", "Next >");
-    g.note(grid_panel, tl(190.0, 704.0, 880.0, 28.0), "Grid note", "Recorded creatures gain detail when you meet them again", 24.0);
+    g.note(grid_panel, tl(20.0, 784.0, 1040.0, 28.0), "Grid note", "Recorded creatures gain detail when you meet them again", 24.0);
 
     let detail = g.panel(p, right(24.0, 728.0, 136.0, 24.0), "Detail panel");
     g.art(detail, tl(24.0, 24.0, 300.0, 300.0), "Creature portrait");
@@ -172,7 +172,7 @@ fn codex_grid(g: &mut G) {
     let drops = g.hbox(detail, tl(24.0, 530.0, 680.0, 96.0), "Drop slots", 14.0);
     for i in 0..4 {
         let sl = g.slot(drops, sz(96.0, 96.0), &format!("Drop slot {}", i + 1));
-        g.note(sl, tl(4.0, 34.0, 88.0, 26.0), &format!("Drop label {}", i + 1), "???", 22.0);
+        g.txt(sl, tl(4.0, 34.0, 88.0, 28.0), &format!("Drop label {}", i + 1), "???", 22.0, g.t.text, CENTER, false);
     }
     let detail_btns = g.vbox_fill(detail, bl(24.0, 24.0, 680.0, 156.0), "Detail buttons", 12.0);
     g.button(detail_btns, sz(680.0, 72.0), "Mark as read button", "Mark as read");
@@ -238,7 +238,7 @@ fn tutorial_carousel(g: &mut G) {
     g.heading(head, tl(0.0, 20.0, 1400.0, 46.0), "Carousel title", "Quick tips", 40.0);
     g.txt(head, tl(0.0, 70.0, 1400.0, 30.0), "Carousel subtitle", "Swipe or use the arrows", 24.0, g.t.muted, CENTER, false);
 
-    let row = g.hbox_c(p, hmid(20.0, 620.0, 60.0, 60.0), "Tip carousel", 24.0);
+    let row = g.hbox_c(p, hmid(0.0, 560.0, 60.0, 60.0), "Tip carousel", 20.0);
     let tips = [
         ("Rest often", "Sleeping at a camp restores everything, but the world moves on."),
         ("Share water", "Every teammate can carry one flask. Ask before you drink."),
@@ -248,11 +248,13 @@ fn tutorial_carousel(g: &mut G) {
     ];
     for (i, (t, d)) in tips.iter().enumerate() {
         let mid = i == 2;
-        let (w, h) = if mid { (460.0, 520.0) } else { (360.0, 440.0) };
+        let (w, h) = if mid { (420.0, 520.0) } else { (320.0, 440.0) };
         let c = if mid { g.card_on(row, sz(w, h), &format!("Tip card {}", t)) } else { g.card(row, sz(w, h), &format!("Tip card {}", t)) };
-        g.art(c, tl(20.0, 20.0, w - 40.0, h * 0.42), &format!("Tip picture {}", t));
-        g.heading_l(c, tl(20.0, h * 0.42 + 34.0, w - 40.0, 38.0), &format!("Tip title {}", t), t, if mid { 32.0 } else { 28.0 });
-        g.note(c, tl(20.0, h * 0.42 + 86.0, w - 40.0, h * 0.42), &format!("Tip text {}", t), d, 24.0);
+        let art_h = h * 0.42;
+        let text_y = art_h + 82.0;
+        g.art(c, tl(20.0, 20.0, w - 40.0, art_h), &format!("Tip picture {}", t));
+        g.heading_l(c, tl(20.0, art_h + 34.0, w - 40.0, 38.0), &format!("Tip title {}", t), t, if mid { 32.0 } else { 28.0 });
+        g.note(c, tl(20.0, text_y, w - 40.0, h - text_y - 18.0), &format!("Tip text {}", t), d, 24.0);
     }
 
     let dots = g.hbox_c(p, bc(0.0, 200.0, 400.0, 24.0), "Page dots", 16.0);
@@ -262,9 +264,9 @@ fn tutorial_carousel(g: &mut G) {
     let arrows = g.hbox_c(p, bc(0.0, 110.0, 520.0, 76.0), "Arrow buttons", 24.0);
     g.button2(arrows, sz(240.0, 76.0), "Previous tip button", "< Back");
     g.button(arrows, sz(240.0, 76.0), "Next tip button", "Next >");
-    let foot = g.hbox(p, bl(60.0, 40.0, 600.0, 40.0), "Footer prompts", 14.0);
+    let foot = g.hbox(p, bl(60.0, 32.0, 600.0, 56.0), "Footer prompts", 14.0);
     g.key(foot, sz(52.0, 52.0), "Back key", "B");
-    g.note(foot, sz(200.0, 52.0), "Back label", "Close", 26.0);
+    g.bg_label(foot, sz(200.0, 52.0), "Back label", "Close", 26.0, LEFT);
 }
 
 /// A controller picture in the middle with numbered callouts and the full list of controls beside it.
@@ -331,10 +333,10 @@ fn logs_messages(g: &mut G) {
         ("09:02", "Squad", "Tower secured. Awaiting orders."),
     ];
     for (t, ch, m) in msgs.iter() {
-        let r = g.card(rows, sz(1360.0, 88.0), &format!("Message at {}", t));
-        g.value(r, tl(12.0, 28.0, 110.0, 32.0), &format!("Stamp {}", t), t, 24.0);
-        g.badge(r, tl(136.0, 26.0, 170.0, 36.0), &format!("Channel {}", t), ch);
-        g.label(r, tl(330.0, 28.0, 1000.0, 32.0), &format!("Text {}", t), m, 26.0);
+        let r = g.card(rows, sz(1360.0, 84.0), &format!("Message at {}", t));
+        g.value(r, tl(12.0, 26.0, 110.0, 32.0), &format!("Stamp {}", t), t, 24.0);
+        g.badge(r, tl(136.0, 24.0, 170.0, 36.0), &format!("Channel {}", t), ch);
+        g.label(r, tl(330.0, 26.0, 1000.0, 32.0), &format!("Text {}", t), m, 26.0);
     }
     let foot = g.hbox(win, bl(28.0, 28.0, 1344.0, 76.0), "Log footer", 16.0);
     g.button2(foot, sz(280.0, 76.0), "Export button", "Export log");
@@ -383,7 +385,7 @@ fn logs_recordings(g: &mut G) {
     g.input(head, tr(28.0, 20.0, 420.0, 56.0), "Search field", "Search recordings...");
 
     let list_panel = g.panel(p, left(24.0, 720.0, 136.0, 24.0), "Recording panel");
-    let rows = g.vbox_fill(list_panel, tl(16.0, 16.0, 688.0, 800.0), "Recording list", 10.0);
+    let rows = g.vbox_fill(list_panel, tl(16.0, 16.0, 688.0, 888.0), "Recording list", 10.0);
     for i in 0..8usize {
         let active = i == 2;
         let c = if active { g.card_on(rows, sz(688.0, 92.0), &format!("Recording {}", i + 1)) } else { g.card(rows, sz(688.0, 92.0), &format!("Recording {}", i + 1)) };
@@ -452,10 +454,9 @@ fn area_world_map(g: &mut G) {
         g.note(r, tl(16.0, 22.0, 240.0, 30.0), &format!("Level info name {}", n), n, 26.0);
         g.value(r, tr(16.0, 22.0, 200.0, 30.0), &format!("Level info value {}", n), v, 26.0);
     }
-    let btns = g.vbox_fill(side, bl(24.0, 24.0, 500.0, 232.0), "Level buttons", 12.0);
+    let btns = g.vbox_fill(side, bl(24.0, 24.0, 500.0, 180.0), "Level buttons", 12.0);
     g.button(btns, sz(500.0, 96.0), "Travel button", "Travel here");
-    let back = g.hbox(side, bl(210.0, 24.0, 500.0, 64.0), "Back row", 12.0);
-    g.button2(back, sz(460.0, 64.0), "Back to menu button", "< Back to menu");
+    g.button2(btns, sz(500.0, 68.0), "Back to menu button", "< Back to menu");
 }
 
 /// Regions listed with their completion on the left; the region map with soft markers on the right.
@@ -480,10 +481,10 @@ fn area_regions(g: &mut G) {
     let map = g.panel(p, right(40.0, 1100.0, 150.0, 40.0), "Map panel");
     g.art(map, tl(24.0, 24.0, 1052.0, 700.0), "Region map");
     for i in 0..5usize {
-        let x = 120.0 + i as f32 * 200.0;
+        let x = 50.0 + i as f32 * 185.0;
         let y = 140.0 + ((i * 157) % 420) as f32;
         g.circle(map, tl(24.0 + x, 24.0 + y, 40.0, 40.0), &format!("Region marker {}", i + 1), g.t.accent);
-        let tag = g.card(map, tl(24.0 + x + 46.0, 24.0 + y - 8.0, 240.0, 56.0), &format!("Region tag {}", i + 1));
+        let tag = g.card(map, tl(24.0 + x + 46.0, 24.0 + y - 8.0, 200.0, 56.0), &format!("Region tag {}", i + 1));
         g.note(tag, full(), &format!("Region tag text {}", i + 1), regions[i].0, 24.0);
     }
     let foot = g.hbox(map, bl(24.0, 24.0, 1052.0, 76.0), "Map footer", 16.0);
@@ -577,7 +578,7 @@ fn quests_detail(g: &mut G) {
     g.note(detail, tl(26.0, 72.0, 940.0, 30.0), "Detail description", "The old crossing is gone. Find another way east before nightfall.", 24.0);
     g.rect(detail, tl(26.0, 118.0, 948.0, 2.0), "Detail divider", g.t.line, 0.0);
     g.heading_l(detail, tl(26.0, 132.0, 600.0, 32.0), "Objective heading", "Objectives", 28.0);
-    let objs = g.vbox_fill(detail, tl(20.0, 176.0, 960.0, 244.0), "Objective list", 8.0);
+    let objs = g.vbox_fill(detail, tl(20.0, 176.0, 960.0, 252.0), "Objective list", 8.0);
     for (i, o) in ["Scout the river bank", "Find the ferryman", "Cross with the cart", "Report to the mill"].iter().enumerate() {
         let r = g.card(objs, sz(960.0, 56.0), &format!("Objective {}", i + 1));
         g.note(r, tl(16.0, 12.0, 40.0, 32.0), &format!("Objective tick {}", i + 1), if i < 2 { "x" } else { ">" }, 28.0);
@@ -844,8 +845,8 @@ fn profile_compare(g: &mut G) {
     g.note(head, tr(28.0, 34.0, 560.0, 32.0), "Header note", "Compared with players at level 42", 24.0);
 
     let panel = g.panel(p, vmid(0.0, 1300.0, 160.0, 60.0), "Compare panel");
-    g.bar(panel, tl(24.0, 24.0, 1252.0, 16.0), "Compare legend bar", 0.0, g.t.accent);
-    g.note(panel, tl(640.0, 20.0, 620.0, 28.0), "Legend text", "You in accent, average in grey", 24.0);
+    g.bar(panel, tl(24.0, 26.0, 140.0, 16.0), "Compare legend bar", 0.0, g.t.accent);
+    g.note(panel, tl(180.0, 20.0, 620.0, 28.0), "Legend text", "You in accent, average in grey", 24.0);
     let rows = g.vbox_fill(panel, tl(20.0, 56.0, 1260.0, 640.0), "Compare list", 10.0);
     let stats = [("Attack", 0.82, 0.55), ("Defense", 0.44, 0.58), ("Speed", 0.71, 0.5), ("Luck", 0.35, 0.4), ("Craft", 0.9, 0.62), ("Survival", 0.58, 0.52)];
     for (n, you, avg) in stats.iter() {
@@ -953,25 +954,25 @@ fn collect_grid(g: &mut G) {
     g.value(total, tr(20.0, 14.0, 160.0, 30.0), "Total value", "27 / 60", 26.0);
 
     let panel = g.panel(p, fill(60.0, 150.0, 60.0, 64.0), "Collect panel");
-    let zones = g.hbox(panel, tl(24.0, 24.0, 1780.0, 90.0), "Zone row", 16.0);
+    let zones = g.hbox(panel, tl(24.0, 24.0, 1752.0, 90.0), "Zone row", 16.0);
     for (n, v) in [("Forest", "8 of 12"), ("Ruins", "5 of 12"), ("Coast", "9 of 16"), ("Peaks", "5 of 20")].iter() {
-        let c = g.card(zones, sz(433.0, 90.0), &format!("Zone {}", n));
-        g.note(c, tl(18.0, 18.0, 240.0, 30.0), &format!("Zone name {}", n), n, 24.0);
-        g.value(c, tr(18.0, 18.0, 200.0, 30.0), &format!("Zone value {}", n), v, 24.0);
+        let c = g.card(zones, sz(426.0, 90.0), &format!("Zone {}", n));
+        g.note(c, tl(18.0, 18.0, 200.0, 30.0), &format!("Zone name {}", n), n, 24.0);
+        g.value(c, tr(18.0, 18.0, 180.0, 30.0), &format!("Zone value {}", n), v, 24.0);
     }
-    let grid = g.grid(panel, tl(24.0, 130.0, 1780.0, 560.0), "Collect grid", 340.0, 176.0, 20.0);
+    let grid = g.grid(panel, tl(24.0, 130.0, 1752.0, 560.0), "Collect grid", 336.0, 176.0, 18.0);
     for i in 0..10usize {
         let found = i % 3 != 2;
-        let c = if found { g.card_on(grid, sz(340.0, 176.0), &format!("Collectable {}", i + 1)) } else { g.card(grid, sz(340.0, 176.0), &format!("Collectable {}", i + 1)) };
+        let c = if found { g.card_on(grid, sz(336.0, 176.0), &format!("Collectable {}", i + 1)) } else { g.card(grid, sz(336.0, 176.0), &format!("Collectable {}", i + 1)) };
         if found {
             g.art(c, tl(16.0, 16.0, 120.0, 120.0), &format!("Collectable picture {}", i + 1));
         } else {
             g.slot(c, tl(16.0, 16.0, 120.0, 120.0), &format!("Collectable slot {}", i + 1));
         }
-        g.note(c, tl(152.0, 24.0, 172.0, 32.0), &format!("Collectable name {}", i + 1), if found { "Amber charm" } else { "Undiscovered" }, 24.0);
-        g.note(c, tl(152.0, 62.0, 172.0, 56.0), &format!("Collectable zone {}", i + 1), if found { "Ruins" } else { "Find it nearby" }, 22.0);
+        g.note(c, tl(152.0, 24.0, 168.0, 32.0), &format!("Collectable name {}", i + 1), if found { "Amber charm" } else { "Undiscovered" }, 24.0);
+        g.note(c, tl(152.0, 62.0, 168.0, 56.0), &format!("Collectable zone {}", i + 1), if found { "Ruins" } else { "Find it nearby" }, 22.0);
     }
-    let foot = g.hbox(panel, bl(24.0, 24.0, 1780.0, 80.0), "Collect footer", 16.0);
+    let foot = g.hbox(panel, bl(24.0, 24.0, 1752.0, 80.0), "Collect footer", 16.0);
     g.note(foot, sz(1000.0, 80.0), "Footer note", "New items are marked with a dot", 24.0);
     g.button(foot, sz(360.0, 80.0), "Hint button", "Ask for a hint");
 }
@@ -982,7 +983,7 @@ fn collect_list(g: &mut G) {
     g.background();
     let head = g.panel(p, top(30.0, 96.0, 30.0, 30.0), "Header panel");
     g.heading_l(head, tl(24.0, 26.0, 600.0, 40.0), "Screen title", "CURIOS", 34.0);
-    let chips = g.hbox(head, tr(24.0, 30.0, 1040.0, 60.0), "Filter chips", 12.0);
+    let chips = g.hbox(head, tr(24.0, 18.0, 1060.0, 60.0), "Filter chips", 12.0);
     for (i, n) in ["All", "Charms", "Letters", "Maps", "Masks"].iter().enumerate() {
         if i == 0 {
             g.button(chips, sz(200.0, 60.0), &format!("Chip {} button", n), n);
@@ -1100,23 +1101,24 @@ fn gallery_viewer(g: &mut G) {
     g.background();
     let stage = g.panel(p, tc(0.0, 30.0, 1500.0, 760.0), "Viewer panel");
     g.art(stage, tl(24.0, 24.0, 1452.0, 580.0), "Viewer picture");
-    g.heading_l(stage, tl(24.0, 620.0, 900.0, 40.0), "Viewer title", "The road east", 32.0);
-    g.note(stage, tl(24.0, 666.0, 900.0, 28.0), "Viewer caption", "Chapter II - unlocked in the third act", 24.0);
-    g.button2(stage, tr(24.0, 632.0, 200.0, 64.0), "Zoom button", "Zoom in");
-    g.button2(stage, tl(1100.0, 632.0, 200.0, 64.0), "Share picture button", "Share");
-    let _ = g.button(stage, tl(1240.0, 632.0, 188.0, 64.0), "Fullscreen button", "Full");
+    g.heading_l(stage, tl(24.0, 620.0, 840.0, 40.0), "Viewer title", "The road east", 32.0);
+    g.note(stage, tl(24.0, 666.0, 840.0, 28.0), "Viewer caption", "Chapter II - unlocked in the third act", 24.0);
+    let actions = g.hbox(stage, tr(24.0, 632.0, 580.0, 64.0), "Viewer buttons", 16.0);
+    g.button2(actions, sz(180.0, 64.0), "Zoom button", "Zoom in");
+    g.button2(actions, sz(180.0, 64.0), "Share picture button", "Share");
+    g.button(actions, sz(180.0, 64.0), "Fullscreen button", "Full");
 
-    let prev = g.panel(p, cl(-20.0, 86.0, 400.0, 86.0), "Previous plate");
-    let _ = g.button(prev, sz(86.0, 86.0), "Previous button", "<");
-    let next = g.panel(p, cr(-20.0, 86.0, 400.0, 86.0), "Next plate");
-    let _ = g.button(next, sz(86.0, 86.0), "Next button", ">");
+    let prev = g.panel(p, cl(40.0, -120.0, 110.0, 110.0), "Previous plate");
+    g.button(prev, fill(12.0, 12.0, 12.0, 12.0), "Previous button", "<");
+    let next = g.panel(p, cr(40.0, -120.0, 110.0, 110.0), "Next plate");
+    g.button(next, fill(12.0, 12.0, 12.0, 12.0), "Next button", ">");
 
     let strip_panel = g.panel(p, bc(0.0, 60.0, 1200.0, 150.0), "Strip panel");
     let strip = g.hbox(strip_panel, tl(16.0, 16.0, 1168.0, 118.0), "Strip items", 14.0);
     for i in 0..6usize {
         let c = if i == 2 { g.card_on(strip, sz(180.0, 118.0), &format!("Strip item {}", i + 1)) } else { g.card(strip, sz(180.0, 118.0), &format!("Strip item {}", i + 1)) };
-        g.art(c, tl(8.0, 8.0, 164.0, 90.0), &format!("Strip picture {}", i + 1));
-        g.note(c, tl(8.0, 98.0, 164.0, 24.0), &format!("Strip label {}", i + 1), "Fine", 20.0);
+        g.art(c, tl(8.0, 8.0, 164.0, 76.0), &format!("Strip picture {}", i + 1));
+        g.note(c, tl(8.0, 88.0, 164.0, 24.0), &format!("Strip label {}", i + 1), "Fine", 20.0);
     }
 }
 
@@ -1171,7 +1173,7 @@ fn collectable_pedestal(g: &mut G) {
         g.note(r, tl(16.0, 18.0, 280.0, 28.0), &format!("Info row name {}", n), n, 22.0);
         g.value(r, tr(16.0, 18.0, 240.0, 28.0), &format!("Info row value {}", n), v, 24.0);
     }
-    let btns = g.vbox_fill(card, bl(24.0, 24.0, 572.0, 170.0), "Info buttons", 12.0);
+    let btns = g.vbox_fill(card, bl(24.0, 24.0, 572.0, 176.0), "Info buttons", 12.0);
     g.button(btns, sz(572.0, 80.0), "Inspect detail button", "Inspect");
     g.button2(btns, sz(572.0, 80.0), "Prev object button", "Previous object");
 }
