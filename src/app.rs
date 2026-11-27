@@ -434,10 +434,12 @@ impl EditorApp {
             self.real = Some(d);
             self.settle = self.settle.max(1);
         } else {
-            self.real = None;
+            // Undo / redo keep the zoom; only a switch from the portrait view to landscape re-fits it.
+            if self.real.take().is_some() {
+                self.fit_pending = true;
+            }
             self.doc = d;
         }
-        self.fit_pending = true;
     }
 
     /// Leaves the portrait view (folding what was edited) without changing the design.
@@ -2455,6 +2457,24 @@ mod history_tests {
         assert_eq!((a.undo.len(), a.redo.len()), (1, 1));
         a.set_preview(false);
         assert!(a.can_undo() && a.can_redo());
+    }
+
+    #[test]
+    fn undo_and_redo_keep_the_zoom() {
+        let mut a = EditorApp::new(None);
+        a.doc = model::template(0, 1920.0, 1080.0);
+        a.committed = a.doc.clone();
+        a.fit_pending = false;
+        a.zoom = 1.7;
+        let before = a.doc.clone();
+        a.doc.title = "Edited".into();
+        a.undo.push(before);
+        a.committed = a.doc.clone();
+        a.undo();
+        assert!(!a.fit_pending, "undo must not re-fit the view");
+        a.redo();
+        assert!(!a.fit_pending, "redo must not re-fit the view");
+        assert_eq!(a.zoom, 1.7);
     }
 }
 

@@ -96,11 +96,12 @@ fn paint_doc(painter: &egui::Painter, doc: &Doc, v: &View, page: Rect, hide_text
 }
 
 /// Topmost element under a page point (Containers only when nothing else is there).
-fn hit_doc(doc: &Doc, p: [f32; 2], tol: f32, filter: impl Fn(&Element) -> bool) -> Option<u64> {
+fn hit_doc(doc: &Doc, p: [f32; 2], tol: f32, skip_locked: bool, filter: impl Fn(&Element) -> bool) -> Option<u64> {
     let ok = |e: &Element| {
         doc.shown(e.id)
             && e.contains(p[0], p[1], tol)
             && doc.clip_of(e.id).map(|c| p[0] >= c[0] && p[0] <= c[2] && p[1] >= c[1] && p[1] <= c[3]).unwrap_or(true)
+            && !(skip_locked && e.locked) // un bloqueado no intercepta clics en el editor (Alt los atraviesa al revés: los selecciona)
             && filter(e)
     };
     doc.elements
@@ -139,8 +140,11 @@ impl EditorApp {
         self.pan = Vec2::new(0.0, -6.0);
     }
 
-    fn hit_element(&self, p: [f32; 2]) -> Option<u64> {
-        hit_doc(&self.doc, p, 2.0 / self.zoom, |_| true)
+    fn hit_element(&self, p: [f32; 2], alt: bool) -> Option<u64> {
+        let tol = 2.0 / self.zoom;
+        // A locked element does not intercept clicks over others, but when nothing else is there it can be
+        // selected (to unlock it); Alt still goes through everything.
+        hit_doc(&self.doc, p, tol, !alt, |_| true).or_else(|| hit_doc(&self.doc, p, tol, false, |_| true))
     }
 
     pub fn canvas_ui(&mut self, ui: &mut egui::Ui) {
@@ -275,7 +279,7 @@ impl EditorApp {
         }
         if let Some(m) = pointer {
             if over && self.drag.is_none() {
-                self.hover = self.hit_element(v.to_page(m)).map(|h| self.click_target(h, mods.command));
+                self.hover = self.hit_element(v.to_page(m), mods.alt).map(|h| self.click_target(h, mods.command));
             }
         }
 
@@ -283,7 +287,7 @@ impl EditorApp {
         let double_handled = double && over && self.drag.is_none();
         if double_handled {
             if let Some(m) = pointer {
-                if let Some(id) = self.hit_element(v.to_page(m)) {
+                if let Some(id) = self.hit_element(v.to_page(m), mods.alt) {
                     if let Some(e) = self.doc.get(id) {
                         if e.kind.has_text() && e.kind != Kind::Dropdown && !e.locked {
                             self.sel = vec![id];
@@ -322,11 +326,11 @@ impl EditorApp {
                     };
                 } else {
                     if let Some(ed) = self.editing {
-                        if self.hit_element(pg) != Some(ed) {
+                        if self.hit_element(pg, mods.alt) != Some(ed) {
                             self.editing = None;
                         }
                     }
-                    match self.hit_element(pg) {
+                    match self.hit_element(pg, mods.alt) {
                         Some(id) if self.editing == Some(id) => {
                             d.kind = DragKind::Pan;
                             d.moved = true; // inert: the text box handles the click
@@ -699,7 +703,7 @@ impl EditorApp {
 
         let pointer = ui.input(|i| i.pointer.hover_pos()).filter(|_| response.contains_pointer());
         let interactive = |e: &Element| e.interactable && (!e.on_click.trim().is_empty() || matches!(e.kind, Kind::Toggle | Kind::Slider | Kind::Dropdown));
-        let target = pointer.filter(|m| page.contains(*m)).and_then(|m| hit_doc(&sim, v.to_page(m), 0.0, interactive));
+        let target = pointer.filter(|m| page.contains(*m)).and_then(|m| hit_doc(&sim, v.to_page(m), 0.0, false, interactive));
         if let Some(id) = target {
             ui.ctx().set_cursor_icon(CursorIcon::PointingHand);
             if let Some(e) = sim.get(id) {
@@ -1103,4 +1107,32 @@ fn dashed_outline(p: &egui::Painter, e: &Element, v: &View, stroke: Stroke) {
     let mut pts: Vec<Pos2> = [[-hw, -hh], [hw, -hh], [hw, hh], [-hw, hh]].iter().map(|q| xf.map(q[0], q[1])).collect();
     pts.push(pts[0]);
     p.extend(Shape::dashed_line(&pts, stroke, 5.0, 4.0));
+}
+
+#[cfg(test)]
+mod hit_tests {
+    use super::*;
+
+    fn rect(kind: Kind, x: f32, locked: bool) -> Element {
+        let mut e = Element::new(0, kind);
+        (e.x, e.y, e.w, e.h, e.locked) = (x, 0.0, 100.0, 100.0, locked);
+        e
+    }
+
+    #[test]
+    fn a_locked_element_alone_can_be_clicked_but_never_covers_others() {
+        let mut a = EditorApp::new(None);
+        a.doc = Doc::default();
+        (a.doc.width, a.doc.height) = (1000.0, 1000.0);
+        a.zoom = 1.0;
+        let under = a.doc.add(rect(Kind::Image, 0.0, false));
+        let locked = a.doc.add(rect(Kind::Image, 50.0, true));
+        // locked on top of an unlocked one: the click goes through to the unlocked element
+        assert_eq!(a.hit_element([75.0, 50.0], false), Some(under));
+        // only the locked element is there: it is selectable (to unlock it)
+        assert_eq!(a.hit_element([140.0, 50.0], false), Some(locked));
+        // Alt reaches it even over others
+        assert_eq!(a.hit_element([75.0, 50.0], true), Some(locked));
+        assert_eq!(a.hit_element([500.0, 500.0], false), None);
+    }
 }

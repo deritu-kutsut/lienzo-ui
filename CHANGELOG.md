@@ -2,6 +2,18 @@
 
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow [SemVer](https://semver.org/).
 
+## [1.8.1] - 2026-11-27
+
+Editor fixes (undo and zoom, locked elements, rotation) and a dependency security update.
+
+### Fixed
+- **Undo / Redo (Ctrl+Z, Ctrl+Y) no longer reset the zoom.** They re-fitted the view every time; now the zoom stays as you left it (it is only re-fitted when you leave the portrait view). New test `undo_and_redo_keep_the_zoom`.
+- **Locked elements can be selected with a plain click** when nothing else is under the cursor, so you can unlock them (before, only Alt+click or the Layers panel could). A locked element still does not cover other elements. New test `a_locked_element_alone_can_be_clicked_but_never_covers_others`.
+- **Rotating an element that is not a container no longer drags its children** with it: they keep their position and rotation.
+
+### Security
+- Updated `url` to 2.5.9 (RUSTSEC-2026-0592, stack overflow in `Url::origin()` with nested `blob:` URLs; it came in through `webbrowser`).
+
 ## [1.8.0] - 2026-11-27
 
 Template gallery: 312 new templates, with illustrations, in 12 styles.

@@ -1110,10 +1110,17 @@ impl Doc {
     /// Change an element's box; its children follow their anchors.
     pub fn set_frame_keep_children(&mut self, id: u64, f: &Frame) {
         let Some(old) = self.get(id).map(|e| e.frame()) else { return };
+        // Girar un elemento que no es contenedor solo lo gira a él: sus hijos conservan su posición y giro.
+        let solo_giro = self.get(id).map(|e| e.kind != Kind::Empty).unwrap_or(false)
+            && (f.w - old.w).abs() < 0.01
+            && (f.h - old.h).abs() < 0.01
+            && (f.rot - old.rot).abs() > 0.01;
         if let Some(e) = self.get_mut(id) {
             e.set_frame(f);
         }
-        self.reapply_children(Some(id), old);
+        if !solo_giro {
+            self.reapply_children(Some(id), old);
+        }
     }
 
     pub fn translate_subtree(&mut self, id: u64, dx: f32, dy: f32) {
