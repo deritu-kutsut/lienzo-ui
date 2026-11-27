@@ -61,10 +61,44 @@ fn plaque(g: &mut G, pos: Pos, name: &str, title: &str, detail: &str) -> N {
 
 fn scene(g: &mut G) {
     g.scene();
-    let p = g.page();
-    g.art(p, tl(470.0, 500.0, 270.0, 170.0), "Distant structure");
-    g.art(p, tl(850.0, 455.0, 210.0, 210.0), "Middle structure");
-    g.art(p, tl(1190.0, 525.0, 300.0, 140.0), "Far structure");
+}
+
+// Tres instrumentos discretos dejan libre el foco de cada plantilla.
+fn support(g: &mut G, occupied: usize, mode: u8) {
+    let (health, resource, task, progress, place, bearing) = match mode {
+        0 => ("HEALTH", "87 / 100", "Reach the old gate", "2 / 3", "ASHEN VALLEY", "NE  240m"),
+        1 => ("ARMOR", "42 / 80", "Secure the relay", "1 / 3", "NORTH SECTOR", "E  180m"),
+        2 => ("VEHICLE", "76 / 100", "Finish the lap", "2 / 3", "RIDGE CIRCUIT", "NW  320m"),
+        _ => ("ENERGY", "64 / 100", "Find the signal", "3 / 5", "FOREST PATH", "N  120m"),
+    };
+    let corners = [tl(25.0, 25.0, 330.0, 155.0), tr(25.0, 25.0, 330.0, 155.0),
+        bl(25.0, 25.0, 330.0, 155.0), br(25.0, 25.0, 330.0, 155.0)];
+    let free: Vec<_> = (0..4).filter(|&i| i != occupied).collect();
+
+    let status = g.panel(g.page(), corners[free[0]], "Player status");
+    g.icon(status, tl(14.0, 14.0, 45.0, 45.0), "Status icon", "+");
+    g.heading_l(status, tl(69.0, 17.0, 185.0, 34.0), "Status title", health, 23.0);
+    g.badge(status, tr(12.0, 17.0, 55.0, 34.0), "Player level", "12");
+    g.bar(status, tl(15.0, 68.0, 300.0, 23.0), "Status meter", 0.76, g.t.good);
+    g.label(status, tl(15.0, 105.0, 120.0, 35.0), "Status label", "PLAYER", 22.0);
+    g.value(status, tr(15.0, 105.0, 165.0, 35.0), "Status value", resource, 23.0);
+
+    let mission = g.panel(g.page(), corners[free[1]], "Tracked objective");
+    g.heading_l(mission, tl(14.0, 12.0, 226.0, 35.0), "Mission title", "OBJECTIVE", 23.0);
+    g.badge(mission, tr(13.0, 13.0, 66.0, 34.0), "Mission marker", "!");
+    g.label(mission, tl(15.0, 52.0, 300.0, 35.0), "Mission description", task, 22.0);
+    g.bar(mission, tl(15.0, 96.0, 222.0, 19.0), "Mission progress", 0.58, g.t.accent);
+    g.value(mission, tr(15.0, 91.0, 68.0, 32.0), "Mission count", progress, 22.0);
+    g.note(mission, tl(15.0, 124.0, 300.0, 26.0), "Mission hint", "TRACKED", 22.0);
+
+    let navigation = g.panel(g.page(), corners[free[2]], "Navigation display");
+    let dial = g.card(navigation, tl(13.0, 15.0, 84.0, 84.0), "Navigation dial");
+    g.icon(dial, tl(17.0, 16.0, 50.0, 50.0), "Heading icon", "^");
+    g.heading_l(navigation, tl(111.0, 18.0, 203.0, 33.0), "Location", place, 23.0);
+    g.value(navigation, tl(111.0, 57.0, 203.0, 35.0), "Destination bearing", bearing, 23.0);
+    g.rect(navigation, tl(13.0, 112.0, 304.0, 4.0), "Navigation rule", g.t.accent, 0.0);
+    g.label(navigation, tl(15.0, 122.0, 125.0, 30.0), "Route label", "WAYPOINT", 22.0);
+    g.badge(navigation, tr(14.0, 117.0, 92.0, 32.0), "Route state", "ACTIVE");
 }
 
 fn symbol_card(g: &mut G, p: N, pos: Pos, name: &str, glyph: &str) {
@@ -104,6 +138,7 @@ fn vitals(g: &mut G, v: u8) {
             }
         }
     }
+    support(g, if v == 0 { 0 } else if v == 2 { 2 } else { 3 }, if v == 2 { 1 } else { 0 });
 }
 
 fn equipment(g: &mut G, v: u8) {
@@ -137,6 +172,7 @@ fn equipment(g: &mut G, v: u8) {
             }
         }
     }
+    support(g, if v == 1 { 3 } else { 2 }, 1);
 }
 
 fn collection(g: &mut G, v: u8) {
@@ -166,6 +202,7 @@ fn collection(g: &mut G, v: u8) {
             for i in 0..3 { g.icon(n, tl(164.0 + i as f32 * 54.0, 150.0, 34.0, 34.0), "Found relic", "*"); }
         }
     }
+    support(g, if v == 0 { 1 } else { 0 }, if v == 1 { 3 } else { 0 });
 }
 
 fn rank(g: &mut G, v: u8) {
@@ -200,6 +237,7 @@ fn rank(g: &mut G, v: u8) {
             g.icon(timer, tr(15.0, 20.0, 40.0, 40.0), "Clock glyph", "!");
         }
     }
+    support(g, if v == 0 { 1 } else if v == 1 { 0 } else { 2 }, if v == 0 { 2 } else { 1 });
 }
 
 fn enemy(g: &mut G, v: u8) {
@@ -230,6 +268,7 @@ fn enemy(g: &mut G, v: u8) {
             for i in 0..3 { g.icon(n, tl(25.0 + i as f32 * 65.0, 275.0, 48.0, 48.0), "Target effect", "!"); }
         }
     }
+    support(g, if v == 2 { 3 } else { 1 }, 1);
 }
 
 fn info(g: &mut G, v: u8) {
@@ -260,6 +299,7 @@ fn info(g: &mut G, v: u8) {
             }
         }
     }
+    support(g, if v == 0 { 1 } else if v == 2 { 2 } else { 0 }, 1);
 }
 
 fn area(g: &mut G, v: u8) {
@@ -287,6 +327,7 @@ fn area(g: &mut G, v: u8) {
             for x in [20.0, 620.0] { g.icon(n, tl(x, 61.0, 40.0, 40.0), "Banner ornament", "*"); }
         }
     }
+    support(g, if v == 1 { 2 } else { 0 }, 0);
 }
 
 fn loot(g: &mut G, v: u8) {
@@ -321,6 +362,7 @@ fn loot(g: &mut G, v: u8) {
             }
         }
     }
+    support(g, if v == 1 { 2 } else { 1 }, if v == 2 { 1 } else { 0 });
 }
 
 fn scoring(g: &mut G, v: u8) {
@@ -352,6 +394,7 @@ fn scoring(g: &mut G, v: u8) {
             symbol_card(g, feat, tr(12.0, 18.0, 44.0, 44.0), "Feat icon", "+");
         }
     }
+    support(g, if v == 0 { 3 } else if v == 2 { 2 } else { 0 }, 2);
 }
 
 fn clock(g: &mut G, v: u8) {
@@ -383,6 +426,7 @@ fn clock(g: &mut G, v: u8) {
             g.icon(weather, tr(13.0, 19.0, 42.0, 42.0), "Weather icon", "*");
         }
     }
+    support(g, if v == 0 { 0 } else { 1 }, if v == 2 { 3 } else { 2 });
 }
 
 fn objectives(g: &mut G, v: u8) {
@@ -411,6 +455,7 @@ fn objectives(g: &mut G, v: u8) {
             for i in 0..4 { g.icon(n, tl(80.0 + i as f32 * 75.0, 152.0, 34.0, 34.0), "Collected fragment", "+"); }
         }
     }
+    support(g, if v == 0 { 0 } else if v == 2 { 1 } else { 2 }, 1);
 }
 
 fn waypoint(g: &mut G, v: u8) {
@@ -445,6 +490,7 @@ fn waypoint(g: &mut G, v: u8) {
             g.badge(n, tl(20.0, 148.0, 115.0, 30.0), "Pin category", "QUEST");
         }
     }
+    support(g, if v == 0 { 2 } else if v == 2 { 3 } else { 0 }, 3);
 }
 
 fn minimap(g: &mut G, v: u8) {
@@ -478,6 +524,7 @@ fn minimap(g: &mut G, v: u8) {
             g.heading(n, tl(20.0, 365.0, 350.0, 48.0), "Radar zoom", "RADAR  x2", 26.0);
         }
     }
+    support(g, if v == 1 { 2 } else { 1 }, 3);
 }
 
 fn compass(g: &mut G, v: u8) {
@@ -513,6 +560,7 @@ fn compass(g: &mut G, v: u8) {
             g.heading(n, tl(20.0, 315.0, 300.0, 55.0), "Current bearing", "NORTH  008", 26.0);
         }
     }
+    support(g, if v == 2 { 1 } else if v == 1 { 2 } else { 0 }, 3);
 }
 
 /// Retrato y barras de salud, mana y resistencia en la esquina.
