@@ -36,6 +36,9 @@
 
 ## What's new
 
+**1.8.3**
+- **Hierarchy rename box:** Esc or a click elsewhere now leaves it.
+
 **1.8.2**
 - **Accessible gallery:** every template meets the review's minimums at 1920 × 1080 (controls at least 64 px tall, text at least 18 px).
 - Fewer dependencies (Wayland window decorations off; Windows build unchanged).

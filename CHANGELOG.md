@@ -2,6 +2,13 @@
 
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow [SemVer](https://semver.org/).
 
+## [1.8.3] - 2026-11-28
+
+Hierarchy rename box fix.
+
+### Fixed
+- **Renaming an element in the Hierarchy panel can be left again:** Esc and a click anywhere else now close the name box (the text you typed is kept). The box asked for the keyboard focus on every frame, so nothing could take it away.
+
 ## [1.8.2] - 2026-11-28
 
 Accessibility pass on the template gallery and a smaller dependency tree.

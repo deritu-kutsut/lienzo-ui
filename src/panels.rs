@@ -1244,12 +1244,24 @@ impl EditorApp {
             if self.renaming == Some(id) {
                 let mut name = e.name.clone();
                 let resp_t = ui.put(name_rect, egui::TextEdit::singleline(&mut name).margin(Margin::symmetric(2, 1)));
-                resp_t.request_focus();
+                // Focus is requested only on the first frame; asking every frame made it impossible to leave the box
+                // (a click elsewhere or Esc could not take the focus away).
+                let first = ui.data_mut(|d| d.get_temp::<u64>(egui::Id::new("rename_focus")) != Some(id));
+                if first {
+                    ui.data_mut(|d| d.insert_temp(egui::Id::new("rename_focus"), id));
+                    resp_t.request_focus();
+                }
                 if let Some(el) = self.doc.get_mut(id) {
                     el.name = name;
                 }
-                if resp_t.lost_focus() {
+                let esc = ui.input(|i| i.key_pressed(egui::Key::Escape));
+                if !first && (resp_t.lost_focus() || esc || !resp_t.has_focus()) {
                     self.renaming = None;
+                    ui.data_mut(|d| d.remove_temp::<u64>(egui::Id::new("rename_focus")));
+                    if esc {
+                        ui.memory_mut(|m| m.surrender_focus(resp_t.id));
+                        ui.input_mut(|i| i.consume_key(egui::Modifiers::NONE, egui::Key::Escape));
+                    }
                 }
             } else {
                 let galley = ui.painter().layout_no_wrap(e.name.clone(), FontId::proportional(12.5), col);
